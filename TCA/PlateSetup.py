@@ -4,7 +4,12 @@ import pandas as pd
 
 
 class PlateSetup():
-    def __init__(self,):
+    '''
+    classdocs
+    Class for manipuling platesetup
+    '''
+
+    def __init__(self, ):
         '''
         Constructor init
         :return: nothing
@@ -24,6 +29,17 @@ class PlateSetup():
         except Exception as e:
             print(e)
 
+    def getplatesetup(self):
+        '''
+        Return platesetup in dataframe
+        :return: platesetup (dataframe)
+        '''
+        try:
+            return self.platesetup
+        except Exception as e:
+            print(e)
+            print('Error in getting platesetup')
+
 
     def printplatesetup(self):
         '''
@@ -34,4 +50,46 @@ class PlateSetup():
             print(self.platesetup)
         except Exception as e:
             print(e)
+            print('Error when printing platesetup')
 
+    def getGenePos(self, gene):
+        '''
+        Search position of the gene and return coord
+        :return: coord
+        '''
+        try:
+            mat = self.platesetup.as_matrix()  # # get dataframe into numpy matrix
+            size = mat.shape  # # get shape of matrix
+            row = size[0]
+            col = size[1]
+            for r in range(row):
+                for c in range(col):
+                    if gene == mat[r][c]:
+                        return row, col
+            print('Gene not found')
+        except Exception as e:
+            print(e)
+            print('Error occured at getGenePos')
+
+    def getPSasList(self):
+        '''
+        Return Platesetup as a list (dataframe)
+        :return: dataframe
+        '''
+        try:
+            # TODO Make matrix as list here
+            return 0
+        except Exception as e:
+            print(e)
+            print('Error occured at getPSasList')
+
+    def getPSasMatrix(self):
+        '''
+        Return PS as numpy array
+        :return: numpy array
+        '''
+        try:
+            return self.platesetup.as_matrix()
+        except Exception as e:
+            print(e)
+            print('Error in getting matrix of platesetup')

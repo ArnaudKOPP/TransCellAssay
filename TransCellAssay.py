@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # encoding: utf-8
-
-
 __author__ = 'Arnaud KOPP'
 
 
 import os
 import sys
 import time
+import string
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
+from platform import python_version
 import TCA
 
 __version__ = 0.01
@@ -66,12 +66,16 @@ USAGE
         # test
         plate = TCA.Plate()
         rep1 = TCA.Replicat()
+        rep1.setinfo("rep1")
         rep2 = TCA.Replicat()
+        rep2.setinfo("rep2")
         rep3 = TCA.Replicat()
-        plate.addreplicat("rep1", rep1)
-        plate.addreplicat("rep2", rep2)
-        plate.addreplicat("rep3", rep3)
+        rep3.setinfo("rep3")
+        plate.addreplicat(rep1)
+        plate.addreplicat(rep2)
+        plate.addreplicat(rep3)
         plate.printreplicat()
+        print(plate.getNBreplicat())
 
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
@@ -88,4 +92,5 @@ USAGE
 
 
 if __name__ == "__main__":
+    print('This Python program is launch with ', python_version(),' version, it was only tested on > 3.3 plateform')
     main()

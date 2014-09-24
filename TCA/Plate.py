@@ -1,17 +1,20 @@
 __author__ = 'Arnaud KOPP'
 
-'''
-
-'''
 import TCA.PlateSetup
+import pandas as pd
 
 class Plate():
-    def __init__(self,):
+    '''
+    classdocs
+    Class for manipuling plate
+    '''
+
+    def __init__(self, ):
         '''
         Constructor
         :return: nothing
         '''
-        self.replicat = dict()
+        self.replicat = list()
         self.MetaInfo = dict()
         self.plate = TCA.PlateSetup()
 
@@ -29,10 +32,10 @@ class Plate():
         Print replicat list
         :return: print replicat list
         '''
-        for keys, values in self.replicat.items():
-            print(keys)
+        for item in self.replicat:
+            item.printinfo()
 
-    def addreplicat(self, name, replicat):
+    def addreplicat(self, replicat):
         '''
         Add replicat to plate
         :param replicat: Give a replicat object
@@ -40,10 +43,21 @@ class Plate():
         :return: nothing
         '''
         try:
-            self.replicat[name] = replicat
+            assert isinstance(replicat, object)
+            self.replicat.append(replicat)
         except Exception as e:
             print(e)
 
+    def getNBreplicat(self):
+        '''
+        return number of replicat
+        :return: int
+        '''
+        try:
+            return len(self.replicat)
+        except Exception as e:
+            print(e)
+            print('Error in getting number of replicat')
 
     def addinfo(self, key, value):
         '''
@@ -57,8 +71,29 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def getreplicat(self):
-        return 0
 
     def getinfo(self):
-        return 0
+        '''
+        Get info
+        :return: infor (dict)
+        '''
+        try:
+            return self.MetaInfo
+        except Exception as e:
+            print(e)
+            print('Error in getting info')
+
+    def getAllDataFromReplicat(self, features):
+        '''
+        Return a dataframe with data of all dataframe
+        :return:
+        '''
+        data = pd.DataFrame()
+        try :
+            for rep in self.replicat:
+                tmp  = rep.getDataByFeatures(features)
+                data.join(data, tmp)
+            return data
+        except Exception as e:
+            print(e)
+            print('Error in getAllDataFromReplicat')
