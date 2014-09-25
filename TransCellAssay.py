@@ -6,15 +6,14 @@ __author__ = 'Arnaud KOPP'
 import os
 import sys
 import time
-import string
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 from platform import python_version
 import TCA
+import IO
 
 __version__ = 0.01
-__date__ = '2014-09-23'
-__updated__ = '2014-09-23'
+
 DEBUG = 1
 
 class CLIError(Exception):
@@ -40,42 +39,42 @@ def main(argv=None):  # IGNORE:C0111
         sys.argv.extend(argv)
 
     program_name = os.path.basename(sys.argv[0])
-    program_shortdesc = __import__('__main__').__doc__
-    program_license = '''%s
-
-  Created by Arnaud on %s. Updated on %s
+    program_license = '''
+  Created by Arnaud .
   Copyright 2014 KOPP. All rights reserved.
   Distributed on an "AS IS" basis without warranties
   or conditions of any kind, either express or implied.
   VERSION = %s
 
 USAGE
-''' % (program_shortdesc, str(__date__), str(__updated__), str(__version__))
+''' % (str(__version__))
 
     try:
-        # # Setup argument parser
-        # parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
-        # parser.add_argument("-i", "--inputFileDirectory", dest="input", action="store",
-        #                     help="Input path of data file ", required=True)
+        # Setup argument parser
+        parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
+        parser.add_argument("-i", "--inputFileDirectory", dest="input", action="store",
+                            help="Input path of data file ", required=True)
         # parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
         #                     help="Output path for result file", required=True)
         #
-        # InArgs = parser.parse_args()
-
+        InArgs = parser.parse_args()
+        InputFileDirectory = InArgs.input
 
         # test
         plate = TCA.Plate()
         rep1 = TCA.Replicat()
-        rep1.setinfo("rep1")
+        rep1.setInfo("rep1")
         rep2 = TCA.Replicat()
-        rep2.setinfo("rep2")
+        rep2.setInfo("rep2")
         rep3 = TCA.Replicat()
-        rep3.setinfo("rep3")
-        plate.addreplicat(rep1)
-        plate.addreplicat(rep2)
-        plate.addreplicat(rep3)
-        plate.printreplicat()
-        print(plate.getNBreplicat())
+        rep3.setInfo("rep3")
+        plate.addReplicat(rep1)
+        plate.addReplicat(rep2)
+        plate.addReplicat(rep3)
+        plate.printReplicat()
+        print(plate.getNumReplicat())
+
+        IO.parseInputDirectory(InputFileDirectory)
 
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###

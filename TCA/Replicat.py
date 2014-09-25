@@ -16,8 +16,10 @@ class Replicat():
         '''
         self.Data = pd.DataFrame()
         self.info = ""
+        self.isNormalized = False
+        self.isSpatialNormalized = False
 
-    def setdata(self, InputFile):
+    def setData(self, InputFile):
         '''
         Set data in replicat
         :param InputFile: csv file
@@ -33,7 +35,19 @@ class Replicat():
                 print(e)
                 print('Error in reading %s File' % (InputFile))
 
-    def setinfo(self, info):
+    def getData(self):
+        '''
+        Get all Data
+        :return: DataFrame with all data
+        '''
+        try:
+            return self.Data
+        except Exception as e:
+            print(e)
+            print('Error in exporting data')
+
+
+    def setInfo(self, info):
         '''
         set info like name
         :param info: info on replicat
@@ -45,7 +59,7 @@ class Replicat():
             print(e)
             print('Error in setting Info')
 
-    def getinfo(self):
+    def getInfo(self):
         '''
         return info from replicat
         :return: info
@@ -56,7 +70,7 @@ class Replicat():
             print(e)
             print('Error in getting info')
 
-    def printinfo(self):
+    def printInfo(self):
         '''
         print info from replicat
         :return: nothing
@@ -64,18 +78,7 @@ class Replicat():
         print(self.info)
 
 
-    def getdata(self):
-        '''
-        Get all Data
-        :return: DataFrame with all data
-        '''
-        try:
-            return self.Data
-        except Exception as e:
-            print(e)
-            print('Error in exporting data')
-
-    def getdatabywell(self, well):
+    def getDataByWell(self, well):
         '''
         Get all data for well
         :param well:

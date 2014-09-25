@@ -17,7 +17,7 @@ class PlateSetup():
         self.platesetup = pd.DataFrame()
 
 
-    def setplatesetup(self, InputFile=None):
+    def setPlateSetup(self, InputFile=None):
         '''
         Define platesetup
         Read csv with first row as column name and first column as row name
@@ -29,7 +29,7 @@ class PlateSetup():
         except Exception as e:
             print(e)
 
-    def getplatesetup(self):
+    def getPlateSetup(self):
         '''
         Return platesetup in dataframe
         :return: platesetup (dataframe)
@@ -41,7 +41,7 @@ class PlateSetup():
             print('Error in getting platesetup')
 
 
-    def printplatesetup(self):
+    def printPlateSetup(self):
         '''
         Print platesetup
         :return: print platesetup

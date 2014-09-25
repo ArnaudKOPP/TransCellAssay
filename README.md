@@ -6,13 +6,11 @@ This Python packages is for analyzis of Transfected Cell Assay in Higth Throughp
 Need to be make
 
 ##DEPENDENCIES
-Python > 3.3
-Pandas
-Numpy
-Scipy stack ...
-Matplotlib
-
+1. Python > 3.3 
+2. Pandas
+3. Scipy stack (numpy, matplotlib, ...)
 
 ##CONTACT
 kopp@igbmc.fr
+
 kopp.arnaud@gmail.com
