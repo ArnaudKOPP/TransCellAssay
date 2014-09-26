@@ -1,5 +1,9 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+Parse defined method for reading data from a directory (replicat data and platesetup)
+PlXrep_0.csv, PlXrep_1.csv ... name for replicat
+PlXPP.csv  name for platesetup
+"""
 import os
 import re
 
@@ -17,10 +21,10 @@ def get_filepaths(directory):
     # Walk the tree.
     for root, directories, files in os.walk(directory):
         for filename in files:
-                if filename.endswith(".csv"):
-                    # Join the two strings in order to form the full filepath.
-                    filepath = os.path.join(root, filename)
-                    file_paths.append(filepath)  # Add it to the list.
+            if filename.endswith(".csv"):
+                # Join the two strings in order to form the full filepath.
+                filepath = os.path.join(root, filename)
+                file_paths.append(filepath)  # Add it to the list.
     return file_paths  # Self-explanatory.
 
 

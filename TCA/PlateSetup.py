@@ -1,5 +1,8 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+Platesetup is designed to store matrix who represent the plate setup, he is compatible with 96, 384, ... Well
+The matrix is representing by a pandas DataFrame (numpy array like)
+"""
 import pandas as pd
 
 
@@ -40,6 +43,15 @@ class PlateSetup():
             print(e)
             print('Error in getting platesetup')
 
+    def getSize(self):
+        '''
+        get the shape of platesetup, so we can determine number of well
+        :return: shape of platesetup
+        '''
+        try:
+            return self.platesetup.shape()
+        except Exception as e:
+            print(e)
 
     def printPlateSetup(self):
         '''

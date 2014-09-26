@@ -1,14 +1,21 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+NormPlate defined method for normalize plate, like remove edge effect or normalize between replicat
+"""
 import numpy as np
-import TCA
+import Math.MedianPolish as MedPol
 
-def normalizeEdgeEffect():
+
+def normalizeEdgeEffect(array):
     '''
     Apply a median polish for remove edge effect
     :return:
     '''
-    return 0
+    try:
+        mp = MedPol.MedianPolish(array)
+        ge, ce, re, resid, tbl_org = mp.median_polish(100)
+    except Exception as e:
+        print(e)
 
 
 def normalizeBetweenReplicat(Plate):
@@ -16,7 +23,25 @@ def normalizeBetweenReplicat(Plate):
     Apply a norm between replicat
     :return:
     '''
-    if (Plate.replicat.getNBreplicat()) < 2:
-        print('Can\'t apply this normalization because under two replicats, need at least two replicats ')
-    else:
-        print('Normalization not yet implememted')
+    try:
+        if (Plate.replicat.getNBreplicat()) < 2:
+            print('Can\'t apply this normalization because under two replicats, need at least two replicats ')
+        else:
+            print('Normalization not yet implemented')
+    except Exception as e:
+        print(e)
+
+
+def quantile_normalization(anarray):
+    """
+    anarray with samples in the columns and probes across the rows
+    :param anarray:
+    """
+    try:
+        A = anarray
+        AA = np.zeros_like(A)
+        I = np.argsort(A, axis=0)
+        AA[I, np.arange(A.shape[1])] = np.mean(A[I, np.arange(A.shape[1])], axis=1)[:, np.newaxis]
+        return AA
+    except Exception as e:
+        print(e)

@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+Replicat implement the notion of technical replicat for one plate
+"""
 import pandas as pd
 
 

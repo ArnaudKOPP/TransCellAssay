@@ -1,7 +1,8 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+Screen is designed for manipulating screen that contain multiple different plate
+"""
 import TCA.Plate
-
 
 
 class Screen():
@@ -14,8 +15,8 @@ class Screen():
         Constructor
         :return:
         '''
-        self.PlateList = dict()
-        self.Info = dict()
+        self.PlateList = {}
+        self.Info = {}
 
     def addPlate(self, plate):
         '''

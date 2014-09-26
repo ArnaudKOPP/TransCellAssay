@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 __author__ = 'Arnaud KOPP'
+"""
 
-
+"""
 import os
 import sys
 import time
@@ -16,6 +17,7 @@ __version__ = 0.01
 
 DEBUG = 1
 
+
 class CLIError(Exception):
     def __init__(self, msg):
         super(CLIError).__init__(type(self))
@@ -26,7 +28,6 @@ class CLIError(Exception):
 
     def __unicode__(self):
         return self.msg
-
 
 
 def main(argv=None):  # IGNORE:C0111
@@ -55,7 +56,7 @@ USAGE
         parser.add_argument("-i", "--inputFileDirectory", dest="input", action="store",
                             help="Input path of data file ", required=True)
         # parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
-        #                     help="Output path for result file", required=True)
+        # help="Output path for result file", required=True)
         #
         InArgs = parser.parse_args()
         InputFileDirectory = InArgs.input
@@ -72,9 +73,12 @@ USAGE
         plate.addReplicat(rep2)
         plate.addReplicat(rep3)
         plate.printReplicat()
-        print(plate.getNumReplicat())
+        print(plate.getNumberReplicat())
 
         IO.parseInputDirectory(InputFileDirectory)
+
+        tmprep = plate.getReplicat("rep1")
+        tmprep.printInfo()
 
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
@@ -91,5 +95,5 @@ USAGE
 
 
 if __name__ == "__main__":
-    print('This Python program is launch with ', python_version(),' version, it was only tested on > 3.3 plateform')
+    print('This Python program is launch with ', python_version(), ' version, it was only tested on > 3.3 plateform')
     main()

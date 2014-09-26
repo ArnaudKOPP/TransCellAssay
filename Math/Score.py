@@ -1,10 +1,13 @@
 __author__ = 'Arnaud KOPP'
-
-##Defined method for compute score and data of plate
+"""
+Score defined method for compute some score on data
+"""
+# #Defined method for compute score and data of plate
 ##
 ##
 
 import Math.Result
+
 
 def getPercentPosCell():
     '''
@@ -28,6 +31,7 @@ def getMeanCount():
         return 0
     except Exception as e:
         print(e)
+
 
 def getSDMeanCount():
     '''
@@ -64,6 +68,7 @@ def getInfection():
     except Exception as e:
         print(e)
 
+
 def getMean():
     '''
 
@@ -74,6 +79,7 @@ def getMean():
         return 0
     except Exception as e:
         print(e)
+
 
 def getMedian():
     '''
@@ -86,6 +92,7 @@ def getMedian():
     except Exception as e:
         print(e)
 
+
 def getSSMD():
     '''
 
@@ -97,6 +104,7 @@ def getSSMD():
     except Exception as e:
         print(e)
 
+
 def getSSMDr():
     '''
 
@@ -107,7 +115,6 @@ def getSSMDr():
         return 0
     except Exception as e:
         print(e)
-
 
 
 def computePlateScore(Plate):

@@ -1,6 +1,10 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+Plate is designed for manipulating one or more replicat
+"""
 import TCA.PlateSetup
+import TCA.Replicat
+import Math.Result
 import pandas as pd
 
 
@@ -15,8 +19,8 @@ class Plate():
         Constructor
         :return: nothing
         '''
-        self.replicat = list()
-        self.MetaInfo = dict()
+        self.replicat = {}
+        self.MetaInfo = {}
         self.Name = None
         self.PlateSetup = TCA.PlateSetup()
         self.IsSingleCell = True  # If Single Cell data, default is True because design for this data
@@ -35,7 +39,7 @@ class Plate():
 
     def printName(self):
         '''
-
+        Print Name of plate
         :return:
         '''
         try:
@@ -45,7 +49,7 @@ class Plate():
 
     def setName(self, name):
         '''
-
+        Set Name of plate
         :param name:
         :return:
         '''
@@ -56,7 +60,7 @@ class Plate():
 
     def getName(self):
         '''
-
+        Get Name of plate
         :return:
         '''
         try:
@@ -69,8 +73,11 @@ class Plate():
         Print replicat list
         :return: print replicat list
         '''
-        for item in self.replicat:
-            item.printInfo()
+        try:
+            for item in self.replicat:
+                print(item)
+        except Exception as e:
+            print(e)
 
     def addReplicat(self, replicat):
         '''
@@ -80,12 +87,24 @@ class Plate():
         :return: nothing
         '''
         try:
-            assert isinstance(replicat, object)
-            self.replicat.append(replicat)
+            assert isinstance(replicat, TCA.Replicat)
+            name = replicat.info
+            self.replicat[name] = replicat
         except Exception as e:
             print(e)
 
-    def getNumReplicat(self):
+    def getReplicat(self, name):
+        '''
+        Get the replicat specified by name
+        :param name: string
+        :return: TCA.Replicat
+        '''
+        try:
+            return self.replicat[name]
+        except Exception as e:
+            print(e)
+
+    def getNumberReplicat(self):
         '''
         return number of replicat
         :return: int
@@ -98,7 +117,7 @@ class Plate():
 
     def addInfo(self, key, value):
         '''
-        Add Info
+        Add Info into the dict
         :param key:
         :param value:
         :return: nothing
@@ -136,37 +155,47 @@ class Plate():
             print('Error in getAllDataFromReplicat')
 
 
-    def addPS(self, platesetup):
+    def addPlateSetup(self, platesetup):
         '''
         Add the platesetup to the plate
         :param platesetup:
         :return:
         '''
-        try :
-            # TODO
-            return 0
+        try:
+            assert isinstance(platesetup, TCA.PlateSetup)
+            self.PlateSetup = platesetup
         except Exception as e:
             print(e)
 
 
-    def getPS(self):
+    def getPlateSetup(self):
         '''
         Get the platesetup from the plate
         :return: plateSetup
         '''
         try:
-            # TODO
-            return 0
+            return self.PlateSetup
+        except Exception as e:
+            print(e)
+
+    def addResult(self, result):
+        '''
+        Set the result by giving a TCA.Result array
+        :param result:
+        :return:
+        '''
+        try:
+            assert isinstance(result, Math.Result)
+            self.Result = result
         except Exception as e:
             print(e)
 
     def getResult(self):
         '''
-
+        Get the result array
         :return:
         '''
         try:
-            return 0
-        # TODO
+            return self.Result
         except Exception as e:
             print(e)
