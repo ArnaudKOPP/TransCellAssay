@@ -9,11 +9,30 @@ import Math.MedianPolish as MedPol
 def normalizeEdgeEffect(array):
     '''
     Apply a median polish for remove edge effect
-    :return:
+    return residual matrix
+    :return: residual matrix
     '''
     try:
         mp = MedPol.MedianPolish(array)
         ge, ce, re, resid, tbl_org = mp.median_polish(100)
+        print("median polish:")
+        print("grand effect = ", ge)
+        print("column effects = ", ce)
+        print("row effects = ", re)
+        print("-----Table of Residuals-------")
+        print(resid)
+        print("-----Original Table-------")
+        print(tbl_org)
+
+        ge, ce, re, resid, tbl_org = mp.median_polish(100, "average")
+        print("average polish:")
+        print("grand effect = ", ge)
+        print("column effects = ", ce)
+        print("row effects = ", re)
+        print("-----Table of Residuals-------")
+        print(resid)
+        print("-----Original Table-------")
+        print(tbl_org)
     except Exception as e:
         print(e)
 

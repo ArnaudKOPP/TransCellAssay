@@ -87,7 +87,7 @@ class Replicat():
         :return: dataframe with data for specified well
         '''
         try:
-            return self.Data[self.data['Well'] == well]
+            return self.Data[self.Data['Well'] == well]
         except Exception as e:
             print(e)
             print('Error in exporting data by well')
@@ -95,9 +95,27 @@ class Replicat():
 
     def getDataByFeatures(self, featList):
         '''
-        Return a data frame with Well col and features data col
-        :param featList: give a list with feature
+        Return a data frame with Well col and features data col in list []
+        if no Well col is given, then auto add
+        :param featList: give a list with feature in [] format
         :return: output a dataframe with Well col and feature col
         '''
-        # TODO make this function
-        return 0
+        try:
+            if not "Well" in featList:
+                featList.insert(0, 'Well')
+                return self.Data[featList]
+            else:
+                return self.Data[featList]
+        except Exception as e:
+            print(e)
+
+    def getDataMatrixForm(self, feature):
+        '''
+        Return data in matrix form, get mean or median for well
+        :return:
+        '''
+        try:
+            # TODO
+            return 0
+        except Exception as e:
+            print(e)

@@ -104,6 +104,18 @@ class Plate():
         except Exception as e:
             print(e)
 
+
+    def getAllReplicat(self):
+        '''
+        Get all replicat
+        :return: TCA.Replicat
+        '''
+        try:
+            return self.replicat
+        except Exception as e:
+            print(e)
+
+
     def getNumberReplicat(self):
         '''
         return number of replicat

@@ -17,6 +17,9 @@ class Screen():
         '''
         self.PlateList = {}
         self.Info = {}
+        self.Neg = None
+        self.Pos = None
+        self.Tox = None
 
     def addPlate(self, plate):
         '''

@@ -51,7 +51,7 @@ class Result():
             print(e)
 
 
-    def setValue(self, Gene, Feature, Value):
+    def addValue(self, Gene, Feature, Value):
         '''
         Insert Value at Gene row and Feature Col
         :param Gene:

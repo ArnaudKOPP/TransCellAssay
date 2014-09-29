@@ -4,7 +4,10 @@ import numpy as np
 
 
 class MedianPolish:
-    """Fits an additive model using Tukey's median polish algorithm"""
+    """
+    Fits an additive model using Tukey's median polish algorithm
+    Chapter 10 of Tukey, John W (1977). Exploratory Data Analysis. Addison-Wesley. ISBN 0-201-07616-0.
+    """
 
     def __init__(self, array):
         """Get numeric data from numpy ndarray to self.tbl, keep the original copy in tbl_org"""
@@ -64,34 +67,3 @@ class MedianPolish:
         return grand_effect, col_effects, row_effects, self.tbl, self.tbl_org
 
 
-if __name__ == "__main__":
-    # Example and data on volume of rubber taken from chapter 6 of
-    # William N. Venables and Brian D. Ripley (2002). Statistics Complements to Modern Applied Statistics with S, ISBN 0-387-95457-0.
-    # data_file='random.csv'
-    #arr = MedianPolish.csv_to_ndarray(data_file) * 10000
-
-    # Example and data on Arisona state temperature taken from
-    # Chapter 10 of Tukey, John W (1977). Exploratory Data Analysis. Addison-Wesley. ISBN 0-201-07616-0.
-    data_file = "ArizonaTmp.csv"
-    arr = MedianPolish.csv_to_ndarray(data_file)
-
-    mp = MedianPolish(arr)
-    ge, ce, re, resid, tbl_org = mp.median_polish(4)
-    print("median polish:")
-    print("grand effect = ", ge)
-    print("column effects = ", ce)
-    print("row effects = ", re)
-    print("-----Table of Residuals-------")
-    print(resid)
-    print("-----Original Table-------")
-    print(tbl_org)
-
-    ge, ce, re, resid, tbl_org = mp.median_polish(4, "average")
-    print("average polish:")
-    print("grand effect = ", ge)
-    print("column effects = ", ce)
-    print("row effects = ", re)
-    print("-----Table of Residuals-------")
-    print(resid)
-    print("-----Original Table-------")
-    print(tbl_org)
