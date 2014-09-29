@@ -10,6 +10,7 @@ def normalizeEdgeEffect(array):
     '''
     Apply a median polish for remove edge effect
     return residual matrix
+    :param: array: a numpy array in matrix size
     :return: residual matrix
     '''
     try:
@@ -55,6 +56,7 @@ def quantile_normalization(anarray):
     """
     anarray with samples in the columns and probes across the rows
     :param anarray:
+    :return: return array
     """
     try:
         A = anarray

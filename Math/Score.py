@@ -19,7 +19,6 @@ def getPercentPosCell(rep1, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -66,7 +65,6 @@ def getToxicity(rep1, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -81,7 +79,6 @@ def getInfection(rep1, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -96,7 +93,6 @@ def getViability(rep1, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -112,7 +108,6 @@ def getMean(feat, rep1, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -128,7 +123,6 @@ def getMedian(feat, rep1, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -144,7 +138,6 @@ def getMad(feat, rep1, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -160,7 +153,6 @@ def getSSMD(feat, rep1, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -176,7 +168,6 @@ def getSSMDr(feat, rep1, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -192,7 +183,6 @@ def getPairedSSMD(feat, rep1=None, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -208,7 +198,6 @@ def getPairedSSMDr(feat, rep1=None, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)
@@ -224,7 +213,6 @@ def PairedTStat(feat, rep1=None, rep2=None, rep3=None):
     :return:
     '''
     try:
-        # TODO
         return 0
     except Exception as e:
         print(e)

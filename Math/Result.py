@@ -99,7 +99,6 @@ class Result():
         :return: don't know now
         '''
         try:
-            # TODO
             return 0
         except Exception as e:
             print(e)

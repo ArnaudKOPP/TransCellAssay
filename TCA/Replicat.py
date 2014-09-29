@@ -30,9 +30,11 @@ class Replicat():
 
         try:
             self.Data = pd.read_csv(InputFile)
+            print('Reading %s File' % (InputFile))
         except:
             try:
                 self.data = pd.read_csv(input, decimal=",", sep=";")
+                print('Reading %s File' % (InputFile))
             except Exception as e:
                 print(e)
                 print('Error in reading %s File' % (InputFile))
@@ -103,19 +105,28 @@ class Replicat():
         try:
             if not "Well" in featList:
                 featList.insert(0, 'Well')
+                print(featList)
                 return self.Data[featList]
             else:
                 return self.Data[featList]
         except Exception as e:
             print(e)
 
-    def getDataMatrixForm(self, feature):
+    def getDataMatrixForm(self, feature, method="mean"):
         '''
         Return data in matrix form, get mean or median for well
+        :param: feature: which feature to keep in matrix
+        :param: method: which method to choose mean or median
         :return:
         '''
         try:
-            # TODO
-            return 0
+            if method=="mean":
+                tmp = self.Data.groupby('Well')
+                mean = tmp.mean()
+                value = mean[feature]['']
+            else:
+                tmp = self.Data.groupby('Well')
+                median = tmp.median()
+                return 0
         except Exception as e:
             print(e)

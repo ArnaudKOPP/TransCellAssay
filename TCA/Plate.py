@@ -143,7 +143,7 @@ class Plate():
     def getInfo(self):
         '''
         Get info
-        :return: infor (dict)
+        :return: info (dict)
         '''
         try:
             return self.MetaInfo
@@ -153,14 +153,16 @@ class Plate():
 
     def getAllDataFromReplicat(self, features):
         '''
-        Return a dataframe with data of all dataframe
+        Return a dict with data of all dataframe
         :return:
         '''
-        data = pd.DataFrame()
+        data = {}
         try:
+            # TODO don't work, only on first iteration
             for rep in self.replicat:
-                tmp = rep.getDataByFeatures(features)
-                data.join(data, tmp)
+                repTmp = self.replicat[rep]
+                tmp = repTmp.getDataByFeatures(features)
+                data[repTmp.getInfo()] = tmp
             return data
         except Exception as e:
             print(e)

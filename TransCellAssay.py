@@ -62,23 +62,35 @@ USAGE
         InputFileDirectory = InArgs.input
 
         # test
-        plate = TCA.Plate()
+        screen_test = TCA.Screen()
+        plaque1 = TCA.Plate()
+        platesetup = TCA.PlateSetup()
+        platesetup.setPlateSetup("/home/akopp/Bureau/antagomir/Pl1PP.csv")
+        platesetup.printPlateSetup()
+        plaque1.addPlateSetup(platesetup)
         rep1 = TCA.Replicat()
         rep1.setInfo("rep1")
+        rep1.setData("/home/akopp/Bureau/antagomir/Pl1rep_1.csv")
         rep2 = TCA.Replicat()
         rep2.setInfo("rep2")
+        rep1.setData("/home/akopp/Bureau/antagomir/Pl1rep_2.csv")
         rep3 = TCA.Replicat()
         rep3.setInfo("rep3")
-        plate.addReplicat(rep1)
-        plate.addReplicat(rep2)
-        plate.addReplicat(rep3)
-        plate.printReplicat()
-        print(plate.getNumberReplicat())
+        rep1.setData("/home/akopp/Bureau/antagomir/Pl1rep_2.csv")
+        plaque1.addReplicat(rep1)
+        plaque1.addReplicat(rep2)
+        plaque1.addReplicat(rep3)
+        plaque1.printReplicat()
+        print("Number of replicat : ", plaque1.getNumberReplicat())
 
-        IO.parseInputDirectory(InputFileDirectory)
+        screen_test.addPlate(plaque1)
 
-        tmprep = plate.getReplicat("rep1")
-        tmprep.printInfo()
+        tmp = plaque1.getAllDataFromReplicat(['Cell'])
+        print(tmp)
+        #IO.parseInputDirectory(InputFileDirectory)
+
+
+
 
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
