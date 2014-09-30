@@ -4,7 +4,7 @@ Plate is designed for manipulating one or more replicat
 """
 import TCA.PlateSetup
 import TCA.Replicat
-import Math.Result
+import Statistic.Result
 import pandas as pd
 
 
@@ -153,7 +153,7 @@ class Plate():
 
     def getAllDataFromReplicat(self, features):
         '''
-        Return a dict with data of all dataframe
+        Return a dict with data of all dataframe, with feature specified
         :return:
         '''
         data = {}
@@ -167,6 +167,21 @@ class Plate():
             print(e)
             print('Error in getAllDataFromReplicat')
 
+
+    def getAllData(self):
+        '''
+        return a dict which data of all dataframe without feature specified
+        :return:
+        '''
+        data = {}
+        try:
+            for rep in self.replicat:
+                tmp = self.replicat[rep]
+                datatmp = tmp.getData()
+                data[tmp.getInfo()] = datatmp
+            return data
+        except Exception as e:
+            print(e)
 
     def addPlateSetup(self, platesetup):
         '''
@@ -198,7 +213,7 @@ class Plate():
         :return:
         '''
         try:
-            assert isinstance(result, Math.Result)
+            assert isinstance(result, Statistic.Result)
             self.Result = result
         except Exception as e:
             print(e)

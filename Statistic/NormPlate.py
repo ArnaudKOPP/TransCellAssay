@@ -3,7 +3,7 @@ __author__ = 'Arnaud KOPP'
 NormPlate defined method for normalize plate, like remove edge effect or normalize between replicat
 """
 import numpy as np
-import Math.MedianPolish as MedPol
+import Statistic.MedianPolish as MedPol
 
 
 def normalizeEdgeEffect(array):

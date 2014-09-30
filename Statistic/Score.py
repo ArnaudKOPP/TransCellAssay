@@ -6,8 +6,25 @@ Score defined method for compute some score on data
 # #
 # #
 
-import Math.Result
+import Statistic.Result
 import TCA
+
+
+def getNumberInDict(InputArray):
+    '''
+    Get Number of occurence by well
+    :param Input: is a replicat
+    :return:
+    '''
+    try:
+        print('getNumberInDict')
+        array = InputArray
+        tmp = array.groupby('Well')
+        count = tmp.Well.count()
+        dictCount = count.to_dict()
+        return dictCount
+    except Exception as e:
+        print(e)
 
 
 def getPercentPosCell(rep1, rep2=None, rep3=None):
@@ -24,31 +41,36 @@ def getPercentPosCell(rep1, rep2=None, rep3=None):
         print(e)
 
 
-def getMeanCount(rep1, rep2=None, rep3=None):
+def getMeanCount(dataDict):
     '''
     get mean of number of cell per well accross replicat
-    :param rep1:
-    :param rep2:
-    :param rep3:
-    :return:
+    :param dataDict : Give a dict that contains data frame value from replicat
+    :return: return a dict that contain mean value for well
     '''
+    print('test')
+    dictMeanByRep = {}
     try:
-        array = rep1.getData()
-        tmp = array.groupby('Well')
-        count = tmp.Well.count()
-        return 0
+        for k, v in dataDict.items():
+            CellCount = getNumberInDict(v)
+            for key in CellCount.keys():
+                try:
+                    dictMeanByRep.setdefault(key, []).append(CellCount[key])
+                except KeyError:
+                    pass
+        SDValue = getSDMeanCount(dictMeanByRep)
+        MeanCount = [(i, sum(v)//len(v)) for i, v in dictMeanByRep.items()]
+        print(MeanCount)
+        return dictMeanByRep, SDValue
     except Exception as e:
         print(e)
 
 
-def getSDMeanCount(rep1, rep2, rep3=None):
+def getSDMeanCount(dictmeanbyrep):
     '''
     get Standart deviation of cell per well accross replicat
     Need a least two replicat
-    :param rep1:
-    :param rep2:
-    :param rep3:
-    :return:
+    :param dictmeanbyrep: Give a dict that contain number of cell by well for all replicat
+    :return: retrun a dict that contain standart deviation of nb cell for well
     '''
     try:
         return 0
@@ -224,12 +246,13 @@ def computePlateScore(Plate, feature):
     :param Plate: Plate object
     :return: return a result object
     '''
-    result = Math.Result.Result()
+    platesetup = Plate.getPlateSetup()
+    size = platesetup.getSize()
+    result = Statistic.Result((size[0] * size[1]))
     try:
         assert isinstance(Plate, TCA.Plate)
-        allrep = Plate.getAllReplicat()
-        for rep in allrep:
-            data = rep.getDataByFeatures([feature])
+        data = Plate.getAllData()
+        meanCount, sdvalue = getMeanCount(data)
         return result
     except Exception as e:
         print(e)

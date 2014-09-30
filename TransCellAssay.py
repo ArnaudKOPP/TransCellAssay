@@ -2,7 +2,7 @@
 # encoding: utf-8
 __author__ = 'Arnaud KOPP'
 """
-
+Example of program for use TransCellAssay module
 """
 import os
 import sys
@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 from platform import python_version
 import TCA
+import Statistic
 import IO
 
 __version__ = 0.01
@@ -66,7 +67,6 @@ USAGE
         plaque1 = TCA.Plate()
         platesetup = TCA.PlateSetup()
         platesetup.setPlateSetup("/home/akopp/Bureau/antagomir/Pl1PP.csv")
-        platesetup.printPlateSetup()
         plaque1.addPlateSetup(platesetup)
         rep1 = TCA.Replicat()
         rep1.setInfo("rep1")
@@ -80,17 +80,16 @@ USAGE
         plaque1.addReplicat(rep1)
         plaque1.addReplicat(rep2)
         plaque1.addReplicat(rep3)
-        plaque1.printReplicat()
-        print("Number of replicat : ", plaque1.getNumberReplicat())
+        # print('Screen stat :')
+        # plaque1.printReplicat()
+        # print("Number of replicat : ", plaque1.getNumberReplicat())
 
         screen_test.addPlate(plaque1)
 
-        tmp = plaque1.getAllDataFromReplicat(['Cell'])
-        print(tmp)
+        tmp2 = Statistic.computePlateScore(plaque1, ['Cell'])
+        print(tmp2.getData())
+
         #IO.parseInputDirectory(InputFileDirectory)
-
-
-
 
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###

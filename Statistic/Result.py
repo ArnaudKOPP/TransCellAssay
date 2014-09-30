@@ -13,16 +13,28 @@ class Result():
     Class for representing record array for result
     '''
 
-
-    def __init__(self, size):
+    def __init__(self, size=None):
         '''
         Constructor
-        :return:
+        if size is not given, init by 386 plate size
+        :return: none init only dataframe
         '''
+        if size==None:
+            size = 396
         self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
                                           ('PositiveCells', float), ('Infection', float), ('Toxicity', float),
                                           ('SSMDr', float), ('SSMDrSpatNorm', float)])
         self.GenePos = {}  # # To save Gene position in numpy Array
+
+    def getData(self):
+        '''
+        return data array
+        :return: array
+        '''
+        try:
+            return self.Data
+        except Exception as e:
+            print(e)
 
     def addGene(self, GeneList):
         '''
@@ -50,7 +62,6 @@ class Result():
         except Exception as e:
             print(e)
 
-
     def addValue(self, Gene, Feature, Value):
         '''
         Insert Value at Gene row and Feature Col
@@ -64,7 +75,6 @@ class Result():
         except Exception as e:
             print(e)
 
-
     def getCol(self, col):
         '''
         Get col/feature from result array
@@ -75,7 +85,6 @@ class Result():
             return self.Data[col]
         except ValueError:
             print('No Valid Column Name')
-
 
     def save(self, FilePath):
         '''

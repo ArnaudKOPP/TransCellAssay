@@ -19,7 +19,6 @@ class PlateSetup():
         '''
         self.platesetup = pd.DataFrame()
 
-
     def setPlateSetup(self, InputFile=None):
         '''
         Define platesetup
@@ -49,7 +48,7 @@ class PlateSetup():
         :return: shape of platesetup
         '''
         try:
-            return self.platesetup.shape()
+            return self.platesetup.shape
         except Exception as e:
             print(e)
 
