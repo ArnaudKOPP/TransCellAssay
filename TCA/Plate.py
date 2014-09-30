@@ -158,7 +158,6 @@ class Plate():
         '''
         data = {}
         try:
-            # TODO don't work, only on first iteration
             for rep in self.replicat:
                 repTmp = self.replicat[rep]
                 tmp = repTmp.getDataByFeatures(features)

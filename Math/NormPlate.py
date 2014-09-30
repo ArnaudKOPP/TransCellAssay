@@ -38,19 +38,6 @@ def normalizeEdgeEffect(array):
         print(e)
 
 
-def normalizeBetweenReplicat(Plate):
-    '''
-    Apply a norm between replicat
-    :return:
-    '''
-    try:
-        if (Plate.replicat.getNBreplicat()) < 2:
-            print('Can\'t apply this normalization because under two replicats, need at least two replicats ')
-        else:
-            print('Normalization not yet implemented')
-    except Exception as e:
-        print(e)
-
 
 def quantile_normalization(anarray):
     """
@@ -66,3 +53,20 @@ def quantile_normalization(anarray):
         return AA
     except Exception as e:
         print(e)
+
+
+
+def normalizeBetweenReplicat(Plate):
+    '''
+    Apply a norm between replicat
+    :return:
+    '''
+    try:
+        if (Plate.replicat.getNBreplicat()) < 2:
+            print('Can\'t apply this normalization because under two replicats, need at least two replicats ')
+        else:
+            print('Normalization not yet implemented')
+    except Exception as e:
+        print(e)
+
+

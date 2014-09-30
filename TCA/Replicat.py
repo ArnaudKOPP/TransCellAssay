@@ -20,6 +20,7 @@ class Replicat():
         self.info = ""
         self.isNormalized = False
         self.isSpatialNormalized = False
+        self.SpatNormData = None
 
     def setData(self, InputFile):
         '''
@@ -27,7 +28,6 @@ class Replicat():
         :param InputFile: csv file
         :return: nothing
         '''
-
         try:
             self.Data = pd.read_csv(InputFile)
             print('Reading %s File' % (InputFile))
@@ -105,7 +105,6 @@ class Replicat():
         try:
             if not "Well" in featList:
                 featList.insert(0, 'Well')
-                print(featList)
                 return self.Data[featList]
             else:
                 return self.Data[featList]
