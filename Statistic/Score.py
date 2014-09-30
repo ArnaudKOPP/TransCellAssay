@@ -2,30 +2,11 @@ __author__ = 'Arnaud KOPP'
 """
 Score defined method for compute some score on data
 """
-# #Defined method for compute score and data of plate
-# #
-# #
+
 
 import Statistic.Result
 import TCA
-
-
-def getNumberInDict(InputArray):
-    '''
-    Get Number of occurence by well
-    :param Input: is a replicat
-    :return:
-    '''
-    try:
-        print('getNumberInDict')
-        array = InputArray
-        tmp = array.groupby('Well')
-        count = tmp.Well.count()
-        dictCount = count.to_dict()
-        return dictCount
-    except Exception as e:
-        print(e)
-
+import numpy as np
 
 def getPercentPosCell(rep1, rep2=None, rep3=None):
     '''
@@ -47,7 +28,22 @@ def getMeanCount(dataDict):
     :param dataDict : Give a dict that contains data frame value from replicat
     :return: return a dict that contain mean value for well
     '''
-    print('test')
+    def getNumberInDict(InputArray):
+        '''
+        Get Number of occurence by well
+        :param Input: is a replicat
+        :return:
+        '''
+        try:
+            array = InputArray
+            tmp = array.groupby('Well')
+            count = tmp.Well.count()
+            dictCount = count.to_dict()
+            return dictCount
+        except Exception as e:
+            print(e)
+
+
     dictMeanByRep = {}
     try:
         for k, v in dataDict.items():
@@ -59,8 +55,7 @@ def getMeanCount(dataDict):
                     pass
         SDValue = getSDMeanCount(dictMeanByRep)
         MeanCount = [(i, sum(v)//len(v)) for i, v in dictMeanByRep.items()]
-        print(MeanCount)
-        return dictMeanByRep, SDValue
+        return MeanCount, SDValue
     except Exception as e:
         print(e)
 
@@ -72,8 +67,11 @@ def getSDMeanCount(dictmeanbyrep):
     :param dictmeanbyrep: Give a dict that contain number of cell by well for all replicat
     :return: retrun a dict that contain standart deviation of nb cell for well
     '''
+    dictsdbyrep = {}
     try:
-        return 0
+        for key, value in dictmeanbyrep.items():
+            dictsdbyrep[key] = np.std(value)
+        return dictsdbyrep
     except Exception as e:
         print(e)
 
@@ -253,6 +251,7 @@ def computePlateScore(Plate, feature):
         assert isinstance(Plate, TCA.Plate)
         data = Plate.getAllData()
         meanCount, sdvalue = getMeanCount(data)
+        print(meanCount, sdvalue)
         return result
     except Exception as e:
         print(e)

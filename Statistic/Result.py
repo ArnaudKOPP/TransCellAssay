@@ -57,7 +57,7 @@ class Result():
         :return:
         '''
         try:
-            # TODO maybe don't need that
+            # TODO maybe don't need that, beacause unperf
             return 0
         except Exception as e:
             print(e)
@@ -74,6 +74,20 @@ class Result():
             self.Data[Feature][self.GenePos[Gene]] = Value
         except Exception as e:
             print(e)
+
+    def addDict(self, dict, Feature):
+        '''
+        Insert Value from a dict where key = GeneName and Value are value to insert
+        :param dict:
+        :param Feature:
+        :return:
+        '''
+        try:
+            for item, value in dict.items():
+                self.Data[Feature][item] = value
+        except Exception as e:
+            print(e)
+
 
     def getCol(self, col):
         '''
@@ -101,13 +115,3 @@ class Result():
             except Exception as e:
                 print(e)
                 print('Error in saving results data')
-
-    def getGeneEffectCount(self):
-        '''
-        getGeneEffectCount on SSMD col
-        :return: don't know now
-        '''
-        try:
-            return 0
-        except Exception as e:
-            print(e)
