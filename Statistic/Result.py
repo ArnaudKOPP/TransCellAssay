@@ -19,12 +19,13 @@ class Result():
         if size is not given, init by 386 plate size
         :return: none init only dataframe
         '''
-        if size==None:
+        if size == None:
             size = 396
         self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
-                                          ('PositiveCells', float), ('Infection', float), ('Toxicity', float),
-                                          ('SSMDr', float), ('SSMDrSpatNorm', float)])
-        self.GenePos = {}  # # To save Gene position in numpy Array
+                                          ('SDCellsCunt', float), ('PositiveCells', float), ('Infection', float),
+                                          ('Toxicity', float), ('SSMDr', float), ('SSMDrSpatNorm', float)])
+        self.GenePos = {}  # # To save GeneName (key)and  Gene position (value)
+        self.GenePosI = {}  # # To save Well (key) and Gene position (value)
 
     def getData(self):
         '''
@@ -47,22 +48,12 @@ class Result():
             for k, v in GeneList.items():
                 self.Data['GeneName'][i] = v
                 self.Data['Well'][i] = k
+                self.GenePos[v] = i
+                self.GenePosI[k] = i
                 i += 1
         except Exception as e:
             print(e)
 
-
-    def addCol(self, colName):
-        '''
-        Add column to result array
-        :param col:
-        :return:
-        '''
-        try:
-            # TODO maybe don't need that, beacause unperf
-            return 0
-        except Exception as e:
-            print(e)
 
     def addValue(self, Gene, Feature, Value):
         '''
@@ -77,16 +68,22 @@ class Result():
         except Exception as e:
             print(e)
 
-    def addDict(self, dict, Feature):
+    def addDict(self, dict, Feature, by):
         '''
-        Insert Value from a dict where key = GeneName and Value are value to insert
-        :param dict:
+        Insert Value from a dict where key = GeneName/pos and Value are value to insert
+        :param dict: dict that contain value to insert with key are GeneName or Pos/Well
         :param Feature:
+        :param by: insert by GeneName or Well
         :return:
         '''
         try:
             for item, value in dict.items():
-                self.Data[Feature][item] = value
+                if by == 'GeneName':
+                    self.Data[Feature][self.GenePos[item]] = value
+                elif by == 'Pos':
+                    self.Data[Feature][self.GenePosI[item]] = value
+                else:
+                    print("Error")
         except Exception as e:
             print(e)
 

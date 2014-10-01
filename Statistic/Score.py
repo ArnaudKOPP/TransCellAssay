@@ -54,7 +54,8 @@ def getMeanCount(dataDict):
                 except KeyError:
                     pass
         SDValue = getSDMeanCount(dictMeanByRep)
-        MeanCount = [(i, sum(v)//len(v)) for i, v in dictMeanByRep.items()]
+        MeanCountList = [(i, sum(v)//len(v)) for i, v in dictMeanByRep.items()]
+        MeanCount = dict(MeanCountList) ## convert to dict
         return MeanCount, SDValue
     except Exception as e:
         print(e)
@@ -246,15 +247,15 @@ def computePlateScore(Plate, feature):
     '''
     platesetup = Plate.getPlateSetup()
     size = platesetup.getSize()
-    x = platesetup.getPSasDict()
-    print(x)
     result = Statistic.Result((size[0] * size[1]))
+    x = platesetup.getPSasDict()
     result.initGeneWell(x)
     try:
         assert isinstance(Plate, TCA.Plate)
         data = Plate.getAllData()
         meanCount, sdvalue = getMeanCount(data)
-        print(meanCount, sdvalue)
+        result.addDict(meanCount, 'CellsCount', by='Pos')
+        result.addDict(sdvalue, 'SDCellsCunt', by='Pos')
         return result
     except Exception as e:
         print(e)
