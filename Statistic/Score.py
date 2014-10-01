@@ -26,7 +26,7 @@ def getMeanCount(dataDict):
     '''
     get mean of number of cell per well accross replicat
     :param dataDict : Give a dict that contains data frame value from replicat
-    :return: return a dict that contain mean value for well
+    :return: return a dict that contain mean value for well, with well position id ofr key in dict
     '''
     def getNumberInDict(InputArray):
         '''
@@ -246,7 +246,10 @@ def computePlateScore(Plate, feature):
     '''
     platesetup = Plate.getPlateSetup()
     size = platesetup.getSize()
+    x = platesetup.getPSasDict()
+    print(x)
     result = Statistic.Result((size[0] * size[1]))
+    result.initGeneWell(x)
     try:
         assert isinstance(Plate, TCA.Plate)
         data = Plate.getAllData()

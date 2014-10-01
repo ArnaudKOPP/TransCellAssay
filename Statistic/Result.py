@@ -36,16 +36,18 @@ class Result():
         except Exception as e:
             print(e)
 
-    def addGene(self, GeneList):
+    def initGeneWell(self, GeneList):
         '''
-        Add gene into the record Array in the first column
-        :param GeneList:
+        Add gene and well into the record Array in the first/second column
+        :param GeneList: Dict with key are Well and Value are geneName
         :return:
         '''
         try:
-            for i in GeneList:
-                self.GenePos[GeneList[i]] = i
-                self.Data['GeneName'][i] = GeneList[i]
+            i = 0
+            for k, v in GeneList.items():
+                self.Data['GeneName'][i] = v
+                self.Data['Well'][i] = k
+                i += 1
         except Exception as e:
             print(e)
 

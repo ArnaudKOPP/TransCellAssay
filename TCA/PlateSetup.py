@@ -4,7 +4,7 @@ Platesetup is designed to store matrix who represent the plate setup, he is comp
 The matrix is representing by a pandas DataFrame (numpy array like)
 """
 import pandas as pd
-
+import TCA.Utils as Utils
 
 class PlateSetup():
     '''
@@ -69,8 +69,8 @@ class PlateSetup():
         :return: coord
         '''
         try:
-            mat = self.platesetup.as_matrix()  # # get dataframe into numpy matrix
-            size = mat.shape  # # get shape of matrix
+            mat = self.platesetup.as_matrix()  ## transform PS dataframe into numpy matrix
+            size = mat.shape  ## get shape of matrix
             row = size[0]
             col = size[1]
             for r in range(row):
@@ -82,14 +82,25 @@ class PlateSetup():
             print(e)
             print('Error occured at getGenePos')
 
-    def getPSasList(self):
+    def getPSasDict(self):
         '''
-        Return Platesetup as a list (dataframe)
+        Return Platesetup as a dict
         :return: dataframe
         '''
         try:
-            # TODO Make matrix as list here
-            return 0
+            mat = self.platesetup.as_matrix() ## transform PS dataframe into numpy matrix
+            size = mat.shape ## get shape of matrix
+            row = size[0]
+            col = size[1]
+            dict = {}
+            for r in range(row):
+                for c in range(col):
+                    pos = (r, c)
+                    genename = mat[r][c]
+                    if not genename == "":  ## check if empty well
+                        well = Utils.getOppositeWellFormat(pos)
+                        dict[well] = genename
+            return dict
         except Exception as e:
             print(e)
             print('Error occured at getPSasList')

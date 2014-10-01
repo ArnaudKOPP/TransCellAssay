@@ -89,6 +89,7 @@ USAGE
         tmp2 = Statistic.computePlateScore(plaque1, ['Cell'])
         print(tmp2.getData())
 
+
         #IO.parseInputDirectory(InputFileDirectory)
 
     except KeyboardInterrupt:
