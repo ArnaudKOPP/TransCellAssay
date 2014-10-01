@@ -17,7 +17,6 @@ class Screen():
         '''
         self.PlateList = {}
         self.Info = {}
-        self.IsSingleCell = True  # If Single Cell data, default is True because design for this data
         self.Threshold = None  # Threeshold for considering Cell as positive
         self.Neg = None
         self.Pos = None
@@ -30,7 +29,7 @@ class Screen():
         :return:
         '''
         try:
-            assert isinstance(plate, object)
+            assert isinstance(plate, TCA.Plate)
             self.PlateList[plate.Name] = plate
         except Exception as e:
             print(e)
@@ -46,14 +45,6 @@ class Screen():
         except Exception as e:
             print(e)
             print('Can\'t get this plate one %s' % name)
-
-    def printInfo(self):
-        '''
-        Print MetaInfo for Plate object
-        :return: print some output
-        '''
-        for keys, values in self.Info.items():
-            print(keys, values)
 
     def addInfo(self, key, value):
         '''
@@ -95,7 +86,7 @@ class Screen():
         :return:
         '''
         try:
-            return ("\n SCREEN OBJECT : \n Data Mode :\n" + repr(self.IsSingleCell) + "\n Threshold : \n" + repr(
+            return ("\n SCREEN OBJECT :\n" + "\n Threshold : \n" + repr(
                 self.Threshold) + "\n Neg Control \n" + repr(self.Neg) + "\n Pos Control \n" + repr(
                 self.Pos) + "\n Tox Control \n" + repr(self.Tox))
         except Exception as e:
@@ -107,7 +98,7 @@ class Screen():
         :return:
         '''
         try:
-            return ("\n SCREEN OBJECT : \n Data Mode :\n" + repr(self.IsSingleCell) + "\n Threshold : \n" + repr(
+            return ("\n SCREEN OBJECT :\n" + "\n Threshold : \n" + repr(
                 self.Threshold) + "\n Neg Control \n" + repr(self.Neg) + "\n Pos Control \n" + repr(
                 self.Pos) + "\n Tox Control \n" + repr(self.Tox))
         except Exception as e:

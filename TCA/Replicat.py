@@ -20,7 +20,6 @@ class Replicat():
         self.info = ""
         self.isNormalized = False
         self.isSpatialNormalized = False
-        self.IsSingleCell = True  # If Single Cell data, default is True because design for this data
         self.SpatNormData = None  # matrix that contain data corrected by median polish
 
     def setData(self, InputFile):
@@ -73,13 +72,6 @@ class Replicat():
         except Exception as e:
             print(e)
             print('Error in getting info')
-
-    def printInfo(self):
-        '''
-        print info from replicat
-        :return: nothing
-        '''
-        print(self.info)
 
     def getDataByWell(self, well):
         '''
@@ -134,9 +126,9 @@ class Replicat():
         :return:
         '''
         try:
-            return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(self.isNormalized) +
-                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n Single Cell Data : \n" +
-                    repr(self.IsSingleCell) + "\n Data containing in this replicat" + repr(
+            return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(
+                self.isNormalized) + "\n Spatial Normalized : \n" + repr(
+                self.isSpatialNormalized) + "\n Data containing in this replicat" + repr(
                 self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData))
         except Exception as e:
             print(e)
@@ -147,9 +139,9 @@ class Replicat():
         :return:
         '''
         try:
-            return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(self.isNormalized) +
-                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n Single Cell Data : \n" +
-                    repr(self.IsSingleCell) + "\n Data containing in this replicat" + repr(
+            return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(
+                self.isNormalized) + "\n Spatial Normalized : \n" + repr(
+                self.isSpatialNormalized) + "\n Data containing in this replicat" + repr(
                 self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData))
         except Exception as e:
             print(e)

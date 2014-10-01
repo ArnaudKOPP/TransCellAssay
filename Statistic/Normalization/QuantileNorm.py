@@ -3,7 +3,8 @@ __author__ = 'Arnaud KOPP'
 NormPlate defined method for normalize plate, like remove edge effect or normalize between replicat
 """
 import numpy as np
-import Statistic.MedianPolish as MedPol
+
+import Statistic.Normalization.MedianPolish as MedPol
 
 
 def normalizeEdgeEffect(array):
@@ -37,6 +38,7 @@ def normalizeEdgeEffect(array):
     except Exception as e:
         print(e)
 
+
 # TODO change this function to take in input a dict of array
 def quantile_normalization(anarray):
     """
@@ -52,6 +54,7 @@ def quantile_normalization(anarray):
         return AA
     except Exception as e:
         print(e)
+
 
 def normalizeBetweenReplicat(Plate):
     '''

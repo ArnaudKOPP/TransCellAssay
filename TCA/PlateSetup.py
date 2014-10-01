@@ -6,6 +6,7 @@ The matrix is representing by a pandas DataFrame (numpy array like)
 import pandas as pd
 import TCA.Utils as Utils
 
+
 class PlateSetup():
     '''
     classdocs
@@ -52,25 +53,14 @@ class PlateSetup():
         except Exception as e:
             print(e)
 
-    def printPlateSetup(self):
-        '''
-        Print platesetup
-        :return: print platesetup
-        '''
-        try:
-            print(self.platesetup)
-        except Exception as e:
-            print(e)
-            print('Error when printing platesetup')
-
     def getGenePos(self, gene):
         '''
         Search position of the gene and return coord
         :return: coord
         '''
         try:
-            mat = self.platesetup.as_matrix()  ## transform PS dataframe into numpy matrix
-            size = mat.shape  ## get shape of matrix
+            mat = self.platesetup.as_matrix()  # # transform PS dataframe into numpy matrix
+            size = mat.shape  # # get shape of matrix
             row = size[0]
             col = size[1]
             for r in range(row):
@@ -88,8 +78,8 @@ class PlateSetup():
         :return: dataframe
         '''
         try:
-            mat = self.platesetup.as_matrix() ## transform PS dataframe into numpy matrix
-            size = mat.shape ## get shape of matrix
+            mat = self.platesetup.as_matrix()  # # transform PS dataframe into numpy matrix
+            size = mat.shape  # # get shape of matrix
             row = size[0]
             col = size[1]
             dict = {}
@@ -97,7 +87,7 @@ class PlateSetup():
                 for c in range(col):
                     pos = (r, c)
                     genename = mat[r][c]
-                    if not genename == "":  ## check if empty well
+                    if not genename == "":  # # check if empty well
                         well = Utils.getOppositeWellFormat(pos)
                         dict[well] = genename
             return dict
@@ -122,7 +112,7 @@ class PlateSetup():
         :return:
         '''
         try:
-            return "A PlateSetup object: "+repr(self.platesetup)
+            return "A PlateSetup object: " + repr(self.platesetup)
         except Exception as e:
             print(e)
 
@@ -132,6 +122,6 @@ class PlateSetup():
         :return:
         '''
         try:
-            return "Platesetup: \n "+repr(self.platesetup)
+            return "Platesetup: \n " + repr(self.platesetup)
         except Exception as e:
             print(e)

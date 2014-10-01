@@ -23,7 +23,6 @@ class Plate():
         self.MetaInfo = {}
         self.Name = None
         self.PlateSetup = TCA.PlateSetup()
-        self.IsSingleCell = True  # If Single Cell data, default is True because design for this data
         self.Result = None
 
     def printMetaInfo(self):
@@ -34,16 +33,6 @@ class Plate():
         try:
             for keys, values in self.MetaInfo.items():
                 print(keys, values)
-        except Exception as e:
-            print(e)
-
-    def printName(self):
-        '''
-        Print Name of plate
-        :return:
-        '''
-        try:
-            print(self.Name)
         except Exception as e:
             print(e)
 
@@ -65,17 +54,6 @@ class Plate():
         '''
         try:
             return self.Name
-        except Exception as e:
-            print(e)
-
-    def printReplicat(self):
-        '''
-        Print replicat list
-        :return: print replicat list
-        '''
-        try:
-            for item in self.replicat:
-                print(item)
         except Exception as e:
             print(e)
 
@@ -243,8 +221,8 @@ class Plate():
         try:
             return (
                 "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
-                    self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Single Cell Data : \n"
-                + repr(self.IsSingleCell) + "\n Array Result :\n" + repr(self.Result) + "\n Replicat List : \n" + repr(
+                    self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Array Result :\n" + repr(
+                    self.Result) + "\n Replicat List : \n" + repr(
                     self.replicat))
         except Exception as e:
             print(e)
@@ -257,8 +235,8 @@ class Plate():
         try:
             return (
                 "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
-                    self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Single Cell Data : \n"
-                + repr(self.IsSingleCell) + "\n Array Result :\n" + repr(self.Result) + "\n Replicat List : \n" + repr(
+                    self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Array Result :\n" + repr(
+                    self.Result) + "\n Replicat List : \n" + repr(
                     self.replicat))
         except Exception as e:
             print(e)

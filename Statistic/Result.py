@@ -14,7 +14,7 @@ class Result():
     Class for representing record array for result
     '''
 
-    def __init__(self, size=None, isSingleCell=True):
+    def __init__(self, size=None):
         '''
         Constructor
         if size is not given, init by 386 plate size
@@ -22,13 +22,9 @@ class Result():
         '''
         if size == None:
             size = 396
-        if isSingleCell:
-            self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
-                                              ('SDCellsCunt', float), ('PositiveCells', float), ('Infection', float),
-                                              ('Toxicity', float), ('SSMDr', float), ('SSMDrSpatNorm', float)])
-        else:
-            self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('SSMDr', float),
-                                              ('SSMDrSpatNorm', float)])
+        self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
+                                          ('SDCellsCunt', float), ('PositiveCells', float), ('Infection', float),
+                                          ('Toxicity', float), ('SSMDr', float), ('SSMDrSpatNorm', float)])
 
         self.GenePos = {}  # # To save GeneName (key)and  Gene position (value)
         self.GenePosI = {}  # # To save Well (key) and Gene position (value)
@@ -136,7 +132,7 @@ class Result():
         :return:
         '''
         try:
-            return "A Result object: "+repr(self.Data)
+            return "A Result object: " + repr(self.Data)
         except Exception as e:
             print(e)
 
@@ -146,6 +142,6 @@ class Result():
         :return:
         '''
         try:
-            return "A Result Array: \n "+repr(self.Data)
+            return "A Result Array: \n " + repr(self.Data)
         except Exception as e:
             print(e)
