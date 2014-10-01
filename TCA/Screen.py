@@ -18,7 +18,7 @@ class Screen():
         self.PlateList = {}
         self.Info = {}
         self.IsSingleCell = True  # If Single Cell data, default is True because design for this data
-        self.Threeshold = None # Threeshold for considering Cell as positive
+        self.Threshold = None  # Threeshold for considering Cell as positive
         self.Neg = None
         self.Pos = None
         self.Tox = None
@@ -88,3 +88,28 @@ class Screen():
             return self.PlateList[key]
         except Exception as e:
             print(e)
+
+    def __repr__(self):
+        '''
+        Definition for the representation
+        :return:
+        '''
+        try:
+            return ("\n SCREEN OBJECT : \n Data Mode :\n" + repr(self.IsSingleCell) + "\n Threshold : \n" + repr(
+                self.Threshold) + "\n Neg Control \n" + repr(self.Neg) + "\n Pos Control \n" + repr(
+                self.Pos) + "\n Tox Control \n" + repr(self.Tox))
+        except Exception as e:
+            print(e)
+
+    def __str__(self):
+        '''
+        Definition for the print
+        :return:
+        '''
+        try:
+            return ("\n SCREEN OBJECT : \n Data Mode :\n" + repr(self.IsSingleCell) + "\n Threshold : \n" + repr(
+                self.Threshold) + "\n Neg Control \n" + repr(self.Neg) + "\n Pos Control \n" + repr(
+                self.Pos) + "\n Tox Control \n" + repr(self.Tox))
+        except Exception as e:
+            print(e)
+
