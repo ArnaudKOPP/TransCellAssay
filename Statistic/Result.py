@@ -3,6 +3,7 @@ __author__ = 'Arnaud KOPP'
 Result is created for store result in a tabe-like (numpy array), feature are column and GeneName/Well are stored at the
 first col, each row represent a gene/well
 We can save the tabe in csv by using pandas Dataframe.
+This class is only compatible with single cell data, need to be more "elastic" with 1Data/Well
 """
 import numpy as np
 import pandas as pd
@@ -13,7 +14,7 @@ class Result():
     Class for representing record array for result
     '''
 
-    def __init__(self, size=None):
+    def __init__(self, size=None, isSingleCell=True):
         '''
         Constructor
         if size is not given, init by 386 plate size
@@ -21,9 +22,14 @@ class Result():
         '''
         if size == None:
             size = 396
-        self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
-                                          ('SDCellsCunt', float), ('PositiveCells', float), ('Infection', float),
-                                          ('Toxicity', float), ('SSMDr', float), ('SSMDrSpatNorm', float)])
+        if isSingleCell:
+            self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
+                                              ('SDCellsCunt', float), ('PositiveCells', float), ('Infection', float),
+                                              ('Toxicity', float), ('SSMDr', float), ('SSMDrSpatNorm', float)])
+        else:
+            self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('SSMDr', float),
+                                              ('SSMDrSpatNorm', float)])
+
         self.GenePos = {}  # # To save GeneName (key)and  Gene position (value)
         self.GenePosI = {}  # # To save Well (key) and Gene position (value)
 
@@ -53,7 +59,6 @@ class Result():
                 i += 1
         except Exception as e:
             print(e)
-
 
     def addValue(self, Gene, Feature, Value):
         '''
@@ -87,7 +92,6 @@ class Result():
         except Exception as e:
             print(e)
 
-
     def getCol(self, col):
         '''
         Get col/feature from result array
@@ -114,3 +118,34 @@ class Result():
             except Exception as e:
                 print(e)
                 print('Error in saving results data')
+
+    def __add__(self, other):
+        '''
+        add result object to other one MERGING Function
+        :param other: other Résult object
+        :return:
+        '''
+        try:
+            print('Not yet implemented')
+        except Exception as e:
+            print(e)
+
+    def __repr__(self):
+        '''
+        Definition for the representation
+        :return:
+        '''
+        try:
+            return "A Result object: "+repr(self.Data)
+        except Exception as e:
+            print(e)
+
+    def __str__(self):
+        '''
+        Definition for the print
+        :return:
+        '''
+        try:
+            return "A Result Array: \n "+repr(self.Data)
+        except Exception as e:
+            print(e)

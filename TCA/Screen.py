@@ -17,6 +17,8 @@ class Screen():
         '''
         self.PlateList = {}
         self.Info = {}
+        self.IsSingleCell = True  # If Single Cell data, default is True because design for this data
+        self.Threeshold = None # Threeshold for considering Cell as positive
         self.Neg = None
         self.Pos = None
         self.Tox = None
@@ -33,7 +35,6 @@ class Screen():
         except Exception as e:
             print(e)
             print('Can\'t insert this plate in screen instance' % plate)
-
 
     def getPlate(self, name):
         '''
@@ -66,7 +67,6 @@ class Screen():
         except Exception as e:
             print(e)
 
-
     def getInfo(self):
         '''
         Get info
@@ -77,3 +77,14 @@ class Screen():
         except Exception as e:
             print(e)
             print('Error in getting info')
+
+    def __getitem__(self, key):
+        '''
+        get plate object
+        :param key:
+        :return:
+        '''
+        try:
+            return self.PlateList[key]
+        except Exception as e:
+            print(e)

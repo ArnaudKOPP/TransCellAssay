@@ -63,6 +63,9 @@ USAGE
         InputFileDirectory = InArgs.input
 
         # test
+        print("")
+        print("INPUT READING DATA")
+        print("")
         screen_test = TCA.Screen()
         plaque1 = TCA.Plate()
         platesetup = TCA.PlateSetup()
@@ -83,11 +86,13 @@ USAGE
         # print('Screen stat :')
         # plaque1.printReplicat()
         # print("Number of replicat : ", plaque1.getNumberReplicat())
-
         screen_test.addPlate(plaque1)
 
+        print("")
+        print("BEGIN COMPUTATION TEST")
+        print("")
         tmp2 = Statistic.computePlateScore(plaque1, ['Cell'])
-        print(tmp2.getData())
+        print(tmp2)
 
 
         #IO.parseInputDirectory(InputFileDirectory)

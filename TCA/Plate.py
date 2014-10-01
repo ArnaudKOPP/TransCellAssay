@@ -104,7 +104,6 @@ class Plate():
         except Exception as e:
             print(e)
 
-
     def getAllReplicat(self):
         '''
         Get all replicat
@@ -114,7 +113,6 @@ class Plate():
             return self.replicat
         except Exception as e:
             print(e)
-
 
     def getNumberReplicat(self):
         '''
@@ -138,7 +136,6 @@ class Plate():
             self.MetaInfo.pop(key, value)
         except Exception as e:
             print(e)
-
 
     def getInfo(self):
         '''
@@ -167,7 +164,6 @@ class Plate():
             print(e)
             print('Error in getAllDataFromReplicat')
 
-
     def getAllData(self):
         '''
         return a dict which data of all dataframe without feature specified
@@ -194,7 +190,6 @@ class Plate():
             self.PlateSetup = platesetup
         except Exception as e:
             print(e)
-
 
     def getPlateSetup(self):
         '''
@@ -225,5 +220,45 @@ class Plate():
         '''
         try:
             return self.Result
+        except Exception as e:
+            print(e)
+
+    def __getitem__(self, key):
+        '''
+        Return replicat object
+        :param key:
+        :return: return replicat
+        '''
+        try:
+            return self.replicat[key]
+        except Exception as e:
+            print(e)
+
+
+    def __repr__(self):
+        '''
+        Definition for the representation
+        :return:
+        '''
+        try:
+            return (
+                "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
+                    self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Single Cell Data : \n"
+                + repr(self.IsSingleCell) + "\n Array Result :\n" + repr(self.Result) + "\n Replicat List : \n" + repr(
+                    self.replicat))
+        except Exception as e:
+            print(e)
+
+    def __str__(self):
+        '''
+        Definition for the print
+        :return:
+        '''
+        try:
+            return (
+                "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
+                    self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Single Cell Data : \n"
+                + repr(self.IsSingleCell) + "\n Array Result :\n" + repr(self.Result) + "\n Replicat List : \n" + repr(
+                    self.replicat))
         except Exception as e:
             print(e)

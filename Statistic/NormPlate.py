@@ -37,8 +37,7 @@ def normalizeEdgeEffect(array):
     except Exception as e:
         print(e)
 
-
-
+# TODO change this function to take in input a dict of array
 def quantile_normalization(anarray):
     """
     anarray with samples in the columns and probes across the rows
@@ -53,8 +52,6 @@ def quantile_normalization(anarray):
         return AA
     except Exception as e:
         print(e)
-
-
 
 def normalizeBetweenReplicat(Plate):
     '''

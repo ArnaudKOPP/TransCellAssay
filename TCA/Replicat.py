@@ -20,7 +20,8 @@ class Replicat():
         self.info = ""
         self.isNormalized = False
         self.isSpatialNormalized = False
-        self.SpatNormData = None
+        self.IsSingleCell = True  # If Single Cell data, default is True because design for this data
+        self.SpatNormData = None  # matrix that contain data corrected by median polish
 
     def setData(self, InputFile):
         '''
@@ -49,7 +50,6 @@ class Replicat():
         except Exception as e:
             print(e)
             print('Error in exporting data')
-
 
     def setInfo(self, info):
         '''
@@ -81,7 +81,6 @@ class Replicat():
         '''
         print(self.info)
 
-
     def getDataByWell(self, well):
         '''
         Get all data for well
@@ -93,7 +92,6 @@ class Replicat():
         except Exception as e:
             print(e)
             print('Error in exporting data by well')
-
 
     def getDataByFeatures(self, featList):
         '''
@@ -119,7 +117,7 @@ class Replicat():
         :return:
         '''
         try:
-            if method=="mean":
+            if method == "mean":
                 tmp = self.Data.groupby('Well')
                 mean = tmp.mean()
                 value = mean[feature]['']
@@ -127,5 +125,31 @@ class Replicat():
                 tmp = self.Data.groupby('Well')
                 median = tmp.median()
                 return 0
+        except Exception as e:
+            print(e)
+
+    def __repr__(self):
+        '''
+        Definition for the representation
+        :return:
+        '''
+        try:
+            return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(self.isNormalized) +
+                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n Single Cell Data : \n" +
+                    repr(self.IsSingleCell) + "\n Data containing in this replicat" + repr(
+                self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData))
+        except Exception as e:
+            print(e)
+
+    def __str__(self):
+        '''
+        Definition for the print
+        :return:
+        '''
+        try:
+            return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(self.isNormalized) +
+                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n Single Cell Data : \n" +
+                    repr(self.IsSingleCell) + "\n Data containing in this replicat" + repr(
+                self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData))
         except Exception as e:
             print(e)

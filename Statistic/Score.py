@@ -3,17 +3,14 @@ __author__ = 'Arnaud KOPP'
 Score defined method for compute some score on data
 """
 
-
 import Statistic.Result
 import TCA
 import numpy as np
 
-def getPercentPosCell(rep1, rep2=None, rep3=None):
+
+def getPercentPosCell():
     '''
     get % of Cell over threshold
-    :param rep1:
-    :param rep2:
-    :param rep3:
     :return:
     '''
     try:
@@ -21,13 +18,13 @@ def getPercentPosCell(rep1, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
 def getMeanCount(dataDict):
     '''
     get mean of number of cell per well accross replicat
     :param dataDict : Give a dict that contains data frame value from replicat
     :return: return a dict that contain mean value for well, with well position id ofr key in dict
     '''
+
     def getNumberInDict(InputArray):
         '''
         Get Number of occurence by well
@@ -35,8 +32,7 @@ def getMeanCount(dataDict):
         :return:
         '''
         try:
-            array = InputArray
-            tmp = array.groupby('Well')
+            tmp = InputArray.groupby('Well')
             count = tmp.Well.count()
             dictCount = count.to_dict()
             return dictCount
@@ -54,12 +50,11 @@ def getMeanCount(dataDict):
                 except KeyError:
                     pass
         SDValue = getSDMeanCount(dictMeanByRep)
-        MeanCountList = [(i, sum(v)//len(v)) for i, v in dictMeanByRep.items()]
-        MeanCount = dict(MeanCountList) ## convert to dict
+        MeanCountList = [(i, sum(v) // len(v)) for i, v in dictMeanByRep.items()]
+        MeanCount = dict(MeanCountList)  # # convert to dict
         return MeanCount, SDValue
     except Exception as e:
         print(e)
-
 
 def getSDMeanCount(dictmeanbyrep):
     '''
@@ -76,13 +71,9 @@ def getSDMeanCount(dictmeanbyrep):
     except Exception as e:
         print(e)
 
-
-def getToxicity(rep1, rep2=None, rep3=None):
+def getToxicity():
     '''
     determine a toxicity index
-    :param rep1:
-    :param rep2:
-    :param rep3:
     :return:
     '''
     try:
@@ -90,13 +81,9 @@ def getToxicity(rep1, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def getInfection(rep1, rep2=None, rep3=None):
+def getInfection():
     '''
     determine a infection index
-    :param rep1:
-    :param rep2:
-    :param rep3:
     :return:
     '''
     try:
@@ -104,13 +91,9 @@ def getInfection(rep1, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def getViability(rep1, rep2=None, rep3=None):
+def getViability():
     '''
     get Viability
-    :param rep1:
-    :param rep2:
-    :param rep3:
     :return:
     '''
     try:
@@ -118,14 +101,9 @@ def getViability(rep1, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def getMean(feat, rep1, rep2=None, rep3=None):
+def getMean():
     '''
     get Mean of interested value
-    :param rep1:
-    :param rep2:
-    :param rep3:
-    :param feat:
     :return:
     '''
     try:
@@ -133,14 +111,9 @@ def getMean(feat, rep1, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def getMedian(feat, rep1, rep2=None, rep3=None):
+def getMedian():
     '''
     get median of interested value
-    :param rep1:
-    :param rep2:
-    :param rep3:
-    :param feat:
     :return:
     '''
     try:
@@ -148,14 +121,9 @@ def getMedian(feat, rep1, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def getMad(feat, rep1, rep2=None, rep3=None):
+def getMad():
     '''
     get MAD of interested value
-    :param rep1:
-    :param rep2:
-    :param rep3:
-    :param feat:
     :return:
     '''
     try:
@@ -163,14 +131,9 @@ def getMad(feat, rep1, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def getSSMD(feat, rep1, rep2=None, rep3=None):
+def getSSMD():
     '''
     performed SSMD
-    :param rep1:
-    :param rep2:
-    :param rep3:
-    :param feat:
     :return:
     '''
     try:
@@ -178,14 +141,9 @@ def getSSMD(feat, rep1, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def getSSMDr(feat, rep1, rep2=None, rep3=None):
+def getSSMDr():
     '''
     perfored SSMDr
-    :param rep1:
-    :param rep2:
-    :param rep3:
-    :param feat:
     :return:
     '''
     try:
@@ -193,14 +151,9 @@ def getSSMDr(feat, rep1, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def getPairedSSMD(feat, rep1=None, rep2=None, rep3=None):
+def getPairedSSMD():
     '''
     performed paired ssmd
-    :param feat:
-    :param rep1:
-    :param rep2:
-    :param rep3:
     :return:
     '''
     try:
@@ -208,14 +161,9 @@ def getPairedSSMD(feat, rep1=None, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def getPairedSSMDr(feat, rep1=None, rep2=None, rep3=None):
+def getPairedSSMDr():
     '''
     performed paired SSMDr
-    :param feat:
-    :param rep1:
-    :param rep2:
-    :param rep3:
     :return:
     '''
     try:
@@ -223,21 +171,15 @@ def getPairedSSMDr(feat, rep1=None, rep2=None, rep3=None):
     except Exception as e:
         print(e)
 
-
-def PairedTStat(feat, rep1=None, rep2=None, rep3=None):
+def PairedTStat():
     '''
     performed paired t statistic
-    :param feat:
-    :param rep1:
-    :param rep2:
-    :param rep3:
     :return:
     '''
     try:
         return 0
     except Exception as e:
         print(e)
-
 
 def computePlateScore(Plate, feature):
     '''
@@ -245,17 +187,24 @@ def computePlateScore(Plate, feature):
     :param Plate: Plate object
     :return: return a result object
     '''
-    platesetup = Plate.getPlateSetup()
-    size = platesetup.getSize()
-    result = Statistic.Result((size[0] * size[1]))
-    x = platesetup.getPSasDict()
-    result.initGeneWell(x)
-    try:
-        assert isinstance(Plate, TCA.Plate)
-        data = Plate.getAllData()
-        meanCount, sdvalue = getMeanCount(data)
-        result.addDict(meanCount, 'CellsCount', by='Pos')
-        result.addDict(sdvalue, 'SDCellsCunt', by='Pos')
-        return result
-    except Exception as e:
-        print(e)
+    if isinstance(Plate, TCA.Plate):
+        if Plate.IsSingleCell:
+            platesetup = Plate.getPlateSetup()
+            size = platesetup.getSize()
+            result = Statistic.Result(size=(size[0] * size[1]))
+            x = platesetup.getPSasDict()
+            result.initGeneWell(x)
+            try:
+
+                data = Plate.getAllData()
+                meanCount, sdvalue = getMeanCount(data)
+                result.addDict(meanCount, 'CellsCount', by='Pos')
+                result.addDict(sdvalue, 'SDCellsCunt', by='Pos')
+                return result
+            except Exception as e:
+                print(e)
+        else:
+            print("1Data/Well not yet implemented")
+            return 0
+    else:
+        print("Not TCA.Plate Class object")

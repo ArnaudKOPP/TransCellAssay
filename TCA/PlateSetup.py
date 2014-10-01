@@ -115,3 +115,23 @@ class PlateSetup():
         except Exception as e:
             print(e)
             print('Error in getting matrix of platesetup')
+
+    def __repr__(self):
+        '''
+        Definition for the representation
+        :return:
+        '''
+        try:
+            return "A PlateSetup object: "+repr(self.platesetup)
+        except Exception as e:
+            print(e)
+
+    def __str__(self):
+        '''
+        Definition for the print
+        :return:
+        '''
+        try:
+            return "Platesetup: \n "+repr(self.platesetup)
+        except Exception as e:
+            print(e)
