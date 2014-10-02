@@ -11,6 +11,15 @@ def getMean():
     except Exception as e:
         print(e)
 
+def getSD():
+    '''
+    get Standart deviation of interested value
+    :return:
+    '''
+    try:
+        return 0
+    except Exception as e:
+        print(e)
 
 def getMedian():
     '''
