@@ -12,7 +12,8 @@ from argparse import RawDescriptionHelpFormatter
 from platform import python_version
 import TCA
 import Statistic
-import IO
+import numpy as np
+import Statistic.Normalization
 
 __version__ = 0.01
 
@@ -69,30 +70,57 @@ USAGE
         screen_test = TCA.Screen()
         plaque1 = TCA.Plate()
         platesetup = TCA.PlateSetup()
-        platesetup.setPlateSetup("/home/akopp/Bureau/antagomir/Pl1PP.csv")
+        platesetup.setPlateSetup("/home/akopp/Bureau/test/Pl1PP.csv")
         plaque1.addPlateSetup(platesetup)
         rep1 = TCA.Replicat()
         rep1.setInfo("rep1")
-        rep1.setData("/home/akopp/Bureau/antagomir/Pl1rep_1.csv")
+        rep1.setData("/home/akopp/Bureau/test/Pl1rep_1.csv")
         rep2 = TCA.Replicat()
         rep2.setInfo("rep2")
-        rep2.setData("/home/akopp/Bureau/antagomir/Pl1rep_2.csv")
+        rep2.setData("/home/akopp/Bureau/test/Pl1rep_2.csv")
         rep3 = TCA.Replicat()
         rep3.setInfo("rep3")
-        rep3.setData("/home/akopp/Bureau/antagomir/Pl1rep_3.csv")
+        rep3.setData("/home/akopp/Bureau/test/Pl1rep_3.csv")
         plaque1.addReplicat(rep1)
         plaque1.addReplicat(rep2)
         plaque1.addReplicat(rep3)
+
         # print('Screen stat :')
         # plaque1.printReplicat()
         # print("Number of replicat : ", plaque1.getNumberReplicat())
+
         screen_test.addPlate(plaque1)
 
         print("")
         print("BEGIN COMPUTATION TEST")
         print("")
-        tmp2 = Statistic.computePlateScore(plaque1, ['Cell'])
+        tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Cell'])
         print(tmp2)
+
+
+
+        array = np.genfromtxt("/home/akopp/Bureau/testmedpol.csv", delimiter=",")
+        medpol = Statistic.Normalization.MedianPolish(array)
+
+        ge, ce, re, resid, tbl_org = medpol.median_polish(100)
+        print("median polish:")
+        print("grand effect = ", ge)
+        print("column effects = ", ce)
+        print("row effects = ", re)
+        print("-----Table of Residuals-------")
+        print(resid)
+        print("-----Original Table-------")
+        print(tbl_org)
+
+        ge, ce, re, resid, tbl_org = medpol.median_polish(100, "average")
+        print("average polish:")
+        print("grand effect = ", ge)
+        print("column effects = ", ce)
+        print("row effects = ", re)
+        print("-----Table of Residuals-------")
+        print(resid)
+        print("-----Original Table-------")
+        print(tbl_org)
 
 
         #IO.parseInputDirectory(InputFileDirectory)

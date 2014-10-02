@@ -3,7 +3,7 @@ __author__ = 'Arnaud KOPP'
 Replicat implement the notion of technical replicat for one plate
 """
 import pandas as pd
-
+import Statistic.Normalization
 
 class Replicat():
     '''
@@ -113,10 +113,42 @@ class Replicat():
                 tmp = self.Data.groupby('Well')
                 mean = tmp.mean()
                 value = mean[feature]['']
+                return 0
             else:
                 tmp = self.Data.groupby('Well')
                 median = tmp.median()
                 return 0
+        except Exception as e:
+            print(e)
+
+    def normalizeEdgeEffect(array):
+        '''
+        Apply a median polish for remove edge effect
+        return residual matrix
+        :param: array: a numpy array in matrix size
+        :return: residual matrix
+        '''
+        try:
+            mp = Statistic.Normalization.MedianPolish()
+            ge, ce, re, resid, tbl_org = mp.median_polish(100)
+            print("median polish:")
+            print("grand effect = ", ge)
+            print("column effects = ", ce)
+            print("row effects = ", re)
+            print("-----Table of Residuals-------")
+            print(resid)
+            print("-----Original Table-------")
+            print(tbl_org)
+
+            ge, ce, re, resid, tbl_org = mp.median_polish(100, "average")
+            print("average polish:")
+            print("grand effect = ", ge)
+            print("column effects = ", ce)
+            print("row effects = ", re)
+            print("-----Table of Residuals-------")
+            print(resid)
+            print("-----Original Table-------")
+            print(tbl_org)
         except Exception as e:
             print(e)
 

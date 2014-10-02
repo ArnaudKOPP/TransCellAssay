@@ -56,17 +56,19 @@ class PlateSetup():
     def getGenePos(self, gene):
         '''
         Search position of the gene and return coord
-        :return: coord
+        :return: list of coord
         '''
         try:
             mat = self.platesetup.as_matrix()  # # transform PS dataframe into numpy matrix
             size = mat.shape  # # get shape of matrix
             row = size[0]
             col = size[1]
+            CoordList = list()
             for r in range(row):
                 for c in range(col):
                     if gene == mat[r][c]:
-                        return row, col
+                        CoordList.append((row, col))
+            return CoordList
             print('Gene not found')
         except Exception as e:
             print(e)

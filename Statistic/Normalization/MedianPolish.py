@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+Define method for median polish, this algo is used for removing edge effect
+"""
 import numpy as np
 
 
@@ -16,15 +18,6 @@ class MedianPolish:
             self.tbl = self.tbl_org.copy()
         else:
             raise TypeError('Expected the argument to be a numpy.ndarray.')
-
-    @staticmethod
-    def csv_to_ndarray(fname):
-        """ Utility method for loading ndarray from .csv file"""
-        try:
-            return np.genfromtxt(fname, delimiter=",")
-        except Exception as e:
-            print("Error loading file %s:" % fname)
-            raise
 
     def median_polish(self, max_iterations=10, method='median'):
         """

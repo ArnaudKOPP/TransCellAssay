@@ -5,7 +5,7 @@ Plate is designed for manipulating one or more replicat
 import TCA.PlateSetup
 import TCA.Replicat
 import Statistic.Result
-import pandas as pd
+import Statistic.Normalization
 
 
 class Plate():
@@ -198,6 +198,19 @@ class Plate():
         '''
         try:
             return self.Result
+        except Exception as e:
+            print(e)
+
+    def normalizeBetweenReplicat(self):
+        '''
+        Apply a norm between replicat
+        :return:
+        '''
+        try:
+            if (self.getNBreplicat()) < 2:
+                print('Can\'t apply this normalization because under two replicats, need at least two replicats ')
+            else:
+                print('Normalization not yet implemented')
         except Exception as e:
             print(e)
 

@@ -5,3 +5,4 @@ from Statistic.Score.PosCells import *
 from Statistic.Score.SSMD import *
 from Statistic.Score.tTest import *
 from Statistic.Score.Variability import *
+from Statistic.Score.CellCount import *
