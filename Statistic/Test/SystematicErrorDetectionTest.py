@@ -11,6 +11,8 @@ def SystematicErrorDetectionTest(Plate):
     try:
         if isinstance(Plate, TCA.Plate):
             return 0
+        # col of numpy array : array[:,x]
+        # row of numpy array : array[x,:]
         else:
             raise TypeError
     except Exception as e:

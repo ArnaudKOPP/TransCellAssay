@@ -1,7 +1,7 @@
 __author__ = 'Arnaud KOPP'
 
 from Statistic.Normalization.MedianPolish import *
-from Statistic.Normalization.QuantileNorm import *
+from Statistic.Normalization.PlateNorm import *
 from Statistic.Normalization.locfit import *
 from Statistic.Normalization.loess import *
 from Statistic.Normalization.loess2 import *

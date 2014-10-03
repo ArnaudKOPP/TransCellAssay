@@ -3,7 +3,7 @@ __author__ = 'Arnaud KOPP'
 Score defined method for compute some score on data
 """
 
-import Statistic.Result
+import Statistic.ResultArray
 import Statistic.Score as score
 import TCA
 

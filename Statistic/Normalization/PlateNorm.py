@@ -1,12 +1,15 @@
 __author__ = 'Arnaud KOPP'
 """
-QuantileNorm define method for normalizing a plate, replicat are quantile norm for giving them same distribution style
+PlateNorm define method for normalizing a plate, replicat are quantile norm for giving them same distribution style
+zscore Transformation and not log transformation by default
 """
 import TCA
 import numpy as np
 
-# TODO change this function to take in input a dict of array
-def PlateQuantNorm(plate, log=True):
+ndtri = None
+
+
+def PlateNorm(plate, zscore=True, log=False):
     """
     anarray with samples in the columns and probes across the rows
     :param anarray:
@@ -15,6 +18,7 @@ def PlateQuantNorm(plate, log=True):
     if isinstance(plate, TCA.Plate):
         if plate.getNumberReplicat() >= 2:
             return 0
+            # data['Nuc Intensity'][data['Well'] == 'A1']
         else:
             print('Non needs, only one replicat')
             return 0
@@ -22,8 +26,16 @@ def PlateQuantNorm(plate, log=True):
         print('Take a Plate Object')
         raise TypeError
 
+def zscoreTransformation(array):
+    """
+    Z score Transformation
+    :param array: input of Well
+    :return: return array
+    """
+    return (array - array.mean())/array.std(ddof=0)
 
-def quantile_normalization(anarray, log=True):
+
+def quantile_normalization(anarray, log=False):
     """
     anarray with samples in the columns and probes across the rows
     :param anarray:
@@ -37,3 +49,5 @@ def quantile_normalization(anarray, log=True):
         return AA
     except Exception as e:
         print(e)
+
+

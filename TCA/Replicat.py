@@ -5,7 +5,7 @@ Replicat implement the notion of technical replicat for one plate
 import pandas as pd
 import numpy as np
 import Statistic.Normalization
-import TCA
+import Utils
 
 
 class Replicat():
@@ -124,7 +124,7 @@ class Replicat():
                 else:
                     self.DataMatrixMean = np.zeros((16, 24))
                 for key, elem in dict_mean.items():
-                    pos = TCA.Utils.getOppositeWellFormat(key)
+                    pos = Utils.Utils.getOppositeWellFormat(key)
                     self.DataMatrixMean[pos[0]][pos[1]] = elem
             else:
                 tmp = self.Data.groupby('Well')
@@ -136,7 +136,7 @@ class Replicat():
                 else:
                     self.DataMatrixMedian = np.zeros((16, 24))
                 for key, elem in dict_mean.items():
-                    pos = TCA.Utils.getOppositeWellFormat(key)
+                    pos = Utils.Utils.getOppositeWellFormat(key)
                     self.DataMatrixMedian[pos[0]][pos[1]] = elem
         except Exception as e:
             print(e)

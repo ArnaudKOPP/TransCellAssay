@@ -4,7 +4,7 @@ Platesetup is designed to store matrix who represent the plate setup, compatible
 The matrix is representing by a pandas DataFrame (numpy array like)
 """
 import pandas as pd
-import TCA.Utils as Utils
+import Utils.Utils as Utils
 
 
 class PlateSetup():

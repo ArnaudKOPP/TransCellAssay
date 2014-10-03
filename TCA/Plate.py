@@ -4,8 +4,8 @@ Plate is designed for manipulating one or more replicat
 """
 import TCA.PlateSetup
 import TCA.Replicat
-import Statistic.Result
-import Statistic.Normalization
+import Statistic.ResultArray
+import Statistic.Normalization.PlateNorm
 
 
 class Plate():
@@ -23,6 +23,7 @@ class Plate():
         self.MetaInfo = {}
         self.Name = None
         self.PlateSetup = TCA.PlateSetup()
+        self.NormBetweenRep = False
         self.ControlPos = (1, 12) # column where control is positionned in plate (default pos)
         self.Result = None
 
@@ -202,9 +203,10 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def normalizeBetweenReplicat(self):
+    def normalizeReplicat(self, zscore=True, log=False):
         '''
         Apply a norm between replicat
+        Z score Transformation by default
         :return:
         '''
         try:
@@ -212,6 +214,8 @@ class Plate():
                 print('Can\'t apply this normalization because under two replicats, need at least two replicats ')
             else:
                 print('Normalization not yet implemented')
+                self.NormBetweenRep = True
+
         except Exception as e:
             print(e)
 
