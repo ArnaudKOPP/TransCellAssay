@@ -1,6 +1,8 @@
 #TransCellAssay PROJECT
 
-This Python packages is for analyzis of Transfected Cell Assay in Higth Throughput Screening environment.
+This Python packages is for analyzis of Transfected Cell Assay in Higth Throughput Screening environment.  
+He use different technique for removing systematic error like edge effect on plate.
+
 
 ##HOWTO
 Need to be make
@@ -11,6 +13,5 @@ Need to be make
 3. Scipy stack (numpy, matplotlib, ...)
 
 ##CONTACT
-kopp@igbmc.fr
-
+kopp@igbmc.fr  
 kopp.arnaud@gmail.com

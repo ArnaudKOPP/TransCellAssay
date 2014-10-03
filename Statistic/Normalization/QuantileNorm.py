@@ -1,11 +1,29 @@
 __author__ = 'Arnaud KOPP'
 """
-NormPlate defined method for normalize plate, like remove edge effect or normalize between replicat
+QuantileNorm define method for normalizing a plate, replicat are quantile norm for giving them same distribution style
 """
+import TCA
 import numpy as np
 
 # TODO change this function to take in input a dict of array
-def quantile_normalization(anarray, log=False):
+def PlateQuantNorm(plate, log=True):
+    """
+    anarray with samples in the columns and probes across the rows
+    :param anarray:
+    :return: return array
+    """
+    if isinstance(plate, TCA.Plate):
+        if plate.getNumberReplicat() >= 2:
+            return 0
+        else:
+            print('Non needs, only one replicat')
+            return 0
+    else:
+        print('Take a Plate Object')
+        raise TypeError
+
+
+def quantile_normalization(anarray, log=True):
     """
     anarray with samples in the columns and probes across the rows
     :param anarray:

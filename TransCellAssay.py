@@ -94,36 +94,14 @@ USAGE
         print("")
         print("BEGIN COMPUTATION TEST")
         print("")
-        tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Cell'])
+        tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'])
         print(tmp2)
 
+        rep1.getDataMatrixForm('Nuc Intensity')
+        rep1.getDataMatrixForm('Nuc Intensity', method='median')
+        print(rep1)
 
-
-        array = np.genfromtxt("/home/akopp/Bureau/testmedpol.csv", delimiter=",")
-        medpol = Statistic.Normalization.MedianPolish(array)
-
-        ge, ce, re, resid, tbl_org = medpol.median_polish(100)
-        print("median polish:")
-        print("grand effect = ", ge)
-        print("column effects = ", ce)
-        print("row effects = ", re)
-        print("-----Table of Residuals-------")
-        print(resid)
-        print("-----Original Table-------")
-        print(tbl_org)
-
-        ge, ce, re, resid, tbl_org = medpol.median_polish(100, "average")
-        print("average polish:")
-        print("grand effect = ", ge)
-        print("column effects = ", ce)
-        print("row effects = ", re)
-        print("-----Table of Residuals-------")
-        print(resid)
-        print("-----Original Table-------")
-        print(tbl_org)
-
-
-        #IO.parseInputDirectory(InputFileDirectory)
+        # IO.parseInputDirectory(InputFileDirectory)
 
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###

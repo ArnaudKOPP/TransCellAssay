@@ -1,6 +1,6 @@
 __author__ = 'Arnaud KOPP'
 """
-Platesetup is designed to store matrix who represent the plate setup, he is compatible with 96, 384, ... Well
+Platesetup is designed to store matrix who represent the plate setup, compatible with 96, 384 Well (1526 is tricky)
 The matrix is representing by a pandas DataFrame (numpy array like)
 """
 import pandas as pd

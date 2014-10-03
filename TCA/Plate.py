@@ -23,6 +23,7 @@ class Plate():
         self.MetaInfo = {}
         self.Name = None
         self.PlateSetup = TCA.PlateSetup()
+        self.ControlPos = (1, 12) # column where control is positionned in plate (default pos)
         self.Result = None
 
     def printMetaInfo(self):

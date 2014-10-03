@@ -20,7 +20,7 @@ def getOppositeWellFormat(Input):
             newForm = "{0}{1}".format(str(numbEq[Input[0]]), Input[1] + 1)
             return newForm
         elif isinstance(Input, str):
-            newForm = letterEq[Input[0]], int(Input[1]) - 1
+            newForm = letterEq[Input[0]], int(Input[1:]) - 1
             return newForm
         else:
             raise ValueError
