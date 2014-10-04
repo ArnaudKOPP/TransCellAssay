@@ -17,11 +17,11 @@ class Result():
     def __init__(self, size=None):
         '''
         Constructor
-        if size is not given, init by 386 plate size
+        if size is not given, init by 386 plate size, defined size if 96 or 1526 plate well
         :return: none init only dataframe
         '''
         if size == None:
-            size = 396
+            size = 384
         self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
                                           ('SDCellsCunt', float), ('PositiveCells', float), ('Infection', float),
                                           ('Toxicity', float), ('SSMDr', float), ('SSMDrSpatNorm', float)])
@@ -50,7 +50,7 @@ class Result():
             for k, v in GeneList.items():
                 self.Data['GeneName'][i] = v
                 self.Data['Well'][i] = k
-                self.GenePos[v] = i
+                self.GenePos.setdefault(v, []).append(i)  # # make this form because Gene can be in multiple Well
                 self.GenePosI[k] = i
                 i += 1
         except Exception as e:
@@ -59,28 +59,38 @@ class Result():
     def addValue(self, Gene, Feature, Value):
         '''
         Insert Value at Gene row and Feature Col
+        If GeneName is contain in multiple Well, it will be
         :param Gene:
         :param Feature:
         :param Value:
         :return:
         '''
         try:
-            self.Data[Feature][self.GenePos[Gene]] = Value
+            if len(self.GenePos[Gene]) > 1:  # # loop in case geneName is in multiple Well
+                for i in (self.GenePos[Gene]):
+                    self.Data[Feature][i] = Value
+            else:
+                self.Data[Feature][self.GenePos[Gene]] = Value
         except Exception as e:
             print(e)
 
-    def addDict(self, dict, Feature, by):
+    def addDataDict(self, datadict, Feature, by='Pos'):
         '''
         Insert Value from a dict where key = GeneName/pos and Value are value to insert
-        :param dict: dict that contain value to insert with key are GeneName or Pos/Well
+        Prefer by = pos
+        :param datadict: dict that contain value to insert with key are GeneName or Pos/Well
         :param Feature:
         :param by: insert by GeneName or Well
         :return:
         '''
         try:
-            for item, value in dict.items():
+            for item, value in datadict.items():
                 if by == 'GeneName':
-                    self.Data[Feature][self.GenePos[item]] = value
+                    if len(self.GenePos[item]) > 1:
+                        for i in (self.GenePos[item]):
+                            self.Data[Feature][i] = value
+                    else:
+                        self.Data[Feature][self.GenePos[item]] = value
                 elif by == 'Pos':
                     self.Data[Feature][self.GenePosI[item]] = value
                 else:

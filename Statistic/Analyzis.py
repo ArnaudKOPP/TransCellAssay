@@ -23,8 +23,8 @@ def computePlateAnalyzis(Plate, feature):
 
             data = Plate.getAllData()
             meanCount, sdvalue = score.getMeanSDCellCount(data)
-            result.addDict(meanCount, 'CellsCount', by='Pos')
-            result.addDict(sdvalue, 'SDCellsCunt', by='Pos')
+            result.addDataDict(meanCount, 'CellsCount', by='Pos')
+            result.addDataDict(sdvalue, 'SDCellsCunt', by='Pos')
             return result
         except Exception as e:
             print(e)
