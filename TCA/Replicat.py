@@ -115,10 +115,10 @@ class Replicat():
         '''
         try:
             if method == "mean":
-                tmp = self.Data.groupby('Well')
-                mean_tmp = tmp.mean()
-                mean = mean_tmp[feature]
-                dict_mean = mean.to_dict()  # # dict : key = pos and item are mean
+                groupbydata = self.Data.groupby('Well')
+                mean_tmp = groupbydata.mean()
+                mean_feature = mean_tmp[feature]
+                dict_mean = mean_feature.to_dict()  # # dict : key = pos and item are mean
                 if not len(dict_mean) > 96:
                     self.DataMatrixMean = np.zeros((8, 12))
                 else:
@@ -127,10 +127,10 @@ class Replicat():
                     pos = Utils.Utils.getOppositeWellFormat(key)
                     self.DataMatrixMean[pos[0]][pos[1]] = elem
             else:
-                tmp = self.Data.groupby('Well')
-                median_tmp = tmp.median()
-                median = median_tmp[feature]
-                dict_mean = median.to_dict()  # # dict : key = pos and item are mean
+                groupbydata = self.Data.groupby('Well')
+                groupbydata_mean = groupbydata.median()
+                median_feature = groupbydata_mean[feature]
+                dict_mean = median_feature.to_dict()  # # dict : key = pos and item are mean
                 if not len(dict_mean) > 96:
                     self.DataMatrixMedian = np.zeros((8, 12))
                 else:

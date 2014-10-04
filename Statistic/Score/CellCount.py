@@ -16,8 +16,8 @@ def getMeanSDCellCount(dataDict):
         :return:
         '''
         try:
-            tmp = InputArray.groupby('Well')
-            count = tmp.Well.count()
+            groupbydata = InputArray.groupby('Well')
+            count = groupbydata.Well.count()
             dictCount = count.to_dict()
             return dictCount
         except Exception as e:
