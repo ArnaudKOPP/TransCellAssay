@@ -23,8 +23,9 @@ class Result():
         if size == None:
             size = 384
         self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
-                                          ('SDCellsCunt', float), ('PositiveCells', float), ('Infection', float),
-                                          ('Toxicity', float), ('SSMDr', float), ('SSMDrSpatNorm', float)])
+                                          ('SDCellsCunt', float), ('PositiveCells', float), ('SDPositiveCells', float),
+                                          ('Infection', float), ('Toxicity', float), ('SSMDr', float),
+                                          ('SSMDrSpatNorm', float)])
 
         self.GenePos = {}  # # To save GeneName (key)and  Gene position (value)
         self.GenePosI = {}  # # To save Well (key) and Gene position (value)

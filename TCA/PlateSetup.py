@@ -87,10 +87,9 @@ class PlateSetup():
             CoordList = list()
             for r in range(row):
                 for c in range(col):
-                    if gene == mat[r][c]:
-                        CoordList.append(Utils.getOppositeWellFormat((row, col)))
+                    if mat[r][c] == gene:
+                        CoordList.append(Utils.getOppositeWellFormat((r, c)))
             return CoordList
-            print('Gene not found')
         except Exception as e:
             print(e)
             print('Error occured at getGeneWell')

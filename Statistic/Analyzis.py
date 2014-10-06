@@ -20,9 +20,7 @@ def computePlateAnalyzis(Plate, feature):
         x = platesetup.getPSasDict()
         result.initGeneWell(x)
         try:
-
-            data = Plate.getAllData()
-            meanCount, sdvalue = score.getMeanSDCellCount(data)
+            meanCount, sdvalue = score.getMeanSDCellCount(Plate)
             result.addDataDict(meanCount, 'CellsCount', by='Pos')
             result.addDataDict(sdvalue, 'SDCellsCunt', by='Pos')
             return result

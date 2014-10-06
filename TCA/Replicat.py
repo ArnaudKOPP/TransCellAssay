@@ -23,8 +23,8 @@ class Replicat():
         self.info = ""
         self.isNormalized = False
         self.isSpatialNormalized = False
-        self.DataMatrixMean = None  # matrix that contain mean of interested features
-        self.DataMatrixMedian = None  # matrix that contain median of interested feature
+        self.DataMatrixMean = None  # matrix that contain mean of interested features to analyze
+        self.DataMatrixMedian = None  # matrix that contain median of interested feature to analyze
         self.SpatNormData = None  # matrix that contain data corrected by median polish (bscore) or others technics
 
     def setData(self, InputFile):
@@ -81,7 +81,7 @@ class Replicat():
     def getDataByWell(self, well):
         '''
         Get all data for well
-        :param well:
+        :param well: get well position like A1
         :return: dataframe with data for specified well
         '''
         try:
@@ -89,6 +89,23 @@ class Replicat():
         except Exception as e:
             print(e)
             print('Error in exporting data by well')
+
+    def getDataByWells(self, feature, wells):
+        '''
+        get all data for specified wellS
+        :param wells: list of wells
+        :return: return dataframe with data specified wells
+        '''
+        try:
+            data = pd.DataFrame()
+            for i in wells:
+                if data.empty:
+                    data = self.Data[feature][self.Data['Well'] == i]
+                data.append(self.Data[feature][self.Data['Well'] == i])
+            return data
+        except Exception as e:
+            print(e)
+            print('Error in exporting data for wells')
 
     def getDataByFeatures(self, featList):
         '''
@@ -106,12 +123,47 @@ class Replicat():
         except Exception as e:
             print(e)
 
-    def getDataMatrixForm(self, feature, method="mean"):
+    def computeDataMatrixForFeature(self, feature):
         '''
         Return data in matrix form, get mean or median for well
         :param: feature: which feature to keep in matrix
         :param: method: which method to choose mean or median
-        :return:
+        :return: compute data in matrix form
+        '''
+        try:
+
+            groupbydata = self.Data.groupby('Well')
+
+            mean_tmp = groupbydata.mean()
+            mean_feature = mean_tmp[feature]
+            dict_mean = mean_feature.to_dict()  # # dict : key = pos and item are mean
+            if not len(dict_mean) > 96:
+                self.DataMatrixMean = np.zeros((8, 12))
+            else:
+                self.DataMatrixMean = np.zeros((16, 24))
+            for key, elem in dict_mean.items():
+                pos = Utils.Utils.getOppositeWellFormat(key)
+                self.DataMatrixMean[pos[0]][pos[1]] = elem
+
+            groupbydata_mean = groupbydata.median()
+            median_feature = groupbydata_mean[feature]
+            dict_mean = median_feature.to_dict()  # # dict : key = pos and item are mean
+            if not len(dict_mean) > 96:
+                self.DataMatrixMedian = np.zeros((8, 12))
+            else:
+                self.DataMatrixMedian = np.zeros((16, 24))
+            for key, elem in dict_mean.items():
+                pos = Utils.Utils.getOppositeWellFormat(key)
+                self.DataMatrixMedian[pos[0]][pos[1]] = elem
+        except Exception as e:
+            print(e)
+
+    def getDataMatrix(self, feature, method="mean"):
+        '''
+        Return data in matrix form, get mean or median for well
+        :param: feature: which feature to keep in matrix
+        :param: method: which method to choose mean or median
+        :return: compute data in matrix form
         '''
         try:
             if method == "mean":
@@ -120,26 +172,29 @@ class Replicat():
                 mean_feature = mean_tmp[feature]
                 dict_mean = mean_feature.to_dict()  # # dict : key = pos and item are mean
                 if not len(dict_mean) > 96:
-                    self.DataMatrixMean = np.zeros((8, 12))
+                    DataMatrixMean = np.zeros((8, 12))
                 else:
-                    self.DataMatrixMean = np.zeros((16, 24))
+                    DataMatrixMean = np.zeros((16, 24))
                 for key, elem in dict_mean.items():
                     pos = Utils.Utils.getOppositeWellFormat(key)
-                    self.DataMatrixMean[pos[0]][pos[1]] = elem
+                    DataMatrixMean[pos[0]][pos[1]] = elem
+                return DataMatrixMean
             else:
                 groupbydata = self.Data.groupby('Well')
                 groupbydata_mean = groupbydata.median()
                 median_feature = groupbydata_mean[feature]
                 dict_mean = median_feature.to_dict()  # # dict : key = pos and item are mean
                 if not len(dict_mean) > 96:
-                    self.DataMatrixMedian = np.zeros((8, 12))
+                    DataMatrixMedian = np.zeros((8, 12))
                 else:
-                    self.DataMatrixMedian = np.zeros((16, 24))
+                    DataMatrixMedian = np.zeros((16, 24))
                 for key, elem in dict_mean.items():
                     pos = Utils.Utils.getOppositeWellFormat(key)
-                    self.DataMatrixMedian[pos[0]][pos[1]] = elem
+                    DataMatrixMedian[pos[0]][pos[1]] = elem
+                return DataMatrixMedian
         except Exception as e:
             print(e)
+
 
     def normalizeEdgeEffect(self, method='BScore', value='Mean', verbose=False):
         '''

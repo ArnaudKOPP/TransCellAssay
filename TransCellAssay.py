@@ -13,7 +13,9 @@ from platform import python_version
 import TCA
 import Statistic
 import numpy as np
+import cProfile
 import Statistic.Normalization
+import Statistic.Score
 
 __version__ = 0.01
 
@@ -63,6 +65,8 @@ USAGE
         InArgs = parser.parse_args()
         InputFileDirectory = InArgs.input
 
+        time_start_input = time.time()
+
         # test
         print("")
         print("INPUT READING DATA")
@@ -84,22 +88,25 @@ USAGE
         plaque1.addReplicat(rep1)
         plaque1.addReplicat(rep2)
         plaque1.addReplicat(rep3)
-
-        # print('Screen stat :')
-        # plaque1.printReplicat()
-        # print("Number of replicat : ", plaque1.getNumberReplicat())
-
         screen_test.addPlate(plaque1)
+        time_stop_input = time.time()
 
+        time_start_comp = time.time()
         print("")
         print("BEGIN COMPUTATION TEST")
         print("")
         tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'])
         print(tmp2)
+        rep1.computeDataMatrixForFeature('Nuc Intensity')
+        cProfile.runctx(
+            "PercentCell, sdPercentCell = Statistic.Score.getPercentPosCell(plaque1, 'Nuc Intensity', 'NT')", globals(),
+            locals())
+        # PercentCell, sdPercentCell = Statistic.Score.getPercentPosCell(plaque1, 'Nuc Intensity', 'NT')
+        # print(PercentCell, sdPercentCell)
+        time_stop_comp = time.time()
 
-        rep1.getDataMatrixForm('Nuc Intensity')
-        rep1.getDataMatrixForm('Nuc Intensity', method='median')
-        print(rep1)
+        print("    Input Executed in {0:f}s".format(float(time_stop_input - time_start_input)))
+        print("    Compute Executed in {0:f}s".format(float(time_stop_comp - time_start_comp)))
 
         # IO.parseInputDirectory(InputFileDirectory)
 
