@@ -38,25 +38,11 @@ def getMeanSDCellCount(plate):
                         dictMeanByRep.setdefault(key, []).append(CellCount[key])
                     except KeyError:
                         pass
-            SDValue = getSDMeanCount(dictMeanByRep)
-            MeanCountList = [(i, sum(v) // len(v)) for i, v in dictMeanByRep.items()]
+            SDValue = {}
+            for key, value in dictMeanByRep.items():
+                SDValue[key] = np.std(value)
+            MeanCountList = [(i, sum(v) / len(v)) for i, v in dictMeanByRep.items()]
             MeanCount = dict(MeanCountList)  # # convert to dict
             return MeanCount, SDValue
         except Exception as e:
             print(e)
-
-
-def getSDMeanCount(dictmeanbyrep):
-    '''
-    get Standart deviation of cell per well accross replicat
-    Need a least two replicat
-    :param dictmeanbyrep: Give a dict that contain number of cell by well for all replicat
-    :return: retrun a dict that contain standart deviation of nb cell for well
-    '''
-    dictsdbyrep = {}
-    try:
-        for key, value in dictmeanbyrep.items():
-            dictsdbyrep[key] = np.std(value)
-        return dictsdbyrep
-    except Exception as e:
-        print(e)

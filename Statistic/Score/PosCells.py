@@ -2,7 +2,7 @@ __author__ = 'Arnaud KOPP'
 import numpy as np
 import pandas as pd
 import TCA
-
+import time
 
 def getPercentPosCell(plate, feature, control, threshold=50, direction='Up'):
     '''
@@ -14,6 +14,7 @@ def getPercentPosCell(plate, feature, control, threshold=50, direction='Up'):
     :return: return a dict with mean % of pos Cell and standart variation across replicat
     '''
     dict_percent_cell = {}
+    dict_percent_cell_tmp = {}
     dict_percent_sd_cell = {}
 
     try:
@@ -30,20 +31,24 @@ def getPercentPosCell(plate, feature, control, threshold=50, direction='Up'):
                 data = replicat.Data
                 # get all well from data
                 well_list = data.Well.unique()
-
                 # iterate on well
                 for well in well_list:
                     xdata = data[feature][data['Well'] == well]
                     len_total = len(xdata)
                     if direction == 'Up':
+                        # # alt
+                        #data[(data[feature] > threshold_value) & (data['Well'] == 'well')]
                         len_thres = len(np.extract(xdata > threshold_value, xdata))
                     else:
                         len_thres = len(np.extract(xdata < threshold_value, xdata))
                     ## include in dict key is the position and value is a %
-                    dict_percent_cell.setdefault(well, []).append(((len_thres / len_total) * 100))
+                    dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
+            # determine the mean of replicat
+            dict_percent_cellList = [(i, sum(v) / len(v)) for i, v in dict_percent_cell_tmp.items()]
+            dict_percent_cell = dict(dict_percent_cellList)
             # determine the standart deviation of % Cells
             try:
-                for key, value in dict_percent_cell.items():
+                for key, value in dict_percent_cell_tmp.items():
                     dict_percent_sd_cell[key] = np.std(value)
             except Exception as e:
                 print(e)
