@@ -4,9 +4,11 @@ import pandas as pd
 import TCA
 import time
 
-def getPercentPosCell(plate, feature, control, threshold=50, direction='Up'):
+
+def getPercentPosCell(plate, feature, control, threshold, direction):
     '''
     get % of Cell over threshold, default threshold is 50%
+    This function take some time and need to be very improve
     :param plate:
     :param feature: on which feature
     :param threshold:
@@ -24,7 +26,7 @@ def getPercentPosCell(plate, feature, control, threshold=50, direction='Up'):
             control_well = ps.getGeneWell(control)
             # iterate on replicat dict
             for k, replicat in replicat_Dict.items():
-                ## threshold value for control
+                # # threshold value for control
                 data_control = replicat.getDataByWells(feature, control_well)
                 threshold_value = np.percentile(data_control, threshold)
                 # data from replicat

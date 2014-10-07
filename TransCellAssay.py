@@ -95,14 +95,10 @@ USAGE
         print("")
         print("BEGIN COMPUTATION TEST")
         print("")
-        tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'])
+        tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
         print(tmp2)
+        # # Compute the mean and median for each well in matrix format
         rep1.computeDataMatrixForFeature('Nuc Intensity')
-        cProfile.runctx(
-            "PercentCell, sdPercentCell = Statistic.Score.getPercentPosCell(plaque1, 'Nuc Intensity', 'NT')", globals(),
-            locals())
-        # PercentCell, sdPercentCell = Statistic.Score.getPercentPosCell(plaque1, 'Nuc Intensity', 'NT')
-        # print(PercentCell, sdPercentCell)
         time_stop_comp = time.time()
 
         print("    Input Executed in {0:f}s".format(float(time_stop_input - time_start_input)))
