@@ -67,7 +67,6 @@ USAGE
 
         time_start_input = time.time()
 
-        # test
         print("")
         print("INPUT READING DATA")
         print("")
@@ -95,12 +94,22 @@ USAGE
         print("")
         print("BEGIN COMPUTATION TEST")
         print("")
-        tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
-        print(tmp2)
-        # # Compute the mean and median for each well in matrix format
-        rep1.computeDataMatrixForFeature('Nuc Intensity')
-        time_stop_comp = time.time()
 
+
+        # tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
+        #print(tmp2)
+        # # Compute the mean and median for each well in matrix format
+
+
+        plaque1.computeDataMatrixFromReplicat('Nuc Intensity')
+        print(plaque1.DataMatrixMedian)
+        print(plaque1.DataMatrixMean)
+        plaque1.computeDataMatrixSpatNormFromReplicat()
+        print(plaque1.SpatNormDataMean)
+        print(plaque1.SpatNormDataMedian)
+
+
+        time_stop_comp = time.time()
         print("    Input Executed in {0:f}s".format(float(time_stop_input - time_start_input)))
         print("    Compute Executed in {0:f}s".format(float(time_stop_comp - time_start_comp)))
 

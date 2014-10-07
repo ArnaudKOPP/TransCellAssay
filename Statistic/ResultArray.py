@@ -1,7 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
-Result is created for store result in a tabe-like (numpy array), feature are column and GeneName/Well are stored at the
-first col, each row represent a gene/well
+Result is created for store result like score and hit resulting of SSMD or other technicsin a tabe-like (numpy array),
+feature are column and GeneName/Well are stored at the first col, each row represent a gene/well
 We can save the tabe in csv by using pandas Dataframe.
 This class is only compatible with single cell data, need to be more "elastic" with 1Data/Well
 """

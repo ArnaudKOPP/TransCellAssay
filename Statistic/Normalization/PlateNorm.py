@@ -9,18 +9,19 @@ import numpy as np
 ndtri = None
 
 
-def PlateNorm(plate, zscore=True, log=False):
+def PlateNorm(plate, feature, zscore=True, log=True):
     """
-    anarray with samples in the columns and probes across the rows
+    Normalized a Plate object, in first apply a log2 transformation, then apply a quantile normalization, and
+    for finish appyly a score transformation
     :param anarray:
     :return: return array
     """
     if isinstance(plate, TCA.Plate):
         if plate.getNumberReplicat() >= 2:
-            return 0
-            # data['Nuc Intensity'][data['Well'] == 'A1']
+            PlateData = plate.getAllDataFromReplicat(feature)
+
         else:
-            print('Non needs, only one replicat')
+            print('No needs, only one replicat')
             return 0
     else:
         print('Take a Plate Object')
@@ -35,7 +36,7 @@ def zscoreTransformation(array):
     return (array - array.mean())/array.std(ddof=0)
 
 
-def quantile_normalization(anarray, log=False):
+def quantile_normalization(anarray, log):
     """
     anarray with samples in the columns and probes across the rows
     :param anarray:

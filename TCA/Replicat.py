@@ -25,7 +25,8 @@ class Replicat():
         self.isSpatialNormalized = False
         self.DataMatrixMean = None  # matrix that contain mean of interested features to analyze
         self.DataMatrixMedian = None  # matrix that contain median of interested feature to analyze
-        self.SpatNormData = None  # matrix that contain data corrected by median polish (bscore) or others technics
+        self.SpatNormDataMean = None  # matrix that contain data corrected by median polish (bscore) or others technics
+        self.SpatNormDataMedian = None  # matrix that contain data corrected by median polish (bscore) or others technics
 
     def setData(self, InputFile):
         '''
@@ -167,36 +168,18 @@ class Replicat():
         '''
         try:
             if method == "mean":
-                groupbydata = self.Data.groupby('Well')
-                mean_tmp = groupbydata.mean()
-                mean_feature = mean_tmp[feature]
-                dict_mean = mean_feature.to_dict()  # # dict : key = pos and item are mean
-                if not len(dict_mean) > 96:
-                    DataMatrixMean = np.zeros((8, 12))
-                else:
-                    DataMatrixMean = np.zeros((16, 24))
-                for key, elem in dict_mean.items():
-                    pos = Utils.Utils.getOppositeWellFormat(key)
-                    DataMatrixMean[pos[0]][pos[1]] = elem
-                return DataMatrixMean
+                if self.DataMatrixMean == None:
+                    self.computeDataMatrixForFeature(feature)
+                return self.DataMatrixMean
             else:
-                groupbydata = self.Data.groupby('Well')
-                groupbydata_mean = groupbydata.median()
-                median_feature = groupbydata_mean[feature]
-                dict_mean = median_feature.to_dict()  # # dict : key = pos and item are mean
-                if not len(dict_mean) > 96:
-                    DataMatrixMedian = np.zeros((8, 12))
-                else:
-                    DataMatrixMedian = np.zeros((16, 24))
-                for key, elem in dict_mean.items():
-                    pos = Utils.Utils.getOppositeWellFormat(key)
-                    DataMatrixMedian[pos[0]][pos[1]] = elem
-                return DataMatrixMedian
+                if self.DataMatrixMedian == None:
+                    self.computeDataMatrixForFeature(feature)
+                return self.DataMatrixMedian
         except Exception as e:
             print(e)
 
 
-    def normalizeEdgeEffect(self, method='BScore', value='Mean', verbose=False):
+    def normalizeEdgeEffect(self, method='BScore', verbose=False):
         '''
         Apply a median polish for remove edge effect
         return residual matrix
@@ -205,69 +188,46 @@ class Replicat():
         '''
         if method == 'BScore':
             try:
-                if value == 'Mean':
-                    if self.DataMatrixMean == None:
-                        print("Compute Mean of replicat first by using getDataMatrixForm")
-                        return 0
-                    else:
-                        mp = Statistic.Normalization.MedianPolish()
-                        ge, ce, re, resid, tbl_org = mp.median_polish(100)
-                        if verbose:
-                            print("median polish:")
-                            print("grand effect = ", ge)
-                            print("column effects = ", ce)
-                            print("row effects = ", re)
-                            print("-----Table of Residuals-------")
-                            print(resid)
-                            print("-----Original Table-------")
-                            print(tbl_org)
-                        self.SpatNormData = resid
-                        self.isSpatialNormalized = True
-                        # ge, ce, re, resid, tbl_org = mp.median_polish(100, "average")
-                        # if verbose:
-                        # print("average polish:")
-                        #     print("grand effect = ", ge)
-                        #     print("column effects = ", ce)
-                        #     print("row effects = ", re)
-                        #     print("-----Table of Residuals-------")
-                        #     print(resid)
-                        #     print("-----Original Table-------")
-                        #     print(tbl_org)
+                if self.DataMatrixMean == None:
+                    print("Compute Mean of replicat first by using computeDataMatrixForFeature")
+                    return 0
                 else:
-                    if self.DataMatrixMedian == None:
-                        print("Compute Median of replicat first by using getDataMatrixForm")
-                        return 0
-                    else:
-                        mp = Statistic.Normalization.MedianPolish()
-                        ge, ce, re, resid, tbl_org = mp.median_polish(100)
-                        if verbose:
-                            print("median polish:")
-                            print("grand effect = ", ge)
-                            print("column effects = ", ce)
-                            print("row effects = ", re)
-                            print("-----Table of Residuals-------")
-                            print(resid)
-                            print("-----Original Table-------")
-                            print(tbl_org)
-                        self.SpatNormData = resid
-                        self.isSpatialNormalized = True
-                        # ge, ce, re, resid, tbl_org = mp.median_polish(100, "average")
-                        # if verbose:
-                        # print("average polish:")
-                        #     print("grand effect = ", ge)
-                        #     print("column effects = ", ce)
-                        #     print("row effects = ", re)
-                        #     print("-----Table of Residuals-------")
-                        #     print(resid)
-                        #     print("-----Original Table-------")
-                        #     print(tbl_org)
+                    mp = Statistic.Normalization.MedianPolish(self.DataMatrixMean)
+                    ge, ce, re, resid, tbl_org = mp.median_polish(100)
+                    if verbose:
+                        print("median polish:")
+                        print("grand effect = ", ge)
+                        print("column effects = ", ce)
+                        print("row effects = ", re)
+                        print("-----Table of Residuals-------")
+                        print(resid)
+                        print("-----Original Table-------")
+                        print(tbl_org)
+                    self.SpatNormDataMean = resid
+                    self.isSpatialNormalized = True
+
+                if self.DataMatrixMedian == None:
+                    print("Compute Median of replicat first by using computeDataMatrixForFeature")
+                    return 0
+                else:
+                    mp = Statistic.Normalization.MedianPolish(self.DataMatrixMedian)
+                    ge, ce, re, resid, tbl_org = mp.median_polish(100)
+                    if verbose:
+                        print("median polish:")
+                        print("grand effect = ", ge)
+                        print("column effects = ", ce)
+                        print("row effects = ", re)
+                        print("-----Table of Residuals-------")
+                        print(resid)
+                        print("-----Original Table-------")
+                        print(tbl_org)
+                    self.SpatNormDataMedian = resid
+                    self.isSpatialNormalized = True
             except Exception as e:
                 print(e)
-        if method == 'Others':
-            try:
-                return 0
-            except Exception as e:
-                print(e)
+        else:
+            print('No another method implement yet')
+
 
     def __repr__(self):
         '''
@@ -277,7 +237,7 @@ class Replicat():
         try:
             return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(
                 self.isNormalized) + "\n Spatial Normalized : \n" + repr(
-                self.isSpatialNormalized) + "\n Data containing in this replicat :\n"+ repr(
+                self.isSpatialNormalized) + "\n Data containing in this replicat :\n" + repr(
                 self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData) +
                     "\n Matrix Mean data of feature \n" + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" +
                     repr(self.DataMatrixMedian))

@@ -2,6 +2,7 @@ __author__ = 'Arnaud KOPP'
 """
 Plate is designed for manipulating one or more replicat
 """
+import numpy as np
 import TCA.PlateSetup
 import TCA.Replicat
 import Statistic.ResultArray
@@ -26,6 +27,10 @@ class Plate():
         self.NormBetweenRep = False
         self.ControlPos = (1, 12) # column where control is positionned in plate (default pos)
         self.Result = None
+        self.DataMatrixMean = None  # matrix that contain mean from replicat of interested features to analyze
+        self.DataMatrixMedian = None  # matrix that contain median from replicat of interested feature to analyze
+        self.SpatNormDataMean = None  # matrix that contain data corrected by median polish (bscore) or others technics
+        self.SpatNormDataMedian = None  # matrix that contain data corrected by median polish (bscore) or others technics
 
     def printMetaInfo(self):
         '''
@@ -203,6 +208,52 @@ class Plate():
         except Exception as e:
             print(e)
 
+    def computeDataMatrixFromReplicat(self, feature):
+        '''
+        Compute the mean/median matrix data of all replicat
+        :return:
+        '''
+        try:
+            mean_tmp = None
+            median_tmp = None
+            i = 0
+            for key, value in self.replicat.items():
+                if value.DataMatrixMean == None or value.DataMatrixMedian == None:
+                    value.computeDataMatrixForFeature(feature)
+                if mean_tmp == None:
+                    mean_tmp = np.zeros(value.DataMatrixMean.shape)
+                    median_tmp = np.zeros(value.DataMatrixMedian.shape)
+                mean_tmp = mean_tmp + value.DataMatrixMean
+                median_tmp = mean_tmp + value.DataMatrixMedian
+                i += 1
+            self.DataMatrixMean = mean_tmp / i
+            self.DataMatrixMedian = median_tmp / i
+        except Exception as e:
+            print(e)
+
+    def computeDataMatrixSpatNormFromReplicat(self):
+        '''
+        Compute the mean/median matrix of spatial norm data of all replicat
+        :return:
+        '''
+        try:
+            mean_tmp = None
+            median_tmp = None
+            i = 0
+            for key, value in self.replicat.items():
+                if value.SpatNormDataMean == None or value.SpatNormDataMedian == None:
+                    value.normalizeEdgeEffect()
+                if mean_tmp == None:
+                    mean_tmp = np.zeros(value.SpatNormDataMean.shape)
+                    median_tmp = np.zeros(value.SpatNormDataMedian.shape)
+                mean_tmp = mean_tmp + value.SpatNormDataMean
+                median_tmp = mean_tmp + value.SpatNormDataMedian
+                i += 1
+            self.SpatNormDataMean = mean_tmp / i
+            self.SpatNormDataMedian = median_tmp / i
+        except Exception as e:
+            print(e)
+
     def normalizeReplicat(self, zscore=True, log=False):
         '''
         Apply a norm between replicat
@@ -240,8 +291,8 @@ class Plate():
             return (
                 "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
                     self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Array Result :\n" + repr(
-                    self.Result) + "\n Replicat List : \n" + repr(
-                    self.replicat))
+                    self.Result) + "\n Replicat List : \n" + repr(self.replicat) + "\n Matrix Mean data of feature \n"
+                + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" + repr(self.DataMatrixMedian))
         except Exception as e:
             print(e)
 
@@ -254,7 +305,7 @@ class Plate():
             return (
                 "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
                     self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Array Result :\n" + repr(
-                    self.Result) + "\n Replicat List : \n" + repr(
-                    self.replicat))
+                    self.Result) + "\n Replicat List : \n" + repr(self.replicat) + "\n Matrix Mean data of feature \n"
+                + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" + repr(self.DataMatrixMedian))
         except Exception as e:
             print(e)
