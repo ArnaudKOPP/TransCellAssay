@@ -25,7 +25,7 @@ class Plate():
         self.Name = None
         self.PlateSetup = TCA.PlateSetup()
         self.NormBetweenRep = False
-        self.ControlPos = (1, 12) # column where control is positionned in plate (default pos)
+        self.ControlPos = (1, 12)  # column where control is positionned in plate (default pos)
         self.Result = None
         self.DataMatrixMean = None  # matrix that contain mean from replicat of interested features to analyze
         self.DataMatrixMedian = None  # matrix that contain median from replicat of interested feature to analyze
@@ -231,30 +231,61 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def computeDataMatrixSpatNormFromReplicat(self):
+
+    def BScoreNormalization(self, verbose, save=False):
         '''
-        Compute the mean/median matrix of spatial norm data of all replicat
+        Apply a median polish for remove edge effect
+        residual matrix are save in plate object if save = True
+        :param: verbose : output the result ?
+        :param: save: save the residual into self.SpatNormData , default = False
         :return:
         '''
         try:
-            mean_tmp = None
-            median_tmp = None
-            i = 0
-            for key, value in self.replicat.items():
-                if value.SpatNormDataMean == None or value.SpatNormDataMedian == None:
-                    value.normalizeEdgeEffect()
-                if mean_tmp == None:
-                    mean_tmp = np.zeros(value.SpatNormDataMean.shape)
-                    median_tmp = np.zeros(value.SpatNormDataMedian.shape)
-                mean_tmp = mean_tmp + value.SpatNormDataMean
-                median_tmp = mean_tmp + value.SpatNormDataMedian
-                i += 1
-            self.SpatNormDataMean = mean_tmp / i
-            self.SpatNormDataMedian = median_tmp / i
+            if self.DataMatrixMean == None:
+                print("Compute Mean of replicat first by using computeDataMatrixForFeature")
+                return 0
+            else:
+                mp = Statistic.Normalization.MedianPolish(self.DataMatrixMean)
+                ge, ce, re, resid, tbl_org = mp.median_polish(100)
+                if verbose:
+                    print("")
+                    print("median polish:   MeanData")
+                    print("grand effect = ", ge)
+                    print("column effects = ", ce)
+                    print("row effects = ", re)
+                    print("-----Table of Residuals-------")
+                    print(resid)
+                    print("-----Original Table-------")
+                    print(tbl_org)
+                    print("")
+                if save:
+                    self.SpatNormDataMean = resid
+                    self.isSpatialNormalized = True
+
+            if self.DataMatrixMedian == None:
+                print("Compute Median of replicat first by using computeDataMatrixForFeature")
+                return 0
+            else:
+                mp = Statistic.Normalization.MedianPolish(self.DataMatrixMedian)
+                ge, ce, re, resid, tbl_org = mp.median_polish(100)
+                if verbose:
+                    print("median polish:    MedianData")
+                    print("grand effect = ", ge)
+                    print("column effects = ", ce)
+                    print("row effects = ", re)
+                    print("-----Table of Residuals-------")
+                    print(resid)
+                    print("-----Original Table-------")
+                    print(tbl_org)
+                    print("")
+                if save:
+                    self.SpatNormDataMedian = resid
+                    self.isSpatialNormalized = True
         except Exception as e:
             print(e)
 
-    def normalizeReplicat(self, zscore=True, log=False):
+
+    def normalizeReplicat(self, zscore=True, log=True):
         '''
         Apply a norm between replicat
         Z score Transformation by default

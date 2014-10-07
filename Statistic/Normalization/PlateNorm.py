@@ -17,6 +17,9 @@ def PlateNorm(plate, feature, zscore=True, log=True):
     :return: return array
     """
     if isinstance(plate, TCA.Plate):
+        for key, value in plate.replicat.items():
+            return 0
+
         if plate.getNumberReplicat() >= 2:
             PlateData = plate.getAllDataFromReplicat(feature)
 
@@ -27,13 +30,23 @@ def PlateNorm(plate, feature, zscore=True, log=True):
         print('Take a Plate Object')
         raise TypeError
 
+
+def log2Transformation(array):
+    '''
+    Log2 transformation
+    :param array:
+    :return: array
+    '''
+    return (np.log2(array))
+
+
 def zscoreTransformation(array):
     """
     Z score Transformation
     :param array: input of Well
     :return: return array
     """
-    return (array - array.mean())/array.std(ddof=0)
+    return (array - array.mean()) / array.std(ddof=0)
 
 
 def quantile_normalization(anarray, log):

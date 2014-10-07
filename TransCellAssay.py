@@ -13,9 +13,9 @@ from platform import python_version
 import TCA
 import Statistic
 import numpy as np
-import cProfile
 import Statistic.Normalization
 import Statistic.Score
+import Statistic.Test
 
 __version__ = 0.01
 
@@ -100,14 +100,18 @@ USAGE
         #print(tmp2)
         # # Compute the mean and median for each well in matrix format
 
+        np.set_printoptions(linewidth=200)
 
         plaque1.computeDataMatrixFromReplicat('Nuc Intensity')
-        print(plaque1.DataMatrixMedian)
-        print(plaque1.DataMatrixMean)
-        plaque1.computeDataMatrixSpatNormFromReplicat()
-        print(plaque1.SpatNormDataMean)
-        print(plaque1.SpatNormDataMedian)
+        # print(plaque1.DataMatrixMedian)
+        #print(plaque1.DataMatrixMean)
+        #print(plaque1.SpatNormDataMean)
+        #print(plaque1.SpatNormDataMedian)
 
+        plaque1.BScoreNormalization(verbose=True, save=False)
+        rep1.BScoreNormalization(verbose=True, save=False)
+
+        Statistic.Test.SystematicErrorDetectionTest(rep1)
 
         time_stop_comp = time.time()
         print("    Input Executed in {0:f}s".format(float(time_stop_input - time_start_input)))

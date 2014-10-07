@@ -1,18 +1,22 @@
 __author__ = 'Arnaud KOPP'
 
 import TCA
+import Statistic.Normalization
 
-def SystematicErrorDetectionTest(Plate):
+
+def SystematicErrorDetectionTest(Object):
     '''
-    Search for systematic error in plate
+    Search for systematic error in plate, and try to apply the best strategie
     :param Plate:
-    :return: nothing norm the value
+    :return:
     '''
     try:
-        if isinstance(Plate, TCA.Plate):
-            return 0
+        if isinstance(Object, TCA.Plate):
+            print("Plate SEDT")
         # col of numpy array : array[:,x]
         # row of numpy array : array[x,:]
+        if isinstance(Object, TCA.Replicat):
+            print("Replicat SEDT")
         else:
             raise TypeError
     except Exception as e:
