@@ -208,7 +208,7 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def computeDataMatrixFromReplicat(self, feature):
+    def computeDataFromReplicat(self, feature):
         '''
         Compute the mean/median matrix data of all replicat
         :return:
@@ -217,14 +217,14 @@ class Plate():
             mean_tmp = None
             median_tmp = None
             i = 0
-            for key, value in self.replicat.items():
-                if value.DataMatrixMean == None or value.DataMatrixMedian == None:
-                    value.computeDataMatrixForFeature(feature)
-                if mean_tmp == None:
-                    mean_tmp = np.zeros(value.DataMatrixMean.shape)
-                    median_tmp = np.zeros(value.DataMatrixMedian.shape)
-                mean_tmp = mean_tmp + value.DataMatrixMean
-                median_tmp = mean_tmp + value.DataMatrixMedian
+            for key, replicat in self.replicat.items():
+                if replicat.DataMatrixMean == None or replicat.DataMatrixMedian == None:
+                    replicat.computeDataForFeature(feature)
+                if mean_tmp == None or median_tmp == None:
+                    mean_tmp = np.zeros(replicat.DataMatrixMean.shape)
+                    median_tmp = np.zeros(replicat.DataMatrixMedian.shape)
+                mean_tmp = mean_tmp + replicat.DataMatrixMean
+                median_tmp = median_tmp + replicat.DataMatrixMedian
                 i += 1
             self.DataMatrixMean = mean_tmp / i
             self.DataMatrixMedian = median_tmp / i
@@ -242,7 +242,7 @@ class Plate():
         '''
         try:
             if self.DataMatrixMean == None:
-                print("Compute Mean of replicat first by using computeDataMatrixForFeature")
+                print("Compute Mean of replicat first by using computeDataFromReplicat")
                 return 0
             else:
                 mp = Statistic.Normalization.MedianPolish(self.DataMatrixMean)

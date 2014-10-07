@@ -124,12 +124,11 @@ class Replicat():
         except Exception as e:
             print(e)
 
-    def computeDataMatrixForFeature(self, feature):
+    def computeDataForFeature(self, feature):
         '''
-        Return data in matrix form, get mean or median for well
+        Compute data in matrix form, get mean or median for well and save them in replicat object
         :param: feature: which feature to keep in matrix
-        :param: method: which method to choose mean or median
-        :return: compute data in matrix form
+        :return:
         '''
         try:
 
@@ -148,12 +147,12 @@ class Replicat():
 
             groupbydata_mean = groupbydata.median()
             median_feature = groupbydata_mean[feature]
-            dict_mean = median_feature.to_dict()  # # dict : key = pos and item are mean
-            if not len(dict_mean) > 96:
+            dict_median = median_feature.to_dict()  # # dict : key = pos and item are mean
+            if not len(dict_median) > 96:
                 self.DataMatrixMedian = np.zeros((8, 12))
             else:
                 self.DataMatrixMedian = np.zeros((16, 24))
-            for key, elem in dict_mean.items():
+            for key, elem in dict_median.items():
                 pos = Utils.Utils.getOppositeWellFormat(key)
                 self.DataMatrixMedian[pos[0]][pos[1]] = elem
         except Exception as e:
@@ -169,11 +168,11 @@ class Replicat():
         try:
             if method == "mean":
                 if self.DataMatrixMean == None:
-                    self.computeDataMatrixForFeature(feature)
+                    self.computeDataForFeature(feature)
                 return self.DataMatrixMean
             else:
                 if self.DataMatrixMedian == None:
-                    self.computeDataMatrixForFeature(feature)
+                    self.computeDataForFeature(feature)
                 return self.DataMatrixMedian
         except Exception as e:
             print(e)
@@ -189,7 +188,7 @@ class Replicat():
         '''
         try:
             if self.DataMatrixMean == None:
-                print("Compute Mean of replicat first by using computeDataMatrixForFeature")
+                print("Compute Mean of replicat first by using computeDataForFeature")
                 return 0
             else:
                 mp = Statistic.Normalization.MedianPolish(self.DataMatrixMean)
