@@ -216,7 +216,7 @@ class Replicat():
                 mp = Statistic.Normalization.MedianPolish(self.DataMatrixMedian)
                 ge, ce, re, resid, tbl_org = mp.median_polish(100)
                 if verbose:
-                    print("median polish:    MeanData for replicat ", self.info)
+                    print("median polish:    MedianData for replicat ", self.info)
                     print("grand effect = ", ge)
                     print("column effects = ", ce)
                     print("row effects = ", re)

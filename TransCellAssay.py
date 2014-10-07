@@ -65,8 +65,6 @@ USAGE
         InArgs = parser.parse_args()
         InputFileDirectory = InArgs.input
 
-        time_start_input = time.time()
-
         print("")
         print("INPUT READING DATA")
         print("")
@@ -88,33 +86,20 @@ USAGE
         plaque1.addReplicat(rep2)
         plaque1.addReplicat(rep3)
         screen_test.addPlate(plaque1)
-        time_stop_input = time.time()
 
         time_start_comp = time.time()
         print("")
         print("BEGIN COMPUTATION TEST")
         print("")
-
-
         # tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
         #print(tmp2)
-        # # Compute the mean and median for each well in matrix format
-
         np.set_printoptions(linewidth=200)
-
         plaque1.computeDataMatrixFromReplicat('Nuc Intensity')
-        # print(plaque1.DataMatrixMedian)
-        #print(plaque1.DataMatrixMean)
-        #print(plaque1.SpatNormDataMean)
-        #print(plaque1.SpatNormDataMedian)
-
         plaque1.BScoreNormalization(verbose=True, save=False)
         rep1.BScoreNormalization(verbose=True, save=False)
-
         Statistic.Test.SystematicErrorDetectionTest(rep1)
 
         time_stop_comp = time.time()
-        print("    Input Executed in {0:f}s".format(float(time_stop_input - time_start_input)))
         print("    Compute Executed in {0:f}s".format(float(time_stop_comp - time_start_comp)))
 
         # IO.parseInputDirectory(InputFileDirectory)
