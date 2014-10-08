@@ -178,7 +178,7 @@ class Replicat():
             print(e)
 
 
-    def BScoreNormalization(self, verbose, save=False):
+    def BScoreNormalization(self, verbose, save=False, max_iterations=100):
         '''
         Apply a median polish for remove edge effect
         residual matrix are save in replicat object
@@ -192,7 +192,7 @@ class Replicat():
                 return 0
             else:
                 mp = Statistic.Normalization.MedianPolish(self.DataMatrixMean)
-                ge, ce, re, resid, tbl_org = mp.median_polish(100)
+                ge, ce, re, resid, tbl_org = mp.median_polish(max_iterations=max_iterations)
                 if verbose:
                     print("")
                     print("median polish:   MeanData for replicat ", self.info)
@@ -213,7 +213,7 @@ class Replicat():
                 return 0
             else:
                 mp = Statistic.Normalization.MedianPolish(self.DataMatrixMedian)
-                ge, ce, re, resid, tbl_org = mp.median_polish(100)
+                ge, ce, re, resid, tbl_org = mp.median_polish(max_iterations=max_iterations)
                 if verbose:
                     print("median polish:    MedianData for replicat ", self.info)
                     print("grand effect = ", ge)

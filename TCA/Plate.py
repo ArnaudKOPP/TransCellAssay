@@ -232,7 +232,7 @@ class Plate():
             print(e)
 
 
-    def BScoreNormalization(self, verbose, save=False):
+    def BScoreNormalization(self, verbose, save=False, max_iterations=100):
         '''
         Apply a median polish for remove edge effect
         residual matrix are save in plate object if save = True
@@ -246,7 +246,7 @@ class Plate():
                 return 0
             else:
                 mp = Statistic.Normalization.MedianPolish(self.DataMatrixMean)
-                ge, ce, re, resid, tbl_org = mp.median_polish(100)
+                ge, ce, re, resid, tbl_org = mp.median_polish(max_iterations=max_iterations)
                 if verbose:
                     print("")
                     print("median polish:   MeanData")
@@ -267,7 +267,7 @@ class Plate():
                 return 0
             else:
                 mp = Statistic.Normalization.MedianPolish(self.DataMatrixMedian)
-                ge, ce, re, resid, tbl_org = mp.median_polish(100)
+                ge, ce, re, resid, tbl_org = mp.median_polish(max_iterations=max_iterations)
                 if verbose:
                     print("median polish:    MedianData")
                     print("grand effect = ", ge)

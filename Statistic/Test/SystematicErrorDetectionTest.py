@@ -6,33 +6,38 @@ import numpy as np
 from scipy import stats
 
 
-def SystematicErrorDetectionTest(Object, save=True):
+def SystematicErrorDetectionTest(Array, save=False, datatype='Median', alpha=0.05):
     '''
     Search for systematic error in plate or replicat
     :param Plate:
     :return:
     '''
     try:
-        if isinstance(Object, TCA.Plate):
-            print("Plate SEDT")
-            if Object.DataMatrixMean or Object.DataMatrixMedian is None:
-                print("Launch computeDataMatrixFromReplicat First")
-                raise ValueError
+        if isinstance(Array, np.ndarray):
+            Matrix = Array
+            shape = Matrix.shape
+            SEDT_Array = np.zeros(shape)
+            # search systematic error in row
+            for row in range(shape[0]):
+                tstat, dof = TTest(Matrix[row, :], np.delete(Matrix, row, 0))
+                theo = stats.t.isf(alpha, dof)
+                if tstat > theo:
+                    SEDT_Array[row, :] = 1
+            #search systematic error in column
+            for col in range(shape[1]):
+                tstat, dof = TTest(Matrix[:, col], np.delete(Matrix, col, 1))
+                theo = stats.t.isf(alpha, dof)
+                if tstat > theo:
+                    SEDT_Array[:, col] = 1
 
-        # col of numpy array : array[:,x]
-        # row of numpy array : array[x,:]
-        if isinstance(Object, TCA.Replicat):
-            print("Replicat SEDT")
-            if Object.DataMatrixMean or Object.DataMatrixMedian is None:
-                print("Launch computeDataMatrixForFeature First")
-                raise ValueError
+            return SEDT_Array
         else:
             raise TypeError
     except Exception as e:
         print(e)
 
 
-def TTest(Array1, Array2, alpha=0.05):
+def TTest(Array1, Array2):
     '''
     Compute a T Test on two array
     In this test, the nul hypothesis H0 was the selected row/col does not contain systematic error
@@ -49,11 +54,6 @@ def TTest(Array1, Array2, alpha=0.05):
         tstat = (np.mean(Array1) - np.mean(Array2)) / (np.sqrt((np.var(Array1) / N1) + (np.var(Array2) / N2)))
         dof = ((np.var(Array1) / N1) + (np.var(Array2) / N2)) ** 2 / (
             ((np.var(Array1) / N1) ** 2 / (N1 - 1)) + ((np.var(Array2) / N2) ** 2 / (N2 - 1)))
-        theo = stats.t.isf(alpha, dof)
-        if tstat > theo:
-            print("No systematic Error")
-        else:
-            print("Systematic Error")
         return tstat, dof
     except Exception as e:
         print(e)

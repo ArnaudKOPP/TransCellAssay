@@ -19,7 +19,7 @@ class MedianPolish:
         else:
             raise TypeError('Expected the argument to be a numpy.ndarray.')
 
-    def median_polish(self, max_iterations=10, method='median'):
+    def median_polish(self, max_iterations=100, method='median'):
         """
             Implements Tukey's median polish alghoritm for additive models
             method - default is median, alternative is mean. That would give us result equal ANOVA.

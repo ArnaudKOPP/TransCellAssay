@@ -48,12 +48,13 @@ def plotSurf3D_Plate(array):
         import numpy as np
 
         fig = plt.figure()
-        ax = Axes3D(fig)
         X = np.arange(array.shape[1])
         Y = np.arange(array.shape[0])
         X, Y = np.meshgrid(X, Y)
         Z = array
-        ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.jet)
+        ax = fig.gca(projection='3d')
+        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='hot', linewidth=0, antialiased=False)
+        fig.colorbar(surf, shrink=0.5, aspect=5)
 
         plt.show()
 
@@ -61,13 +62,24 @@ def plotSurf3D_Plate(array):
         print(e)
 
 
-def plotPlateValue(dataFrame):
+def PlateHeatmap(array):
     '''
     Plot all value of plate (replicat here)
     :param dataFrame:
     :return:
     '''
     try:
-        return 0
+        import matplotlib
+        import pylab
+        import numpy as np
+
+        # Create new colormap, with white for zero
+        #(can also take RGB values, like (255,255,255):
+        colors = [('white')] + [(pylab.cm.jet(i)) for i in range(1, 256)]
+        new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
+
+        pylab.pcolor(array, cmap=new_map)
+        pylab.colorbar()
+        pylab.show()
     except Exception as e:
         print(e)
