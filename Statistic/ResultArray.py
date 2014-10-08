@@ -78,7 +78,7 @@ class Result():
     def addDataDict(self, datadict, Feature, by='Pos'):
         '''
         Insert Value from a dict where key = GeneName/pos and Value are value to insert
-        Prefer by = pos
+        Prefer by = pos in case of empty well
         :param datadict: dict that contain value to insert with key are GeneName or Pos/Well
         :param Feature:
         :param by: insert by GeneName or Well
@@ -87,6 +87,8 @@ class Result():
         try:
             for item, value in datadict.items():
                 if by == 'GeneName':
+                    print(" !! Warnings !! addDataDict with by=GeneName is not fully stable in case of empty Well")
+                    print("     Prefer by=Pos")
                     if len(self.GenePos[item]) > 1:
                         for i in (self.GenePos[item]):
                             self.Data[Feature][i] = value
