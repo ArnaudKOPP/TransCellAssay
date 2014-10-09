@@ -19,7 +19,7 @@ class MedianPolish:
         else:
             raise TypeError('Expected the argument to be a numpy.ndarray.')
 
-    def median_polish(self, max_iterations=100, method='median'):
+    def median_polish(self, max_iterations=100, method='median', verbose=False):
         """
             Implements Tukey's median polish alghoritm for additive models
             method - default is median, alternative is mean. That would give us result equal ANOVA.
@@ -60,6 +60,18 @@ class MedianPolish:
             grand_effect += median_col_effects
         # # replace NaN with 0
         self.tbl = np.nan_to_num(self.tbl)
+
+        if verbose:
+            print("median polish:  ")
+            print("grand effect = ", grand_effect)
+            print("column effects = ", col_effects)
+            print("row effects = ", row_effects)
+            print("-----Table of Residuals-------")
+            print(self.tbl)
+            print("-----Original Table-------")
+            print(self.tbl_org)
+            print("")
+
         return grand_effect, col_effects, row_effects, self.tbl, self.tbl_org
 
 
