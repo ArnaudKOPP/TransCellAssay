@@ -116,9 +116,6 @@ USAGE
         print(Statistic.Test.SystematicErrorDetectionTest(rep3.DataMatrixMedian, alpha=0.05))
         print(Statistic.Test.SystematicErrorDetectionTest(plaque1.DataMatrixMedian, alpha=0.05))
 
-        A = np.genfromtxt("/home/akopp/Bureau/testcsv3.csv", delimiter=',')
-        print(Statistic.Test.SystematicErrorDetectionTest(A))
-
         # Graphics.plotSurf3D_Plate(A)
 
 
