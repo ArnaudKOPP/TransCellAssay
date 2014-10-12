@@ -1,17 +1,19 @@
 __author__ = 'Arnaud KOPP'
 
 import numpy as np
+import TCA
 
 
-def MatrixErrorAmendment(Array):
+def MatrixErrorAmendment(plate, feature):
     '''
     Implementation of Matrix Error Amendment , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
-    :param: Array: numpy array represent plate
+    :param: plate: TCA.Plate object
+    :param: feature: feature to normalize
     :return:
     '''
     try:
-        if isinstance(Array, np.ndarray):
+        if isinstance(plate, TCA.Plate):
             return 0
         else:
             raise TypeError

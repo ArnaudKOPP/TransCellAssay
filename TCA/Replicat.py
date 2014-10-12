@@ -231,33 +231,33 @@ class Replicat():
             print(e)
 
 
-def __repr__(self):
-    '''
-    Definition for the representation
-    :return:
-    '''
-    try:
-        return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(
-            self.isNormalized) + "\n Spatial Normalized : \n" + repr(
-            self.isSpatialNormalized) + "\n Data containing in this replicat :\n" + repr(
-            self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData) +
-                "\n Matrix Mean data of feature \n" + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" +
-                repr(self.DataMatrixMedian))
-    except Exception as e:
-        print(e)
+    def __repr__(self):
+        '''
+        Definition for the representation
+        :return:
+        '''
+        try:
+            return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(
+                self.isNormalized) + "\n Spatial Normalized : \n" + repr(
+                self.isSpatialNormalized) + "\n Data containing in this replicat :\n" + repr(
+                self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData) +
+                    "\n Matrix Mean data of feature \n" + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" +
+                    repr(self.DataMatrixMedian))
+        except Exception as e:
+            print(e)
 
 
-def __str__(self):
-    '''
-    Definition for the print
-    :return:
-    '''
-    try:
-        return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(
-            self.isNormalized) + "\n Spatial Normalized : \n" + repr(
-            self.isSpatialNormalized) + "\n Data containing in this replicat :\n" + repr(
-            self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData) +
-                "\n Matrix Mean data of feature \n" + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" +
-                repr(self.DataMatrixMedian))
-    except Exception as e:
-        print(e)
+    def __str__(self):
+        '''
+        Definition for the print
+        :return:
+        '''
+        try:
+            return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(
+                self.isNormalized) + "\n Spatial Normalized : \n" + repr(
+                self.isSpatialNormalized) + "\n Data containing in this replicat :\n" + repr(
+                self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData) +
+                    "\n Matrix Mean data of feature \n" + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" +
+                    repr(self.DataMatrixMedian))
+        except Exception as e:
+            print(e)
