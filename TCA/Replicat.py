@@ -21,8 +21,8 @@ class Replicat():
         '''
         self.Data = pd.DataFrame()
         self.info = ""
-        self.isNormalized = False
-        self.isSpatialNormalized = False
+        self.isNormalized = False  # Well correction or somethings else
+        self.isSpatialNormalized = False  # Bscore, MEA or PMP norm technics
         self.DataMatrixMean = None  # matrix that contain mean of interested features to analyze
         self.DataMatrixMedian = None  # matrix that contain median of interested feature to analyze
         self.SpatNormDataMean = None  # matrix that contain data corrected by median polish (bscore) or others technics
