@@ -4,7 +4,7 @@ import numpy as np
 import Statistic.Test.SystematicErrorDetectionTest as SEDT
 
 
-def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50):
+def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False):
     '''
     Implementation of Partial Mean Polish , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
@@ -13,6 +13,7 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50):
     '''
     try:
         if isinstance(input_array, np.ndarray):
+            array_org = input_array.copy()
             # # count number of row and col affected by systematic error
             shape = input_array.shape
             Nrows = []
@@ -75,6 +76,12 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50):
                 if not (not (converge > epsilon) or not (loop < max_iteration)):
                     break
 
+            if verbose:
+                print("-----Normalized Table-------")
+                print(input_array)
+                print("-----Original Table-------")
+                print(array_org)
+                print("")
             return input_array
         else:
             raise TypeError
