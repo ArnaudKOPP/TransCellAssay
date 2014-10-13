@@ -214,7 +214,6 @@ class Replicat():
                                                                                       verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
-                        self.isSpatialNormalized = True
 
                 if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
                     print(
@@ -226,7 +225,8 @@ class Replicat():
                                                                                       verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
-                        self.isSpatialNormalized = True
+
+                self.isSpatialNormalized = True
 
             if Methods == 'PMP':
                 if self.DataMatrixMean is None or self.isSpatialNormalized is True:
@@ -235,10 +235,9 @@ class Replicat():
                     return 0
                 else:
                     resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMean,
-                                                                      max_iterations=max_iterations)
+                                                                      max_iteration=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
-                        self.isSpatialNormalized = True
 
                 if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
                     print(
@@ -246,10 +245,11 @@ class Replicat():
                     return 0
                 else:
                     resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMedian,
-                                                                      max_iterations=max_iterations)
+                                                                      max_iteration=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
-                        self.isSpatialNormalized = True
+
+                self.isSpatialNormalized = True
 
             if Methods == 'MEA':
                 if self.DataMatrixMean is None or self.isSpatialNormalized is True:
@@ -257,20 +257,20 @@ class Replicat():
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMean)
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMean, verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
-                        self.isSpatialNormalized = True
 
                 if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMedian)
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMedian, verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
-                        self.isSpatialNormalized = True
+
+                self.isSpatialNormalized = True
         except Exception as e:
             print(e)
 

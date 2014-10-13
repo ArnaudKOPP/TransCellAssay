@@ -1,7 +1,7 @@
 __author__ = 'Arnaud KOPP'
 
 import numpy as np
-import Statistic.Test.SystematicErrorDetectionTest as SEDT
+from Statistic.Test.SystematicErrorDetectionTest import TTest
 
 
 def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False):
@@ -21,19 +21,18 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
 
             # search systematic error in row
             for row in range(shape[0]):
-                if SEDT.TTest(input_array[row, :], np.delete(input_array, row, 0)):
+                if TTest(input_array[row, :], np.delete(input_array, row, 0)):
                     Nrows.append(row)
             # search systematic error in column
             for col in range(shape[1]):
-                if SEDT.TTest(input_array[:, col], np.delete(input_array, col, 1)):
+                if TTest(input_array[:, col], np.delete(input_array, col, 1)):
                     Ncols.append(col)
 
             # exit if not row or col affected
-            N = Nrows.count() + Ncols.count()
+            N = Nrows.__len__() + Ncols.__len__()
             if N == 0:
                 print('No Systematics Error detected')
                 return input_array
-
             mu = 0
             # # compute mu
             for row in range(shape[0]):
@@ -41,19 +40,22 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
                     for col in range(shape[1]):
                         if not col in Ncols:
                             mu += input_array[row][col]
-            mu /= ((shape[0] - Nrows) * (shape[1] - Ncols))
+            mu /= ((shape[0] - Nrows.__len__()) * (shape[1] - Ncols.__len__()))
 
             Rmu = []
             Cmu = []
 
             loop = 1
             converge = 0.0
+            print(Nrows)
             while True:
                 diff = None
                 converge = 0.0
                 for i in Nrows:
+                    print(i)
                     for j in range(shape[1]):
                         Rmu[i] += input_array[i][j]
+                        print(j)
                     Rmu[i] /= shape[1]
 
                 for j in Ncols:

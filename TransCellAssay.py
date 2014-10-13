@@ -3,6 +3,7 @@
 __author__ = 'Arnaud KOPP'
 """
 Example of program for use TransCellAssay module
+I try to do universal analyze pipeline
 """
 import os
 import sys
@@ -109,12 +110,13 @@ USAGE
         # print(tmp2)
         np.set_printoptions(linewidth=200)
         plaque1.computeDataFromReplicat('Nuc Intensity')
-        plaque1.SpatialNormalization(verbose=True, save=False)
-        rep1.SpatialNormalization(verbose=True, save=False)
+        # plaque1.SpatialNormalization(verbose=True, save=False)
+        #rep1.SpatialNormalization(verbose=True, save=False)
+        rep1.SpatialNormalization(Methods='PMP', verbose=True)
         print(Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMedian, alpha=0.05))
-        print(Statistic.Test.SystematicErrorDetectionTest(rep2.DataMatrixMedian, alpha=0.05))
-        print(Statistic.Test.SystematicErrorDetectionTest(rep3.DataMatrixMedian, alpha=0.05))
-        print(Statistic.Test.SystematicErrorDetectionTest(plaque1.DataMatrixMedian, alpha=0.05))
+        # print(Statistic.Test.SystematicErrorDetectionTest(rep2.DataMatrixMedian, alpha=0.05))
+        #print(Statistic.Test.SystematicErrorDetectionTest(rep3.DataMatrixMedian, alpha=0.05))
+        #print(Statistic.Test.SystematicErrorDetectionTest(plaque1.DataMatrixMedian, alpha=0.05))
 
         # Graphics.plotSurf3D_Plate(A)
 
