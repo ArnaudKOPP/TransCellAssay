@@ -132,9 +132,9 @@ class Replicat():
         '''
         try:
 
-            groupbydata = self.Data.groupby('Well')
+            grouped_data_by_well = self.Data.groupby('Well')
 
-            mean_tmp = groupbydata.mean()
+            mean_tmp = grouped_data_by_well.mean()
             mean_feature = mean_tmp[feature]
             dict_mean = mean_feature.to_dict()  # # dict : key = pos and item are mean
             if not len(dict_mean) > 96:
@@ -145,8 +145,8 @@ class Replicat():
                 pos = Utils.Utils.getOppositeWellFormat(key)
                 self.DataMatrixMean[pos[0]][pos[1]] = elem
 
-            groupbydata_mean = groupbydata.median()
-            median_feature = groupbydata_mean[feature]
+            median_tmp = grouped_data_by_well.median()
+            median_feature = median_tmp[feature]
             dict_median = median_feature.to_dict()  # # dict : key = pos and item are mean
             if not len(dict_median) > 96:
                 self.DataMatrixMedian = np.zeros((8, 12))
@@ -283,10 +283,7 @@ class Replicat():
         try:
             return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(
                 self.isNormalized) + "\n Spatial Normalized : \n" + repr(
-                self.isSpatialNormalized) + "\n Data containing in this replicat :\n" + repr(
-                self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData) +
-                    "\n Matrix Mean data of feature \n" + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" +
-                    repr(self.DataMatrixMedian))
+                self.isSpatialNormalized))
         except Exception as e:
             print(e)
 
@@ -299,9 +296,6 @@ class Replicat():
         try:
             return ("\n Replicat : \n " + repr(self.info) + "\n Normalized Data \n:" + repr(
                 self.isNormalized) + "\n Spatial Normalized : \n" + repr(
-                self.isSpatialNormalized) + "\n Data containing in this replicat :\n" + repr(
-                self.Data) + "\n Spatial normalized Data containing \n" + repr(self.SpatNormData) +
-                    "\n Matrix Mean data of feature \n" + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" +
-                    repr(self.DataMatrixMedian))
+                self.isSpatialNormalized))
         except Exception as e:
             print(e)

@@ -373,8 +373,7 @@ class Plate():
             return (
                 "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
                     self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Array Result :\n" + repr(
-                    self.Result) + "\n Replicat List : \n" + repr(self.replicat) + "\n Matrix Mean data of feature \n"
-                + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" + repr(self.DataMatrixMedian))
+                    self.Result) + "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:
             print(e)
 
@@ -387,7 +386,6 @@ class Plate():
             return (
                 "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
                     self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Array Result :\n" + repr(
-                    self.Result) + "\n Replicat List : \n" + repr(self.replicat) + "\n Matrix Mean data of feature \n"
-                + repr(self.DataMatrixMean) + "\n Matrix Median of feature \n" + repr(self.DataMatrixMedian))
+                    self.Result) + "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:
             print(e)
