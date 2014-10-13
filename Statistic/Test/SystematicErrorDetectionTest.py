@@ -17,13 +17,13 @@ def SystematicErrorDetectionTest(Array, save=False, datatype='Median', alpha=0.0
             SEDT_Array = np.zeros(shape)
             # search systematic error in row
             for row in range(shape[0]):
-                tstat, dof = TTest(Matrix[row, :], np.delete(Matrix, row, 0))
+                tstat, dof = t_test(Matrix[row, :], np.delete(Matrix, row, 0))
                 theo = stats.t.isf(alpha, dof)
                 if tstat > theo:
                     SEDT_Array[row, :] = 1
             #search systematic error in column
             for col in range(shape[1]):
-                tstat, dof = TTest(Matrix[:, col], np.delete(Matrix, col, 1))
+                tstat, dof = t_test(Matrix[:, col], np.delete(Matrix, col, 1))
                 theo = stats.t.isf(alpha, dof)
                 if tstat > theo:
                     SEDT_Array[:, col] = 1
@@ -35,7 +35,7 @@ def SystematicErrorDetectionTest(Array, save=False, datatype='Median', alpha=0.0
         print(e)
 
 
-def TTest(Array1, Array2):
+def t_test(Array1, Array2):
     '''
     Compute a T Test on two array
     In this test, the nul hypothesis H0 was the selected row/col does not contain systematic error
@@ -57,7 +57,7 @@ def TTest(Array1, Array2):
         print(e)
 
 
-def ttest(Array1, Array2, alpha=0.05):
+def TTest(Array1, Array2, alpha=0.05):
     '''
     Compute a T Test on two array
     In this test, the nul hypothesis H0 was the selected row/col does not contain systematic error
