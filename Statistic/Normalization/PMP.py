@@ -42,26 +42,23 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
                             mu += input_array[row][col]
             mu /= ((shape[0] - Nrows.__len__()) * (shape[1] - Ncols.__len__()))
 
-            Rmu = []
-            Cmu = []
+            Rmu = [0] * shape[0]
+            Cmu = [0] * shape[1]
 
             loop = 1
             converge = 0.0
-            print(Nrows)
             while True:
                 diff = None
                 converge = 0.0
                 for i in Nrows:
-                    print(i)
                     for j in range(shape[1]):
                         Rmu[i] += input_array[i][j]
-                        print(j)
                     Rmu[i] /= shape[1]
 
                 for j in Ncols:
-                    for j in range(shape[0]):
-                        Cmu[i] += input_array[i][j]
-                    Rmu[i] /= shape[0]
+                    for i in range(shape[0]):
+                        Cmu[j] += input_array[i][j]
+                    Cmu[j] /= shape[0]
 
                 for i in Nrows:
                     diff = mu - Rmu[i]
