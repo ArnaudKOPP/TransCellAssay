@@ -57,7 +57,6 @@ def MatrixErrorAmendment(input_array, verbose=False):
                 B[i] = -shape[1] * mu
                 for k in range(0, shape[1], 1):
                     B[i] += input_array[r][k]
-            print('Test2')
             for i in range(Nrows.__len__(), N, 1):
                 c = Ncols[i - Nrows.__len__()]
                 A[i][i] = shape[0]
@@ -89,6 +88,7 @@ def MatrixErrorAmendment(input_array, verbose=False):
                     input_array[j][c] -= X[i]
 
             if verbose:
+                print("MEA methods for removing systematics error")
                 print("-----Normalized Table-------")
                 print(input_array)
                 print("-----Original Table-------")

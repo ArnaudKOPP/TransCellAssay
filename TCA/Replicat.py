@@ -193,9 +193,15 @@ class Replicat():
             print(e)
 
 
-    def SpatialNormalization(self, Methods='Bscore', verbose=False, save=True, max_iterations=100):
+    def SpatialNormalization(self, Methods='Bscore', verbose=False, save=False, max_iterations=100):
         '''
+
         Apply a spatial normalization for remove edge effect
+        The Bscore method showed a more stable behavior than MEA and PMP only when the number of rows and columns
+        affected by the systematics error, hit percentage and systematic error variance were high (mainly du to a
+        mediocre performance of the t-test in this case). MEA was generally the best method for correcting
+        systematic error within 96-well plates, whereas PMP performed better for 384 /1526 well plates.
+
         :param Methods: Bscore, MEA or PMP technics, default = Bscore
         :param verbose: Output in console
         :param save: save the result into self.SpatNormData, default = False
@@ -209,7 +215,7 @@ class Replicat():
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMean,
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMean.copy(),
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
@@ -220,13 +226,12 @@ class Replicat():
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMedian,
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMedian.copy(),
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
-
-                self.isSpatialNormalized = True
+                        self.isSpatialNormalized = True
 
             if Methods == 'PMP':
                 if self.DataMatrixMean is None or self.isSpatialNormalized is True:
@@ -234,7 +239,7 @@ class Replicat():
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMean,
+                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMean.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
@@ -244,12 +249,11 @@ class Replicat():
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMedian,
+                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMedian.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
-
-                self.isSpatialNormalized = True
+                        self.isSpatialNormalized = True
 
             if Methods == 'MEA':
                 if self.DataMatrixMean is None or self.isSpatialNormalized is True:
@@ -257,7 +261,7 @@ class Replicat():
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMean, verbose=verbose)
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMean.copy(), verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
 
@@ -266,11 +270,11 @@ class Replicat():
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMedian, verbose=verbose)
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMedian.copy(), verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
+                        self.isSpatialNormalized = True
 
-                self.isSpatialNormalized = True
         except Exception as e:
             print(e)
 

@@ -271,7 +271,7 @@ class Plate():
                         "Compute Mean of replicat first by using computeDataFromReplicat, or data are already spatial Normalized")
                     return 0
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMean,
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMean.copy(),
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
@@ -283,7 +283,7 @@ class Plate():
                         "Compute Median of replicat first by using computeDataMatrixForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMean,
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMean.copy(),
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
@@ -295,8 +295,8 @@ class Plate():
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMean,
-                                                                      max_iterations=max_iterations)
+                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMean.copy(),
+                                                                      max_iterations=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
                         self.isSpatialNormalized = True
@@ -306,8 +306,8 @@ class Plate():
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMedian,
-                                                                      max_iterations=max_iterations)
+                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMedian.copy(),
+                                                                      max_iterations=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
@@ -318,7 +318,7 @@ class Plate():
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMean)
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMean.copy(), verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
                         self.isSpatialNormalized = True
@@ -328,7 +328,7 @@ class Plate():
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMedian)
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMedian.copy(), verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True

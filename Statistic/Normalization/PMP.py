@@ -33,6 +33,7 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
             if N == 0:
                 print('No Systematics Error detected')
                 return input_array
+
             mu = 0
             # # compute mu
             for row in range(shape[0]):
@@ -48,7 +49,7 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
             loop = 1
             converge = 0.0
             while True:
-                diff = None
+                diff = 0.0
                 converge = 0.0
                 for i in Nrows:
                     for j in range(shape[1]):
@@ -76,6 +77,7 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
                     break
 
             if verbose:
+                print("PMP methods for removing systematics error")
                 print("-----Normalized Table-------")
                 print(input_array)
                 print("-----Original Table-------")

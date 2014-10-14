@@ -4,7 +4,7 @@ import numpy as np
 from scipy import stats
 
 
-def SystematicErrorDetectionTest(Array, save=False, datatype='Median', alpha=0.05):
+def SystematicErrorDetectionTest(Array, save=False, datatype='Median', alpha=0.05, verbose=False):
     '''
     Search for systematic error in plate or replicat
     :param Plate:
@@ -27,6 +27,11 @@ def SystematicErrorDetectionTest(Array, save=False, datatype='Median', alpha=0.0
                 theo = stats.t.isf(alpha, dof)
                 if tstat > theo:
                     SEDT_Array[:, col] = 1
+
+            if verbose:
+                print("Systematics Error Detection Test for plate")
+                print(SEDT_Array)
+                print("")
 
             return SEDT_Array
         else:
