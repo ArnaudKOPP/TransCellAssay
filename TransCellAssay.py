@@ -60,7 +60,7 @@ USAGE
         # Setup argument parser
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument("-i", "--inputFileDirectory", dest="input", action="store",
-                            help="Input path of data file ", required=True)
+                            help="Input path of data file ")
         # parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
         # help="Output path for result file", required=True)
         #
@@ -89,19 +89,6 @@ USAGE
         plaque1.addReplicat(rep3)
         screen_test.addPlate(plaque1)
 
-
-        # empty_screen = TCA.Screen()
-        # plaque2 = TCA.Plate()
-        # ps = TCA.PlateSetup()
-        # ps.setPlateSetup("/home/akopp/Bureau/test/Pl2PP.csv")
-        # print(ps)
-        # plaque2.addPlateSetup(ps)
-        # rep_e = TCA.Replicat()
-        # rep_e.setInfo("rep1")
-        # rep_e.setData("/home/akopp/Bureau/test/Pl2rep_1.csv")
-        # plaque2.addReplicat(rep_e)
-        # empty_screen.addPlate(plaque2)
-
         time_start_comp = time.time()
         print("")
         print("BEGIN COMPUTATION TEST")
@@ -110,27 +97,11 @@ USAGE
         # print(tmp2)
         np.set_printoptions(linewidth=200)
         plaque1.computeDataFromReplicat('Nuc Intensity')
-        # plaque1.SpatialNormalization(verbose=True, save=False)
-        #rep1.SpatialNormalization(verbose=True, save=False)
         rep1.SpatialNormalization(Methods='PMP', verbose=True)
         Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMean, alpha=0.05, verbose=True)
         Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMedian, alpha=0.05, verbose=True)
         rep1.SpatialNormalization(Methods='MEA', verbose=True)
-        # print(Statistic.Test.SystematicErrorDetectionTest(rep2.DataMatrixMedian, alpha=0.05))
-        #print(Statistic.Test.SystematicErrorDetectionTest(rep3.DataMatrixMedian, alpha=0.05))
-        #print(Statistic.Test.SystematicErrorDetectionTest(plaque1.DataMatrixMedian, alpha=0.05))
-
         # Graphics.plotSurf3D_Plate(A)
-
-
-        # res = Statistic.computePlateAnalyzis(plaque2, ['Nuc Intensity'], 'NT')
-        # print(res)
-        # plaque2.computeDataFromReplicat('Nuc Intensity')
-        # np.set_printoptions(linewidth=200)
-        # plaque2.BScoreNormalization(verbose=True)
-        # rep_e.BScoreNormalization(verbose=True)
-
-
 
         time_stop_comp = time.time()
         print("    Compute Executed in {0:f}s".format(float(time_stop_comp - time_start_comp)))

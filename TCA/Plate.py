@@ -135,7 +135,7 @@ class Plate():
             print(e)
             print('Error in getting info')
 
-    def getAllDataFromReplicat(self, features):
+    def getAllDataFromReplicat(self, features, Well=False):
         '''
         Return a dict with data of all dataframe, with feature specified
         :return:
@@ -144,7 +144,7 @@ class Plate():
         try:
             for rep in self.replicat:
                 repTmp = self.replicat[rep]
-                tmp = repTmp.getDataByFeatures(features)
+                tmp = repTmp.getDataByFeatures(features, Well=Well)
                 data[repTmp.getInfo()] = tmp
             return data
         except Exception as e:

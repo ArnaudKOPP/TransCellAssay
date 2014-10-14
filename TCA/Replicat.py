@@ -108,15 +108,16 @@ class Replicat():
             print(e)
             print('Error in exporting data for wells')
 
-    def getDataByFeatures(self, featList):
+    def getDataByFeatures(self, featList, Well=False):
         '''
         Return a data frame with Well col and features data col in list []
         if no Well col is given, then auto add
         :param featList: give a list with feature in [] format
+        :param Well: if we want to have Well col in data
         :return: output a dataframe with Well col and feature col
         '''
         try:
-            if not "Well" in featList:
+            if Well:
                 featList.insert(0, 'Well')
                 return self.Data[featList]
             else:
