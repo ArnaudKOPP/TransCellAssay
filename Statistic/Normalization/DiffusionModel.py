@@ -50,7 +50,6 @@ class DiffusionModel():
                             j - 1] - 1 * input[i][j]) * self.CoeffDiff
                     else:
                         output[i][j] = self.Mask[i][j]
-
             # Normalize the plate
             LextPlate = list()
 
@@ -65,6 +64,8 @@ class DiffusionModel():
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
                     output[X + 1][Y + 1] = (output[X + 1][Y + 1] - Average) / Stdev
+
+            return output
         except Exception as e:
             print("DiffusionLaplacianFunction Method")
             print(e)
@@ -86,18 +87,17 @@ class DiffusionModel():
 
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
-                    Plate[X][Y] = (Plate[X][Y] - Average) / Stdev
+                    TmpPlate[X][Y] = (Plate[X][Y] - Average) / Stdev
 
             for iter in range(len(self.DiffusionMaps)):
                 CurrentDist = 0
                 for X in range(self.Array.shape[0]):
                     for Y in range(self.Array.shape[1]):
-                        CurrentDist += np.sqrt((self.DiffusionMaps[iter][X][Y] - TmpPlate[X][Y]) * (
+                        CurrentDist = np.sqrt((self.DiffusionMaps[iter][X][Y] - TmpPlate[X][Y]) * (
                             self.DiffusionMaps[iter][X][Y] - TmpPlate[X][Y]))
                 if CurrentDist < Dist:
                     BestIter = iter
                     Dist = CurrentDist
-
             return BestIter
         except Exception as e:
             print("FindIterationsForBestMatch Methods")
@@ -139,12 +139,10 @@ class DiffusionModel():
     def CorrectThePlate(self, inputPlate, IdxDiff, Shift, MultCoeff):
         try:
             CorrectedPlate = np.zeros(self.Array.shape)
-
+            print("Hello")
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
                     CorrectedPlate[X][Y] = inputPlate[X][Y] / (self.DiffusionMaps[IdxDiff][X][Y] * MultCoeff + Shift)
-
-            print(CorrectedPlate)
             return CorrectedPlate
         except Exception as e:
             print("CorrectThePlate Method")
@@ -154,8 +152,9 @@ class DiffusionModel():
         try:
             CurrentMap = np.zeros((self.Array.shape[0] + 2, self.Array.shape[1] + 2))
             Nextmap = np.zeros((self.Array.shape[0] + 2, self.Array.shape[1] + 2))
-            CurrentMap = self.Mask.copy()
             CurrentMapWithoutBorders0 = np.zeros(self.Array.shape)
+
+            CurrentMap = self.Mask.copy()
 
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
@@ -166,7 +165,8 @@ class DiffusionModel():
             ValueList = list()
 
             for i in range(max_iterations):
-                self.DiffusionLaplacianFunction(CurrentMap, Nextmap, self.Array.shape[1] + 2, self.Array.shape[0] + 2)
+                Nextmap = self.DiffusionLaplacianFunction(CurrentMap, Nextmap, self.Array.shape[1] + 2,
+                                                          self.Array.shape[0] + 2)
                 ValueList.clear()
 
                 CurrentMapWithoutBorders = np.zeros(self.Array.shape)
