@@ -6,18 +6,18 @@ Data input is designed to be Single Cell data.
 
 
 ##HOW TO USE IT
-Need to be make
+It will certainly be like a toolbox, so programming skill is needed for the moment.
 
 ### What TCA do :
 1. Z-score Normalization, Quantile normalization between replicat, logarithmic transformation
 2. Systematic Error Detection Test
-3. Spatial Effect removing if fail previous test
+3. Spatial Effect removing if previous step detect error
 4. Scoring
 
 ##DEPENDENCIES
 1. Python > 3.3 
 2. Pandas
-3. Scipy stack (numpy, matplotlib, ...)
+3. Scipy stack (scipy, numpy, matplotlib, ...)
 
 ##CONTACT
 kopp@igbmc.fr  

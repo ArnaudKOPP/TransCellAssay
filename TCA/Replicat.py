@@ -203,7 +203,7 @@ class Replicat():
         mediocre performance of the t-test in this case). MEA was generally the best method for correcting
         systematic error within 96-well plates, whereas PMP performed better for 384 /1526 well plates.
 
-        :param Methods: Bscore, MEA or PMP technics, default = Bscore
+        :param Methods: Bscore, MEA, PMP or diffusion model technics, default = Bscore
         :param verbose: Output in console
         :param save: save the result into self.SpatNormData, default = False
         :param max_iterations: maximum iterations loop, default = 100
@@ -275,6 +275,64 @@ class Replicat():
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
+
+            if Methods == 'DiffusionModel':
+                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
+                    print(
+                        "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
+                    return 0
+                else:
+                    EdgeEffect = Statistic.Normalization.DiffusionModel(self.DataMatrixMean.copy())
+                    EdgeEffect.DiffusionModel(max_iterations=max_iterations)
+                    BestIteration = EdgeEffect.FindIterationsForBestMatch(self.DataMatrixMean.copy())
+                    ShiftMult = EdgeEffect.FindBestShiftMultCoeff(self.DataMatrixMean.copy(), BestIteration)
+                    CorrectedTable = np.zeros(self.DataMatrixMedian.shape)
+                    # Correct the plate
+                    if not BestIteration == 0:
+                        CorrectedTable = EdgeEffect.CorrectThePlate(self.DataMatrixMean.copy(), BestIteration,
+                                                                    ShiftMult[0], ShiftMult[1])
+                    if save:
+                        self.SpatNormDataMean = CorrectedTable
+                    if verbose:
+                        np.set_printoptions(suppress=True)
+                        print("DiffusionModel methods for removing systematics error")
+                        print("Diffusion Iteration :", BestIteration)
+                        print("Diffusion Shift :", ShiftMult[0])
+                        print("Diffusion multiplicative coeff: ", ShiftMult[1])
+                        print("-----Normalized Table-------")
+                        print(CorrectedTable)
+                        print("-----Original Table-------")
+                        print(self.DataMatrixMean)
+                        print("")
+
+                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
+                    print(
+                        "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
+                    return 0
+                else:
+                    EdgeEffect = Statistic.Normalization.DiffusionModel(self.DataMatrixMedian.copy())
+                    EdgeEffect.DiffusionModel(max_iterations=max_iterations)
+                    BestIteration = EdgeEffect.FindIterationsForBestMatch(self.DataMatrixMedian.copy())
+                    ShiftMult = EdgeEffect.FindBestShiftMultCoeff(self.DataMatrixMean.copy(), BestIteration)
+                    CorrectedTable = np.zeros(self.DataMatrixMedian.shape)
+                    # Correct the plate
+                    if not BestIteration == 0:
+                        CorrectedTable = EdgeEffect.CorrectThePlate(self.DataMatrixMedian.copy(), BestIteration,
+                                                                    ShiftMult[0], ShiftMult[1])
+                    if save:
+                        self.SpatNormDataMedian = CorrectedTable
+                        self.isSpatialNormalized = True
+                    if verbose:
+                        np.set_printoptions(suppress=True)
+                        print("DiffusionModel methods for removing systematics error")
+                        print("Diffusion Iteration :", BestIteration)
+                        print("Diffusion Shift :", ShiftMult[0])
+                        print("Diffusion multiplicative coeff: ", ShiftMult[1])
+                        print("-----Normalized Table-------")
+                        print(CorrectedTable)
+                        print("-----Original Table-------")
+                        print(self.DataMatrixMedian)
+                        print("")
 
         except Exception as e:
             print(e)

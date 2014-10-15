@@ -13,17 +13,19 @@ class DiffusionModel():
         self.DiffusionMapsMeans = list()  # list of numpy array
         self.DiffusionMapsStdev = list()  # list of numpy array
 
-    def DiffusionModel(self, save=False, verbose=True, max_iterations=50):
+    def DiffusionModel(self, max_iterations=50):
         try:
             self.GenerateMask()
             self.ComputeDiffusionMaps(max_iterations=max_iterations)
         except Exception as e:
+            print("DiffusionModel Method")
             print(e)
 
     def GetDiffusion(self, iteration):
         try:
             return self.DiffusionMaps[iteration]
         except Exception as e:
+            print("GetDiffusion Method")
             print(e)
 
     def GenerateMask(self):
@@ -31,11 +33,12 @@ class DiffusionModel():
             self.Mask = np.zeros((self.Array.shape[0] + 2, self.Array.shape[1] + 2))
             for i in range(self.Array.shape[0] + 2):
                 self.Mask[i][0] = 1
-                self.Mask[i][self.Array.shape[0] + 1] = 1
-            for i in range(self.Array.shape[1] + 2):
-                self.Mask[0][i] = 1
-                self.Mask[self.Array.shape[1] + 1][i] = 1
+                self.Mask[i][self.Array.shape[1] + 1] = 1
+            for j in range(self.Array.shape[1] + 2):
+                self.Mask[0][j] = 1
+                self.Mask[self.Array.shape[0] + 1][j] = 1
         except Exception as e:
+            print("GenerateMask Method")
             print(e)
 
     def DiffusionLaplacianFunction(self, input, output, Width, Height):
@@ -46,7 +49,7 @@ class DiffusionModel():
                         output[i][j] = input[i][j] + (input[i + 1][j] + input[i - 1][j] + input[i][j + 1] + input[i][
                             j - 1] - 1 * input[i][j]) * self.CoeffDiff
                     else:
-                        output[i][j] = self.Mask[i]
+                        output[i][j] = self.Mask[i][j]
 
             # Normalize the plate
             LextPlate = list()
@@ -63,6 +66,7 @@ class DiffusionModel():
                 for Y in range(self.Array.shape[1]):
                     output[X + 1][Y + 1] = (output[X + 1][Y + 1] - Average) / Stdev
         except Exception as e:
+            print("DiffusionLaplacianFunction Method")
             print(e)
 
     def FindIterationsForBestMatch(self, Plate):
@@ -96,6 +100,7 @@ class DiffusionModel():
 
             return BestIter
         except Exception as e:
+            print("FindIterationsForBestMatch Methods")
             print(e)
 
     def FindBestShiftMultCoeff(self, inputPlate, IdxDiff):
@@ -105,13 +110,13 @@ class DiffusionModel():
             MaxDist = sys.float_info.max
             CurrentDist = 0
 
-            MinMultValue = 0
-            MaxMultValue = 10
-            DeltaMultValue = 1
+            MinMultValue = 0  # -2147483648 < X < 466537709
+            MaxMultValue = 100  # -2147483648 < X < 466537709
+            DeltaMultValue = 1  # -2147483648 < X < 466537709
 
-            MinShiftValue = 0
-            MaxShiftValue = 10
-            DeltaShiftValue = 1
+            MinShiftValue = 0  # -2147483648 < X < 466537709
+            MaxShiftValue = 100  # -2147483648 < X < 466537709
+            DeltaShiftValue = 1  # -2147483648 < X < 466537709
 
             for DiffusionInitTemp in range(MinMultValue, MaxMultValue, DeltaMultValue):
                 for PlateInitTemp in range(MinShiftValue, MaxShiftValue, DeltaShiftValue):
@@ -128,6 +133,7 @@ class DiffusionModel():
 
             return ShiftMult
         except Exception as e:
+            print("FindBestShiftMultCoeff Method")
             print(e)
 
     def CorrectThePlate(self, inputPlate, IdxDiff, Shift, MultCoeff):
@@ -138,14 +144,16 @@ class DiffusionModel():
                 for Y in range(self.Array.shape[1]):
                     CorrectedPlate[X][Y] = inputPlate[X][Y] / (self.DiffusionMaps[IdxDiff][X][Y] * MultCoeff + Shift)
 
+            print(CorrectedPlate)
             return CorrectedPlate
         except Exception as e:
+            print("CorrectThePlate Method")
             print(e)
 
-    def ComputeDiffusionMaps(self, max_iterations=50):
+    def ComputeDiffusionMaps(self, max_iterations=100):
         try:
-            CurrentMap = np.zeros(self.Array.shape)
-            Nextmap = np.zeros(self.Array.shape)
+            CurrentMap = np.zeros((self.Array.shape[0] + 2, self.Array.shape[1] + 2))
+            Nextmap = np.zeros((self.Array.shape[0] + 2, self.Array.shape[1] + 2))
             CurrentMap = self.Mask.copy()
             CurrentMapWithoutBorders0 = np.zeros(self.Array.shape)
 
@@ -158,7 +166,7 @@ class DiffusionModel():
             ValueList = list()
 
             for i in range(max_iterations):
-                self.DiffusionLaplacianFunction(CurrentMap, Nextmap, self.Array.shape[1], self.Array.shape[0])
+                self.DiffusionLaplacianFunction(CurrentMap, Nextmap, self.Array.shape[1] + 2, self.Array.shape[0] + 2)
                 ValueList.clear()
 
                 CurrentMapWithoutBorders = np.zeros(self.Array.shape)
@@ -173,4 +181,5 @@ class DiffusionModel():
                 self.DiffusionMapsStdev.append(np.mean(ValueList))
                 CurrentMap = Nextmap.copy()
         except Exception as e:
+            print("ComputeDiffusionMaps Method")
             print(e)
