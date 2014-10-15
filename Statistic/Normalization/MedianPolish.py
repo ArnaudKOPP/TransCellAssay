@@ -50,9 +50,11 @@ def MedianPolish(array, max_iterations=100, method='median', verbose=False):
             tbl -= col_medians
 
             grand_effect += median_col_effects
+        MAD = mad(tbl.flatten())
+        tbl = tbl / (1.4826 * MAD)
         # # replace NaN with 0
         tbl = np.nan_to_num(tbl)
-
+        np.set_printoptions(suppress=True)
         if verbose:
             print("median polish:  ")
             print("grand effect = ", grand_effect)
@@ -68,3 +70,15 @@ def MedianPolish(array, max_iterations=100, method='median', verbose=False):
     else:
         raise TypeError('Expected the argument to be a numpy.ndarray.')
 
+
+def mad(arr):
+    """ Median Absolute Deviation: a "Robust" version of standard deviation.
+        Indices variabililty of the sample.
+        https://en.wikipedia.org/wiki/Median_absolute_deviation
+    """
+    try:
+        arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
+        med = np.median(arr)
+        return np.median(np.abs(arr - med))
+    except Exception as e:
+        print(e)

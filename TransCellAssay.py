@@ -97,10 +97,10 @@ USAGE
         # print(tmp2)
         np.set_printoptions(linewidth=200)
         plaque1.computeDataFromReplicat('Nuc Intensity')
-        rep1.SpatialNormalization(Methods='PMP', verbose=True)
+        rep1.SpatialNormalization(Methods='MEA', verbose=True)
         Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMean, alpha=0.05, verbose=True)
         Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMedian, alpha=0.05, verbose=True)
-        rep1.SpatialNormalization(Methods='MEA', verbose=True)
+        rep1.SpatialNormalization(Methods='Bscore', verbose=True)
         # Graphics.plotSurf3D_Plate(A)
 
         time_stop_comp = time.time()
