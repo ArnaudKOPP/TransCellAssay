@@ -4,7 +4,42 @@ import numpy as np
 import sys
 
 
+def diffusionModel(Array, max_iterations=100, verbose=False):
+    '''
+    Performed the DiffusionModel Process
+    :param Array: numpy array represente matrix to normalize
+    :param max_iterations: max iterations in process
+    :param verbose: print result
+    :return: result array
+    '''
+    EdgeEffect = DiffusionModel(Array.copy())
+    EdgeEffect.DiffusionModel(max_iterations=max_iterations)
+    BestIteration = EdgeEffect.FindIterationsForBestMatch(Array.copy())
+    ShiftMult = EdgeEffect.FindBestShiftMultCoeff(Array.copy(), BestIteration)
+    CorrectedTable = None
+    # Correct the plate
+    if not BestIteration == 0:
+        CorrectedTable = EdgeEffect.CorrectThePlate(Array.copy(), BestIteration, ShiftMult[0], ShiftMult[1])
+
+    if verbose:
+        np.set_printoptions(suppress=True)
+        print("DiffusionModel methods for removing systematics error")
+        print("Diffusion Iteration :", BestIteration)
+        print("Diffusion Shift :", ShiftMult[0])
+        print("Diffusion multiplicative coeff: ", ShiftMult[1])
+        print("-----Normalized Table-------")
+        print(CorrectedTable)
+        print("-----Original Table-------")
+        print(Array)
+        print("")
+
+    return CorrectedTable
+
+
 class DiffusionModel():
+    '''
+    Class that represent the Diffusion Model
+    '''
     def __init__(self, array):
         self.Array = array
         self.CoeffDiff = 0.125
@@ -111,12 +146,12 @@ class DiffusionModel():
             CurrentDist = 0
 
             MinMultValue = 0  # -2147483648 < X < 466537709
-            MaxMultValue = 100  # -2147483648 < X < 466537709
-            DeltaMultValue = 1  # -2147483648 < X < 466537709
+            MaxMultValue = 1000  # -2147483648 < X < 466537709
+            DeltaMultValue = 10  # -2147483648 < X < 466537709
 
             MinShiftValue = 0  # -2147483648 < X < 466537709
-            MaxShiftValue = 100  # -2147483648 < X < 466537709
-            DeltaShiftValue = 1  # -2147483648 < X < 466537709
+            MaxShiftValue = 1000  # -2147483648 < X < 466537709
+            DeltaShiftValue = 10  # -2147483648 < X < 466537709
 
             for DiffusionInitTemp in range(MinMultValue, MaxMultValue, DeltaMultValue):
                 for PlateInitTemp in range(MinShiftValue, MaxShiftValue, DeltaShiftValue):
