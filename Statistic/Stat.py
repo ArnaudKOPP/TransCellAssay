@@ -20,3 +20,16 @@ def kl(p, q):
     q = np.asarray(q, dtype=np.float)
 
     return np.sum(np.where(p != 0, p * np.log(p / q), 0))
+
+
+def mad(arr):
+    """ Median Absolute Deviation: a "Robust" version of standard deviation.
+        Indices variabililty of the sample.
+        https://en.wikipedia.org/wiki/Median_absolute_deviation
+    """
+    try:
+        arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
+        med = np.median(arr)
+        return np.median(np.abs(arr - med))
+    except Exception as e:
+        print(e)

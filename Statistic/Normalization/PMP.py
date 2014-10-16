@@ -1,7 +1,7 @@
 __author__ = 'Arnaud KOPP'
 
 import numpy as np
-from Statistic.Test.SystematicErrorDetectionTest import TTest
+from Statistic.Test.ttest import TTest
 
 
 def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False):

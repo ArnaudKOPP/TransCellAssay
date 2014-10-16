@@ -178,17 +178,16 @@ class Replicat():
         except Exception as e:
             print(e)
 
-    def WellCorrection(self, feature, zscore=True, log=True):
+    def Normalization(self, feature, method, log=True):
         '''
-        Performed Well Correction on data
+        Performed normalization on data
         :param zscore: Performed zscore Transformation
         :param log:  Performed log2 Transformation
         '''
         try:
             if not self.isNormalized:
-                self.Data = Statistic.Normalization.WellCorrection(self.Data, feature=feature,
-                                                                   zscore_transformation=zscore,
-                                                                   log2_transformation=log)
+                self.Data = Statistic.Normalization.VariabilityNormalization(self.Data, feature=feature,
+                                                                             method=method, log2_transformation=log)
                 self.isNormalized = True
         except Exception as e:
             print(e)
@@ -230,6 +229,30 @@ class Replicat():
                     ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMedian.copy(),
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
+                    if save:
+                        self.SpatNormDataMedian = resid
+                        self.isSpatialNormalized = True
+
+            if Methods == 'BZscore':
+                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
+                    print(
+                        "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
+                    return 0
+                else:
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMatrixMean.copy(),
+                                                                                        max_iterations=max_iterations,
+                                                                                        verbose=verbose)
+                    if save:
+                        self.SpatNormDataMean = resid
+
+                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
+                    print(
+                        "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
+                    return 0
+                else:
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMatrixMedian.copy(),
+                                                                                        max_iterations=max_iterations,
+                                                                                        verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True

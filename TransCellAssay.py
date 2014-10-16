@@ -100,7 +100,7 @@ USAGE
         rep1.SpatialNormalization(Methods='MEA', verbose=True)
         Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMean, alpha=0.05, verbose=True)
         Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMedian, alpha=0.05, verbose=True)
-        rep1.SpatialNormalization(Methods='DiffusionModel', verbose=True)
+        # rep1.SpatialNormalization(Methods='DiffusionModel', verbose=True)
         # Graphics.plotSurf3D_Plate(A)
 
         time_stop_comp = time.time()

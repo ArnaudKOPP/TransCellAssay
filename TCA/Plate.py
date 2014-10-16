@@ -233,7 +233,7 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def WellCorrection(self, feature, zscore=True, log=True):
+    def Normalization(self, feature, technics, log=True):
         '''
         Apply Well correction on all replicat data
         :param feature: feature to normalize
@@ -242,7 +242,7 @@ class Plate():
         '''
         try:
             for key, value in self.replicat.items():
-                value.WellCorrection(feature=feature, zscore=zscore, log=log)
+                value.WellCorrection(feature=feature, method=technics, log=log)
             self.isNormalized = True
         except Exception as e:
             print(e)
@@ -289,6 +289,31 @@ class Plate():
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
+            if Methods == 'Bscore':
+                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
+                    print(
+                        "Compute Mean of replicat first by using computeDataFromReplicat, or data are already spatial Normalized")
+                    return 0
+                else:
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMatrixMean.copy(),
+                                                                                        max_iterations=max_iterations,
+                                                                                        verbose=verbose)
+                    if save:
+                        self.SpatNormDataMean = resid
+                        self.isSpatialNormalized = True
+
+                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
+                    print(
+                        "Compute Median of replicat first by using computeDataMatrixForFeature, or data are already spatial Normalized")
+                    return 0
+                else:
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMatrixMean.copy(),
+                                                                                        max_iterations=max_iterations,
+                                                                                        verbose=verbose)
+                    if save:
+                        self.SpatNormDataMedian = resid
+                        self.isSpatialNormalized = True
+
             if Methods == 'PMP':
                 if self.DataMatrixMean is None or self.isSpatialNormalized is True:
                     print(
