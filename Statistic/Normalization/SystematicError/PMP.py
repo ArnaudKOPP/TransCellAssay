@@ -1,10 +1,20 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+Main steps of the PMP method:
+    -Compute mean value of all entities of the given plate that are not affected by the systematic error.
+    -For each row, compute the mean value and estimates the row bias; for each col, compute the mean and estimates the
+row bias.
+    -For all rows affected by systematics bias, adjust their measurement using the error estimates determined in
+previous step for each row and col; For all col affected by systematics bias, adjust their measurement using the error estimates determined in
+previous step for each row and col.
+    -Compute value of the convergence parameter.
+    -If convergence parameter is inf of ref threshold, stop, else repeat previous step.
+"""
 import numpy as np
 from Statistic.Test.ttest import TTest
 
 
-def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False):
+def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False, alpha=0.05):
     '''
     Implementation of Partial Mean Polish , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
@@ -21,11 +31,11 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
 
             # search systematic error in row
             for row in range(shape[0]):
-                if TTest(input_array[row, :], np.delete(input_array, row, 0)):
+                if TTest(input_array[row, :], np.delete(input_array, row, 0), alpha=alpha):
                     Nrows.append(row)
             # search systematic error in column
             for col in range(shape[1]):
-                if TTest(input_array[:, col], np.delete(input_array, col, 1)):
+                if TTest(input_array[:, col], np.delete(input_array, col, 1), alpha=alpha):
                     Ncols.append(col)
 
             # exit if not row or col affected
@@ -76,8 +86,12 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
                 if not (not (converge > epsilon) or not (loop < max_iteration)):
                     break
 
+            np.set_printoptions(suppress=True)
             if verbose:
                 print("PMP methods for removing systematics error")
+                print(u'\u03B1'" for T-Test : ", alpha)
+                print(u'\u03B5'" : ", epsilon)
+                print("Max Iteration : ", max_iteration)
                 print("-----Normalized Table-------")
                 print(input_array)
                 print("-----Original Table-------")

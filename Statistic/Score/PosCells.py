@@ -1,7 +1,7 @@
 __author__ = 'Arnaud KOPP'
 import numpy as np
 import pandas as pd
-import TCA
+import ScreenPlateReplicatPS
 import time
 
 
@@ -20,7 +20,7 @@ def getPercentPosCell(plate, feature, control, threshold, direction):
     dict_percent_sd_cell = {}
 
     try:
-        if isinstance(plate, TCA.Plate):
+        if isinstance(plate, ScreenPlateReplicatPS.Plate):
             replicat_Dict = plate.getAllReplicat()
             ps = plate.PlateSetup
             control_well = ps.getGeneWell(control)
@@ -39,11 +39,11 @@ def getPercentPosCell(plate, feature, control, threshold, direction):
                     len_total = len(xdata)
                     if direction == 'Up':
                         # # alt
-                        #data[(data[feature] > threshold_value) & (data['Well'] == 'well')]
+                        # data[(data[feature] > threshold_value) & (data['Well'] == 'well')]
                         len_thres = len(np.extract(xdata > threshold_value, xdata))
                     else:
                         len_thres = len(np.extract(xdata < threshold_value, xdata))
-                    ## include in dict key is the position and value is a %
+                    # # include in dict key is the position and value is a %
                     dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
             # determine the mean of replicat
             dict_percent_cellList = [(i, sum(v) / len(v)) for i, v in dict_percent_cell_tmp.items()]

@@ -5,7 +5,7 @@ Score defined method for compute some score on data
 
 import Statistic.ResultArray
 import Statistic.Score as score
-import TCA
+import ScreenPlateReplicatPS
 
 
 def computePlateAnalyzis(Plate, feature, neg, threshold=50, direction='Up'):
@@ -14,7 +14,7 @@ def computePlateAnalyzis(Plate, feature, neg, threshold=50, direction='Up'):
     :param Plate: Plate object
     :return: return a result object
     '''
-    if isinstance(Plate, TCA.Plate):
+    if isinstance(Plate, ScreenPlateReplicatPS.Plate):
         platesetup = Plate.getPlateSetup()
         size = platesetup.getSize()
         result = Statistic.Result(size=(size[0] * size[1]))

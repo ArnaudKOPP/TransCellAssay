@@ -3,10 +3,10 @@ __author__ = 'Arnaud KOPP'
 Plate is designed for manipulating one or more replicat
 """
 import numpy as np
-import TCA.PlateSetup
-import TCA.Replicat
+import ScreenPlateReplicatPS.PlateSetup
+import ScreenPlateReplicatPS.Replicat
 import Statistic.ResultArray
-import Statistic.Normalization.PlateNorm
+import Statistic.Normalization.SystematicError
 
 
 class Plate():
@@ -20,15 +20,18 @@ class Plate():
         Constructor
         :return: nothing
         '''
-        self.replicat = {}
-        self.MetaInfo = {}
-        self.Name = None
-        self.PlateSetup = TCA.PlateSetup()
-        self.NormBetweenRep = False
+        self.replicat = {}  # Dict that contain all replicat, key are name and value are replicat object
+        self.MetaInfo = {}  # Store some stuff
+        self.Name = None  # Name of Plate
+        self.PlateSetup = ScreenPlateReplicatPS.PlateSetup()  # Plate Setup
+        self.Threshold = None  # Threeshold for considering Cell as positive
         self.ControlPos = (1, 12)  # column where control is positionned in plate (default pos)
-        self.Result = None
-        self.isNormalized = False
-        self.isSpatialNormalized = False
+        self.Neg = None  # Name of negative control
+        self.Pos = None  # Name of positive control
+        self.Tox = None  # Name of toxics control
+        self.Result = None  # store result dataframe
+        self.isNormalized = False  # Are replicat data normalized
+        self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replicat )
         self.DataMatrixMean = None  # matrix that contain mean from replicat of interested features to analyze
         self.DataMatrixMedian = None  # matrix that contain median from replicat of interested feature to analyze
         self.SpatNormDataMean = None  # matrix that contain data corrected by median polish (bscore) or others technics
@@ -70,11 +73,10 @@ class Plate():
         '''
         Add replicat to plate
         :param replicat: Give a replicat object
-        :param name:  Give a name for added replicat object
         :return: nothing
         '''
         try:
-            assert isinstance(replicat, TCA.Replicat)
+            assert isinstance(replicat, ScreenPlateReplicatPS.Replicat)
             name = replicat.info
             self.replicat[name] = replicat
         except Exception as e:
@@ -173,7 +175,7 @@ class Plate():
         :return:
         '''
         try:
-            assert isinstance(platesetup, TCA.PlateSetup)
+            assert isinstance(platesetup, ScreenPlateReplicatPS.PlateSetup)
             self.PlateSetup = platesetup
         except Exception as e:
             print(e)
@@ -213,23 +215,42 @@ class Plate():
     def computeDataFromReplicat(self, feature):
         '''
         Compute the mean/median matrix data of all replicat
+        If replicat data is SpatialNorm already, this function will fill spatDataMatrix
         :return:
         '''
         try:
             mean_tmp = None
             median_tmp = None
             i = 0
+
+            # we thinks that replicat are not spatial norm in first time
+            isReplicatSpatNorm = False
+            prev_check = None
+
             for key, replicat in self.replicat.items():
+                i += 1
                 if replicat.DataMatrixMean is None or replicat.DataMatrixMedian is None:
                     replicat.computeDataForFeature(feature)
                 if mean_tmp is None or median_tmp is None:
                     mean_tmp = np.zeros(replicat.DataMatrixMean.shape)
                     median_tmp = np.zeros(replicat.DataMatrixMedian.shape)
+
+                # Check replicat consistency with spat norm, if all rep is or not spat norm
+                isReplicatSpatNorm = replicat.isSpatialNormalized
+                if not i == 1:
+                    if not prev_check == isReplicatSpatNorm:
+                        raise Exception
+                prev_check = replicat.isSpatialNormalized
                 mean_tmp = mean_tmp + replicat.DataMatrixMean
                 median_tmp = median_tmp + replicat.DataMatrixMedian
-                i += 1
-            self.DataMatrixMean = mean_tmp / i
-            self.DataMatrixMedian = median_tmp / i
+
+            if not isReplicatSpatNorm:
+                self.DataMatrixMean = mean_tmp / i
+                self.DataMatrixMedian = median_tmp / i
+            else:
+                self.SpatNormDataMean = mean_tmp / i
+                self.SpatNormDataMedian = median_tmp / i
+                self.isSpatialNormalized = True
         except Exception as e:
             print(e)
 
@@ -237,7 +258,7 @@ class Plate():
         '''
         Apply Well correction on all replicat data
         :param feature: feature to normalize
-        :param zscore: Performed zscore Transformation
+        :param technics: which method to perform
         :param log:  Performed log2 Transformation
         '''
         try:
@@ -247,7 +268,8 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def SpatialNormalization(self, Methods='Bscore', apply_down=False, verbose=False, save=False, max_iterations=100):
+    def SystematicErrorCorrection(self, Methods='Bscore', apply_down=False, verbose=False, save=False,
+                                  max_iterations=100):
         '''
         Apply a spatial normalization for remove edge effect
         Resulting matrix are save in plate object if save = True
@@ -261,8 +283,8 @@ class Plate():
         try:
             if apply_down:
                 for key, value in self.replicat.items():
-                    value.SpatialNormalization(Methods=Methods, verbose=verbose, save=save,
-                                               max_iterations=max_iterations)
+                    value.SystematicErrorCorrection(Methods=Methods, verbose=verbose, save=save,
+                                                    max_iterations=max_iterations)
                 return
 
             if Methods == 'Bscore':
@@ -321,7 +343,7 @@ class Plate():
                     return 0
                 else:
                     resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMean.copy(),
-                                                                      max_iterations=max_iterations, verbose=verbose)
+                                                                      max_iteration=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
                         self.isSpatialNormalized = True
@@ -332,7 +354,7 @@ class Plate():
                     return 0
                 else:
                     resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMedian.copy(),
-                                                                      max_iterations=max_iterations, verbose=verbose)
+                                                                      max_iteration=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
@@ -389,19 +411,15 @@ class Plate():
             print(e)
 
 
-    def normalizeReplicat(self, zscore=True, log=True):
+    def __add__(self, replicat):
         '''
-        Apply a norm between replicat
-        Z score Transformation by default
-        :return:
+        Add replicat object
+        :param replicat:
         '''
         try:
-            if (self.getNBreplicat()) < 2:
-                print('Can\'t apply this normalization because under two replicats, need at least two replicats ')
-            else:
-                print('Normalization not yet implemented')
-                self.NormBetweenRep = True
-
+            assert isinstance(replicat, ScreenPlateReplicatPS.Replicat)
+            name = replicat.info
+            self.replicat[name] = replicat
         except Exception as e:
             print(e)
 

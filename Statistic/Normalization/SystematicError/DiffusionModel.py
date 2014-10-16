@@ -1,5 +1,11 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+The majority of of the spatial effect are caused by uneven temperature gradients across assay plates due to inefficient
+incubation conditions. To predict the amount of evaporation in each well in a time and space dependent manner, and its
+effect on the resulting data set, a diffusion-state model was developed. This method can ve generated based on the data
+from single control col in stead of sample wells. The edge effect correction is then applied to each plate in the
+screening run based on the generated model.
+"""
 import numpy as np
 import sys
 

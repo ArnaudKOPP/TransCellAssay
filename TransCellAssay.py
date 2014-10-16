@@ -11,7 +11,7 @@ import time
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 from platform import python_version
-import TCA
+import ScreenPlateReplicatPS
 import Statistic
 import numpy as np
 import Statistic.Normalization
@@ -70,18 +70,18 @@ USAGE
         print("")
         print("INPUT READING DATA")
         print("")
-        screen_test = TCA.Screen()
-        plaque1 = TCA.Plate()
-        platesetup = TCA.PlateSetup()
+        screen_test = ScreenPlateReplicatPS.Screen()
+        plaque1 = ScreenPlateReplicatPS.Plate()
+        platesetup = ScreenPlateReplicatPS.PlateSetup()
         platesetup.setPlateSetup("/home/akopp/Bureau/test/Pl1PP.csv")
         plaque1.addPlateSetup(platesetup)
-        rep1 = TCA.Replicat()
+        rep1 = ScreenPlateReplicatPS.Replicat()
         rep1.setInfo("rep1")
         rep1.setData("/home/akopp/Bureau/test/Pl1rep_1.csv")
-        rep2 = TCA.Replicat()
+        rep2 = ScreenPlateReplicatPS.Replicat()
         rep2.setInfo("rep2")
         rep2.setData("/home/akopp/Bureau/test/Pl1rep_2.csv")
-        rep3 = TCA.Replicat()
+        rep3 = ScreenPlateReplicatPS.Replicat()
         rep3.setInfo("rep3")
         rep3.setData("/home/akopp/Bureau/test/Pl1rep_3.csv")
         plaque1.addReplicat(rep1)
@@ -95,18 +95,23 @@ USAGE
         print("")
         # tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
         # print(tmp2)
+
         np.set_printoptions(linewidth=200)
+        # rep1.Normalization('Nuc Intensity', method='Zscore', log=True)
         plaque1.computeDataFromReplicat('Nuc Intensity')
-        rep1.SpatialNormalization(Methods='MEA', verbose=True)
+        rep1.SystematicErrorCorrection(Methods='MEA', verbose=True)
         Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMean, alpha=0.05, verbose=True)
         Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMedian, alpha=0.05, verbose=True)
         # rep1.SpatialNormalization(Methods='DiffusionModel', verbose=True)
         # Graphics.plotSurf3D_Plate(A)
 
+        Array = np.genfromtxt("/home/akopp/Bureau/testcsv.csv", delimiter=',')
+        Statistic.Test.SystematicErrorDetectionTest(Array, alpha=0.05, verbose=True)
+        Statistic.Normalization.MatrixErrorAmendment(Array.copy(), verbose=True, alpha=0.05)
+        Statistic.Normalization.PartialMeanPolish(Array.copy(), verbose=True, alpha=0.05)
+
         time_stop_comp = time.time()
         print("    Compute Executed in {0:f}s".format(float(time_stop_comp - time_start_comp)))
-
-        # IO.parseInputDirectory(InputFileDirectory)
 
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
@@ -123,5 +128,7 @@ USAGE
 
 
 if __name__ == "__main__":
+    print('')
+    print('Hello User : ')
     print('This Python program is launch with ', python_version(), ' version, it was only tested on > 3.3 plateform')
     main()

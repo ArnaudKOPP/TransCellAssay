@@ -31,7 +31,8 @@ def SystematicErrorDetectionTest(Array, save=False, datatype='Median', alpha=0.0
                     SEDT_Array[:, col] = 1
 
             if verbose:
-                print("Systematics Error Detection Test for plate")
+                print("Systematics Error Detection Test for plate/replicat")
+                print(u'\u03B1'" for T-Test : ", alpha)
                 print(SEDT_Array)
                 print("")
 

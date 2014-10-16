@@ -2,7 +2,7 @@ __author__ = 'Arnaud KOPP'
 """
 Screen is designed for manipulating screen that contain multiple different plate
 """
-import TCA.Plate
+import ScreenPlateReplicatPS.Plate
 
 
 class Screen():
@@ -29,7 +29,7 @@ class Screen():
         :return:
         '''
         try:
-            assert isinstance(plate, TCA.Plate)
+            assert isinstance(plate, ScreenPlateReplicatPS.Plate)
             self.PlateList[plate.Name] = plate
         except Exception as e:
             print(e)
@@ -68,6 +68,21 @@ class Screen():
         except Exception as e:
             print(e)
             print('Error in getting info')
+
+
+    def __add__(self, plate):
+        '''
+        Add plate to the screen
+        :param plate: input plate
+        :return:
+        '''
+        try:
+            assert isinstance(plate, ScreenPlateReplicatPS.Plate)
+            self.PlateList[plate.Name] = plate
+        except Exception as e:
+            print(e)
+            print('Can\'t insert this plate in screen instance' % plate)
+
 
     def __getitem__(self, key):
         '''

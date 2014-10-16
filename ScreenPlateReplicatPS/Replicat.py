@@ -19,10 +19,10 @@ class Replicat():
         Constructor
         :return: nothing
         '''
-        self.Data = pd.DataFrame()
-        self.info = ""
+        self.Data = pd.DataFrame()  # data frame that contains data
+        self.info = ""  # Name of replicat
         self.isNormalized = False  # Well correction or somethings else
-        self.isSpatialNormalized = False  # Bscore, MEA or PMP norm technics
+        self.isSpatialNormalized = False  # systematics error removed or not
         self.DataMatrixMean = None  # matrix that contain mean of interested features to analyze
         self.DataMatrixMedian = None  # matrix that contain median of interested feature to analyze
         self.SpatNormDataMean = None  # matrix that contain data corrected by median polish (bscore) or others technics
@@ -132,6 +132,10 @@ class Replicat():
         :return:
         '''
         try:
+            if not self.isNormalized:
+                print('!!! Warnings !!!')
+                print('     --> Data are not normalized for replicat : ', self.info)
+                print('')
 
             grouped_data_by_well = self.Data.groupby('Well')
 
@@ -181,19 +185,23 @@ class Replicat():
     def Normalization(self, feature, method, log=True):
         '''
         Performed normalization on data
-        :param zscore: Performed zscore Transformation
+        :param: feature; which feature to normalize
+        :param method: Performed X Transformation
         :param log:  Performed log2 Transformation
         '''
         try:
             if not self.isNormalized:
-                self.Data = Statistic.Normalization.VariabilityNormalization(self.Data, feature=feature,
+                self.Data = Statistic.Normalization.VariabilityNormalization(self.Data.copy(), feature=feature,
                                                                              method=method, log2_transformation=log)
                 self.isNormalized = True
+            else:
+                print("Data are already normalized")
+                raise Exception
         except Exception as e:
             print(e)
 
 
-    def SpatialNormalization(self, Methods='Bscore', verbose=False, save=False, max_iterations=100):
+    def SystematicErrorCorrection(self, Methods='Bscore', verbose=False, save=False, max_iterations=100):
         '''
 
         Apply a spatial normalization for remove edge effect

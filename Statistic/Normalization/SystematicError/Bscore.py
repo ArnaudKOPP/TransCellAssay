@@ -1,6 +1,15 @@
 __author__ = 'Arnaud KOPP'
 """
-Define method for median polish, this algo is used for removing edge effect
+Tukey's two-ways median polish is utilized to calculate the row and col effect within plates using a non-controls-based
+approach. In this method, the row and col medians are iteratively subtracted from all wells until the maximum tolerance
+value is reached for the row and col medians as wells as for the row and col effect. The residuals in plate are then
+calculated bu subtracting the estimated plate average, row effect and col effect from the true sample value. Since
+median parameter is used in the calculations, this method is relatively insensitive to outliers.
+-Bscore : this is a normalization parameters which involves the residual values calculated from median polish and the
+sample MAD to account for data variability.
+-BZscore : This is a modified version of Bscore method, where the median polish is folowed by zscore calculations. While
+BSscore is more advantageous to Zscore  because of its capability to correct for row and col effect, it is less
+powerfull than Bscore and does not fit very well with the normal distribution model.
 """
 import numpy as np
 from scipy import stats
@@ -53,13 +62,14 @@ def MedianPolish(array, max_iterations=100, method='median', verbose=False):
             grand_effect += median_col_effects
         # become Bscore
         MAD = mad(tbl.flatten())
-        tbl = tbl / (1.4826 * MAD)
+        tbl = tbl / (MAD)
 
         # # replace NaN with 0
         tbl = np.nan_to_num(tbl)
         np.set_printoptions(suppress=True)
         if verbose:
-            print("median polish:  ")
+            print("Bscore :  ")
+            print("Max Iteration : ", max_iterations)
             print("grand effect = ", grand_effect)
             print("column effects = ", col_effects)
             print("row effects = ", row_effects)
@@ -131,7 +141,8 @@ def BZMedianPolish(array, max_iterations=100, method='median', verbose=False):
 
         np.set_printoptions(suppress=True)
         if verbose:
-            print("median polish:  ")
+            print("BZscore:  ")
+            print("Max Iteration : ", max_iterations)
             print("grand effect = ", grand_effect)
             print("column effects = ", col_effects)
             print("row effects = ", row_effects)

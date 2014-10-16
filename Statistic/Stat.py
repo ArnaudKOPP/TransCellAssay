@@ -30,6 +30,6 @@ def mad(arr):
     try:
         arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
         med = np.median(arr)
-        return np.median(np.abs(arr - med))
+        return (1.4826 * np.median(np.abs(arr - med)))
     except Exception as e:
         print(e)

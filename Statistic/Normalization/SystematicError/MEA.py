@@ -1,10 +1,16 @@
 __author__ = 'Arnaud KOPP'
-
+"""
+The MEA method consist of the two followings steps:
+    -Estimate the value of the row and col systematic errors, independently for every plate of the assay, by solving the
+system of linear equations/
+    -Adjust the measurement of all compounds located in rows and col of the plate affected by the systematic error using
+the error estimates determinted in previous step.
+"""
 import numpy as np
 from Statistic.Test.ttest import TTest
 
 
-def MatrixErrorAmendment(input_array, verbose=False):
+def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
     '''
     Implementation of Matrix Error Amendment , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
@@ -21,11 +27,11 @@ def MatrixErrorAmendment(input_array, verbose=False):
 
             # search systematic error in row
             for row in range(shape[0]):
-                if TTest(input_array[row, :], np.delete(input_array, row, 0)):
+                if TTest(input_array[row, :], np.delete(input_array, row, 0), alpha=alpha):
                     Nrows.append(row)
             # search systematic error in column
             for col in range(shape[1]):
-                if TTest(input_array[:, col], np.delete(input_array, col, 1)):
+                if TTest(input_array[:, col], np.delete(input_array, col, 1), alpha=alpha):
                     Ncols.append(col)
 
             # exit if not row or col affected
@@ -87,8 +93,10 @@ def MatrixErrorAmendment(input_array, verbose=False):
                 for j in range(Nrows.__len__()):
                     input_array[j][c] -= X[i]
 
+            np.set_printoptions(suppress=True)
             if verbose:
                 print("MEA methods for removing systematics error")
+                print(u'\u03B1'" for T-Test : ", alpha)
                 print("-----Normalized Table-------")
                 print(input_array)
                 print("-----Original Table-------")
