@@ -6,9 +6,9 @@ from scipy import stats
 from Statistic.Test.ttest import t_test
 
 
-def SystematicErrorDetectionTest(Array, save=False, datatype='Median', alpha=0.05, verbose=False):
+def SystematicErrorDetectionTest(Array, alpha=0.05, verbose=False):
     '''
-    Search for systematic error in plate or replicat
+    Search for systematic error in plate or replicat, use Welch T-Test
     :param Plate:
     :return:
     '''

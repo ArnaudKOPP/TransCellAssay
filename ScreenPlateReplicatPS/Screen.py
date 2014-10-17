@@ -69,6 +69,15 @@ class Screen():
             print(e)
             print('Error in getting info')
 
+    def __len__(self):
+        '''
+        get number of plate
+        :return:
+        '''
+        try:
+            return len(self.PlateList)
+        except Exception as e:
+            print(e)
 
     def __add__(self, plate):
         '''

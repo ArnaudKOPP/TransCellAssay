@@ -5,4 +5,3 @@ from Statistic.Normalization.SystematicError.MEA import *
 from Statistic.Normalization.SystematicError.PMP import *
 from Statistic.Normalization.SystematicError.DiffusionModel import *
 from Statistic.Normalization.SystematicError.BackgroundCorrection import *
-from Statistic.Normalization.SystematicError.WellCorrection import *
