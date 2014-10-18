@@ -1,7 +1,9 @@
 __author__ = 'Arnaud KOPP'
 """
 In this correction method, the background signal corresponding to each well is calculated by averaging the activities
-withing each well across all plate of screen. Then, a kriging interpolation is made.
+withing each well across all plate of screen.
+Then, a kriging interpolation can be made but not sur for the moment.
+We substract then the calculated background to value from plate or replicat.
 """
 
 import ScreenPlateReplicatPS
@@ -79,8 +81,30 @@ class BackgroundCorrection():
         except Exception as e:
             print(e)
 
-    def ApplyBackgroundElimination(self):
+    def ApplyBackgroundElimination(self, apply_on, control_Well=None):
         try:
-            return 0
+            if apply_on == "Plate":
+                # iterate on all plate
+                for key, value in self.screen.PlateList.items():
+                    # check if plate object
+                    if not isinstance(value, ScreenPlateReplicatPS.Plate):
+                        raise TypeError
+                    else:
+                        value.DataMatrixMean -= self.BackgroundModelMean
+                        value.DataMatrixMedian -= self.BackgroundModelMedian
+            elif apply_on == "Replicat":
+                # iterate on all plate
+                for key, value in self.screen.PlateList.items():
+                    # check if plate object
+                    if not isinstance(value, ScreenPlateReplicatPS.Plate):
+                        raise TypeError
+                    else:
+                        # iterate on all replicat in the plate
+                        for repName, repValue in value.replicat.items():
+                            if not isinstance(repValue, ScreenPlateReplicatPS.Replicat):
+                                raise TypeError
+                            else:
+                                value.DataMatrixMean -= self.BackgroundModelMean
+                                value.DataMatrixMedian -= self.BackgroundModelMedian
         except Exception as e:
             print(e)
