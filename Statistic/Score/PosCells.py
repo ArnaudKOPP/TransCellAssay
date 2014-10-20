@@ -38,8 +38,6 @@ def getPercentPosCell(plate, feature, control, threshold, direction):
                     xdata = data[feature][data['Well'] == well]
                     len_total = len(xdata)
                     if direction == 'Up':
-                        # # alt
-                        # data[(data[feature] > threshold_value) & (data['Well'] == 'well')]
                         len_thres = len(np.extract(xdata > threshold_value, xdata))
                     else:
                         len_thres = len(np.extract(xdata < threshold_value, xdata))

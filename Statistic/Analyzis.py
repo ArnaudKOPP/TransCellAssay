@@ -14,21 +14,25 @@ def computePlateAnalyzis(Plate, feature, neg, threshold=50, direction='Up'):
     :param Plate: Plate object
     :return: return a result object
     '''
-    if isinstance(Plate, ScreenPlateReplicatPS.Plate):
-        platesetup = Plate.getPlateSetup()
-        size = platesetup.getSize()
-        result = Statistic.Result(size=(size[0] * size[1]))
-        x = platesetup.getPSasDict()
-        result.initGeneWell(x)
-        try:
-            meanCount, sdvalue = score.getMeanSDCellCount(Plate)
-            result.addDataDict(meanCount, 'CellsCount', by='Pos')
-            result.addDataDict(sdvalue, 'SDCellsCunt', by='Pos')
-            PercentCell, sdPercentCell = Statistic.Score.getPercentPosCell(Plate, feature, neg, threshold, direction)
-            result.addDataDict(PercentCell, 'PositiveCells', by='Pos')
-            result.addDataDict(sdPercentCell, 'SDPositiveCells', by='Pos')
-            return result
-        except Exception as e:
-            print(e)
-    else:
-        print("Not TCA.Plate Class object")
+    try:
+        if isinstance(Plate, ScreenPlateReplicatPS.Plate):
+            platesetup = Plate.getPlateSetup()
+            size = platesetup.getSize()
+            result = Statistic.Result(size=(size[0] * size[1]))
+            x = platesetup.getPSasDict()
+            result.initGeneWell(x)
+            try:
+                meanCount, sdvalue = score.getMeanSDCellCount(Plate)
+                result.addDataDict(meanCount, 'CellsCount', by='Pos')
+                result.addDataDict(sdvalue, 'SDCellsCunt', by='Pos')
+                PercentCell, sdPercentCell = Statistic.Score.getPercentPosCell(Plate, feature, neg, threshold,
+                                                                               direction)
+                result.addDataDict(PercentCell, 'PositiveCells', by='Pos')
+                result.addDataDict(sdPercentCell, 'SDPositiveCells', by='Pos')
+                return result
+            except Exception as e:
+                print(e)
+        else:
+            raise TypeError
+    except Exception as e:
+        print(e)

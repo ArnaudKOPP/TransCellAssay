@@ -22,7 +22,8 @@ It will certainly be like a toolbox for the moment, so programming skill is need
 5. Matplotlib
 6. Scikit-lear 
 
-##CONTACT
+##CONTACT  
 kopp@igbmc.fr  
 
-If you want to join ,send me a mail !
+##Contributions  
+If you find it useful, fork the repository, improve it and request a pull.

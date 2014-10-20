@@ -93,8 +93,8 @@ USAGE
         print("")
         print("BEGIN COMPUTATION TEST")
         print("")
-        # tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
-        # print(tmp2)
+        tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
+        print(tmp2)
 
         np.set_printoptions(linewidth=200)
         # rep1.Normalization('Nuc Intensity', method='Zscore', log=True)
@@ -104,11 +104,10 @@ USAGE
         Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMedian, alpha=0.05, verbose=True)
         # rep1.SpatialNormalization(Methods='DiffusionModel', verbose=True)
         # Graphics.plotSurf3D_Plate(A)
-
-        Array = np.genfromtxt("/home/akopp/Bureau/testcsv.csv", delimiter=',')
-        Statistic.Test.SystematicErrorDetectionTest(Array, alpha=0.05, verbose=True)
-        Statistic.Normalization.MatrixErrorAmendment(Array.copy(), verbose=True, alpha=0.05)
-        Statistic.Normalization.PartialMeanPolish(Array.copy(), verbose=True, alpha=0.05)
+        # Array = np.genfromtxt("/home/akopp/Bureau/testcsv.csv", delimiter=',')
+        # Statistic.Test.SystematicErrorDetectionTest(Array, alpha=0.05, verbose=True)
+        # Statistic.Normalization.MatrixErrorAmendment(Array.copy(), verbose=True, alpha=0.05)
+        # Statistic.Normalization.PartialMeanPolish(Array.copy(), verbose=True, alpha=0.05)
 
         time_stop_comp = time.time()
         print("    Compute Executed in {0:f}s".format(float(time_stop_comp - time_start_comp)))

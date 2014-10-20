@@ -1,6 +1,6 @@
 __author__ = 'Arnaud KOPP'
 """
-Result is created for store result like score and hit resulting of SSMD or other technicsin a tabe-like (numpy array),
+Result is created for store result like score and hit resulting of SSMD or other technics in a tabe-like (numpy array),
 feature are column and GeneName/Well are stored at the first col, each row represent a gene/well
 We can save the tabe in csv by using pandas Dataframe.
 This class is only compatible with single cell data, need to be more "elastic" with 1Data/Well
@@ -24,8 +24,7 @@ class Result():
             size = 384
         self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
                                           ('SDCellsCunt', float), ('PositiveCells', float), ('SDPositiveCells', float),
-                                          ('Infection', float), ('Toxicity', float), ('SSMDr', float),
-                                          ('SSMDrSpatNorm', float)])
+                                          ('Infection', float), ('Toxicity', float)])
 
         self.GenePos = {}  # # To save GeneName (key)and  Gene position (value)
         self.GenePosI = {}  # # To save Well (key) and Gene position (value)
