@@ -83,3 +83,64 @@ def PlateHeatmap(array):
         pylab.show()
     except Exception as e:
         print(e)
+
+
+def SystematicError(array):
+    '''
+    plot systematic error in cols and rows axis
+    :param array: take a numpy array in input
+    :return:
+    '''
+    try:
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        rowMean = []
+        rowStd = []
+        colMean = []
+        colStd = []
+        if isinstance(array, np.ndarray):
+            for row in range(array.shape[0]):
+                rowMean.append(np.mean(array[row, :]))
+                rowStd.append(np.std(array[row, :]))
+            for col in range(array.shape[1]):
+                colMean.append(np.mean(array[:, col]))
+                colStd.append(np.std(array[:, col]))
+
+            fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(10, 5))
+
+            Row = np.arange(array.shape[0])
+            Col = np.arange(array.shape[1])
+            ax0.bar(Row, rowMean, color='r', yerr=rowStd)
+            ax1.bar(Col, colMean, color='r', yerr=colStd)
+
+            ax0.set_ylabel('Mean')
+            ax0.set_title('Mean by row')
+            ax1.set_ylabel('Mean')
+            ax1.set_title('Mean by Col')
+
+            plt.show()
+        else:
+            raise TypeError
+    except Exception as e:
+        print(e)
+
+
+def boxplotByWell(dataframe, feature):
+    '''
+    plot the boxplot for each well
+    :param dataframe:
+    :param feature; whiche feature to display
+    :return:
+    '''
+    try:
+        import pandas as pd
+        import matplotlib.pyplot as plt
+
+        if isinstance(dataframe, pd.DataFrame):
+            bp = dataframe.boxplot(column=feature, by='Well')
+            plt.show()
+        else:
+            raise TypeError
+    except Exception as e:
+        print(e)
