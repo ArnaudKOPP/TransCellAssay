@@ -62,7 +62,7 @@ def _getUnpairedSSMDr(plate, cNeg, data='median', verbose=False):
         print(e)
 
 
-def _getPairedSSMD(plate, data='median', method='MM', verbose=False):
+def _getPairedSSMD(plate, data='median', method='UMVUE', verbose=False):
     '''
     performed paired ssmd for plate with replicat
     :return:
@@ -77,18 +77,28 @@ def _getPairedSSMD(plate, data='median', method='MM', verbose=False):
                             well_value = []
                             for key, value in plate.replicat.items():
                                 well_value.append(value.SpatNormDataMedian[i][j])
-                            SSMD[i][j] = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
-                                (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1)) * \
-                                         (np.mean(well_value) / np.std(well_value))
+                            if method == 'UMVUE':
+                                SSMD[i][j] = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
+                                    (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1)) * \
+                                             (np.mean(well_value) / np.std(well_value))
+                            else:
+                                SSMD[i][j] = np.mean(well_value) / np.std(well_value)
                 else:
                     for i in range(SSMD.shape[0]):
                         for j in range(SSMD.shape[1]):
                             well_value = []
                             for key, value in plate.replicat.items():
                                 well_value.append(value.SpatNormDataMedian[i][j])
-                            SSMD[i][j] = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
-                                (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1)) * \
-                                         (np.mean(well_value) / np.std(well_value))
+                                if method == 'UMVUE':
+                                    SSMD[i][j] = (scipy.special.gamma(
+                                        (len(plate.replicat) - 1) / 2) / scipy.special.gamma(
+                                        (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1)) * \
+                                                 (np.mean(well_value) / np.std(well_value))
+                                else:
+                                    SSMD[i][j] = np.mean(well_value) / np.std(well_value)
+                if verbose:
+                    print('SSMD without replicat, with method : ', method, ' on ', data, ' data')
+                    print(SSMD)
             except Exception as e:
                 print(e)
             return SSMD
@@ -98,7 +108,7 @@ def _getPairedSSMD(plate, data='median', method='MM', verbose=False):
         print(e)
 
 
-def _getPairedSSMDr(plate, data='median', method='MM', verbose=False):
+def _getPairedSSMDr(plate, data='median', method='UMVUE', verbose=False):
     '''
     performed paired SSMDr for plate with replicat
     :return:
@@ -113,18 +123,27 @@ def _getPairedSSMDr(plate, data='median', method='MM', verbose=False):
                             well_value = []
                             for key, value in plate.replicat.items():
                                 well_value.append(value.SpatNormDataMedian[i][j])
-                            SSMDr[i][j] = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
-                                (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1)) * \
-                                          (np.median(well_value) / mad(well_value))
+                            if method == 'UMVUE':
+                                SSMDr[i][j] = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
+                                    (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1)) * \
+                                              (np.median(well_value) / mad(well_value))
+                            else:
+                                SSMDr[i][j] = np.median(well_value) / mad(well_value)
                 else:
                     for i in range(SSMDr.shape[0]):
                         for j in range(SSMDr.shape[1]):
                             well_value = []
                             for key, value in plate.replicat.items():
                                 well_value.append(value.SpatNormDataMedian[i][j])
-                            SSMDr[i][j] = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
-                                (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1)) * \
-                                          (np.median(well_value) / mad(well_value))
+                            if method == 'UMVUE':
+                                SSMDr[i][j] = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
+                                    (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1)) * \
+                                              (np.median(well_value) / mad(well_value))
+                            else:
+                                SSMDr[i][j] = np.mean(well_value) / np.std(well_value)
+                if verbose:
+                    print('SSMDr without replicat, with method : ', method, ' on ', data, ' data')
+                    print(SSMDr)
             except Exception as e:
                 print(e)
             return SSMDr
@@ -134,7 +153,7 @@ def _getPairedSSMDr(plate, data='median', method='MM', verbose=False):
         print(e)
 
 
-def _getSSMDWithoutReplicat(plate, cNeg, data='median', method='MM', verbose=False):
+def _getSSMDWithoutReplicat(plate, cNeg, data='median', method='UMVUE', verbose=False):
     '''
     performed unpaired SSMD for plate without replicat
     take data from plate and spatial norm data
@@ -184,7 +203,7 @@ def _getSSMDWithoutReplicat(plate, cNeg, data='median', method='MM', verbose=Fal
         print(e)
 
 
-def _getSSMDrWithoutReplicat(plate, cNeg, data='median', method='MM', verbose=False):
+def _getSSMDrWithoutReplicat(plate, cNeg, data='median', method='UMVUE', verbose=False):
     '''
     perfored unpaired SSMDr for plate without replicat
     :return:
