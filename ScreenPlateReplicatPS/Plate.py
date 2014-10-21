@@ -263,7 +263,7 @@ class Plate():
         '''
         try:
             for key, value in self.replicat.items():
-                value.WellCorrection(feature=feature, method=technics, log=log)
+                value.Normalization(feature=feature, method=technics, log=log)
             self.isNormalized = True
         except Exception as e:
             print(e)
@@ -288,10 +288,22 @@ class Plate():
                 return
 
             if Methods == 'Bscore':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Mean of replicat first by using computeDataFromReplicat, or data are already spatial Normalized")
-                    return 0
+                if self.DataMatrixMedian is None:
+                    raise ValueError("Compute Median of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
+                else:
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMedian.copy(),
+                                                                                      max_iterations=max_iterations,
+                                                                                      verbose=verbose)
+                    if save:
+                        self.SpatNormDataMedian = resid
+                        self.isSpatialNormalized = True
+
+                if self.DataMatrixMean is None:
+                    raise ValueError("Compute Mean of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
                 else:
                     ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMean.copy(),
                                                                                       max_iterations=max_iterations,
@@ -299,59 +311,36 @@ class Plate():
                     if save:
                         self.SpatNormDataMean = resid
                         self.isSpatialNormalized = True
-
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Median of replicat first by using computeDataMatrixForFeature, or data are already spatial Normalized")
-                    return 0
+            if Methods == 'BZscore':
+                if self.DataMatrixMedian is None:
+                    raise ValueError("Compute Median of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMean.copy(),
-                                                                                      max_iterations=max_iterations,
-                                                                                      verbose=verbose)
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMatrixMedian.copy(),
+                                                                                        max_iterations=max_iterations,
+                                                                                        verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
-            if Methods == 'Bscore':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Mean of replicat first by using computeDataFromReplicat, or data are already spatial Normalized")
-                    return 0
+
+                if self.DataMatrixMean is None:
+                    raise ValueError("Compute Mean of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
                 else:
                     ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMatrixMean.copy(),
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
-                        self.isSpatialNormalized = True
-
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Median of replicat first by using computeDataMatrixForFeature, or data are already spatial Normalized")
-                    return 0
-                else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMatrixMean.copy(),
-                                                                                        max_iterations=max_iterations,
-                                                                                        verbose=verbose)
-                    if save:
-                        self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
 
             if Methods == 'PMP':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
-                    return 0
-                else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMean.copy(),
-                                                                      max_iteration=max_iterations, verbose=verbose)
-                    if save:
-                        self.SpatNormDataMean = resid
-                        self.isSpatialNormalized = True
-
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
-                    return 0
+                if self.DataMatrixMedian is None:
+                    raise ValueError("Compute Median of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
                 else:
                     resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMedian.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
@@ -359,45 +348,43 @@ class Plate():
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
 
-            if Methods == 'MEA':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
-                    return 0
+                if self.DataMatrixMean is None:
+                    raise ValueError("Compute Mean of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMean.copy(), verbose=verbose)
+                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMean.copy(),
+                                                                      max_iteration=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
                         self.isSpatialNormalized = True
 
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
-                    return 0
+            if Methods == 'MEA':
+                if self.DataMatrixMedian is None:
+                    raise ValueError("Compute Median of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
                 else:
                     resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMedian.copy(), verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
 
-            if Methods == 'DiffusionModel':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
-                    return 0
+                if self.DataMatrixMean is None:
+                    raise ValueError("Compute Mean of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
                 else:
-                    CorrectedTable = Statistic.Normalization.diffusionModel(self.DataMatrixMean,
-                                                                            max_iterations=max_iterations,
-                                                                            verbose=verbose)
-
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMean.copy(), verbose=verbose)
                     if save:
-                        self.SpatNormDataMedian = CorrectedTable
+                        self.SpatNormDataMean = resid
                         self.isSpatialNormalized = True
 
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
-                    print(
-                        "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
-                    return 0
+            if Methods == 'DiffusionModel':
+                if self.DataMatrixMedian is None:
+                    raise ValueError("Compute Median of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
                 else:
                     CorrectedTable = Statistic.Normalization.diffusionModel(self.DataMatrixMedian,
                                                                             max_iterations=max_iterations,
@@ -405,6 +392,19 @@ class Plate():
 
                     if save:
                         self.SpatNormDataMedian = CorrectedTable
+                        self.isSpatialNormalized = True
+
+                if self.DataMatrixMean is None:
+                    raise ValueError("Compute Mean of replicat first by using computeDataFromReplicat")
+                elif self.isSpatialNormalized is True:
+                    raise ValueError('Systematics error have already been removed')
+                else:
+                    CorrectedTable = Statistic.Normalization.diffusionModel(self.DataMatrixMean,
+                                                                            max_iterations=max_iterations,
+                                                                            verbose=verbose)
+
+                    if save:
+                        self.SpatNormDataMean = CorrectedTable
                         self.isSpatialNormalized = True
 
         except Exception as e:
@@ -453,7 +453,8 @@ class Plate():
             return (
                 "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
                     self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Array Result :\n" + repr(
-                    self.Result) + "\n Replicat List : \n" + repr(self.replicat))
+                    self.Result) + "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
+                "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:
             print(e)
 
@@ -466,6 +467,7 @@ class Plate():
             return (
                 "\n Plate : \n" + repr(self.Name) + "\n MetaInfo : \n" + repr(
                     self.MetaInfo) + "\n PlateSetup : \n" + repr(self.PlateSetup) + "\n Array Result :\n" + repr(
-                    self.Result) + "\n Replicat List : \n" + repr(self.replicat))
+                    self.Result) + "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
+                "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:
             print(e)

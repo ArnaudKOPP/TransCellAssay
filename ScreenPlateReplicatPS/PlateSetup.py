@@ -61,15 +61,12 @@ class PlateSetup():
         try:
             mat = self.platesetup.as_matrix()  # # transform PS dataframe into numpy matrix
             size = mat.shape  # # get shape of matrix
-            row = size[0]
-            col = size[1]
-            CoordList = list()
-            for r in range(row):
-                for c in range(col):
+            CoordList = []
+            for r in range(size[0]):
+                for c in range(size[1]):
                     if gene == mat[r][c]:
-                        CoordList.append((row, col))
+                        CoordList.append((r, c))
             return CoordList
-            print('Gene not found')
         except Exception as e:
             print(e)
             print('Error occured at getGenePos')

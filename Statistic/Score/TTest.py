@@ -8,7 +8,7 @@ import scipy.special
 from Statistic.Stat import mad
 
 
-def t_test_score(plate, cNeg, data='median', variance='unequal', unpaired=False, verbose=False):
+def t_test_score(plate, cNeg, data='median', variance='unequal', paired=False, verbose=False):
     '''
     Performed t-test on plate object
     unpaired is for plate with replicat without great variance between them
@@ -22,10 +22,12 @@ def t_test_score(plate, cNeg, data='median', variance='unequal', unpaired=False,
             if cNeg is None:
                 raise AttributeError('Must provided negative control')
             if len(plate) > 1:
-                return 0
+                if paired:
+                    _PairedTTestScore(plate, cNeg, data=data, verbose=verbose)
+                else:
+                    _UnpairedTTestScore(plate, cNeg, data=data, variance=variance, verbose=verbose)
             else:
-                print("T-Test need at least two replicat")
-                raise ValueError
+                raise ValueError("T-Test need at least two replicat")
         else:
             raise TypeError
     except Exception as e:
@@ -63,9 +65,8 @@ def _UnpairedTTestScore(plate, cNeg, data='median', variance='unequal', verbose=
                                 well_value = value.SpatNormDataMean[i][j]
                             else:
                                 raise AttributeError('Data type must be mean or median')
-                        except Exception as e:
-                            print("Launch SystematicErrorCorrection before")
-                            print(e)
+                        except Exception:
+                            raise Exception("Launch SystematicErrorCorrection before")
                         # check if neg value
                         for neg_i in neg_pos:
                             if neg_i[0] == i and neg_i[1] == j:
@@ -86,9 +87,8 @@ def _UnpairedTTestScore(plate, cNeg, data='median', variance='unequal', verbose=
                                 well_value = value.SpatNormDataMean[i][j]
                             else:
                                 raise AttributeError('Data type must be mean or median')
-                        except Exception as e:
-                            print("Launch SystematicErrorCorrection before")
-                            print(e)
+                        except Exception:
+                            raise Exception("Launch SystematicErrorCorrection before")
                         rep_value.append(well_value)
                     mean_rep = np.mean(rep_value)
                     var_rep = np.var(rep_value)
@@ -141,9 +141,8 @@ def _PairedTTestScore(plate, cNeg, data='median', verbose=False):
                                 well_value = value.SpatNormDataMean[i][j]
                             else:
                                 raise AttributeError('Data type must be mean or median')
-                        except Exception as e:
-                            print("Launch SystematicErrorCorrection before")
-                            print(e)
+                        except Exception:
+                            raise Exception("Launch SystematicErrorCorrection before")
                         # check if neg value
                         for neg_i in neg_pos:
                             if neg_i[0] == i and neg_i[1] == j:
