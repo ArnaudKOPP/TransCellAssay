@@ -102,7 +102,9 @@ USAGE
         plaque1.SystematicErrorCorrection(apply_down=True, save=True)
         plaque1.computeDataFromReplicat('Nuc Intensity')
         Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, verbose=True)
-        Statistic.score.t_test_score(plaque1, cNeg='NT', paired=True, verbose=True)
+        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, verbose=True)
+        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, verbose=True)
+        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, verbose=True)
 
         # rep1.SystematicErrorCorrection(Methods='MEA', verbose=True)
         # Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMean, alpha=0.05, verbose=True)
