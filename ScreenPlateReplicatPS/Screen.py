@@ -92,7 +92,6 @@ class Screen():
             print(e)
             print('Can\'t insert this plate in screen instance' % plate)
 
-
     def __getitem__(self, key):
         '''
         get plate object
@@ -127,4 +126,3 @@ class Screen():
                 self.Pos) + "\n Tox Control \n" + repr(self.Tox))
         except Exception as e:
             print(e)
-

@@ -18,6 +18,10 @@ plate. The mean and variability of the difference of all these pairs accross all
 For the unpaired case, all the measured value of an siRNA are formed as a group and all the measured value of a negative
 reference in the whole screen are formed as another group. The means and variability of these two separate groups are
 used to calculate the ssmd.
+
+Use Case :
+    Paired method : replicat without great variability
+    Unpaired method : replicat with great variability
 '''
 import ScreenPlateReplicatPS
 import numpy as np
@@ -26,7 +30,7 @@ from Statistic.Stat import mad
 
 
 def ssmd_score(plate, cNeg, paired=True, robust_version=True, data='median', method='UMVUE', variance='unequal',
-               verbose=False):
+               SECData=True, verbose=False):
     '''
     Performed SSMD on plate object
         unpaired is for plate with replicat without great variance between them
@@ -38,6 +42,7 @@ def ssmd_score(plate, cNeg, paired=True, robust_version=True, data='median', met
     :param data: median or mean data to use
     :param method: which method to use MM or UMVUE
     :param variance: unequal or equal
+    :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:
     '''
@@ -49,36 +54,41 @@ def ssmd_score(plate, cNeg, paired=True, robust_version=True, data='median', met
             if len(plate) > 1:
                 print('SSMD optimize for plate with replicat')
                 if not paired:
-                    print('Using : _getUnpairedSSMD')
-                    _getUnpairedSSMD(plate, cNeg, variance=variance, data=data, verbose=verbose)
+                    if robust_version:
+                        print('Using : _getUnpairedSSMDr')
+                        _UnpairedSSMDr(plate, cNeg, variance=variance, data=data, SECData=SECData, verbose=verbose)
+                    else:
+                        print('Using : _getUnpairedSSMD')
+                        _UnpairedSSMD(plate, cNeg, variance=variance, data=data, SECData=SECData, verbose=verbose)
                 else:
                     if robust_version:
                         print('Using : _getPairedSSMDr')
-                        _getPairedSSMDr(plate, cNeg, data=data, method=method, verbose=verbose)
+                        _PairedSSMDr(plate, cNeg, data=data, method=method, SECData=SECData, verbose=verbose)
                     else:
                         print('Using : _getPairedSSMD')
-                        _getPairedSSMD(plate, cNeg, data=data, method=method, verbose=verbose)
+                        _PairedSSMD(plate, cNeg, data=data, method=method, SECData=SECData, verbose=verbose)
             else:
                 print('SSMD optimize for plate without replicat')
                 if robust_version:
                     print('Using : _getWithoutReplicatSSMDr')
-                    _getWithoutReplicatSSMDr(plate, cNeg, data=data, method=method, verbose=verbose)
+                    _WithoutReplicatSSMDr(plate, cNeg, data=data, method=method, SECData=SECData, verbose=verbose)
                 else:
                     print('Using : _getWithoutReplicatSSMD')
-                    _getWithoutReplicatSSMD(plate, cNeg, data=data, method=method, verbose=verbose)
+                    _WithoutReplicatSSMD(plate, cNeg, data=data, method=method, SECData=SECData, verbose=verbose)
         else:
             raise TypeError
     except Exception as e:
         print(e)
 
 
-def _getUnpairedSSMD(plate, cNeg, variance='unequal', data='median', verbose=False):
+def _UnpairedSSMD(plate, cNeg, variance='unequal', data='median', SECData=True, verbose=False):
     '''
     performed unpaired SSMD for plate with replicat
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
     :param variance: unequal or equal
     :param data: median or mean data to use
+    :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:
     '''
@@ -104,9 +114,15 @@ def _getUnpairedSSMD(plate, cNeg, variance='unequal', data='median', verbose=Fal
                         well_value = 0
                         try:
                             if data == "median":
-                                well_value = value.SpatNormDataMedian[i][j]
+                                if SECData:
+                                    well_value = value.SpatNormDataMedian[i][j]
+                                else:
+                                    well_value = value.DataMedian[i][j]
                             elif data == "mean":
-                                well_value = value.SpatNormDataMean[i][j]
+                                if SECData:
+                                    well_value = value.SpatNormDataMean[i][j]
+                                else:
+                                    well_value = value.DataMean[i][j]
                             else:
                                 raise AttributeError('Data type must be mean or median')
                         except Exception:
@@ -129,9 +145,15 @@ def _getUnpairedSSMD(plate, cNeg, variance='unequal', data='median', verbose=Fal
                     for key, value in plate.replicat.items():
                         try:
                             if data == "median":
-                                well_value = value.SpatNormDataMedian[i][j]
+                                if SECData:
+                                    well_value = value.SpatNormDataMedian[i][j]
+                                else:
+                                    well_value = value.DataMedian[i][j]
                             elif data == "mean":
-                                well_value = value.SpatNormDataMean[i][j]
+                                if SECData:
+                                    well_value = value.SpatNormDataMean[i][j]
+                                else:
+                                    well_value = value.DataMean[i][j]
                             else:
                                 raise AttributeError('Data type must be mean or median')
                         except Exception:
@@ -154,6 +176,7 @@ def _getUnpairedSSMD(plate, cNeg, variance='unequal', data='median', verbose=Fal
 
             if verbose:
                 print("Unpaired SSMD :")
+                print("Systematic Error Corrected Data : ", SECData)
                 print("Data type : ", data)
                 print("variance parameter : ", variance)
                 print("SSMD score :")
@@ -166,13 +189,122 @@ def _getUnpairedSSMD(plate, cNeg, variance='unequal', data='median', verbose=Fal
         print(e)
 
 
-def _getPairedSSMD(plate, cNeg, data='median', method='UMVUE', verbose=False):
+def _UnpairedSSMDr(plate, cNeg, variance='unequal', data='median', SECData=True, verbose=False):
+    '''
+    performed unpaired SSMDr for plate with replicat
+    :param plate: Plate Object to analyze
+    :param cNeg: negative control reference
+    :param variance: unequal or equal
+    :param data: median or mean data to use
+    :param SECData: use data with Systematic Error Corrected
+    :param verbose: be verbose or not
+    :return:
+    '''
+    try:
+        # if no neg was provided raise AttributeError
+        if cNeg is None:
+            raise AttributeError('Must provided negative control')
+        if isinstance(plate, ScreenPlateReplicatPS.Plate):
+            SSMD = np.zeros(plate.PlateSetup.platesetup.shape)
+
+            # # replace 0 with NaN
+            SSMD[SSMD == 0] = np.NaN
+
+            nb_rep = len(plate.replicat)
+            rep_value = []
+            neg_value = []
+            neg_pos = plate.PlateSetup.getGenePos(cNeg)
+
+            # search neg control value
+            for i in range(SSMD.shape[0]):
+                for j in range(SSMD.shape[1]):
+                    for key, value in plate.replicat.items():
+                        well_value = 0
+                        try:
+                            if data == "median":
+                                if SECData:
+                                    well_value = value.SpatNormDataMedian[i][j]
+                                else:
+                                    well_value = value.DataMedian[i][j]
+                            elif data == "mean":
+                                if SECData:
+                                    well_value = value.SpatNormDataMean[i][j]
+                                else:
+                                    well_value = value.DataMean[i][j]
+                            else:
+                                raise AttributeError('Data type must be mean or median')
+                        except Exception:
+                            raise Exception("Launch SystematicErrorCorrection before")
+                        # check if neg value
+                        for neg_i in neg_pos:
+                            if neg_i[0] == i:
+                                if neg_i[1] == j:
+                                    neg_value.append(well_value)
+            nb_neg_wells = len(neg_value)
+            median_neg = np.nanmedian(neg_value)
+            var_neg = np.nanvar(neg_value)
+
+            k = 2 * (scipy.special.gamma(
+                ((len(neg_value) - 1) / 2) / scipy.special.gamma((len(neg_value) - 2) / 2))) ** 2
+            # search rep value for ith well
+            for i in range(SSMD.shape[0]):
+                for j in range(SSMD.shape[1]):
+                    well_value = 0
+                    for key, value in plate.replicat.items():
+                        try:
+                            if data == "median":
+                                if SECData:
+                                    well_value = value.SpatNormDataMedian[i][j]
+                                else:
+                                    well_value = value.DataMedian[i][j]
+                            elif data == "mean":
+                                if SECData:
+                                    well_value = value.SpatNormDataMean[i][j]
+                                else:
+                                    well_value = value.DataMean[i][j]
+                            else:
+                                raise AttributeError('Data type must be mean or median')
+                        except Exception:
+                            raise Exception("Launch SystematicErrorCorrection before")
+                        rep_value.append(well_value)
+                    median_rep = np.nanmedian(rep_value)
+                    var_rep = np.nanvar(rep_value)
+
+                    # # performed unpaired t-test
+                    if variance == 'unequal':
+                        SSMD[i][j] = (median_rep - median_neg) / np.sqrt(var_rep + var_neg)
+                    elif variance == 'equal':
+                        SSMD[i][j] = (median_rep - median_neg) / np.sqrt(
+                            (2 / k) * ((nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg))
+                    else:
+                        raise AttributeError('variance attribut must be unequal or equal.')
+
+            # # replace NaN with 0
+            SSMD = np.nan_to_num(SSMD)
+
+            if verbose:
+                print("Unpaired SSMDr :")
+                print("Systematic Error Corrected Data : ", SECData)
+                print("Data type : ", data)
+                print("variance parameter : ", variance)
+                print("SSMD score :")
+                print(SSMD)
+                print("")
+            return SSMD
+        else:
+            raise TypeError
+    except Exception as e:
+        print(e)
+
+
+def _PairedSSMD(plate, cNeg, data='median', method='UMVUE', SECData=True, verbose=False):
     '''
     performed paired ssmd for plate with replicat
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
     :param data: median or mean data to use
     :param method: which method to use MM or UMVUE
+    :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:
     '''
@@ -189,17 +321,23 @@ def _getPairedSSMD(plate, cNeg, data='median', method='UMVUE', verbose=False):
             neg_pos = plate.PlateSetup.getGenePos(cNeg)
 
             # search neg control value
-            def _search_neg_data(replicat, Neg_Pos, Type):
+            def _search_neg_data(replicat, Neg_Pos, data):
                 neg_value = []
                 try:
                     for i in range(SSMD.shape[0]):
                         for j in range(SSMD.shape[1]):
                             well_value = 0
                             try:
-                                if Type == "median":
-                                    well_value = replicat.SpatNormDataMedian[i][j]
-                                elif Type == "mean":
-                                    well_value = replicat.SpatNormDataMean[i][j]
+                                if data == "median":
+                                    if SECData:
+                                        well_value = replicat.SpatNormDataMedian[i][j]
+                                    else:
+                                        well_value = replicat.DataMedian[i][j]
+                                elif data == "mean":
+                                    if SECData:
+                                        well_value = replicat.SpatNormDataMean[i][j]
+                                    else:
+                                        well_value = replicat.DataMean[i][j]
                                 else:
                                     raise AttributeError('Data type must be mean or median')
                             except Exception:
@@ -224,12 +362,18 @@ def _getPairedSSMD(plate, cNeg, data='median', method='UMVUE', verbose=False):
 
                             neg_median = _search_neg_data(value, neg_pos, data)
 
-                            if data == 'median':
-                                well_value.append(value.SpatNormDataMedian[i][j] - neg_median)
-                            elif data == 'mean':
-                                well_value.append(value.SpatNormDataMean[i][j] - neg_median)
+                            if data == "median":
+                                if SECData:
+                                    well_value.append(value.SpatNormDataMedian[i][j] - neg_median)
+                                else:
+                                    well_value.append(value.DataMedian[i][j] - neg_median)
+                            elif data == "mean":
+                                if SECData:
+                                    well_value.append(value.SpatNormDataMean[i][j] - neg_median)
+                                else:
+                                    well_value.append(value.DataMean[i][j] - neg_median)
                             else:
-                                raise AttributeError('Median or Mean data only')
+                                raise AttributeError('Data type must be mean or median')
                         if method == 'UMVUE':
                             SSMD[i][j] = x * (np.nanmean(well_value) / np.nanstd(well_value))
                         elif method == 'MM':
@@ -242,6 +386,7 @@ def _getPairedSSMD(plate, cNeg, data='median', method='UMVUE', verbose=False):
 
                 if verbose:
                     print("Paired SSMD :")
+                    print("Systematic Error Corrected Data : ", SECData)
                     print("Data type : ", data)
                     print("method parameter : ", method)
                     print("SSMD score :")
@@ -256,13 +401,14 @@ def _getPairedSSMD(plate, cNeg, data='median', method='UMVUE', verbose=False):
         print(e)
 
 
-def _getPairedSSMDr(plate, cNeg, data='median', method='UMVUE', verbose=False):
+def _PairedSSMDr(plate, cNeg, data='median', method='UMVUE', SECData=True, verbose=False):
     '''
     performed paired SSMDr for plate with replicat
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
     :param data: median or mean data to use
     :param method: which method to use MM or UMVUE
+    :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:
     '''
@@ -279,17 +425,23 @@ def _getPairedSSMDr(plate, cNeg, data='median', method='UMVUE', verbose=False):
             neg_pos = plate.PlateSetup.getGenePos(cNeg)
 
             # search neg control value
-            def _search_neg_data(replicat, Neg_Pos, Type):
+            def _search_neg_data(replicat, Neg_Pos, data):
                 neg_value = []
                 try:
                     for i in range(SSMDr.shape[0]):
                         for j in range(SSMDr.shape[1]):
                             well_value = 0
                             try:
-                                if Type == "median":
-                                    well_value = replicat.SpatNormDataMedian[i][j]
-                                elif Type == "mean":
-                                    well_value = replicat.SpatNormDataMean[i][j]
+                                if data == "median":
+                                    if SECData:
+                                        well_value = replicat.SpatNormDataMedian[i][j]
+                                    else:
+                                        well_value = replicat.DataMedian[i][j]
+                                elif data == "mean":
+                                    if SECData:
+                                        well_value = replicat.SpatNormDataMean[i][j]
+                                    else:
+                                        well_value = replicat.DataMean[i][j]
                                 else:
                                     raise AttributeError('Data type must be mean or median')
                             except Exception:
@@ -303,7 +455,6 @@ def _getPairedSSMDr(plate, cNeg, data='median', method='UMVUE', verbose=False):
                 except Exception as e:
                     print(e)
 
-
             x = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
                 (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1))
 
@@ -315,12 +466,18 @@ def _getPairedSSMDr(plate, cNeg, data='median', method='UMVUE', verbose=False):
 
                             neg_median = _search_neg_data(value, neg_pos, data)
 
-                            if data == 'median':
-                                well_value.append(value.SpatNormDataMedian[i][j] - neg_median)
-                            elif data == 'mean':
-                                well_value.append(value.SpatNormDataMean[i][j] - neg_median)
+                            if data == "median":
+                                if SECData:
+                                    well_value.append(value.SpatNormDataMedian[i][j] - neg_median)
+                                else:
+                                    well_value.append(value.DataMedian[i][j] - neg_median)
+                            elif data == "mean":
+                                if SECData:
+                                    well_value.append(value.SpatNormDataMean[i][j] - neg_median)
+                                else:
+                                    well_value.append(value.DataMean[i][j] - neg_median)
                             else:
-                                raise AttributeError('Median or Mean data only')
+                                raise AttributeError('Data type must be mean or median')
                         if method == 'UMVUE':
                             SSMDr[i][j] = x * (np.nanmedian(well_value) / mad(well_value))
                         elif method == 'MM':
@@ -333,6 +490,7 @@ def _getPairedSSMDr(plate, cNeg, data='median', method='UMVUE', verbose=False):
 
                 if verbose:
                     print("Paired SSMDr :")
+                    print("Systematic Error Corrected Data : ", SECData)
                     print("Data type : ", data)
                     print("method parameter : ", method)
                     print("SSMDr score :")
@@ -347,7 +505,7 @@ def _getPairedSSMDr(plate, cNeg, data='median', method='UMVUE', verbose=False):
         print(e)
 
 
-def _getWithoutReplicatSSMD(plate, cNeg, data='median', method='UMVUE', verbose=False):
+def _WithoutReplicatSSMD(plate, cNeg, data='median', method='UMVUE', SECData=True, verbose=False):
     '''
     performed unpaired SSMD for plate without replicat
     take data from plate and spatial norm data
@@ -355,6 +513,7 @@ def _getWithoutReplicatSSMD(plate, cNeg, data='median', method='UMVUE', verbose=
     :param cNeg: negative control reference
     :param data: median or mean data to use
     :param method: which method to use MM or UMVUE
+    :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:
     '''
@@ -373,9 +532,15 @@ def _getWithoutReplicatSSMD(plate, cNeg, data='median', method='UMVUE', verbose=
             neg_data = []
             try:
                 if data == 'median':
-                    data = plate.SpatNormDataMedian
+                    if SECData:
+                        data = plate.SpatNormDataMedian
+                    else:
+                        data = plate.DataMedian
                 elif data == 'mean':
-                    data = plate.SpatNormDataMean
+                    if SECData:
+                        data = plate.SpatNormDataMean
+                    else:
+                        data = plate.DataMean
                 else:
                     raise AttributeError('Median or Mean data only')
             except Exception:
@@ -404,6 +569,7 @@ def _getWithoutReplicatSSMD(plate, cNeg, data='median', method='UMVUE', verbose=
 
             if verbose:
                 print('SSMD without replicat')
+                print("Systematic Error Corrected Data : ", SECData)
                 print("Data type : ", data)
                 print("method parameter : ", method)
                 print("SSMD score :")
@@ -416,13 +582,14 @@ def _getWithoutReplicatSSMD(plate, cNeg, data='median', method='UMVUE', verbose=
         print(e)
 
 
-def _getWithoutReplicatSSMDr(plate, cNeg, data='median', method='UMVUE', verbose=False):
+def _WithoutReplicatSSMDr(plate, cNeg, data='median', method='UMVUE', SECData=True, verbose=False):
     '''
     perfored unpaired SSMDr for plate without replicat
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
     :param data: median or mean data to use
     :param method: which method to use MM or UMVUE
+    :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:
     '''
@@ -441,9 +608,15 @@ def _getWithoutReplicatSSMDr(plate, cNeg, data='median', method='UMVUE', verbose
             neg_data = []
             try:
                 if data == 'median':
-                    data = plate.SpatNormDataMedian
+                    if SECData:
+                        data = plate.SpatNormDataMedian
+                    else:
+                        data = plate.DataMedian
                 elif data == 'mean':
-                    data = plate.SpatNormDataMean
+                    if SECData:
+                        data = plate.SpatNormDataMean
+                    else:
+                        data = plate.DataMean
                 else:
                     raise AttributeError('Median or Mean data only')
             except Exception:
@@ -472,6 +645,7 @@ def _getWithoutReplicatSSMDr(plate, cNeg, data='median', method='UMVUE', verbose
 
             if verbose:
                 print('SSMDr without replicat')
+                print("Systematic Error Corrected Data : ", SECData)
                 print("Data type : ", data)
                 print("method parameter : ", method)
                 print("SSMD score :")

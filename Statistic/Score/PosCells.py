@@ -2,7 +2,6 @@ __author__ = 'Arnaud KOPP'
 import numpy as np
 import pandas as pd
 import ScreenPlateReplicatPS
-import time
 
 
 def getPercentPosCell(plate, feature, control, threshold, direction):

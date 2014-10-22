@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='TransCellAssay',
     version='0.01',
-    packages=['ScreenPateReplicatPS', 'Utils', 'Statistic'],
+    packages=['ScreenPateReplicatPS', 'Utils', 'Statistic', 'IO'],
     install_requires=['pandas', 'numpy', 'scipy', 'matplotlib'],
     url='https://github.com/ArnaudKOPP/TransCellAssay',
     license='GPL V2',

@@ -336,7 +336,6 @@ class Replicat():
         except Exception as e:
             print(e)
 
-
     def __repr__(self):
         '''
         Definition for the representation
@@ -348,7 +347,6 @@ class Replicat():
                 self.isSpatialNormalized))
         except Exception as e:
             print(e)
-
 
     def __str__(self):
         '''

@@ -11,16 +11,22 @@ It will certainly be like a toolbox for the moment, so programming skill is need
 ### What TCA do :
 1. Controls based and non-controls based normalization,  logarithmic transformation
 2. Systematic Error Detection Test
-3. Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and in work background Correction/Well Correction
-4. Scoring (SSMD, TTest,...)
+3. Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and basic background Correction/Well Correction
+4. Quality Control (need to be implemented)
+5. Scoring (SSMD, TTest,...)
+
+### TODO
+1. Machine Learning ( classification, clustering, Dimensionality Reduction, ...)
+2. Bayesian Inference
+3. ???
 
 ##DEPENDENCIES
 1. Python > 3.3
 2. Pandas > 0.14
 3. Numpy > 1.8
 4. Scipy > 0.12
-5. Matplotlib
-6. Scikit-lear 
+5. Matplotlib > 1.3.1
+6. Scikit-learn 
 
 ##CONTACT  
 kopp@igbmc.fr  
