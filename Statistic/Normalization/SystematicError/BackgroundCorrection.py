@@ -37,11 +37,11 @@ class BackgroundCorrection():
                         raise TypeError
                     else:
                         if self.BackgroundModelMean is None:
-                            self.BackgroundModelMean = np.zeros(value.DataMatrixMean.shape)
+                            self.BackgroundModelMean = np.zeros(value.DataMean.shape)
                         if self.BackgroundModelMedian is None:
-                            self.BackgroundModelMedian = np.zeros(value.DataMatrixMedian.shape)
-                        self.BackgroundModelMean += value.DataMatrixMean
-                        self.BackgroundModelMedian += value.DataMatrixMedian
+                            self.BackgroundModelMedian = np.zeros(value.DataMedian.shape)
+                        self.BackgroundModelMean += value.DataMean
+                        self.BackgroundModelMedian += value.DataMedian
                 self.BackgroundModelMedian *= 1 / len(self.screen)
                 self.BackgroundModelMean *= 1 / len(self.screen)
             elif apply_on == "Replicat":
@@ -58,11 +58,11 @@ class BackgroundCorrection():
                                 raise TypeError
                             else:
                                 if self.BackgroundModelMean is None:
-                                    self.BackgroundModelMean = np.zeros(repValue.DataMatrixMean.shape)
+                                    self.BackgroundModelMean = np.zeros(repValue.DataMean.shape)
                                 if self.BackgroundModelMedian is None:
-                                    self.BackgroundModelMedian = np.zeros(repValue.DataMatrixMedian.shape)
-                                self.BackgroundModelMean += repValue.DataMatrixMean
-                                self.BackgroundModelMedian += repValue.DataMatrixMedian
+                                    self.BackgroundModelMedian = np.zeros(repValue.DataMedian.shape)
+                                self.BackgroundModelMean += repValue.DataMean
+                                self.BackgroundModelMedian += repValue.DataMedian
                                 objectCnt += 1
                 self.BackgroundModelMedian *= 1 / objectCnt
                 self.BackgroundModelMean *= 1 / objectCnt
@@ -90,8 +90,8 @@ class BackgroundCorrection():
                     if not isinstance(value, ScreenPlateReplicatPS.Plate):
                         raise TypeError
                     else:
-                        value.DataMatrixMean -= self.BackgroundModelMean
-                        value.DataMatrixMedian -= self.BackgroundModelMedian
+                        value.DataMean -= self.BackgroundModelMean
+                        value.DataMedian -= self.BackgroundModelMedian
             elif apply_on == "Replicat":
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
@@ -104,7 +104,7 @@ class BackgroundCorrection():
                             if not isinstance(repValue, ScreenPlateReplicatPS.Replicat):
                                 raise TypeError
                             else:
-                                value.DataMatrixMean -= self.BackgroundModelMean
-                                value.DataMatrixMedian -= self.BackgroundModelMedian
+                                value.DataMean -= self.BackgroundModelMean
+                                value.DataMedian -= self.BackgroundModelMedian
         except Exception as e:
             print(e)

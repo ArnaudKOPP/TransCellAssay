@@ -62,6 +62,10 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', verbose=
             raise AttributeError('Must provided negative control')
         if isinstance(plate, ScreenPlateReplicatPS.Plate):
             ttest_score = np.zeros(plate.PlateSetup.platesetup.shape)
+
+            # # replace 0 with NaN
+            ttest_score[ttest_score == 0] = np.NaN
+
             nb_rep = len(plate.replicat)
 
             neg_value = []
@@ -83,11 +87,12 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', verbose=
                             raise Exception("Launch SystematicErrorCorrection before")
                         # check if neg value
                         for neg_i in neg_pos:
-                            if neg_i[0] == i and neg_i[1] == j:
-                                neg_value.append(well_value)
+                            if neg_i[0] == i:
+                                if neg_i[1] == j:
+                                    neg_value.append(well_value)
             nb_neg_wells = len(neg_value)
-            mean_neg = np.mean(neg_value)
-            var_neg = np.var(neg_value)
+            mean_neg = np.nanmean(neg_value)
+            var_neg = np.nanvar(neg_value)
 
             # search rep value for ith well
             for i in range(ttest_score.shape[0]):
@@ -103,8 +108,8 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', verbose=
                                 raise AttributeError('Data type must be mean or median')
                         except Exception:
                             raise Exception("Launch SystematicErrorCorrection before")
-                    mean_rep = np.mean(well_value)
-                    var_rep = np.var(well_value)
+                    mean_rep = np.nanmean(well_value)
+                    var_rep = np.nanvar(well_value)
 
                     # # performed unpaired t-test
                     if variance == 'unequal':
@@ -113,9 +118,13 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', verbose=
                     elif variance == 'equal':
                         ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * (
                             (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * (
-                                                                                (1 / nb_rep) * (1 / nb_neg_wells)))
+                            (1 / nb_rep) * (1 / nb_neg_wells)))
                     else:
                         raise AttributeError('variance attribut must be unequal or equal.')
+
+            # # replace NaN with 0
+            ttest_score = np.nan_to_num(ttest_score)
+
             if verbose:
                 print("Unpaired t-test :")
                 print("Data type : ", data)
@@ -144,29 +153,33 @@ def _PairedTStatScore(plate, cNeg, data='median', verbose=False):
             raise AttributeError('Must provided negative control')
         if isinstance(plate, ScreenPlateReplicatPS.Plate):
             ttest_score = np.zeros(plate.PlateSetup.platesetup.shape)
-            neg_value = []
+
+            # # replace 0 with NaN
+            ttest_score[ttest_score == 0] = np.NaN
+
             neg_pos = plate.PlateSetup.getGenePos(cNeg)
 
             # search neg control value
-            def _search_neg_data(replicat, neg_pos, type):
+            def _search_neg_data(replicat, Neg_Pos, Type):
+                neg_value = []
                 try:
                     for i in range(ttest_score.shape[0]):
                         for j in range(ttest_score.shape[1]):
-                            well_value = 0
                             try:
-                                if data == "median":
+                                if Type == "median":
                                     well_value = replicat.SpatNormDataMedian[i][j]
-                                elif data == "mean":
+                                elif Type == "mean":
                                     well_value = replicat.SpatNormDataMean[i][j]
                                 else:
                                     raise AttributeError('Data type must be mean or median')
                             except Exception:
                                 raise Exception("Launch SystematicErrorCorrection before")
                             # check if neg value
-                            for neg_i in neg_pos:
-                                if neg_i[0] == i and neg_i[1] == j:
-                                    neg_value.append(well_value)
-                    return np.median(neg_value)
+                            for neg_i in Neg_Pos:
+                                if neg_i[0] == i:
+                                    if neg_i[1] == j:
+                                        neg_value.append(well_value)
+                    return np.nanmedian(neg_value)
                 except Exception as e:
                     print(e)
 
@@ -183,9 +196,14 @@ def _PairedTStatScore(plate, cNeg, data='median', verbose=False):
                                 well_value.append(value.SpatNormDataMean[i][j] - neg_median)
                             else:
                                 raise AttributeError('Data type must be mean or median')
-                        ttest_score[i][j] = np.mean(well_value) / (np.std(well_value) / np.sqrt(len(plate.replicat)))
+                        ttest_score[i][j] = np.nanmean(well_value) / (
+                            np.nanstd(well_value) / np.sqrt(len(plate.replicat)))
             except Exception as e:
                 print(e)
+
+            # # replace NaN with 0
+            ttest_score = np.nan_to_num(ttest_score)
+
             if verbose:
                 print("Paired t-test :")
                 print("Data type : ", data)

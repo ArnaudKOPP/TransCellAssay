@@ -10,7 +10,6 @@ import sys
 import time
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
-from platform import python_version
 import ScreenPlateReplicatPS
 import Statistic
 import numpy as np
@@ -67,9 +66,9 @@ USAGE
         InArgs = parser.parse_args()
         InputFileDirectory = InArgs.input
 
-        print("")
-        print("INPUT READING DATA")
-        print("")
+        # # reading TEST
+        time_norm_start = time.time()
+
         screen_test = ScreenPlateReplicatPS.Screen()
         plaque1 = ScreenPlateReplicatPS.Plate()
         platesetup = ScreenPlateReplicatPS.PlateSetup()
@@ -89,22 +88,38 @@ USAGE
         plaque1.addReplicat(rep3)
         screen_test.addPlate(plaque1)
 
+        time_norm_stop = time.time()
+        print("\033[0;31mReading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+
+        ## Computation TEST
         time_start_comp = time.time()
-        print("")
-        print("BEGIN COMPUTATION TEST")
-        print("")
         # tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
-        #print(tmp2)
+        # print(tmp2)
 
         np.set_printoptions(linewidth=200)
+
+        time_norm_start = time.time()
         plaque1.Normalization('Nuc Intensity', technics='Zscore', log=True)
+        time_norm_stop = time.time()
+        print("\033[0;31mNormalization Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+
+        time_norm_start = time.time()
         plaque1.computeDataFromReplicat('Nuc Intensity')
-        plaque1.SystematicErrorCorrection(apply_down=True, save=True)
+        plaque1.SystematicErrorCorrection(apply_down=True, save=True, verbose=False)
         plaque1.computeDataFromReplicat('Nuc Intensity')
-        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, verbose=True)
+        # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  ## apply only when replicat are not SE norm
+        time_norm_stop = time.time()
+        print("\033[0;31mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+
+        time_norm_start = time.time()
+        #Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, verbose=True)
+        #Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, verbose=True)
         Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, verbose=True)
         Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, verbose=True)
-        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, verbose=True)
+        time_norm_stop = time.time()
+
+        print("\033[0;31mSSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+
 
         # rep1.SystematicErrorCorrection(Methods='MEA', verbose=True)
         # Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMean, alpha=0.05, verbose=True)
@@ -118,8 +133,7 @@ USAGE
         # Statistic.Normalization.PartialMeanPolish(Array.copy(), verbose=True, alpha=0.05)
 
         time_stop_comp = time.time()
-        print("    Compute Executed in {0:f}s".format(float(time_stop_comp - time_start_comp)))
-
+        print("\033[0;31mComputation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
         return 0
@@ -131,11 +145,12 @@ USAGE
         sys.stderr.write(indent + "  for help use --help")
         return 2
     time_stop = time.time()
-    print("Executed in {0:f}s".format(float(time_stop - time_start)))
+    print("\033[0;31m   ----> Script total time : {0:f}s\033[0m".format(float(time_stop - time_start)))
 
 
 if __name__ == "__main__":
-    print('')
-    print('Hello User : ')
-    print('This Python program is launch with ', python_version(), ' version, it was only tested on > 3.3 plateform')
+    print("")
+    print('Hello dear user : ')
+    print('This Python program was only tested on > 3.3 plateform')
+    print("")
     main()

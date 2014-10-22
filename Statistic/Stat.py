@@ -21,7 +21,7 @@ def kl(p, q):
     p = np.asarray(p, dtype=np.float)
     q = np.asarray(q, dtype=np.float)
 
-    return np.sum(np.where(p != 0, p * np.log(p / q), 0))
+    return np.nansum(np.where(p != 0, p * np.log(p / q), 0))
 
 
 def mad(arr):
@@ -30,8 +30,8 @@ def mad(arr):
         https://en.wikipedia.org/wiki/Median_absolute_deviation
     """
     try:
-        arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
-        med = np.median(arr)
-        return (1.4826 * np.median(np.abs(arr - med)))
+        # arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
+        med = np.nanmedian(arr)
+        return 1.4826 * np.nanmedian(np.abs(arr - med))
     except Exception as e:
         print(e)

@@ -18,6 +18,10 @@ def diffusionModel(Array, max_iterations=100, verbose=False):
     :param verbose: print result
     :return: result array
     '''
+
+    # # replace 0 with NaN
+    Array[Array == 0] = np.NaN
+
     EdgeEffect = DiffusionModel(Array.copy())
     EdgeEffect.DiffusionModel(max_iterations=max_iterations)
     BestIteration = EdgeEffect.FindIterationsForBestMatch(Array.copy())
@@ -26,6 +30,9 @@ def diffusionModel(Array, max_iterations=100, verbose=False):
     # Correct the plate
     if not BestIteration == 0:
         CorrectedTable = EdgeEffect.CorrectThePlate(Array.copy(), BestIteration, ShiftMult[0], ShiftMult[1])
+
+    # # replace NaN with 0
+    CorrectedTable = np.nan_to_num(CorrectedTable)
 
     if verbose:
         np.set_printoptions(suppress=True)
@@ -46,6 +53,7 @@ class DiffusionModel():
     '''
     Class that represent the Diffusion Model
     '''
+
     def __init__(self, array):
         self.Array = array
         self.CoeffDiff = 0.125
@@ -99,8 +107,8 @@ class DiffusionModel():
                 for Y in range(self.Array.shape[1]):
                     LextPlate.append(output[X + 1][Y + 1])
 
-            Average = np.mean(LextPlate)
-            Stdev = np.std(LextPlate)
+            Average = np.nanmean(LextPlate)
+            Stdev = np.nanstd(LextPlate)
 
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
@@ -123,8 +131,8 @@ class DiffusionModel():
                 for Y in range(self.Array.shape[1]):
                     LextPlate.append(Plate[X][Y])
 
-            Average = np.mean(LextPlate)
-            Stdev = np.std(LextPlate)
+            Average = np.nanmean(LextPlate)
+            Stdev = np.nanstd(LextPlate)
 
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
@@ -218,8 +226,8 @@ class DiffusionModel():
                         ValueList.append(CurrentMapWithoutBorders[X][Y])
 
                 self.DiffusionMaps.append(CurrentMapWithoutBorders)
-                self.DiffusionMapsMeans.append(np.mean(ValueList))
-                self.DiffusionMapsStdev.append(np.mean(ValueList))
+                self.DiffusionMapsMeans.append(np.nanmean(ValueList))
+                self.DiffusionMapsStdev.append(np.nanmean(ValueList))
                 CurrentMap = Nextmap.copy()
         except Exception as e:
             print("ComputeDiffusionMaps Method")

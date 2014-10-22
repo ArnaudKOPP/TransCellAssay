@@ -16,9 +16,9 @@ It will certainly be like a toolbox for the moment, so programming skill is need
 
 ##DEPENDENCIES
 1. Python > 3.3
-2. Pandas 
-3. Numpy 
-4. Scipy
+2. Pandas > 0.14
+3. Numpy > 1.8
+4. Scipy > 0.12
 5. Matplotlib
 6. Scikit-lear 
 

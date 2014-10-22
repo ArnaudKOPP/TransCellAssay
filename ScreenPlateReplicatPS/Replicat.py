@@ -23,8 +23,8 @@ class Replicat():
         self.info = ""  # Name of replicat
         self.isNormalized = False  # Well correction or somethings else
         self.isSpatialNormalized = False  # systematics error removed or not
-        self.DataMatrixMean = None  # matrix that contain mean of interested features to analyze
-        self.DataMatrixMedian = None  # matrix that contain median of interested feature to analyze
+        self.DataMean = None  # matrix that contain mean of interested features to analyze
+        self.DataMedian = None  # matrix that contain median of interested feature to analyze
         self.SpatNormDataMean = None  # matrix that contain data corrected by median polish (bscore) or others technics
         self.SpatNormDataMedian = None  # matrix that contain data corrected by median polish (bscore) or others technics
 
@@ -143,23 +143,23 @@ class Replicat():
             mean_feature = mean_tmp[feature]
             dict_mean = mean_feature.to_dict()  # # dict : key = pos and item are mean
             if not len(dict_mean) > 96:
-                self.DataMatrixMean = np.zeros((8, 12))
+                self.DataMean = np.zeros((8, 12))
             else:
-                self.DataMatrixMean = np.zeros((16, 24))
+                self.DataMean = np.zeros((16, 24))
             for key, elem in dict_mean.items():
                 pos = Utils.Utils.getOppositeWellFormat(key)
-                self.DataMatrixMean[pos[0]][pos[1]] = elem
+                self.DataMean[pos[0]][pos[1]] = elem
 
             median_tmp = grouped_data_by_well.median()
             median_feature = median_tmp[feature]
             dict_median = median_feature.to_dict()  # # dict : key = pos and item are mean
             if not len(dict_median) > 96:
-                self.DataMatrixMedian = np.zeros((8, 12))
+                self.DataMedian = np.zeros((8, 12))
             else:
-                self.DataMatrixMedian = np.zeros((16, 24))
+                self.DataMedian = np.zeros((16, 24))
             for key, elem in dict_median.items():
                 pos = Utils.Utils.getOppositeWellFormat(key)
-                self.DataMatrixMedian[pos[0]][pos[1]] = elem
+                self.DataMedian[pos[0]][pos[1]] = elem
         except Exception as e:
             print(e)
 
@@ -172,13 +172,13 @@ class Replicat():
         '''
         try:
             if method == "mean":
-                if self.DataMatrixMean is None:
+                if self.DataMean is None:
                     self.computeDataForFeature(feature)
-                return self.DataMatrixMean
+                return self.DataMean
             else:
-                if self.DataMatrixMedian is None:
+                if self.DataMedian is None:
                     self.computeDataForFeature(feature)
-                return self.DataMatrixMedian
+                return self.DataMedian
         except Exception as e:
             print(e)
 
@@ -200,7 +200,6 @@ class Replicat():
         except Exception as e:
             print(e)
 
-
     def SystematicErrorCorrection(self, Methods='Bscore', verbose=False, save=False, max_iterations=100):
         '''
 
@@ -218,23 +217,23 @@ class Replicat():
 
         try:
             if Methods == 'Bscore':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
+                if self.DataMean is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMean.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMean.copy(),
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
 
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
+                if self.DataMedian is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMatrixMedian.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMedian.copy(),
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
@@ -242,23 +241,23 @@ class Replicat():
                         self.isSpatialNormalized = True
 
             if Methods == 'BZscore':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
+                if self.DataMean is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMatrixMean.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMean.copy(),
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
 
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
+                if self.DataMedian is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMatrixMedian.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMedian.copy(),
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
                     if save:
@@ -266,54 +265,54 @@ class Replicat():
                         self.isSpatialNormalized = True
 
             if Methods == 'PMP':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
+                if self.DataMean is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMean.copy(),
+                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMean.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
 
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
+                if self.DataMedian is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMatrixMedian.copy(),
+                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMedian.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
 
             if Methods == 'MEA':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
+                if self.DataMean is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMean.copy(), verbose=verbose)
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMean.copy(), verbose=verbose)
                     if save:
                         self.SpatNormDataMean = resid
 
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
+                if self.DataMedian is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMatrixMedian.copy(), verbose=verbose)
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMedian.copy(), verbose=verbose)
                     if save:
                         self.SpatNormDataMedian = resid
                         self.isSpatialNormalized = True
 
             if Methods == 'DiffusionModel':
-                if self.DataMatrixMean is None or self.isSpatialNormalized is True:
+                if self.DataMean is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Mean of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    CorrectedTable = Statistic.Normalization.diffusionModel(self.DataMatrixMean,
+                    CorrectedTable = Statistic.Normalization.diffusionModel(self.DataMean,
                                                                             max_iterations=max_iterations,
                                                                             verbose=verbose)
 
@@ -321,12 +320,12 @@ class Replicat():
                         self.SpatNormDataMedian = CorrectedTable
                         self.isSpatialNormalized = True
 
-                if self.DataMatrixMedian is None or self.isSpatialNormalized is True:
+                if self.DataMedian is None or self.isSpatialNormalized is True:
                     print(
                         "Compute Median of replicat first by using computeDataForFeature, or data are already spatial Normalized")
                     return 0
                 else:
-                    CorrectedTable = Statistic.Normalization.diffusionModel(self.DataMatrixMedian,
+                    CorrectedTable = Statistic.Normalization.diffusionModel(self.DataMedian,
                                                                             max_iterations=max_iterations,
                                                                             verbose=verbose)
 
