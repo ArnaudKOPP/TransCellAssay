@@ -126,13 +126,14 @@ USAGE
                                    verbose=True)
 
         print("\033[0;32m    T-Stat TESTING \033[0m")
-        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, SECData=False, verbose=True)
-        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, SECData=False, verbose=True)
+        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, data='mean', variance='equal', SECData=False,
+                                     verbose=True)
         Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, variance='equal', SECData=False, verbose=True)
-        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, variance='equal', SECData=False, verbose=True)
+        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, SECData=False, verbose=True)
+        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, data='mean', SECData=False, verbose=True)
         time_norm_stop = time.time()
 
-        print("\033[0;32m SSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+        print("\033[0;32mSSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
 
         # rep1.SystematicErrorCorrection(Methods='MEA', verbose=True)

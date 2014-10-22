@@ -10,13 +10,15 @@ sample MAD to account for data variability.
 -BZscore : This is a modified version of Bscore method, where the median polish is folowed by zscore calculations. While
 BSscore is more advantageous to Zscore  because of its capability to correct for row and col effect, it is less
 powerfull than Bscore and does not fit very well with the normal distribution model.
+
+trimmed mean : cut the outside limit default = 0.0 so its equivalent to the 'standart' mean.
 """
 import numpy as np
 from scipy import stats
 from Statistic.Stat import mad
 
 
-def MedianPolish(array, max_iterations=100, method='median', verbose=False):
+def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
     """
         Implements Tukey's median polish alghoritm for additive models
         method - default is median, alternative is mean. That would give us result equal ANOVA.
@@ -41,7 +43,7 @@ def MedianPolish(array, max_iterations=100, method='median', verbose=False):
                 row_effects += row_medians
                 median_row_effects = stats.nanmedian(row_effects)
             elif method == 'average':
-                row_medians = stats.nanmean(tbl, 1)
+                row_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1))
                 row_effects += row_medians
                 median_row_effects = stats.nanmean(row_effects)
             grand_effect += median_row_effects
@@ -53,7 +55,7 @@ def MedianPolish(array, max_iterations=100, method='median', verbose=False):
                 col_effects += col_medians
                 median_col_effects = stats.nanmedian(col_effects)
             elif method == 'average':
-                col_medians = stats.nanmean(tbl, 0)
+                col_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0))
                 col_effects += col_medians
                 median_col_effects = stats.nanmean(col_effects)
 
@@ -84,7 +86,7 @@ def MedianPolish(array, max_iterations=100, method='median', verbose=False):
         raise TypeError('Expected the argument to be a numpy.ndarray.')
 
 
-def BZMedianPolish(array, max_iterations=100, method='median', verbose=False):
+def BZMedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
     """
         Implements Tukey's median polish alghoritm for additive models
         method - default is median, alternative is mean. That would give us result equal ANOVA.
@@ -110,7 +112,7 @@ def BZMedianPolish(array, max_iterations=100, method='median', verbose=False):
                 row_effects += row_medians
                 median_row_effects = stats.nanmedian(row_effects)
             elif method == 'average':
-                row_medians = stats.nanmean(tbl, 1)
+                row_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1))
                 row_effects += row_medians
                 median_row_effects = stats.nanmean(row_effects)
             grand_effect += median_row_effects
@@ -122,7 +124,7 @@ def BZMedianPolish(array, max_iterations=100, method='median', verbose=False):
                 col_effects += col_medians
                 median_col_effects = stats.nanmedian(col_effects)
             elif method == 'average':
-                col_medians = stats.nanmean(tbl, 0)
+                col_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0))
                 col_effects += col_medians
                 median_col_effects = stats.nanmean(col_effects)
 
