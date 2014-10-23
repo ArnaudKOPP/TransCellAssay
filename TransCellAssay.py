@@ -98,6 +98,7 @@ USAGE
 
         time_start_comp = time.time()
         np.set_printoptions(linewidth=200)
+        np.set_printoptions(suppress=True)
 
         time_norm_start = time.time()
         plaque1.Normalization('Nuc Intensity', technics='Zscore', log=True)
@@ -107,39 +108,43 @@ USAGE
         time_norm_start = time.time()
         plaque1.computeDataFromReplicat('Nuc Intensity')
         plaque1.SystematicErrorCorrection(method='average', apply_down=True, save=True, verbose=False)
-        plaque1.computeDataFromReplicat('Nuc Intensity')
-        # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  ## apply only when replicat are not SE norm
+        plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # # apply only when replicat are not SE norm
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         print("\n \033[0;32m     SSMD TESTING \033[0m")
-
         time_norm_start = time.time()
-        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, SECData=False, verbose=True)
-        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, robust_version=False, SECData=False, verbose=True)
-        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, variance='equal', SECData=False, verbose=True)
+        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, SECData=True, verbose=True)
+        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, robust_version=False, SECData=True, verbose=True)
+        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, variance='equal', SECData=True, verbose=True)
         Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, variance='equal', robust_version=False,
-                                   SECData=False, verbose=True)
+                                   SECData=True, verbose=True)
         Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, SECData=False, verbose=True)
         Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, robust_version=False, SECData=False, verbose=True)
-        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='MM', SECData=False, verbose=True)
-        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='MM', robust_version=False, SECData=False,
+        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='UMVUE', SECData=True, verbose=True)
+        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='UMVUE', robust_version=False, SECData=True,
                                    verbose=True)
+
+        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='UMVUE', SECData=True, verbose=True,
+                                   inplate_data=True)
+        Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='UMVUE', robust_version=False, SECData=True,
+                                   verbose=True, inplate_data=True)
+
 
         print("\033[0;32m    T-Stat TESTING \033[0m")
         Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, data='mean', variance='equal', SECData=False,
                                      verbose=True)
         Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, variance='equal', SECData=False, verbose=True)
-        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, SECData=False, verbose=True)
-        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, data='mean', SECData=False, verbose=True)
+        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, data='mean', SECData=False, verbose=True)
+        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, data='median', SECData=True, verbose=True)
         time_norm_stop = time.time()
 
         print("\033[0;32mSSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         # rep1.SystematicErrorCorrection(Methods='MEA', verbose=True)
-        Statistic.Test.SystematicErrorDetectionTest(rep1.DataMean, alpha=0.05, verbose=True)
-        Statistic.Test.SystematicErrorDetectionTest(rep1.DataMedian, alpha=0.05, verbose=True)
-        Statistic.Test.SystematicErrorDetectionTest(plaque1.DataMean, alpha=0.05, verbose=True)
+        # Statistic.Test.SystematicErrorDetectionTest(rep1.DataMean, alpha=0.05, verbose=True)
+        # Statistic.Test.SystematicErrorDetectionTest(rep1.DataMedian, alpha=0.05, verbose=True)
+        # Statistic.Test.SystematicErrorDetectionTest(plaque1.DataMean, alpha=0.05, verbose=True)
         # rep1.SpatialNormalization(Methods='DiffusionModel', verbose=True)
         # Graphics.plotSurf3D_Plate(A)
         # Array = np.genfromtxt("/home/akopp/Bureau/testcsv.csv", delimiter=',')

@@ -39,7 +39,7 @@ class PlateSetup():
         try:
             self.platesetup = pd.read_csv(InputFile, index_col=0)
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getPlateSetup(self):
         """
@@ -49,8 +49,7 @@ class PlateSetup():
         try:
             return self.platesetup
         except Exception as e:
-            print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error in getting platesetup')
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getSize(self):
         """
@@ -60,7 +59,7 @@ class PlateSetup():
         try:
             return self.platesetup.shape
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getGenePos(self, gene):
         """
@@ -75,10 +74,11 @@ class PlateSetup():
                 for c in range(size[1]):
                     if gene == mat[r][c]:
                         CoordList.append((r, c))
+            if not CoordList:
+                raise AttributeError('\033[0;31m[ERROR]\033[0m  This gene don\'t exist')
             return CoordList
         except Exception as e:
             print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error occured at getGenePos')
 
     def getGeneWell(self, gene):
         """
@@ -95,10 +95,11 @@ class PlateSetup():
                 for c in range(col):
                     if mat[r][c] == gene:
                         CoordList.append(Utils.getOppositeWellFormat((r, c)))
+            if not CoordList:
+                raise AttributeError('\033[0;31m[ERROR]\033[0m  This gene don\'t exist')
             return CoordList
         except Exception as e:
             print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error occured at getGeneWell')
 
     def getPSasDict(self):
         """
@@ -120,8 +121,7 @@ class PlateSetup():
                         dict[well] = genename
             return dict
         except Exception as e:
-            print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error occured at getPSasList')
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getPSasMatrix(self):
         """
@@ -132,7 +132,6 @@ class PlateSetup():
             return self.platesetup.as_matrix()
         except Exception as e:
             print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error in getting matrix of platesetup')
 
     def __repr__(self):
         """

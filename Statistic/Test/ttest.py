@@ -23,8 +23,7 @@ def t_test(Array1, Array2):
             ((np.var(Array1) / N1) ** 2 / (N1 - 1)) + ((np.var(Array2) / N2) ** 2 / (N2 - 1)))
         return tstat, dof
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m")
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
 def TTest(Array1, Array2, alpha=0.05):
@@ -51,5 +50,4 @@ def TTest(Array1, Array2, alpha=0.05):
         else:
             return False
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m")
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)

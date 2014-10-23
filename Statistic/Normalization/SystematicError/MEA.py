@@ -104,8 +104,6 @@ def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
                 print("")
             return input_array
         else:
-            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m")
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)

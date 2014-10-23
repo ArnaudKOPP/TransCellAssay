@@ -53,8 +53,6 @@ def getPercentPosCell(plate, feature, control, threshold, direction):
                 print(e)
             return dict_percent_cell, dict_percent_sd_cell
         else:
-            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m")
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)

@@ -36,8 +36,7 @@ class Screen():
             assert isinstance(plate, ScreenPlateReplicatPS.Plate)
             self.PlateList[plate.Name] = plate
         except Exception as e:
-            print(e)
-            print('\033[0;31m[ERROR]\033[0m  Can\'t insert this plate in screen instance' % plate)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getPlate(self, name):
         """
@@ -47,8 +46,7 @@ class Screen():
         try:
             return self.PlateList[name]
         except Exception as e:
-            print(e)
-            print('\033[0;31m[ERROR]\033[0m  Can\'t get this plate one %s' % name)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def addInfo(self, key, value):
         """
@@ -69,8 +67,7 @@ class Screen():
         try:
             return self.Info
         except Exception as e:
-            print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error in getting info')
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __len__(self):
         """
@@ -91,8 +88,7 @@ class Screen():
             assert isinstance(plate, ScreenPlateReplicatPS.Plate)
             self.PlateList[plate.Name] = plate
         except Exception as e:
-            print(e)
-            print('\033[0;31m[ERROR]\033[0m  Can\'t insert this plate in screen instance' % plate)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __getitem__(self, key):
         """

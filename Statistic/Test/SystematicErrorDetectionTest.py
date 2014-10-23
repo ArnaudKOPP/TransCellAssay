@@ -38,10 +38,8 @@ def SystematicErrorDetectionTest(Array, alpha=0.05, verbose=False):
 
             return SEDT_Array
         else:
-            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m")
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 

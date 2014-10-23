@@ -25,7 +25,7 @@ class BackgroundCorrection():
             self.BackgroundSurfaceAnalysis()
             self.ApplyBackgroundElimination()
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def BackgroundEvaluation(self, apply_on, verbose, control_Well=None):
         try:
@@ -73,7 +73,7 @@ class BackgroundCorrection():
                     print(self.BackgroundModelMedian)
                     print("")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def BackgroundSurfaceAnalysis(self, plot=False):
         try:
@@ -107,4 +107,4 @@ class BackgroundCorrection():
                                 value.DataMean -= self.BackgroundModelMean
                                 value.DataMedian -= self.BackgroundModelMedian
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)

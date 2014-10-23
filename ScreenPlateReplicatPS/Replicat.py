@@ -32,8 +32,8 @@ class Replicat():
         self.isSpatialNormalized = False
         self.DataMean = None
         self.DataMedian = None
-        self.SpatNormDataMean = None
-        self.SpatNormDataMedian = None
+        self.SECDataMean = None
+        self.SECDataMedian = None
 
     def setData(self, InputFile):
         """
@@ -190,19 +190,19 @@ class Replicat():
         try:
             if method == "mean":
                 if SEC:
-                    if self.SpatNormDataMean is None:
+                    if self.SECDataMean is None:
                         raise ValueError('\033[0;31m[ERROR]\033[0m  Launch Systematic Error Correction before')
                     else:
-                        return self.SpatNormDataMean
+                        return self.SECDataMean
                 elif self.DataMean is None:
                     self.computeDataForFeature(feature)
                 return self.DataMean
             else:
                 if SEC:
-                    if self.SpatNormDataMedian is None:
+                    if self.SECDataMedian is None:
                         raise ValueError('\033[0;31m[ERROR]\033[0m  Launch Systematic Error Correction before')
                     else:
-                        return self.SpatNormDataMedian
+                        return self.SECDataMedian
                 if self.DataMedian is None:
                     self.computeDataForFeature(feature)
                 return self.DataMedian
@@ -222,8 +222,7 @@ class Replicat():
                                                                              method=method, log2_transformation=log)
                 self.isNormalized = True
             else:
-                print("\033[0;33m[WARNING]\033[0m Data are already normalized")
-                raise Exception
+                raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
         except Exception as e:
             print(e)
 
@@ -257,7 +256,7 @@ class Replicat():
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
-                        self.SpatNormDataMean = resid
+                        self.SECDataMean = resid
 
                 if self.DataMedian is None:
                     raise ValueError(
@@ -271,7 +270,7 @@ class Replicat():
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
-                        self.SpatNormDataMedian = resid
+                        self.SECDataMedian = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'BZscore':
@@ -287,7 +286,7 @@ class Replicat():
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
                     if save:
-                        self.SpatNormDataMean = resid
+                        self.SECDataMean = resid
 
                 if self.DataMedian is None:
                     raise ValueError(
@@ -301,7 +300,7 @@ class Replicat():
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
                     if save:
-                        self.SpatNormDataMedian = resid
+                        self.SECDataMedian = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'PMP':
@@ -315,7 +314,7 @@ class Replicat():
                     resid = Statistic.Normalization.PartialMeanPolish(self.DataMean.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
-                        self.SpatNormDataMean = resid
+                        self.SECDataMean = resid
 
                 if self.DataMedian is None:
                     raise ValueError(
@@ -327,7 +326,7 @@ class Replicat():
                     resid = Statistic.Normalization.PartialMeanPolish(self.DataMedian.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
-                        self.SpatNormDataMedian = resid
+                        self.SECDataMedian = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'MEA':
@@ -340,7 +339,7 @@ class Replicat():
                 else:
                     resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMean.copy(), verbose=verbose)
                     if save:
-                        self.SpatNormDataMean = resid
+                        self.SECDataMean = resid
 
                 if self.DataMedian is None:
                     raise ValueError(
@@ -351,7 +350,7 @@ class Replicat():
                 else:
                     resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMedian.copy(), verbose=verbose)
                     if save:
-                        self.SpatNormDataMedian = resid
+                        self.SECDataMedian = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'DiffusionModel':
@@ -367,7 +366,7 @@ class Replicat():
                                                                             verbose=verbose)
 
                     if save:
-                        self.SpatNormDataMedian = CorrectedTable
+                        self.SECDataMedian = CorrectedTable
                         self.isSpatialNormalized = True
 
                 if self.DataMedian is None:
@@ -382,7 +381,7 @@ class Replicat():
                                                                             verbose=verbose)
 
                     if save:
-                        self.SpatNormDataMedian = CorrectedTable
+                        self.SECDataMedian = CorrectedTable
                         self.isSpatialNormalized = True
 
         except Exception as e:

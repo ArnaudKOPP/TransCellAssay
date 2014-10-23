@@ -26,7 +26,7 @@ def getMeanSDCellCount(plate):
                 dictCount = count.to_dict()
                 return dictCount
             except Exception as e:
-                print(e)
+                print("\033[0;31m[ERROR]\033[0m", e)
 
 
         dictMeanByRep = {}
@@ -45,5 +45,4 @@ def getMeanSDCellCount(plate):
             MeanCount = dict(MeanCountList)  # # convert to dict
             return MeanCount, SDValue
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m")
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)

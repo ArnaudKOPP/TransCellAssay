@@ -99,8 +99,6 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
                 print("")
             return input_array
         else:
-            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m")
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)

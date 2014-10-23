@@ -24,7 +24,7 @@ def Anderson_Darling(Array):
         A = Asquare(norm)
         return A
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
 def Asquare(data):
@@ -41,7 +41,7 @@ def Asquare(data):
 
         return A
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
 def CDF(y, mu, varb):
@@ -49,4 +49,4 @@ def CDF(y, mu, varb):
         Res = 0.5 * (1 + scipy.stats.norm.cdf((y - mu) / varb))
         return Res
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)

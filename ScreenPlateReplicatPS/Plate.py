@@ -50,8 +50,8 @@ class Plate():
         self.isSpatialNormalized = False
         self.DataMean = None
         self.DataMedian = None
-        self.SpatNormDataMean = None
-        self.SpatNormDataMedian = None
+        self.SECDataMean = None
+        self.SECDataMedian = None
 
     def printMetaInfo(self):
         """
@@ -263,8 +263,8 @@ class Plate():
                 self.DataMean = mean_tmp / i
                 self.DataMedian = median_tmp / i
             else:
-                self.SpatNormDataMean = mean_tmp / i
-                self.SpatNormDataMedian = median_tmp / i
+                self.SECDataMean = mean_tmp / i
+                self.SECDataMedian = median_tmp / i
                 self.isSpatialNormalized = True
         except Exception as e:
             print(e)
@@ -318,7 +318,7 @@ class Plate():
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
-                        self.SpatNormDataMedian = resid
+                        self.SECDataMedian = resid
 
                 if self.DataMean is None:
                     raise ValueError(
@@ -332,7 +332,7 @@ class Plate():
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
-                        self.SpatNormDataMean = resid
+                        self.SECDataMean = resid
                         self.isSpatialNormalized = True
             if Algorithm == 'BZscore':
                 if self.DataMedian is None:
@@ -347,7 +347,7 @@ class Plate():
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
                     if save:
-                        self.SpatNormDataMedian = resid
+                        self.SECDataMedian = resid
 
                 if self.DataMean is None:
                     raise ValueError(
@@ -361,7 +361,7 @@ class Plate():
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
                     if save:
-                        self.SpatNormDataMean = resid
+                        self.SECDataMean = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'PMP':
@@ -375,7 +375,7 @@ class Plate():
                     resid = Statistic.Normalization.PartialMeanPolish(self.DataMedian.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
-                        self.SpatNormDataMedian = resid
+                        self.SECDataMedian = resid
 
                 if self.DataMean is None:
                     raise ValueError(
@@ -387,7 +387,7 @@ class Plate():
                     resid = Statistic.Normalization.PartialMeanPolish(self.DataMean.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
-                        self.SpatNormDataMean = resid
+                        self.SECDataMean = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'MEA':
@@ -400,7 +400,7 @@ class Plate():
                 else:
                     resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMedian.copy(), verbose=verbose)
                     if save:
-                        self.SpatNormDataMedian = resid
+                        self.SECDataMedian = resid
 
                 if self.DataMean is None:
                     raise ValueError(
@@ -411,7 +411,7 @@ class Plate():
                 else:
                     resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMean.copy(), verbose=verbose)
                     if save:
-                        self.SpatNormDataMean = resid
+                        self.SECDataMean = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'DiffusionModel':
@@ -427,7 +427,7 @@ class Plate():
                                                                             verbose=verbose)
 
                     if save:
-                        self.SpatNormDataMedian = CorrectedTable
+                        self.SECDataMedian = CorrectedTable
 
                 if self.DataMean is None:
                     raise ValueError(
@@ -441,7 +441,7 @@ class Plate():
                                                                             verbose=verbose)
 
                     if save:
-                        self.SpatNormDataMean = CorrectedTable
+                        self.SECDataMean = CorrectedTable
                         self.isSpatialNormalized = True
 
         except Exception as e:
