@@ -29,11 +29,11 @@ def get_filepaths(directory):
 
 
 def parsePlateCouple(plateList):
-    '''
+    """
     Parse plate list and create plate object
     :param plateList:
     :return:
-    '''
+    """
     try:
         for items in plateList:
             print('\n')
@@ -51,11 +51,11 @@ def parsePlateCouple(plateList):
 
 
 def parseInputDirectory(InputDirectory):
-    '''
+    """
     Parse the input Directory and create plate couple, begin here the pipeline
     :param InputDirectory:
     :return:
-    '''
+    """
     try:
         # Run the above function and store its results in a variable.
         full_file_paths = get_filepaths(InputDirectory)

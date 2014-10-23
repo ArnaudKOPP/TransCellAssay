@@ -2,10 +2,10 @@ __author__ = 'Arnaud KOPP'
 
 
 def getToxicity():
-    '''
+    """
     determine a toxicity index
     :return:
-    '''
+    """
     try:
         return 0
     except Exception as e:
@@ -13,10 +13,10 @@ def getToxicity():
 
 
 def getInfection():
-    '''
+    """
     determine a infection index
     :return:
-    '''
+    """
     try:
         return 0
     except Exception as e:
@@ -24,10 +24,10 @@ def getInfection():
 
 
 def getViability():
-    '''
+    """
     get Viability
     :return:
-    '''
+    """
     try:
         return 0
     except Exception as e:

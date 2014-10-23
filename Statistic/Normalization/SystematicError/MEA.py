@@ -11,12 +11,12 @@ from Statistic.Test.ttest import TTest
 
 
 def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
-    '''
+    """
     Implementation of Matrix Error Amendment , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
     :param: input_array: numpy ndarray represent data
     :return:
-    '''
+    """
     try:
         if isinstance(input_array, np.ndarray):
             array_org = input_array.copy()
@@ -37,7 +37,7 @@ def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
             # exit if not row or col affected
             N = Nrows.__len__() + Ncols.__len__()
             if N == 0:
-                print('No Systematics Error detected')
+                print('\033[0;33m[WARNING]\033[0m No Systematics Error detected')
                 return input_array
 
             mu = 0
@@ -104,6 +104,8 @@ def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
                 print("")
             return input_array
         else:
+            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
+        print("\033[0;31m[ERROR]\033[0m")
         print(e)

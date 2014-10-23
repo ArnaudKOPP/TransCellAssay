@@ -4,11 +4,11 @@ import numpy as np
 
 
 def getMeanSDCellCount(plate):
-    '''
+    """
     get mean of number of cell per well accross replicat
     :param plate : Give a TCA.Plate object
     :return: return a dict that contain mean value for well, with well position id ofr key in dict
-    '''
+    """
     if not isinstance(plate, ScreenPlateReplicatPS.Plate):
         raise TypeError
     else:
@@ -45,4 +45,5 @@ def getMeanSDCellCount(plate):
             MeanCount = dict(MeanCountList)  # # convert to dict
             return MeanCount, SDValue
         except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m")
             print(e)

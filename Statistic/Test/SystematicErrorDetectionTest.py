@@ -1,17 +1,17 @@
 __author__ = 'Arnaud KOPP'
-
 import numpy as np
 from scipy import stats
-
 from Statistic.Test.ttest import t_test
 
 
 def SystematicErrorDetectionTest(Array, alpha=0.05, verbose=False):
-    '''
+    """
     Search for systematic error in plate or replicat, use Welch T-Test
-    :param Plate:
-    :return:
-    '''
+    :param Array: numpy array to test
+    :param alpha: alpha for t-test
+    :param verbose: verbose or not
+    :return: array with 0 if not SE and 1 if SE contain in col or row
+    """
     try:
         if isinstance(Array, np.ndarray):
             Matrix = Array
@@ -38,8 +38,10 @@ def SystematicErrorDetectionTest(Array, alpha=0.05, verbose=False):
 
             return SEDT_Array
         else:
+            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
+        print("\033[0;31m[ERROR]\033[0m")
         print(e)
 
 

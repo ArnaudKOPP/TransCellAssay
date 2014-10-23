@@ -17,7 +17,7 @@ import numpy as np
 
 
 def t_stat_score(plate, cNeg, data='median', variance='unequal', paired=False, SECData=True, verbose=False):
-    '''
+    """
     Performed t-stat on plate object
     unpaired is for plate with replicat without great variance between them
     paired is for plate with replicat with great variance between them
@@ -28,28 +28,32 @@ def t_stat_score(plate, cNeg, data='median', variance='unequal', paired=False, S
     :param paired: paired or unpaired
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
-    :return:
-    '''
+    :return: score data
+    """
     try:
         if isinstance(plate, ScreenPlateReplicatPS.Plate):
             # if no neg was provided raise AttributeError
             if cNeg is None:
-                raise AttributeError('Must provided negative control')
+                raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
             if len(plate) > 1:
                 if paired:
-                    _PairedTStatScore(plate, cNeg, data=data, SECData=SECData, verbose=verbose)
+                    score = _PairedTStatScore(plate, cNeg, data=data, SECData=SECData, verbose=verbose)
                 else:
-                    _UnpairedTStatScore(plate, cNeg, data=data, variance=variance, SECData=SECData, verbose=verbose)
+                    score = _UnpairedTStatScore(plate, cNeg, data=data, variance=variance, SECData=SECData,
+                                                verbose=verbose)
             else:
-                raise ValueError("T-Test need at least two replicat")
+                raise ValueError("\033[0;31m[ERROR]\033[0m  T-Test need at least two replicat")
+            return score
         else:
+            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
+        print("\033[0;31m[ERROR]\033[0m")
         print(e)
 
 
 def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=True, verbose=False):
-    '''
+    """
     performed unpaired t-stat score
 
     variance :
@@ -61,11 +65,11 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
     :param variance: unequal or equal variance
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
-    :return:
-    '''
+    :return: score data
+    """
     try:
         if cNeg is None:
-            raise AttributeError('Must provided negative control')
+            raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, ScreenPlateReplicatPS.Plate):
             ttest_score = np.zeros(plate.PlateSetup.platesetup.shape)
 
@@ -94,9 +98,9 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
                                 else:
                                     well_value = value.DataMean[i][j]
                             else:
-                                raise AttributeError('Data type must be mean or median')
+                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
                         except Exception:
-                            raise Exception("Launch SystematicErrorCorrection before")
+                            raise Exception("\033[0;31m[ERROR]\033[0m  Launch SystematicErrorCorrection before")
                         # check if neg value
                         for neg_i in neg_pos:
                             if neg_i[0] == i:
@@ -123,9 +127,9 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
                                 else:
                                     well_value.append(value.DataMean[i][j])
                             else:
-                                raise AttributeError('Data type must be mean or median')
+                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
                         except Exception:
-                            raise Exception("Launch SystematicErrorCorrection before")
+                            raise Exception("\033[0;31m[ERROR]\033[0m  Launch SystematicErrorCorrection before")
                     mean_rep = np.nanmean(well_value)
                     var_rep = np.nanvar(well_value)
 
@@ -138,7 +142,7 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
                             (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * (
                             (1 / nb_rep) * (1 / nb_neg_wells)))
                     else:
-                        raise AttributeError('variance attribut must be unequal or equal.')
+                        raise AttributeError('\033[0;31m[ERROR]\033[0m  variance attribut must be unequal or equal.')
 
             # # replace NaN with 0
             ttest_score = np.nan_to_num(ttest_score)
@@ -153,24 +157,26 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
                 print("")
             return ttest_score
         else:
+            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
+        print("\033[0;31m[ERROR]\033[0m")
         print(e)
 
 
 def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
-    '''
+    """
     performed paired t-stat score
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
     :param data: median or mean data to use
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
-    :return:
-    '''
+    :return: score data
+    """
     try:
         if cNeg is None:
-            raise AttributeError('Must provided negative control')
+            raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, ScreenPlateReplicatPS.Plate):
             ttest_score = np.zeros(plate.PlateSetup.platesetup.shape)
 
@@ -197,9 +203,9 @@ def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
                                     else:
                                         well_value.append(replicat.DataMean[i][j])
                                 else:
-                                    raise AttributeError('Data type must be mean or median')
+                                    raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
                             except Exception:
-                                raise Exception("Launch SystematicErrorCorrection before")
+                                raise Exception("\033[0;31m[ERROR]\033[0m  Launch SystematicErrorCorrection before")
                             # check if neg value
                             for neg_i in Neg_Pos:
                                 if neg_i[0] == i:
@@ -227,9 +233,9 @@ def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
                                     else:
                                         well_value.append(value.DataMean[i][j] - neg_median)
                                 else:
-                                    raise AttributeError('Data type must be mean or median')
+                                    raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
                             except Exception:
-                                raise Exception("Launch SystematicErrorCorrection before")
+                                raise Exception("\033[0;31m[ERROR]\033[0m  Launch SystematicErrorCorrection before")
                         ttest_score[i][j] = np.nanmean(well_value) / (
                             np.nanstd(well_value) / np.sqrt(len(plate.replicat)))
             except Exception as e:
@@ -247,6 +253,8 @@ def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
                 print("")
             return ttest_score
         else:
+            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
+        print("\033[0;31m[ERROR]\033[0m")
         print(e)

@@ -8,6 +8,11 @@ import scipy.stats
 
 
 def Anderson_Darling(Array):
+    """
+    performed an anderson darling on array
+    :param Array:
+    :return: return value
+    """
     try:
         Mean1 = np.nanmean(Array)
         STD = np.nanstd(Array)

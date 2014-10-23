@@ -71,17 +71,18 @@ USAGE
 
         screen_test = ScreenPlateReplicatPS.Screen()
         plaque1 = ScreenPlateReplicatPS.Plate()
+        plaque1.setName('Plate 1')
         platesetup = ScreenPlateReplicatPS.PlateSetup()
         platesetup.setPlateSetup("/home/akopp/Bureau/test/Pl1PP.csv")
         plaque1.addPlateSetup(platesetup)
         rep1 = ScreenPlateReplicatPS.Replicat()
-        rep1.setInfo("rep1")
+        rep1.setName("rep1")
         rep1.setData("/home/akopp/Bureau/test/Pl1rep_1.csv")
         rep2 = ScreenPlateReplicatPS.Replicat()
-        rep2.setInfo("rep2")
+        rep2.setName("rep2")
         rep2.setData("/home/akopp/Bureau/test/Pl1rep_2.csv")
         rep3 = ScreenPlateReplicatPS.Replicat()
-        rep3.setInfo("rep3")
+        rep3.setName("rep3")
         rep3.setData("/home/akopp/Bureau/test/Pl1rep_3.csv")
         plaque1.addReplicat(rep1)
         plaque1.addReplicat(rep2)
@@ -92,10 +93,10 @@ USAGE
         print("\033[0;32mReading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         # # Computation TEST
-        time_start_comp = time.time()
         # tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
         # print(tmp2)
 
+        time_start_comp = time.time()
         np.set_printoptions(linewidth=200)
 
         time_norm_start = time.time()
@@ -105,7 +106,7 @@ USAGE
 
         time_norm_start = time.time()
         plaque1.computeDataFromReplicat('Nuc Intensity')
-        plaque1.SystematicErrorCorrection(apply_down=True, save=True, verbose=False)
+        plaque1.SystematicErrorCorrection(method='average', apply_down=True, save=True, verbose=False)
         plaque1.computeDataFromReplicat('Nuc Intensity')
         # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  ## apply only when replicat are not SE norm
         time_norm_stop = time.time()
@@ -135,11 +136,10 @@ USAGE
 
         print("\033[0;32mSSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
-
         # rep1.SystematicErrorCorrection(Methods='MEA', verbose=True)
-        # Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMean, alpha=0.05, verbose=True)
-        # Statistic.Test.SystematicErrorDetectionTest(rep1.DataMatrixMedian, alpha=0.05, verbose=True)
-        # Statistic.Test.SystematicErrorDetectionTest(plaque1.DataMatrixMean, alpha=0.05, verbose=True)
+        Statistic.Test.SystematicErrorDetectionTest(rep1.DataMean, alpha=0.05, verbose=True)
+        Statistic.Test.SystematicErrorDetectionTest(rep1.DataMedian, alpha=0.05, verbose=True)
+        Statistic.Test.SystematicErrorDetectionTest(plaque1.DataMean, alpha=0.05, verbose=True)
         # rep1.SpatialNormalization(Methods='DiffusionModel', verbose=True)
         # Graphics.plotSurf3D_Plate(A)
         # Array = np.genfromtxt("/home/akopp/Bureau/testcsv.csv", delimiter=',')

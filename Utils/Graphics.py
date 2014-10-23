@@ -5,11 +5,11 @@ Method for making graphics of plate
 
 
 def plotHist3D_Plate(array):
-    '''
+    """
     Make a 3d histogramme plot of matrix representing plate, give an array(in matrix form) of value (whatever you want)
     :param array: numpy array
     :return:show 3d plot
-    '''
+    """
     try:
         from mpl_toolkits.mplot3d import Axes3D
         import matplotlib.pyplot as plt
@@ -36,11 +36,11 @@ def plotHist3D_Plate(array):
 
 
 def plotSurf3D_Plate(array):
-    '''
+    """
     Make a 3d surface plot  of matrix representing plate, give an array(in matrix form) of value (whatever you want)
     :param array:
     :return:
-    '''
+    """
     try:
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
@@ -63,18 +63,18 @@ def plotSurf3D_Plate(array):
 
 
 def PlateHeatmap(array):
-    '''
+    """
     Plot all value of plate (replicat here)
     :param dataFrame:
     :return:
-    '''
+    """
     try:
         import matplotlib
         import pylab
         import numpy as np
 
         # Create new colormap, with white for zero
-        #(can also take RGB values, like (255,255,255):
+        # (can also take RGB values, like (255,255,255):
         colors = [('white')] + [(pylab.cm.jet(i)) for i in range(1, 256)]
         new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
 
@@ -86,11 +86,11 @@ def PlateHeatmap(array):
 
 
 def SystematicError(array):
-    '''
+    """
     plot systematic error in cols and rows axis
     :param array: take a numpy array in input
     :return:
-    '''
+    """
     try:
         import matplotlib.pyplot as plt
         import numpy as np
@@ -127,12 +127,12 @@ def SystematicError(array):
 
 
 def boxplotByWell(dataframe, feature):
-    '''
+    """
     plot the boxplot for each well
     :param dataframe:
     :param feature; whiche feature to display
     :return:
-    '''
+    """
     try:
         import pandas as pd
         import matplotlib.pyplot as plt

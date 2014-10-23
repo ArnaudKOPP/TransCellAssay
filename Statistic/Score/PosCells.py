@@ -5,15 +5,15 @@ import ScreenPlateReplicatPS
 
 
 def getPercentPosCell(plate, feature, control, threshold, direction):
-    '''
+    """
     get % of Cell over threshold, default threshold is 50%
     This function take some time and need to be very improve
     :param plate:
     :param feature: on which feature
-    :param threshold:
+    :param threshold: threshold that defined % of pos cell into negative reference
     :param direction: Up effect or down effect
     :return: return a dict with mean % of pos Cell and standart variation across replicat
-    '''
+    """
     dict_percent_cell = {}
     dict_percent_cell_tmp = {}
     dict_percent_sd_cell = {}
@@ -26,7 +26,7 @@ def getPercentPosCell(plate, feature, control, threshold, direction):
             # iterate on replicat dict
             for k, replicat in replicat_Dict.items():
                 # # threshold value for control
-                data_control = replicat.getDataByWells(feature, control_well)
+                data_control = replicat.getDataByWells(control_well, feature=feature)
                 threshold_value = np.percentile(data_control, threshold)
                 # data from replicat
                 data = replicat.Data
@@ -53,6 +53,8 @@ def getPercentPosCell(plate, feature, control, threshold, direction):
                 print(e)
             return dict_percent_cell, dict_percent_sd_cell
         else:
+            print("\033[0;31m[ERROR]\033[0m")
             raise TypeError
     except Exception as e:
+        print("\033[0;31m[ERROR]\033[0m")
         print(e)

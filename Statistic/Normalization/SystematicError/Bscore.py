@@ -20,10 +20,16 @@ from Statistic.Stat import mad
 
 def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
     """
-        Implements Tukey's median polish alghoritm for additive models
+    Implements Tukey's median polish alghoritm for additive models
         method - default is median, alternative is mean. That would give us result equal ANOVA.
         With non full plate, it work for the moment only with entire empty col or Row
         Get numeric data from numpy ndarray to self.tbl, keep the original copy in tbl_org
+    :param array: numpy array to corrected
+    :param max_iterations: max iterations in process
+    :param method: median or average method
+    :param trimmed: for average method only, trimmed the data with specified value, default is 0.0
+    :param verbose: print some info
+    :return: corrected array
     """
     if isinstance(array, np.ndarray):
         tbl_org = array
@@ -43,7 +49,7 @@ def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbos
                 row_effects += row_medians
                 median_row_effects = stats.nanmedian(row_effects)
             elif method == 'average':
-                row_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1))
+                row_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                 row_effects += row_medians
                 median_row_effects = stats.nanmean(row_effects)
             grand_effect += median_row_effects
@@ -55,7 +61,7 @@ def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbos
                 col_effects += col_medians
                 median_col_effects = stats.nanmedian(col_effects)
             elif method == 'average':
-                col_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0))
+                col_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
                 col_effects += col_medians
                 median_col_effects = stats.nanmean(col_effects)
 
@@ -71,6 +77,7 @@ def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbos
         np.set_printoptions(suppress=True)
         if verbose:
             print("Bscore :  ")
+            print("Method used :", method)
             print("Max Iteration : ", max_iterations)
             print("grand effect = ", grand_effect)
             print("column effects = ", col_effects)
@@ -83,16 +90,22 @@ def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbos
 
         return grand_effect, col_effects, row_effects, tbl, tbl_org
     else:
-        raise TypeError('Expected the argument to be a numpy.ndarray.')
+        raise TypeError('\033[0;31m[ERROR]\033[0m  Expected the argument to be a numpy.ndarray.')
 
 
 def BZMedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
     """
-        Implements Tukey's median polish alghoritm for additive models
+    Implements Tukey's median polish alghoritm for additive models
         method - default is median, alternative is mean. That would give us result equal ANOVA.
         With non full plate, it work for the moment only with entire empty col or Row
         Get numeric data from numpy ndarray to self.tbl, keep the original copy in tbl_org
         BZ-score is a modifed version of bscore method, where the median polish is followed by zscore calculations
+    :param array: numpy array to corrected
+    :param max_iterations: max iterations in process
+    :param method: median or average method
+    :param trimmed: for average method only, trimmed the data with specified value, default is 0.0
+    :param verbose: print some info
+    :return: corrected array
     """
     if isinstance(array, np.ndarray):
         tbl_org = array
@@ -112,7 +125,7 @@ def BZMedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verb
                 row_effects += row_medians
                 median_row_effects = stats.nanmedian(row_effects)
             elif method == 'average':
-                row_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1))
+                row_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                 row_effects += row_medians
                 median_row_effects = stats.nanmean(row_effects)
             grand_effect += median_row_effects
@@ -124,7 +137,7 @@ def BZMedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verb
                 col_effects += col_medians
                 median_col_effects = stats.nanmedian(col_effects)
             elif method == 'average':
-                col_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0))
+                col_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
                 col_effects += col_medians
                 median_col_effects = stats.nanmean(col_effects)
 
@@ -144,6 +157,7 @@ def BZMedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verb
         np.set_printoptions(suppress=True)
         if verbose:
             print("BZscore:  ")
+            print("Method used :", method)
             print("Max Iteration : ", max_iterations)
             print("grand effect = ", grand_effect)
             print("column effects = ", col_effects)
@@ -156,4 +170,4 @@ def BZMedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verb
 
         return grand_effect, col_effects, row_effects, tbl, tbl_org
     else:
-        raise TypeError('Expected the argument to be a numpy.ndarray.')
+        raise TypeError('\033[0;31m[ERROR]\033[0m  Expected the argument to be a numpy.ndarray.')

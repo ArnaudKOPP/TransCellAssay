@@ -6,7 +6,8 @@ import numpy as np
 
 
 def kl(p, q):
-    """Kullback-Leibler divergence D(P || Q) for discrete distributions
+    """
+    Kullback-Leibler divergence D(P || Q) for discrete distributions
 
     or we can use scipy.stats.entropy with some parameters that became equal to that functions
     scipy.stats.entropy(pk, qk=None, base=None)
@@ -17,6 +18,9 @@ def kl(p, q):
     ----------
     p, q : array-like, dtype=float, shape=n
         Discrete probability distributions.
+    :param p: array
+    :param q: array
+    :return: distance
     """
     p = np.asarray(p, dtype=np.float)
     q = np.asarray(q, dtype=np.float)
@@ -25,9 +29,12 @@ def kl(p, q):
 
 
 def mad(arr):
-    """ Median Absolute Deviation: a "Robust" version of standard deviation.
-        Indices variabililty of the sample.
-        https://en.wikipedia.org/wiki/Median_absolute_deviation
+    """
+    Median Absolute Deviation: a "Robust" version of standard deviation.
+    Indices variabililty of the sample.
+    https://en.wikipedia.org/wiki/Median_absolute_deviation
+    :param arr: numpy array value
+    :return: return mad
     """
     try:
         # arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
