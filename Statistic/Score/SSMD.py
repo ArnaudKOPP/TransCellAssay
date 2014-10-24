@@ -18,10 +18,6 @@ plate. The mean and variability of the difference of all these pairs accross all
 For the unpaired case, all the measured value of an siRNA are formed as a group and all the measured value of a negative
 reference in the whole screen are formed as another group. The means and variability of these two separate groups are
 used to calculate the ssmd.
-
-Use Case :
-    Paired method : replicat without great variability
-    Unpaired method : replicat with great variability
 '''
 import ScreenPlateReplicatPS
 import numpy as np

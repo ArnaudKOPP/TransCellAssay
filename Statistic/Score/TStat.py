@@ -8,9 +8,6 @@ For the unpaired case, all the measured value of an siRNA are formed as a group 
 reference in the whole screen are formed as another group. The means and variability of these two separate groups are
 used to calculate the t stat.
 
-Use Case :
-    Paired method : replicat without great variability
-    Unpaired method : replicat with great variability
 '''
 import ScreenPlateReplicatPS
 import numpy as np
@@ -183,6 +180,7 @@ def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
             neg_pos = plate.PlateSetup.getGenePos(cNeg)
             if not neg_pos:
                 raise Exception
+
             # search neg control value
             def _search_neg_data(replicat, Neg_Pos, Type):
                 neg_value = []
@@ -201,9 +199,9 @@ def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
                                     else:
                                         well_value.append(replicat.DataMean[i][j])
                                 else:
-                                    return 0
+                                    raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
                             except Exception:
-                                return 0
+                                raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                             # check if neg value
                             for neg_i in Neg_Pos:
                                 if neg_i[0] == i:

@@ -101,7 +101,7 @@ USAGE
         np.set_printoptions(suppress=True)
 
         time_norm_start = time.time()
-        plaque1.Normalization('Nuc Intensity', technics='Zscore', log=True)
+        # plaque1.Normalization('Nuc Intensity', technics='Zscore', log=True)
         time_norm_stop = time.time()
         print("\033[0;32mNormalization Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
@@ -135,7 +135,7 @@ USAGE
         Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, data='mean', variance='equal', SECData=False,
                                      verbose=True)
         Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, variance='equal', SECData=False, verbose=True)
-        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, data='mean', SECData=False, verbose=True)
+        Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, data='mean', SECData=True, verbose=True)
         Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, data='median', SECData=True, verbose=True)
         time_norm_stop = time.time()
 

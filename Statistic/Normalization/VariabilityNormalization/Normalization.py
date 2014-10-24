@@ -10,7 +10,7 @@ from Statistic.Stat import mad
 
 def VariabilityNormalization(data, feature, method=False, log2_transformation=True, Cneg=None, Cpos=None):
     '''
-    Take a dataframe from replicat object
+    Take a dataframe from replicat object and apply desired strategy of varaibility normalization
     :param data: pd.dataframe to normalize
     :param method: which method to apply
     :param log2_transformation: apply log2 transformation
@@ -83,4 +83,3 @@ def getDataByWells(dataframe, feature, wells):
         return data
     except Exception as e:
         print(e)
-        print('Error in exporting data for wells')

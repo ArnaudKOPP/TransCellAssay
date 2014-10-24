@@ -367,7 +367,6 @@ class Replicat():
 
                     if save:
                         self.SECDataMedian = CorrectedTable
-                        self.isSpatialNormalized = True
 
                 if self.DataMedian is None:
                     raise ValueError(
