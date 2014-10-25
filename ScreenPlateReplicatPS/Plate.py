@@ -19,7 +19,7 @@ class Plate():
     self.Name = None  # Name of Plate
     self.PlateSetup = ScreenPlateReplicatPS.PlateSetup()  # Plate Setup object
     self.Threshold = None  # Threeshold for considering Cell as positive
-    self.ControlPos = (1, 12)  # column where control is positionned in plate (default pos)
+    self.ControlPos = ((0, 11), (0, 23))  # column where control is positionned in plate (default pos)
     self.Neg = None  # Name of negative control
     self.Pos = None  # Name of positive control
     self.Tox = None  # Name of toxics control
@@ -28,8 +28,8 @@ class Plate():
     self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replicat )
     self.DataMean = None  # matrix that contain mean from replicat of interested features to analyze
     self.DataMedian = None  # matrix that contain median from replicat of interested feature to analyze
-    self.SpatNormDataMean = None  # matrix that contain dataMean corrected or from replicat data
-    self.SpatNormDataMedian = None  # matrix that contain dataMedian corrected or from replicat data
+    self.SECDataMean = None  # matrix that contain dataMean corrected or from replicat data
+    self.SECDataMedian = None  # matrix that contain dataMedian corrected or from replicat data
     """
 
     def __init__(self):
@@ -41,7 +41,7 @@ class Plate():
         self.Name = None
         self.PlateSetup = ScreenPlateReplicatPS.PlateSetup()
         self.Threshold = None
-        self.ControlPos = (1, 12)
+        self.ControlPos = ((0, 11), (0, 23))
         self.Neg = None
         self.Pos = None
         self.Tox = None
@@ -81,6 +81,26 @@ class Plate():
         """
         try:
             return self.Name
+        except Exception as e:
+            print(e)
+
+    def setDataX(self, Array, type):
+        """
+        Set attribut data like self.DataMean or self.DataMedian
+        :param Array:  numpy array
+        :param type: mean or median
+        :return:
+        """
+        try:
+            if isinstance(Array, np.ndarray):
+                if type == 'median':
+                    self.DataMedian = Array
+                elif type == 'mean':
+                    self.DataMean = Array
+                else:
+                    raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided data type")
+            else:
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Must provied numpy ndarray")
         except Exception as e:
             print(e)
 
@@ -269,7 +289,7 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def Normalization(self, feature, technics, log=True):
+    def Normalization(self, feature, technics='Zscore', log=True):
         """
         Apply Well correction on all replicat data
         call function like from replicat object

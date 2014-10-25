@@ -62,6 +62,26 @@ class Replicat():
             print(e)
             print('Error in exporting data')
 
+    def setDataX(self, Array, type):
+        """
+        Set attribut data like self.DataMean or self.DataMedian
+        :param Array:  numpy array
+        :param type: mean or median
+        :return:
+        """
+        try:
+            if isinstance(Array, np.ndarray):
+                if type == 'median':
+                    self.DataMedian = Array
+                elif type == 'mean':
+                    self.DataMean = Array
+                else:
+                    raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided data type")
+            else:
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Must provied numpy ndarray")
+        except Exception as e:
+            print(e)
+
     def setName(self, info):
         """
         set name for the replicat
@@ -209,7 +229,7 @@ class Replicat():
         except Exception as e:
             print(e)
 
-    def Normalization(self, feature, method, log=True):
+    def Normalization(self, feature, method='Zscore', log=True):
         """
         Performed normalization on data
         :param: feature; which feature to normalize
