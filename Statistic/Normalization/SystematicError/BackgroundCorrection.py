@@ -25,7 +25,7 @@ class BackgroundCorrection():
             self.BackgroundSurfaceAnalysis()
             self.ApplyBackgroundElimination()
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def BackgroundEvaluation(self, apply_on, verbose, control_Well=None):
         try:
@@ -34,7 +34,7 @@ class BackgroundCorrection():
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
                     if not isinstance(value, ScreenPlateReplicatPS.Plate):
-                        raise TypeError
+                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         if self.BackgroundModelMean is None:
                             self.BackgroundModelMean = np.zeros(value.DataMean.shape)
@@ -50,7 +50,7 @@ class BackgroundCorrection():
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
                     if not isinstance(value, ScreenPlateReplicatPS.Plate):
-                        raise TypeError
+                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in value.replicat.items():
@@ -66,14 +66,16 @@ class BackgroundCorrection():
                                 objectCnt += 1
                 self.BackgroundModelMedian *= 1 / objectCnt
                 self.BackgroundModelMean *= 1 / objectCnt
-                if verbose:
-                    np.set_printoptions(suppress=True)
-                    print("Background Evaluation table (Median) :")
-                    print("Apply strategy was : ", apply_on)
-                    print(self.BackgroundModelMedian)
-                    print("")
+            else:
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
+            if verbose:
+                np.set_printoptions(suppress=True)
+                print("Background Evaluation table (Median) :")
+                print("Apply strategy was : ", apply_on)
+                print(self.BackgroundModelMedian)
+                print("")
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def BackgroundSurfaceAnalysis(self, plot=False):
         try:
@@ -88,7 +90,7 @@ class BackgroundCorrection():
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
                     if not isinstance(value, ScreenPlateReplicatPS.Plate):
-                        raise TypeError
+                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         value.DataMean -= self.BackgroundModelMean
                         value.DataMedian -= self.BackgroundModelMedian
@@ -97,7 +99,7 @@ class BackgroundCorrection():
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
                     if not isinstance(value, ScreenPlateReplicatPS.Plate):
-                        raise TypeError
+                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in value.replicat.items():
@@ -106,5 +108,7 @@ class BackgroundCorrection():
                             else:
                                 value.DataMean -= self.BackgroundModelMean
                                 value.DataMedian -= self.BackgroundModelMedian
+            else:
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)

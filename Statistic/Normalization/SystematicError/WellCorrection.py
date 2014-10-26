@@ -30,16 +30,40 @@ class WellCorrection():
         else:
             raise TypeError
 
-    def wellcorrection(self, approx="lst", verbose=False):
+    def wellcorrection(self, approx="lst", apply_on='replicat', verbose=False):
         try:
             self._apply_approx()
             self._apply_zscore()
         except Exception as e:
             print(e)
 
-    def _apply_approx(self, approx="lst", verbose=False):
+    def _apply_approx(self, approx="lst", apply_on='replicat', verbose=False):
         try:
-            return 0
+            if apply_on == "Plate":
+                # iterate on all plate
+                for key, value in self.screen.PlateList.items():
+                    # check if plate object
+                    if not isinstance(value, ScreenPlateReplicatPS.Plate):
+                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
+                    else:
+                        return 0
+
+            elif apply_on == "Replicat":
+                objectCnt = 0
+                # iterate on all plate
+                for key, value in self.screen.PlateList.items():
+                    # check if plate object
+                    if not isinstance(value, ScreenPlateReplicatPS.Plate):
+                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
+                    else:
+                        # iterate on all replicat in the plate
+                        for repName, repValue in value.replicat.items():
+                            if not isinstance(repValue, ScreenPlateReplicatPS.Replicat):
+                                raise TypeError
+                            else:
+                                return 0
+            else:
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
         except Exception as e:
             print(e)
 
