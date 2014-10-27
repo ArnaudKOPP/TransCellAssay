@@ -1,4 +1,7 @@
 __author__ = 'Arnaud KOPP'
+"""
+© 2014 KOPP Arnaud All Rights Reserved
+"""
 import ScreenPlateReplicatPS
 import numpy as np
 

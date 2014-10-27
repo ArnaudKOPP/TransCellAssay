@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Main steps of the PMP method:
     -Compute mean value of all entities of the given plate that are not affected by the systematic error.
     -For each row, compute the mean value and estimates the row bias; for each col, compute the mean and estimates the

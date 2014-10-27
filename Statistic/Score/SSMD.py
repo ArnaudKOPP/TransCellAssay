@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 '''
+© 2014 KOPP Arnaud All Rights Reserved
+
 Function that performed paired/unpaired SSMD and for plate without replicat
 
 SSMD is the mean of differences divided bu the standard deviation of the differences between an siRNA and a negative
@@ -39,6 +41,7 @@ def ssmd_score(plate, cNeg, paired=True, robust_version=True, data='median', met
     :param method: which method to use MM or UMVUE
     :param variance: unequal or equal
     :param SECData: use data with Systematic Error Corrected
+    :param inplate_data: compute SSMD on plate.Data, for plate without replicat in preference
     :param verbose: be verbose or not
     :return: Corrected data
     """

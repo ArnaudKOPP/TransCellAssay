@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 In this correction method, the background signal corresponding to each well is calculated by averaging the activities
 withing each well across all plate of screen.
 Then, a kriging interpolation can be made but not sur for the moment.
@@ -92,8 +94,9 @@ class BackgroundCorrection():
                     if not isinstance(value, ScreenPlateReplicatPS.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
-                        value.DataMean -= self.BackgroundModelMean
-                        value.DataMedian -= self.BackgroundModelMedian
+                        value.SECDataMean -= self.BackgroundModelMean
+                        value.SECDataMedian -= self.BackgroundModelMedian
+                        value.isSpatialNormalized = True
             elif apply_on == "Replicat":
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
@@ -106,8 +109,9 @@ class BackgroundCorrection():
                             if not isinstance(repValue, ScreenPlateReplicatPS.Replicat):
                                 raise TypeError
                             else:
-                                value.DataMean -= self.BackgroundModelMean
-                                value.DataMedian -= self.BackgroundModelMedian
+                                value.SECDataMean -= self.BackgroundModelMean
+                                value.SECDataMedian -= self.BackgroundModelMedian
+                                value.isSpatialNormalized = True
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
         except Exception as e:

@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Parse defined method for reading data from a directory (replicat data and platesetup)
 PlXrep_0.csv, PlXrep_1.csv ... name for replicat
 PlXPP.csv  name for platesetup

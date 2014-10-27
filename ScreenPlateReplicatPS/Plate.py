@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Plate is designed for manipulating one or more replicat
 """
 import numpy as np

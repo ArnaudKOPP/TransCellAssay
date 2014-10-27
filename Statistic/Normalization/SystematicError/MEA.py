@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 The MEA method consist of the two followings steps:
     -Estimate the value of the row and col systematic errors, independently for every plate of the assay, by solving the
 system of linear equations/

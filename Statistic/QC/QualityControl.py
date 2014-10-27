@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Performed basic Quality control like S/N, Z-factor or SSMD
 
 There are various environmental, instrumental and biological factors that contribute to assay performance in a HT
@@ -81,9 +83,9 @@ def _get_data_control(data, feature, c_ref):
 def _signal_to_background(cneg, cpos):
     """
     This is a simple measure of the ratio of the positive control mean to the background signal mean (neg control)
-    :param cneg:
-    :param cpos:
-    :return:
+    :param cneg: negative control data
+    :param cpos: positive control data
+    :return: signal to background value
     """
     try:
         sb = np.mean(cpos) / np.mean(cneg)
@@ -96,8 +98,8 @@ def _signal_to_noise(cneg, cpos):
     """
     This is similar measure to signal_to_background with inclusion of signal variability in the formulation
     :param cneg:
-    :param cpos:
-    :return:
+    :param cpos: positive control data
+    :return: signal to noise value
     """
     try:
         sn = (np.mean(cpos) - np.mean(cneg)) / np.std(cneg)
@@ -109,9 +111,9 @@ def _signal_to_noise(cneg, cpos):
 def _signal_windows(cneg, cpos):
     """
     This is a more indicative measure of the data range in a HTS assay than the abose parameters
-    :param cneg:
-    :param cpos:
-    :return:
+    :param cneg: negative control data
+    :param cpos: positive control data
+    :return: signal windows value
     """
     try:
         sw = (np.abs(np.mean(cpos) - np.mean(cneg)) - 3 * (np.std(cpos) + np.std(cneg))) / np.std(cneg)
@@ -124,9 +126,9 @@ def _avr(cneg, cpos):
     """
     This parameters capture the data variability in both controls as opposed to signal_windows, and can be defined
     as 1-Z'factor.
-    :param cneg:
-    :param cpos:
-    :return:
+    :param cneg: negative control data
+    :param cpos: positive control data
+    :return: avr value
     """
     try:
         avr = (3 * np.std(cpos) + 3 * np.std(cneg)) / (np.abs(np.mean(cpos) - np.mean(cneg)))
@@ -146,9 +148,9 @@ def _zfactor_prime(cneg, cpos):
     parameter as an assay quality measure. Major issue associated with the Z'factor method are that the magnitude of
     the Z'factor does not necessarily correlate with the hit confirmation rates, and that Z'factor is not appropriate
     measure to compare the assay quality across different screens and assay types.
-    :param cneg:
-    :param cpos:
-    :return:
+    :param cneg: negative control data
+    :param cpos: positive control data
+    :return: z'factor value
     """
     try:
         zfactorprime = 1 - ((3 * mad(cpos) + 3 * mad(cneg)) / (np.abs(np.median(cpos) - np.median(cneg))))
@@ -171,9 +173,9 @@ def _zfactor(data, feature, cneg, cpos):
     variability.
     :param data:
     :param feature:
-    :param cneg:
-    :param cpos:
-    :return:
+    :param cneg: negative control data
+    :param cpos: positive control data
+    :return: zfactor value
     """
     try:
         if not isinstance(data, pd.DataFrame):
@@ -197,9 +199,9 @@ def _ssmd(cneg, cpos):
     commonly-used methods (Zhang 2008b; Zhang 2011b; Zhang et al. 2008a). Although
     SSMD was developed primarily for RNAi screens, it can also be used for small molecule
     screens.
-    :param cneg:
-    :param cpos:
-    :return:
+    :param cneg: negative control data
+    :param cpos: positive control data
+    :return: ssmd value
     """
     try:
         ssmd = (np.median(cpos) - np.median(cneg)) / (np.sqrt(mad(cpos) ** 2 - mad(cneg) ** 2))
@@ -213,9 +215,9 @@ def _cvd(cneg, cpos):
     As in original meaning of coefficient of variability for a random variable, CVD represents the relative SD of the
     difference with respect to mean of the difference. The largest the absolut value of CVD between two populations, the
     less the differentiation between the two populations. CVD is the reciprocal of SSMD.
-    :param cneg:
-    :param cpos:
-    :return:
+    :param cneg: negative control data
+    :param cpos: positive control data
+    :return: cvd value
     """
     try:
         cvd = (np.sqrt(mad(cpos) ** 2 - mad(cneg) ** 2)) / (np.median(cpos) - np.median(cneg))

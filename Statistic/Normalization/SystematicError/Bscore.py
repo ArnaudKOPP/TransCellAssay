@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Tukey's two-ways median polish is utilized to calculate the row and col effect within plates using a non-controls-based
 approach. In this method, the row and col medians are iteratively subtracted from all wells until the maximum tolerance
 value is reached for the row and col medians as wells as for the row and col effect. The residuals in plate are then
@@ -46,7 +48,7 @@ def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbos
 
             for i in range(max_iterations):
                 if method == 'median':
-                    row_medians = stats.nanmedian(tbl, 1)
+                    row_medians = stats.nanmedian(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                     row_effects += row_medians
                     median_row_effects = stats.nanmedian(row_effects)
                 elif method == 'average':
@@ -58,7 +60,7 @@ def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbos
                 tbl -= row_medians[:, np.newaxis]
 
                 if method == 'median':
-                    col_medians = stats.nanmedian(tbl, 0)
+                    col_medians = stats.nanmedian(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
                     col_effects += col_medians
                     median_col_effects = stats.nanmedian(col_effects)
                 elif method == 'average':
@@ -125,7 +127,7 @@ def BZMedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verb
 
             for i in range(max_iterations):
                 if method == 'median':
-                    row_medians = stats.nanmedian(tbl, 1)
+                    row_medians = stats.nanmedian(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                     row_effects += row_medians
                     median_row_effects = stats.nanmedian(row_effects)
                 elif method == 'average':
@@ -137,7 +139,7 @@ def BZMedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verb
                 tbl -= row_medians[:, np.newaxis]
 
                 if method == 'median':
-                    col_medians = stats.nanmedian(tbl, 0)
+                    col_medians = stats.nanmedian(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
                     col_effects += col_medians
                     median_col_effects = stats.nanmedian(col_effects)
                 elif method == 'average':

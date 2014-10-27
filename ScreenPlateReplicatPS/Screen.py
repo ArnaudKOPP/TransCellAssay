@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Screen is designed for manipulating screen that contain multiple different plate
 """
 import ScreenPlateReplicatPS.Plate
@@ -19,13 +21,15 @@ class Screen():
         self.Neg = None # Negative reference for the screen
         self.Pos = None # Positive reference for the screen
         self.Tox = None  # Toxicity reference for the screen
+        self.shape = (8, 12) # Default shape of plate
         """
         self.PlateList = {}
         self.Info = {}
-        self.Threshold = None  # Threeshold for considering Cell as positive
+        self.Threshold = None
         self.Neg = None
         self.Pos = None
         self.Tox = None
+        self.shape = (8, 12)
 
     def addPlate(self, plate):
         """

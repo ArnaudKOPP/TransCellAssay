@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 '''
+© 2014 KOPP Arnaud All Rights Reserved
+
 Function that performed paired/unpaired T-Statistics
 
 For the paired case, a measured value for an siRNA is paired with a median value of a negative reference in the same
@@ -7,6 +9,12 @@ plate. The mean and variability of the difference of all these pairs accross all
 For the unpaired case, all the measured value of an siRNA are formed as a group and all the measured value of a negative
 reference in the whole screen are formed as another group. The means and variability of these two separate groups are
 used to calculate the t stat.
+
+A large and positive T statistics indicates that three activity readings are consistently higher than the threshold
+value µ by a large margin, giving a high degree of confidence that the compound i is highly potent inhibitor. On the
+other hand, inconsistency among the three readings, reflected by a small t statistic and high p value as a result of the
+large standart deviation, weakens one's belief that the compound i is truly active even when the average of tripilcates
+may be greater than the cutoff value.
 
 '''
 import ScreenPlateReplicatPS
@@ -136,7 +144,7 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
                     elif variance == 'equal':
                         ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * (
                             (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * (
-                            (1 / nb_rep) * (1 / nb_neg_wells)))
+                                                                                (1 / nb_rep) * (1 / nb_neg_wells)))
                     else:
                         raise AttributeError('\033[0;31m[ERROR]\033[0m  variance attribut must be unequal or equal.')
 

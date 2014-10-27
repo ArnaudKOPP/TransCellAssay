@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Method for making graphics of plate
 """
 
@@ -142,5 +144,37 @@ def boxplotByWell(dataframe, feature):
             plt.show()
         else:
             raise TypeError
+    except Exception as e:
+        print(e)
+
+
+def plotScreen(Screen):
+    try:
+        import ScreenPlateReplicatPS
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        if isinstance(Screen, ScreenPlateReplicatPS.Screen):
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            max = 0
+            for i in range(Screen.shape[0]):
+                for j in range(Screen.shape[1]):
+                    I = 0
+                    platedata = list()
+                    platenumber = list()
+                    for key, value in Screen.PlateList.items():
+                        for repkey, repvalue in value.replicat.items():
+                            platedata.append(np.log2(repvalue.DataMedian[i][j]))
+                            platenumber.append(I)
+                            I += 1
+                    ax.plot(platenumber, platedata, 'b.')
+                    max = I
+            ax.set_xlim([-1, max])
+            ax.set_ylabel('Log Data')
+            ax.set_xlabel('Plate/Replicat ID')
+            plt.show()
+        else:
+            raise TypeError("\033[0;31m[ERROR]\033[0m Must Provided a Screen")
     except Exception as e:
         print(e)

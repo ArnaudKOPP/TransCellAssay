@@ -1,4 +1,7 @@
 __author__ = 'Arnaud KOPP'
+"""
+© 2014 KOPP Arnaud All Rights Reserved
+"""
 import sys
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)

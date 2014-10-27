@@ -1,5 +1,7 @@
-__author__ = 'arnaud'
+__author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Sigmoid fitting for dose response analysis
 """
 

@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Controls based normalization : Percent Of Control and Normalized percent of inhibition
 Non controls based normalization : Z-score and robust Z-score
 """

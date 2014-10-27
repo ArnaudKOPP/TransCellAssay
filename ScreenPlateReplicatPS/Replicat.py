@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 """
+© 2014 KOPP Arnaud All Rights Reserved
+
 Replicat implement the notion of technical replicat for one plate
 """
 import pandas as pd
@@ -183,7 +185,7 @@ class Replicat():
             else:
                 self.DataMean = np.zeros((16, 24))
             for key, elem in dict_mean.items():
-                pos = Utils.Utils.getOppositeWellFormat(key)
+                pos = Utils.WellFormat.getOppositeWellFormat(key)
                 self.DataMean[pos[0]][pos[1]] = elem
 
             median_tmp = grouped_data_by_well.median()
@@ -194,7 +196,7 @@ class Replicat():
             else:
                 self.DataMedian = np.zeros((16, 24))
             for key, elem in dict_median.items():
-                pos = Utils.Utils.getOppositeWellFormat(key)
+                pos = Utils.WellFormat.getOppositeWellFormat(key)
                 self.DataMedian[pos[0]][pos[1]] = elem
         except Exception as e:
             print(e)

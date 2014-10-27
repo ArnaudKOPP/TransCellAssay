@@ -1,5 +1,7 @@
 __author__ = 'Arnaud KOPP'
 '''
+© 2014 KOPP Arnaud All Rights Reserved
+
 Usefull definitions for some functions in project
 '''
 import numpy as np

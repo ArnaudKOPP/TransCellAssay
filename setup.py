@@ -6,7 +6,7 @@ setup(
     packages=['ScreenPateReplicatPS', 'Utils', 'Statistic', 'IO'],
     install_requires=['pandas', 'numpy', 'scipy', 'matplotlib'],
     url='https://github.com/ArnaudKOPP/TransCellAssay',
-    license='GPL V2',
+    license='GPL V3',
     author='Arnaud KOPP',
     author_email='kopp.arnaud@gmail.com',
     description='Package for analyze HTS data'
