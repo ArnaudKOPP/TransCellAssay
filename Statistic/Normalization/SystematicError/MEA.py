@@ -1,15 +1,22 @@
-__author__ = 'Arnaud KOPP'
 """
-© 2014 KOPP Arnaud All Rights Reserved
-
 The MEA method consist of the two followings steps:
     -Estimate the value of the row and col systematic errors, independently for every plate of the assay, by solving the
 system of linear equations/
     -Adjust the measurement of all compounds located in rows and col of the plate affected by the systematic error using
 the error estimates determinted in previous step.
 """
+
 import numpy as np
 from Statistic.Test.ttest import TTest
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):

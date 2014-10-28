@@ -1,7 +1,4 @@
-__author__ = 'Arnaud KOPP'
 """
-© 2014 KOPP Arnaud All Rights Reserved
-
 Main steps of the PMP method:
     -Compute mean value of all entities of the given plate that are not affected by the systematic error.
     -For each row, compute the mean value and estimates the row bias; for each col, compute the mean and estimates the
@@ -12,8 +9,18 @@ previous step for each row and col.
     -Compute value of the convergence parameter.
     -If convergence parameter is inf of ref threshold, stop, else repeat previous step.
 """
+
 import numpy as np
 from Statistic.Test.ttest import TTest
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False, alpha=0.05):

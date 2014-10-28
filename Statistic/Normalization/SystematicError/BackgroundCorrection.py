@@ -1,7 +1,4 @@
-__author__ = 'Arnaud KOPP'
 """
-© 2014 KOPP Arnaud All Rights Reserved
-
 In this correction method, the background signal corresponding to each well is calculated by averaging the activities
 withing each well across all plate of screen.
 Then, a kriging interpolation can be made but not sur for the moment.
@@ -10,6 +7,15 @@ We substract then the calculated background to value from plate or replicat.
 
 import ScreenPlateReplicatPS
 import numpy as np
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 class BackgroundCorrection():

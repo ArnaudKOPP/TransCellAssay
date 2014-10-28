@@ -1,10 +1,17 @@
-__author__ = 'Arnaud KOPP'
-'''
-© 2014 KOPP Arnaud All Rights Reserved
-
+"""
 Usefull definitions for some functions in project
-'''
+"""
+
 import numpy as np
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 def kl(p, q):

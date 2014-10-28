@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 # encoding: utf-8
-__author__ = 'Arnaud KOPP'
 """
-© 2014 KOPP Arnaud All Rights Reserved
+UNIVERSAL ANALYSIS PIPELINE THAT USE TransCellAssay Toolbox
+"""
 
-Example of program for use TransCellAssay module
-I try to do universal analyze pipeline
-"""
 import os
 import sys
 import time
@@ -20,7 +17,16 @@ import Statistic.Score
 import Statistic.Test
 from Utils import Graphics
 
-__version__ = 0.01
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
+__date__ = '2014-09-28'
+__updated__ = '2014-10-28'
 
 DEBUG = 1
 
@@ -38,7 +44,7 @@ class CLIError(Exception):
 
 
 def main(argv=None):  # IGNORE:C0111
-    '''Command line options.'''
+    """Command line options."""
     time_start = time.time()
 
     if argv is None:
@@ -47,15 +53,17 @@ def main(argv=None):  # IGNORE:C0111
         sys.argv.extend(argv)
 
     program_name = os.path.basename(sys.argv[0])
-    program_license = '''
-  Created by Arnaud .
+    program_shortdesc = __import__('__main__').__doc__
+    program_license = '''%s
+
+  Created by Arnaud on %s. Updated on %s
   Copyright 2014 KOPP. All rights reserved.
   Distributed on an "AS IS" basis without warranties
   or conditions of any kind, either express or implied.
   VERSION = %s
 
 USAGE
-''' % (str(__version__))
+''' % (program_shortdesc, str(__date__), str(__updated__), str(__version__))
 
     try:
         # Setup argument parser
@@ -176,8 +184,4 @@ USAGE
 
 
 if __name__ == "__main__":
-    print("")
-    print('Hello dear user : ')
-    print('This Python program was only tested on > 3.3 plateform')
-    print("")
     main()

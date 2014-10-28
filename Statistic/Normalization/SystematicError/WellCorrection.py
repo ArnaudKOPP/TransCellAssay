@@ -1,7 +1,4 @@
-__author__ = 'arnaud'
 """
-© 2014 KOPP Arnaud All Rights Reserved
-
 This method follows an analogous strategy to the background correction method; however, a least-squares approximation
 or polynomial fitting is performed independently for each well accross all plates. The fitted value are then substracted
 from each data point to obtain the corrected data set. In a study comparing the systematic error correction methods
@@ -23,6 +20,15 @@ to zero
 
 import ScreenPlateReplicatPS
 import numpy as np
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 class WellCorrection():

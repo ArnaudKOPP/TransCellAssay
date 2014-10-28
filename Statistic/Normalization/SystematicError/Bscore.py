@@ -1,7 +1,4 @@
-__author__ = 'Arnaud KOPP'
 """
-© 2014 KOPP Arnaud All Rights Reserved
-
 Tukey's two-ways median polish is utilized to calculate the row and col effect within plates using a non-controls-based
 approach. In this method, the row and col medians are iteratively subtracted from all wells until the maximum tolerance
 value is reached for the row and col medians as wells as for the row and col effect. The residuals in plate are then
@@ -15,9 +12,19 @@ powerfull than Bscore and does not fit very well with the normal distribution mo
 
 trimmed mean : cut the outside limit default = 0.0 so its equivalent to the 'standart' mean.
 """
+
 import numpy as np
 from scipy import stats
 from Statistic.Stat import mad
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):

@@ -1,7 +1,4 @@
-__author__ = 'Arnaud KOPP'
 """
-© 2014 KOPP Arnaud All Rights Reserved
-
 Performed basic Quality control like S/N, Z-factor or SSMD
 
 There are various environmental, instrumental and biological factors that contribute to assay performance in a HT
@@ -14,11 +11,21 @@ We expect good separation between positive and negative control in a plate with 
 
 SSMD,CVD and Z-factor are in robust version
 """
+
 import ScreenPlateReplicatPS
 import numpy as np
 import pandas as pd
 import Statistic.Test.SystematicErrorDetectionTest
 from Statistic.Stat import mad
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 def QualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, verbose=False):

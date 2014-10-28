@@ -1,7 +1,4 @@
-__author__ = 'Arnaud KOPP'
-'''
-© 2014 KOPP Arnaud All Rights Reserved
-
+"""
 Function that performed paired/unpaired SSMD and for plate without replicat
 
 SSMD is the mean of differences divided bu the standard deviation of the differences between an siRNA and a negative
@@ -20,11 +17,21 @@ plate. The mean and variability of the difference of all these pairs accross all
 For the unpaired case, all the measured value of an siRNA are formed as a group and all the measured value of a negative
 reference in the whole screen are formed as another group. The means and variability of these two separate groups are
 used to calculate the ssmd.
-'''
+"""
+
 import ScreenPlateReplicatPS
 import numpy as np
 import scipy.special
 from Statistic.Stat import mad
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 def ssmd_score(plate, cNeg, paired=True, robust_version=True, data='median', method='UMVUE', variance='unequal',

@@ -1,7 +1,4 @@
-__author__ = 'Arnaud KOPP'
 """
-© 2014 KOPP Arnaud All Rights Reserved
-
 Platesetup is designed to store matrix who represent the plate setup, compatible with 96, 384 Well (1526 is tricky)
 The matrix is representing by a pandas DataFrame (numpy array like)
 
@@ -14,8 +11,18 @@ D
 E
 ..
 """
+
 import pandas as pd
 import Utils.WellFormat as Utils
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 class PlateSetup():

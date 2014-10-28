@@ -1,13 +1,20 @@
-__author__ = 'Arnaud KOPP'
 """
-© 2014 KOPP Arnaud All Rights Reserved
-
 Controls based normalization : Percent Of Control and Normalized percent of inhibition
 Non controls based normalization : Z-score and robust Z-score
 """
+
 import numpy as np
 import pandas as pd
 from Statistic.Stat import mad
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 def VariabilityNormalization(data, feature, method=False, log2_transformation=True, Cneg=None, Cpos=None):

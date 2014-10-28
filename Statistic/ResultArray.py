@@ -1,14 +1,21 @@
-__author__ = 'Arnaud KOPP'
 """
-© 2014 KOPP Arnaud All Rights Reserved
-
 Result is created for store result like score and hit resulting of SSMD or other technics in a tabe-like (numpy array),
 feature are column and GeneName/Well are stored at the first col, each row represent a gene/well
 We can save the tabe in csv by using pandas Dataframe.
 This class is only compatible with single cell data, need to be more "elastic" with 1Data/Well
 """
+
 import numpy as np
 import pandas as pd
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 class Result():

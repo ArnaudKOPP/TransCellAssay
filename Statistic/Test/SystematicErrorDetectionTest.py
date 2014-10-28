@@ -1,7 +1,20 @@
-__author__ = 'Arnaud KOPP'
+"""
+Search for systematic error in plate or replicat, use Welch T-Test
+
+"""
+
 import numpy as np
 from scipy import stats
 from Statistic.Test.ttest import t_test
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["© 2014 KOPP Arnaud All Rights Reserved"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 def SystematicErrorDetectionTest(Array, alpha=0.05, verbose=False):

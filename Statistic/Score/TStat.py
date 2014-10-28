@@ -1,7 +1,4 @@
-__author__ = 'Arnaud KOPP'
-'''
-© 2014 KOPP Arnaud All Rights Reserved
-
+"""
 Function that performed paired/unpaired T-Statistics
 
 For the paired case, a measured value for an siRNA is paired with a median value of a negative reference in the same
@@ -15,10 +12,19 @@ value µ by a large margin, giving a high degree of confidence that the compound
 other hand, inconsistency among the three readings, reflected by a small t statistic and high p value as a result of the
 large standart deviation, weakens one's belief that the compound i is truly active even when the average of tripilcates
 may be greater than the cutoff value.
+"""
 
-'''
 import ScreenPlateReplicatPS
 import numpy as np
+
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Production"
 
 
 def t_stat_score(plate, cNeg, data='median', variance='unequal', paired=False, SECData=True, verbose=False):
