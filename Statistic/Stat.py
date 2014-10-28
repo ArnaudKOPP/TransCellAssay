@@ -48,6 +48,23 @@ def mad(arr):
     try:
         # arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
         med = np.nanmedian(arr)
-        return 1.4826 * np.nanmedian(np.abs(arr - med))
+        return 1.4826 * np.nanmedian(np.absolute(arr - med))
+    except Exception as e:
+        print(e)
+
+
+def ssmd(Array1, Array2):
+    """
+    Performed a SSMD on two polulations
+
+    The larger the absolute value of SSMD between two populations, the greater the differentiation  between the two
+    populations
+    :param Array1: Must be equivalent of negative
+    :param Array2: Must be equivalent of positive
+    :return: SSMD Value
+    """
+    try:
+        ssmd = (np.mean(Array2) - np.mean(Array1)) / (np.sqrt(np.abs(np.std(Array2) ** 2 - np.std(Array1) ** 2)))
+        return ssmd
     except Exception as e:
         print(e)

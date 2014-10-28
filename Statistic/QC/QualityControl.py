@@ -16,7 +16,6 @@ import ScreenPlateReplicatPS
 import numpy as np
 import pandas as pd
 import Statistic.Test.SystematicErrorDetectionTest
-from Statistic.Stat import mad
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -28,27 +27,39 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def QualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, verbose=False):
+def PlateQualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, verbose=False):
     try:
         if not isinstance(plate, ScreenPlateReplicatPS.Plate):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
         else:
             neg_well = plate.PlateSetup.getGeneWell(cneg)
             pos_well = plate.PlateSetup.getGeneWell(cpos)
+
+            qc_data_array = pd.DataFrame()
+
             for key, value in plate.replicat.items():
-                _replicat_quality_control(value, feature=features, cneg=neg_well, cpos=pos_well, SEDT=SEDT,
-                                          SECdata=SECdata, verbose=verbose)
+                qc_data_array = qc_data_array.append(
+                    ReplicatQualityControl(value, feature=features, cneg=neg_well, cpos=pos_well,
+                                           SEDT=SEDT, SECdata=SECdata, verbose=False))
+
+            if verbose:
+                print("\nQuality control for plat: \n")
+                print(qc_data_array)
     except Exception as e:
         print(e)
 
 
-def _replicat_quality_control(replicat, feature, cneg, cpos, SEDT=False, SECdata=False, verbose=False):
+def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=False, verbose=False):
     try:
         if not isinstance(replicat, ScreenPlateReplicatPS.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
         else:
             negdata = _get_data_control(replicat.Data, feature=feature, c_ref=cneg)
             posdata = _get_data_control(replicat.Data, feature=feature, c_ref=cpos)
+
+            qc_data_array = pd.DataFrame(np.zeros(1,
+                                                  dtype=[('Replicat ID', str), ('AVR', float), ('Z*Factor', float),
+                                                         ('ZFactor', float), ('SSMD', float), ('CVD', float)]))
 
             if SEDT:
                 if SECdata:
@@ -59,8 +70,21 @@ def _replicat_quality_control(replicat, feature, cneg, cpos, SEDT=False, SECdata
                     if replicat.DataMean is None:
                         replicat.computeDataForFeature(feature)
                     Statistic.Test.SystematicErrorDetectionTest(replicat.DataMean, verbose=True)
+
+            print("Replicat : ", replicat.name)
+            print("mean neg :", np.mean(negdata), " Standard dev : ", np.std(negdata))
+            print("mean pos :", np.mean(posdata), " Standard dev : ", np.std(posdata))
+            qc_data_array['Replicat ID'] = replicat.name
+            qc_data_array['AVR'] = _avr(negdata, posdata)
+            qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
+            qc_data_array['ZFactor'] = _zfactor(replicat.Data, feature, negdata, posdata)
+            qc_data_array['SSMD'] = _ssmd(negdata, posdata)
+            qc_data_array['CVD'] = _cvd(negdata, posdata)
+
             if verbose:
-                return 0
+                print("\nQuality Control for replicat : ", replicat.name)
+                print(qc_data_array)
+            return qc_data_array
     except Exception as e:
         print(e)
 
@@ -77,60 +101,19 @@ def _get_data_control(data, feature, c_ref):
         if not isinstance(data, pd.DataFrame):
             raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
         else:
-            data = pd.DataFrame()
+            datax = pd.DataFrame()
             for i in c_ref:
-                if data.empty:
-                    data = data[feature][data['Well'] == i]
-                data.append(data[feature][data['Well'] == i])
-            return data
-    except Exception as e:
-        print(e)
-
-
-def _signal_to_background(cneg, cpos):
-    """
-    This is a simple measure of the ratio of the positive control mean to the background signal mean (neg control)
-    :param cneg: negative control data
-    :param cpos: positive control data
-    :return: signal to background value
-    """
-    try:
-        sb = np.mean(cpos) / np.mean(cneg)
-        return sb
-    except Exception as e:
-        print(e)
-
-
-def _signal_to_noise(cneg, cpos):
-    """
-    This is similar measure to signal_to_background with inclusion of signal variability in the formulation
-    :param cneg:
-    :param cpos: positive control data
-    :return: signal to noise value
-    """
-    try:
-        sn = (np.mean(cpos) - np.mean(cneg)) / np.std(cneg)
-        return sn
-    except Exception as e:
-        print(e)
-
-
-def _signal_windows(cneg, cpos):
-    """
-    This is a more indicative measure of the data range in a HTS assay than the abose parameters
-    :param cneg: negative control data
-    :param cpos: positive control data
-    :return: signal windows value
-    """
-    try:
-        sw = (np.abs(np.mean(cpos) - np.mean(cneg)) - 3 * (np.std(cpos) + np.std(cneg))) / np.std(cneg)
-        return sw
+                if datax.empty:
+                    datax = data[feature][data['Well'] == i]
+                datax.append(data[feature][data['Well'] == i])
+            return datax
     except Exception as e:
         print(e)
 
 
 def _avr(cneg, cpos):
     """
+    Assay Variability ratio
     This parameters capture the data variability in both controls as opposed to signal_windows, and can be defined
     as 1-Z'factor.
     :param cneg: negative control data
@@ -160,7 +143,7 @@ def _zfactor_prime(cneg, cpos):
     :return: z'factor value
     """
     try:
-        zfactorprime = 1 - ((3 * mad(cpos) + 3 * mad(cneg)) / (np.abs(np.median(cpos) - np.median(cneg))))
+        zfactorprime = 1 - ((3 * np.std(cpos) + 3 * np.std(cneg)) / (np.abs(np.mean(cpos) - np.mean(cneg))))
         return zfactorprime
     except Exception as e:
         print(e)
@@ -178,8 +161,8 @@ def _zfactor(data, feature, cneg, cpos):
     include additional measures, such as visual inspection or more advanced formulations
     in the decision process, especially for cell-based assays with inherently high signal
     variability.
-    :param data:
-    :param feature:
+    :param data: all data from replicat
+    :param feature: feature to take data
     :param cneg: negative control data
     :param cpos: positive control data
     :return: zfactor value
@@ -188,7 +171,7 @@ def _zfactor(data, feature, cneg, cpos):
         if not isinstance(data, pd.DataFrame):
             raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
         else:
-            zfactor = 1 - ((3 * np.mad(cpos) + 3 * np.mad(data[feature])) / (np.abs(np.median(cpos) - np.median(cneg))))
+            zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data[feature])) / (np.abs(np.mean(cpos) - np.mean(cneg))))
             return zfactor
     except Exception as e:
         print(e)
@@ -206,12 +189,15 @@ def _ssmd(cneg, cpos):
     commonly-used methods (Zhang 2008b; Zhang 2011b; Zhang et al. 2008a). Although
     SSMD was developed primarily for RNAi screens, it can also be used for small molecule
     screens.
+
+    The larger the absolute value of SSMD between two populations, the greater the differentiation  between the two
+    populations
     :param cneg: negative control data
     :param cpos: positive control data
     :return: ssmd value
     """
     try:
-        ssmd = (np.median(cpos) - np.median(cneg)) / (np.sqrt(mad(cpos) ** 2 - mad(cneg) ** 2))
+        ssmd = (np.mean(cpos) - np.mean(cneg)) / (np.sqrt(np.abs(np.std(cpos) ** 2 - np.std(cneg) ** 2)))
         return ssmd
     except Exception as e:
         print(e)
@@ -220,14 +206,16 @@ def _ssmd(cneg, cpos):
 def _cvd(cneg, cpos):
     """
     As in original meaning of coefficient of variability for a random variable, CVD represents the relative SD of the
-    difference with respect to mean of the difference. The largest the absolut value of CVD between two populations, the
-    less the differentiation between the two populations. CVD is the reciprocal of SSMD.
+    difference with respect to mean of the difference.
+
+    The largest the absolute value of CVD between two populations, the less the differentiation between the two
+    populations. CVD is the reciprocal of SSMD.
     :param cneg: negative control data
     :param cpos: positive control data
     :return: cvd value
     """
     try:
-        cvd = (np.sqrt(mad(cpos) ** 2 - mad(cneg) ** 2)) / (np.median(cpos) - np.median(cneg))
+        cvd = (np.sqrt(np.abs(np.std(cpos) ** 2 - np.std(cneg) ** 2))) / (np.mean(cpos) - np.mean(cneg))
         return cvd
     except Exception as e:
         print(e)

@@ -82,13 +82,13 @@ def PartialMeanPolish(input_array, epsilon=0.01, max_iteration=50, verbose=False
 
                 for i in Nrows:
                     diff = mu - Rmu[i]
-                    converge += np.abs(diff)
+                    converge += np.absolute(diff)
                     for j in range(shape[1]):
                         input_array[i][j] += diff
 
                 for j in Ncols:
                     diff = mu - Cmu[i]
-                    converge += np.abs(diff)
+                    converge += np.absolute(diff)
                     for i in range(shape[0]):
                         input_array[i][j] += diff
                 loop += 1

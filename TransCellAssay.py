@@ -15,6 +15,7 @@ import numpy as np
 import Statistic.Normalization
 import Statistic.Score
 import Statistic.Test
+import Statistic.QC
 from Utils import Graphics
 
 __author__ = "Arnaud KOPP"
@@ -122,6 +123,9 @@ USAGE
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
+        Statistic.QC.PlateQualityControl(plaque1, features="Nuc Intensity", cneg="NT", cpos="SINV C", SEDT=False,
+                                         SECdata=False, verbose=True)
+
         # print("\n \033[0;32m     SSMD TESTING \033[0m")
         # time_norm_start = time.time()
         # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, SECData=True, verbose=True)
@@ -155,7 +159,7 @@ USAGE
         # Graphics.PlateHeatmap(rep1.DataMean)
         # Graphics.SystematicError(rep1.DataMean)
         # Graphics.plotSurf3D_Plate(rep1.DataMean)
-        Graphics.plotScreen(screen_test)
+        # Graphics.plotScreen(screen_test)
         # rep1.SystematicErrorCorrection(Methods='MEA', verbose=True)
         # Statistic.Test.SystematicErrorDetectionTest(rep1.DataMean, alpha=0.05, verbose=True)
         # Statistic.Test.SystematicErrorDetectionTest(rep1.DataMedian, alpha=0.05, verbose=True)
