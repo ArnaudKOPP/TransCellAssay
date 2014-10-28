@@ -63,13 +63,10 @@ def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=Fa
 
             if SEDT:
                 if SECdata:
-                    if replicat.SECDataMean is None:
+                    if replicat.SECData is None:
                         raise ValueError("\033[0;31m[ERROR]\033[0m SEC Before")
-                    Statistic.Test.SystematicErrorDetectionTest(replicat.SECDataMean, verbose=True)
-                else:
-                    if replicat.DataMean is None:
-                        replicat.computeDataForFeature(feature)
-                    Statistic.Test.SystematicErrorDetectionTest(replicat.DataMean, verbose=True)
+                    Statistic.Test.SystematicErrorDetectionTest(replicat.SECData, verbose=True)
+
 
             print("Replicat : ", replicat.name)
             print("mean neg :", np.mean(negdata), " Standard dev : ", np.std(negdata))

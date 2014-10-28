@@ -411,9 +411,9 @@ def _PairedSSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
                         for key, value in plate.replicat.items():
                             neg_median = _search_neg_data(value, neg_pos)
                             if SECData:
-                                well_value.append(value.SECDataMedian[i][j] - neg_median)
+                                well_value.append(value.SECData[i][j] - neg_median)
                             else:
-                                well_value.append(value.DataMedian[i][j] - neg_median)
+                                well_value.append(value.Data[i][j] - neg_median)
                         if method == 'UMVUE':
                             SSMDr[i][j] = x * (np.nanmedian(well_value) / mad(well_value))
                         elif method == 'MM':
