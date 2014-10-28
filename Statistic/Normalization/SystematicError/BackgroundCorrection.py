@@ -45,10 +45,10 @@ class BackgroundCorrection():
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         if self.BackgroundModelMean is None:
-                            self.BackgroundModelMean = np.zeros(value.DataMean.shape)
+                            self.BackgroundModelMean = np.zeros(value.Data.shape)
                         if self.BackgroundModelMedian is None:
                             self.BackgroundModelMedian = np.zeros(value.DataMedian.shape)
-                        self.BackgroundModelMean += value.DataMean
+                        self.BackgroundModelMean += value.Data
                         self.BackgroundModelMedian += value.DataMedian
                 self.BackgroundModelMedian *= 1 / len(self.screen)
                 self.BackgroundModelMean *= 1 / len(self.screen)
@@ -100,7 +100,7 @@ class BackgroundCorrection():
                     if not isinstance(value, ScreenPlateReplicatPS.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
-                        value.SECDataMean -= self.BackgroundModelMean
+                        value.SECData -= self.BackgroundModelMean
                         value.SECDataMedian -= self.BackgroundModelMedian
                         value.isSpatialNormalized = True
             elif apply_on == "Replicat":
@@ -115,7 +115,7 @@ class BackgroundCorrection():
                             if not isinstance(repValue, ScreenPlateReplicatPS.Replicat):
                                 raise TypeError
                             else:
-                                value.SECDataMean -= self.BackgroundModelMean
+                                value.SECData -= self.BackgroundModelMean
                                 value.SECDataMedian -= self.BackgroundModelMedian
                                 value.isSpatialNormalized = True
             else:

@@ -54,8 +54,8 @@ def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=Fa
         if not isinstance(replicat, ScreenPlateReplicatPS.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
         else:
-            negdata = _get_data_control(replicat.Data, feature=feature, c_ref=cneg)
-            posdata = _get_data_control(replicat.Data, feature=feature, c_ref=cpos)
+            negdata = _get_data_control(replicat.Dataframe, feature=feature, c_ref=cneg)
+            posdata = _get_data_control(replicat.Dataframe, feature=feature, c_ref=cpos)
 
             qc_data_array = pd.DataFrame(np.zeros(1,
                                                   dtype=[('Replicat ID', str), ('AVR', float), ('Z*Factor', float),
@@ -77,7 +77,7 @@ def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=Fa
             qc_data_array['Replicat ID'] = replicat.name
             qc_data_array['AVR'] = _avr(negdata, posdata)
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
-            qc_data_array['ZFactor'] = _zfactor(replicat.Data, feature, negdata, posdata)
+            qc_data_array['ZFactor'] = _zfactor(replicat.Dataframe, feature, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 

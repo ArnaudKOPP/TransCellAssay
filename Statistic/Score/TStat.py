@@ -27,14 +27,13 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def t_stat_score(plate, cNeg, data='median', variance='unequal', paired=False, SECData=True, verbose=False):
+def t_stat_score(plate, cNeg, variance='unequal', paired=False, SECData=True, verbose=False):
     """
     Performed t-stat on plate object
     unpaired is for plate with replicat without great variance between them
     paired is for plate with replicat with great variance between them
     :param plate: Plate Object to analyze
     :param cNeg:  negative control reference
-    :param data: median or mean data to use
     :param variance: unequal or equal variance
     :param paired: paired or unpaired
     :param SECData: use data with Systematic Error Corrected
@@ -48,9 +47,9 @@ def t_stat_score(plate, cNeg, data='median', variance='unequal', paired=False, S
                 raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
             if len(plate) > 1:
                 if paired:
-                    score = _PairedTStatScore(plate, cNeg, data=data, SECData=SECData, verbose=verbose)
+                    score = _PairedTStatScore(plate, cNeg, SECData=SECData, verbose=verbose)
                 else:
-                    score = _UnpairedTStatScore(plate, cNeg, data=data, variance=variance, SECData=SECData,
+                    score = _UnpairedTStatScore(plate, cNeg, variance=variance, SECData=SECData,
                                                 verbose=verbose)
             else:
                 raise ValueError("\033[0;31m[ERROR]\033[0m  T-Test need at least two replicat")
@@ -61,7 +60,7 @@ def t_stat_score(plate, cNeg, data='median', variance='unequal', paired=False, S
         print(e)
 
 
-def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=True, verbose=False):
+def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=False):
     """
     performed unpaired t-stat score
 
@@ -70,7 +69,6 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
         - equal : two sample t-test
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
-    :param data: median or mean data to use
     :param variance: unequal or equal variance
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
@@ -97,18 +95,10 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
                     for key, value in plate.replicat.items():
                         well_value = 0
                         try:
-                            if data == "median":
-                                if SECData:
-                                    well_value = value.SECMedian[i][j]
-                                else:
-                                    well_value = value.DataMedian[i][j]
-                            elif data == "mean":
-                                if SECData:
-                                    well_value = value.SECDataMean[i][j]
-                                else:
-                                    well_value = value.DataMean[i][j]
+                            if SECData:
+                                well_value = value.SECData[i][j]
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value = value.Data[i][j]
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         # check if neg value
@@ -126,18 +116,10 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
                     well_value = []
                     for key, value in plate.replicat.items():
                         try:
-                            if data == "median":
-                                if SECData:
-                                    well_value.append(value.SECDataMedian[i][j])
-                                else:
-                                    well_value.append(value.DataMedian[i][j])
-                            elif data == "mean":
-                                if SECData:
-                                    well_value.append(value.SECDataMean[i][j])
-                                else:
-                                    well_value.append(value.DataMean[i][j])
+                            if SECData:
+                                well_value.append(value.SECData[i][j])
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value.append(value.Data[i][j])
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                     mean_rep = np.nanmean(well_value)
@@ -160,7 +142,7 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
             if verbose:
                 print("Unpaired t-test :")
                 print("Systematic Error Corrected Data : ", SECData)
-                print("Data type : ", data)
+                print("Data type : ", plate.DataType)
                 print("variance parameter : ", variance)
                 print("t-test score :")
                 print(ttest_score)
@@ -172,12 +154,11 @@ def _UnpairedTStatScore(plate, cNeg, data='median', variance='unequal', SECData=
         print(e)
 
 
-def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
+def _PairedTStatScore(plate, cNeg, SECData=True, verbose=False):
     """
     performed paired t-stat score
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
-    :param data: median or mean data to use
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return: score data
@@ -196,24 +177,16 @@ def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
                 raise Exception
 
             # search neg control value
-            def _search_neg_data(replicat, Neg_Pos, Type):
+            def _search_neg_data(replicat, Neg_Pos):
                 neg_value = []
                 try:
                     for i in range(ttest_score.shape[0]):
                         for j in range(ttest_score.shape[1]):
                             try:
-                                if data == "median":
-                                    if SECData:
-                                        well_value.append(replicat.SECDataMedian[i][j])
-                                    else:
-                                        well_value.append(replicat.DataMedian[i][j])
-                                elif data == "mean":
-                                    if SECData:
-                                        well_value.append(replicat.SECDataMean[i][j])
-                                    else:
-                                        well_value.append(replicat.DataMean[i][j])
+                                if SECData:
+                                    well_value.append(replicat.SECData[i][j])
                                 else:
-                                    raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                    well_value.append(replicat.Data[i][j])
                             except Exception:
                                 raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                             # check if neg value
@@ -229,20 +202,12 @@ def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
                 for j in range(ttest_score.shape[1]):
                     well_value = []
                     for key, value in plate.replicat.items():
-                        neg_median = _search_neg_data(value, neg_pos, data)
+                        neg_median = _search_neg_data(value, neg_pos)
                         try:
-                            if data == "median":
-                                if SECData:
-                                    well_value.append(value.SECDataMedian[i][j] - neg_median)
-                                else:
-                                    well_value.append(value.DataMedian[i][j] - neg_median)
-                            elif data == "mean":
-                                if SECData:
-                                    well_value.append(value.SECDataMean[i][j] - neg_median)
-                                else:
-                                    well_value.append(value.DataMean[i][j] - neg_median)
+                            if SECData:
+                                well_value.append(value.SECData[i][j] - neg_median)
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value.append(value.Data[i][j] - neg_median)
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                     ttest_score[i][j] = np.nanmean(well_value) / (
@@ -255,7 +220,7 @@ def _PairedTStatScore(plate, cNeg, data='median', SECData=True, verbose=False):
             if verbose:
                 print("Paired t-test :")
                 print("Systematic Error Corrected Data : ", SECData)
-                print("Data type : ", data)
+                print("Data type : ", plate.DataType)
                 print("t-test score :")
                 print(ttest_score)
                 print("")

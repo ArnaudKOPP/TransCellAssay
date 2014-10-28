@@ -34,8 +34,8 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def ssmd_score(plate, cNeg, paired=True, robust_version=True, data='median', method='UMVUE', variance='unequal',
-               SECData=True, inplate_data=False, verbose=False):
+def ssmd_score(plate, cNeg, paired=True, robust_version=True, method='UMVUE', variance='unequal', SECData=True,
+               inplate_data=False, verbose=False):
     """
     Performed SSMD on plate object
         unpaired is for plate with replicat without great variance between them
@@ -44,7 +44,6 @@ def ssmd_score(plate, cNeg, paired=True, robust_version=True, data='median', met
     :param cNeg: negative control reference
     :param paired: paired or unpaired statistic
     :param robust_version: use robust version or not
-    :param data: median or mean data to use
     :param method: which method to use MM or UMVUE
     :param variance: unequal or equal
     :param SECData: use data with Systematic Error Corrected
@@ -62,27 +61,27 @@ def ssmd_score(plate, cNeg, paired=True, robust_version=True, data='median', met
                 if not paired:
                     if robust_version:
                         print('Using : _getUnpairedSSMDr')
-                        score = _UnpairedSSMDr(plate, cNeg, variance=variance, data=data, SECData=SECData,
+                        score = _UnpairedSSMDr(plate, cNeg, variance=variance, SECData=SECData,
                                                verbose=verbose)
                     else:
                         print('Using : _getUnpairedSSMD')
-                        score = _UnpairedSSMD(plate, cNeg, variance=variance, data=data, SECData=SECData,
+                        score = _UnpairedSSMD(plate, cNeg, variance=variance, SECData=SECData,
                                               verbose=verbose)
                 else:
                     if robust_version:
                         print('Using : _getPairedSSMDr')
-                        score = _PairedSSMDr(plate, cNeg, data=data, method=method, SECData=SECData, verbose=verbose)
+                        score = _PairedSSMDr(plate, cNeg, method=method, SECData=SECData, verbose=verbose)
                     else:
                         print('Using : _getPairedSSMD')
-                        score = _PairedSSMD(plate, cNeg, data=data, method=method, SECData=SECData, verbose=verbose)
+                        score = _PairedSSMD(plate, cNeg, method=method, SECData=SECData, verbose=verbose)
             else:
                 print('SSMD optimize for plate without replicat')
                 if robust_version:
                     print('Using : _SSMDr')
-                    score = _SSMDr(plate, cNeg, datatype=data, method=method, SECData=SECData, verbose=verbose)
+                    score = _SSMDr(plate, cNeg, method=method, SECData=SECData, verbose=verbose)
                 else:
                     print('Using : _SSMD')
-                    score = _SSMD(plate, cNeg, datatype=data, method=method, SECData=SECData, verbose=verbose)
+                    score = _SSMD(plate, cNeg, method=method, SECData=SECData, verbose=verbose)
             return score
         else:
             raise TypeError
@@ -90,13 +89,12 @@ def ssmd_score(plate, cNeg, paired=True, robust_version=True, data='median', met
         print(e)
 
 
-def _UnpairedSSMD(plate, cNeg, variance='unequal', data='median', SECData=True, verbose=False):
+def _UnpairedSSMD(plate, cNeg, variance='unequal', SECData=True, verbose=False):
     """
     performed unpaired SSMD for plate with replicat
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
     :param variance: unequal or equal
-    :param data: median or mean data to use
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:score data
@@ -123,18 +121,10 @@ def _UnpairedSSMD(plate, cNeg, variance='unequal', data='median', SECData=True, 
                     for key, value in plate.replicat.items():
                         well_value = 0
                         try:
-                            if data == "median":
-                                if SECData:
-                                    well_value = value.SECDataMedian[i][j]
-                                else:
-                                    well_value = value.DataMedian[i][j]
-                            elif data == "mean":
-                                if SECData:
-                                    well_value = value.SECDataMean[i][j]
-                                else:
-                                    well_value = value.DataMean[i][j]
+                            if SECData:
+                                well_value = value.SECData[i][j]
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value = value.Data[i][j]
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         # check if neg value
@@ -154,18 +144,10 @@ def _UnpairedSSMD(plate, cNeg, variance='unequal', data='median', SECData=True, 
                     well_value = 0
                     for key, value in plate.replicat.items():
                         try:
-                            if data == "median":
-                                if SECData:
-                                    well_value = value.SECDataMedian[i][j]
-                                else:
-                                    well_value = value.DataMedian[i][j]
-                            elif data == "mean":
-                                if SECData:
-                                    well_value = value.SECDataMean[i][j]
-                                else:
-                                    well_value = value.DataMean[i][j]
+                            if SECData:
+                                well_value = value.SECData[i][j]
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value = value.Data[i][j]
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         rep_value.append(well_value)
@@ -187,7 +169,7 @@ def _UnpairedSSMD(plate, cNeg, variance='unequal', data='median', SECData=True, 
             if verbose:
                 print("Unpaired SSMD :")
                 print("Systematic Error Corrected Data : ", SECData)
-                print("Data type : ", data)
+                print("Data type : ", plate.DataType)
                 print("variance parameter : ", variance)
                 print("SSMD score :")
                 print(SSMD)
@@ -199,13 +181,12 @@ def _UnpairedSSMD(plate, cNeg, variance='unequal', data='median', SECData=True, 
         print(e)
 
 
-def _UnpairedSSMDr(plate, cNeg, variance='unequal', data='median', SECData=True, verbose=False):
+def _UnpairedSSMDr(plate, cNeg, variance='unequal', SECData=True, verbose=False):
     """
     performed unpaired SSMDr for plate with replicat
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
     :param variance: unequal or equal
-    :param data: median or mean data to use
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:score data
@@ -232,18 +213,10 @@ def _UnpairedSSMDr(plate, cNeg, variance='unequal', data='median', SECData=True,
                     for key, value in plate.replicat.items():
                         well_value = 0
                         try:
-                            if data == "median":
-                                if SECData:
-                                    well_value = value.SECDataMedian[i][j]
-                                else:
-                                    well_value = value.DataMedian[i][j]
-                            elif data == "mean":
-                                if SECData:
-                                    well_value = value.SECDataMean[i][j]
-                                else:
-                                    well_value = value.DataMean[i][j]
+                            if SECData:
+                                well_value = value.SECData[i][j]
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value = value.Data[i][j]
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         # check if neg value
@@ -263,18 +236,10 @@ def _UnpairedSSMDr(plate, cNeg, variance='unequal', data='median', SECData=True,
                     well_value = 0
                     for key, value in plate.replicat.items():
                         try:
-                            if data == "median":
-                                if SECData:
-                                    well_value = value.SECDataMedian[i][j]
-                                else:
-                                    well_value = value.DataMedian[i][j]
-                            elif data == "mean":
-                                if SECData:
-                                    well_value = value.SECDataMean[i][j]
-                                else:
-                                    well_value = value.DataMean[i][j]
+                            if SECData:
+                                well_value = value.SECData[i][j]
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value = value.Data[i][j]
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         rep_value.append(well_value)
@@ -296,7 +261,7 @@ def _UnpairedSSMDr(plate, cNeg, variance='unequal', data='median', SECData=True,
             if verbose:
                 print("Unpaired SSMDr :")
                 print("Systematic Error Corrected Data : ", SECData)
-                print("Data type : ", data)
+                print("Data type : ", plate.DataType)
                 print("variance parameter : ", variance)
                 print("SSMD score :")
                 print(SSMD)
@@ -308,12 +273,11 @@ def _UnpairedSSMDr(plate, cNeg, variance='unequal', data='median', SECData=True,
         print(e)
 
 
-def _PairedSSMD(plate, cNeg, data='median', method='UMVUE', SECData=True, verbose=False):
+def _PairedSSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
     """
     performed paired ssmd for plate with replicat
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
-    :param data: median or mean data to use
     :param method: which method to use MM or UMVUE
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
@@ -334,24 +298,16 @@ def _PairedSSMD(plate, cNeg, data='median', method='UMVUE', SECData=True, verbos
                 raise Exception
 
             # search neg control value
-            def _search_neg_data(replicat, Neg_Pos, data):
+            def _search_neg_data(replicat, Neg_Pos):
                 neg_value = []
                 for i in range(SSMD.shape[0]):
                     for j in range(SSMD.shape[1]):
                         well_value = 0
                         try:
-                            if data == "median":
-                                if SECData:
-                                    well_value = replicat.SECDataMedian[i][j]
-                                else:
-                                    well_value = replicat.DataMedian[i][j]
-                            elif data == "mean":
-                                if SECData:
-                                    well_value = replicat.SECDataMean[i][j]
-                                else:
-                                    well_value = replicat.DataMean[i][j]
+                            if SECData:
+                                well_value = replicat.SECData[i][j]
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value = replicat.Data[i][j]
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         # check if neg value
@@ -369,21 +325,11 @@ def _PairedSSMD(plate, cNeg, data='median', method='UMVUE', SECData=True, verbos
                     for j in range(SSMD.shape[1]):
                         well_value = []
                         for key, value in plate.replicat.items():
-
-                            neg_median = _search_neg_data(value, neg_pos, data)
-
-                            if data == "median":
-                                if SECData:
-                                    well_value.append(value.SECDataMedian[i][j] - neg_median)
-                                else:
-                                    well_value.append(value.DataMedian[i][j] - neg_median)
-                            elif data == "mean":
-                                if SECData:
-                                    well_value.append(value.SECDataMean[i][j] - neg_median)
-                                else:
-                                    well_value.append(value.DataMean[i][j] - neg_median)
+                            neg_median = _search_neg_data(value, neg_pos)
+                            if SECData:
+                                well_value.append(value.SECData[i][j] - neg_median)
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value.append(value.Data[i][j] - neg_median)
                         if method == 'UMVUE':
                             SSMD[i][j] = x * (np.nanmean(well_value) / np.nanstd(well_value))
                         elif method == 'MM':
@@ -397,7 +343,7 @@ def _PairedSSMD(plate, cNeg, data='median', method='UMVUE', SECData=True, verbos
                 if verbose:
                     print("Paired SSMD :")
                     print("Systematic Error Corrected Data : ", SECData)
-                    print("Data type : ", data)
+                    print("Data type : ", plate.DataType)
                     print("method parameter : ", method)
                     print("SSMD score :")
                     print(SSMD)
@@ -411,12 +357,11 @@ def _PairedSSMD(plate, cNeg, data='median', method='UMVUE', SECData=True, verbos
         print(e)
 
 
-def _PairedSSMDr(plate, cNeg, data='median', method='UMVUE', SECData=True, verbose=False):
+def _PairedSSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
     """
     performed paired SSMDr for plate with replicat
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
-    :param data: median or mean data to use
     :param method: which method to use MM or UMVUE
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
@@ -437,24 +382,16 @@ def _PairedSSMDr(plate, cNeg, data='median', method='UMVUE', SECData=True, verbo
                 raise Exception
 
             # search neg control value
-            def _search_neg_data(replicat, Neg_Pos, data):
+            def _search_neg_data(replicat, Neg_Pos):
                 neg_value = []
                 for i in range(SSMDr.shape[0]):
                     for j in range(SSMDr.shape[1]):
                         well_value = 0
                         try:
-                            if data == "median":
-                                if SECData:
-                                    well_value = replicat.SECDataMedian[i][j]
-                                else:
-                                    well_value = replicat.DataMedian[i][j]
-                            elif data == "mean":
-                                if SECData:
-                                    well_value = replicat.SECDataMean[i][j]
-                                else:
-                                    well_value = replicat.DataMean[i][j]
+                            if SECData:
+                                well_value = replicat.SECData[i][j]
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value = replicat.Data[i][j]
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         # check if neg value
@@ -472,21 +409,11 @@ def _PairedSSMDr(plate, cNeg, data='median', method='UMVUE', SECData=True, verbo
                     for j in range(SSMDr.shape[1]):
                         well_value = []
                         for key, value in plate.replicat.items():
-
-                            neg_median = _search_neg_data(value, neg_pos, data)
-
-                            if data == "median":
-                                if SECData:
-                                    well_value.append(value.SECDataMedian[i][j] - neg_median)
-                                else:
-                                    well_value.append(value.DataMedian[i][j] - neg_median)
-                            elif data == "mean":
-                                if SECData:
-                                    well_value.append(value.SECDataMean[i][j] - neg_median)
-                                else:
-                                    well_value.append(value.DataMean[i][j] - neg_median)
+                            neg_median = _search_neg_data(value, neg_pos)
+                            if SECData:
+                                well_value.append(value.SECDataMedian[i][j] - neg_median)
                             else:
-                                raise AttributeError('\033[0;31m[ERROR]\033[0m  Data type must be mean or median')
+                                well_value.append(value.DataMedian[i][j] - neg_median)
                         if method == 'UMVUE':
                             SSMDr[i][j] = x * (np.nanmedian(well_value) / mad(well_value))
                         elif method == 'MM':
@@ -500,7 +427,7 @@ def _PairedSSMDr(plate, cNeg, data='median', method='UMVUE', SECData=True, verbo
                 if verbose:
                     print("Paired SSMDr :")
                     print("Systematic Error Corrected Data : ", SECData)
-                    print("Data type : ", data)
+                    print("Data type : ", plate.DataType)
                     print("method parameter : ", method)
                     print("SSMDr score :")
                     print(SSMDr)
@@ -514,13 +441,12 @@ def _PairedSSMDr(plate, cNeg, data='median', method='UMVUE', SECData=True, verbo
         print(e)
 
 
-def _SSMD(plate, cNeg, datatype='median', method='UMVUE', SECData=True, verbose=False):
+def _SSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
     """
     performed SSMD for plate without replicat
     take dataMean/Median or SECDatadata from plate object
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
-    :param datatype: median or mean data to use
     :param method: which method to use MM or UMVUE
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
@@ -541,19 +467,12 @@ def _SSMD(plate, cNeg, datatype='median', method='UMVUE', SECData=True, verbose=
             if not neg_well:
                 raise Exception
             neg_data = []
+            data = None
             try:
-                if datatype == 'median':
-                    if SECData:
-                        data = plate.SECDataMedian
-                    else:
-                        data = plate.DataMedian
-                elif datatype == 'mean':
-                    if SECData:
-                        data = plate.SECDataMean
-                    else:
-                        data = plate.DataMean
+                if SECData:
+                    data = plate.SECData
                 else:
-                    raise AttributeError('\033[0;31m[ERROR]\033[0m  Median or Mean data only')
+                    data = plate.Data
             except Exception as e:
                 print(e)
             if data is None:
@@ -580,7 +499,7 @@ def _SSMD(plate, cNeg, datatype='median', method='UMVUE', SECData=True, verbose=
             if verbose:
                 print('SSMD without replicat, or inplate data from plate')
                 print("Systematic Error Corrected Data : ", SECData)
-                print("Data type : ", datatype)
+                print("Data type : ", plate.DataType)
                 print("method parameter : ", method)
                 print("SSMD score :")
                 print(ssmd)
@@ -592,13 +511,12 @@ def _SSMD(plate, cNeg, datatype='median', method='UMVUE', SECData=True, verbose=
         print(e)
 
 
-def _SSMDr(plate, cNeg, datatype='median', method='UMVUE', SECData=True, verbose=False):
+def _SSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
     """
     perfored  SSMDr for plate without replicat
     take dataMean/Median or SECDatadata from plate object
     :param plate: Plate Object to analyze
     :param cNeg: negative control reference
-    :param datatype: median or mean data to use
     :param method: which method to use MM or UMVUE
     :param SECData: use data with Systematic Error Corrected
     :param verbose: be verbose or not
@@ -619,20 +537,12 @@ def _SSMDr(plate, cNeg, datatype='median', method='UMVUE', SECData=True, verbose
             if not neg_well:
                 raise Exception
             neg_data = []
-
+            data = None
             try:
-                if datatype == 'median':
-                    if SECData:
-                        data = plate.SECDataMedian
-                    else:
-                        data = plate.DataMedian
-                elif datatype == 'mean':
-                    if SECData:
-                        data = plate.SECDataMean
-                    else:
-                        data = plate.DataMean
+                if SECData:
+                    data = plate.SECData
                 else:
-                    raise AttributeError('\033[0;31m[ERROR]\033[0m  Median or Mean data only')
+                    data = plate.Data
             except Exception as e:
                 print(e)
             if data is None:
@@ -660,7 +570,7 @@ def _SSMDr(plate, cNeg, datatype='median', method='UMVUE', SECData=True, verbose
             if verbose:
                 print('SSMDr without replicat')
                 print("Systematic Error Corrected Data : ", SECData)
-                print("Data type : ", datatype)
+                print("Data type : ", plate.DataType)
                 print("method parameter : ", method)
                 print("SSMD score :")
                 print(ssmdr)

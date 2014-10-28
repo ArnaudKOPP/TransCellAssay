@@ -21,28 +21,28 @@ class Replicat():
     """
     classdocs
     Class for manipuling replicat of plate
-    self.Data = pd.DataFrame()  # data frame that contains data
+    self.Dataframe = pd.DataFrame()  # data frame that contains data
     self.info = ""  # Name of replicat
     self.isNormalized = False  # are the data normalized
     self.isSpatialNormalized = False  # systematics error removed or not
-    self.DataMean = None  # matrix that contain mean of interested features to analyze
-    self.DataMedian = None  # matrix that contain median of interested feature to analyze
-    self.SpatNormDataMean = None  # matrix that contain data corrected
-    self.SpatNormDataMedian = None  # matrix that contain data corrected
+    self.DataType = "median" # median or mean of data
+    self.Data = None  # matrix that contain mean of interested features to analyze
+    self.SpatNormData = None  # matrix that contain data corrected
     """
 
     def __init__(self, ):
         '''
         Constructor
         '''
-        self.Data = pd.DataFrame()
+        self.Dataframe = pd.DataFrame()
         self.name = ""
+
         self.isNormalized = False
         self.isSpatialNormalized = False
-        self.DataMean = None
-        self.DataMedian = None
-        self.SECDataMean = None
-        self.SECDataMedian = None
+
+        self.DataType = "median"
+        self.Data = None
+        self.SECData = None
 
     def setData(self, InputFile):
         """
@@ -50,7 +50,7 @@ class Replicat():
         :param InputFile: csv file
         """
         try:
-            self.Data = pd.read_csv(InputFile)
+            self.Dataframe = pd.read_csv(InputFile)
             print('Reading %s File' % InputFile)
         except:
             try:
@@ -66,24 +66,25 @@ class Replicat():
         :return: return DataFrame with all data
         """
         try:
-            return self.Data
+            return self.Dataframe
         except Exception as e:
             print(e)
             print('Error in exporting data')
 
     def setDataX(self, Array, type):
         """
-        Set attribut data like self.DataMean or self.DataMedian
-        :param Array:  numpy array
-        :param type: mean or median
+        Set attribut data matrix into self.Data
+        :param Array:
+        :param type:
         :return:
         """
         try:
             if isinstance(Array, np.ndarray):
+                self.Data = Array
                 if type == 'median':
-                    self.DataMedian = Array
+                    self.DataType = type
                 elif type == 'mean':
-                    self.DataMean = Array
+                    self.DataType = type
                 else:
                     raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided data type")
             else:
@@ -123,9 +124,9 @@ class Replicat():
         """
         try:
             if feature is None:
-                return self.Data[self.Data['Well'] == well]
+                return self.Dataframe[self.Dataframe['Well'] == well]
             else:
-                return self.Data[feature][self.data['Well'] == well]
+                return self.Dataframe[feature][self.data['Well'] == well]
         except Exception as e:
             print(e)
             print('\033[0;31m[ERROR]\033[0m  Error in exporting data by well')
@@ -142,12 +143,12 @@ class Replicat():
             for i in wells:
                 if feature is None:
                     if data.empty:
-                        data = self.Data[self.Data['Well'] == i]
-                    data.append(self.Data[self.Data['Well'] == i])
+                        data = self.Dataframe[self.Dataframe['Well'] == i]
+                    data.append(self.Dataframe[self.Dataframe['Well'] == i])
                 else:
                     if data.empty:
-                        data = self.Data[feature][self.Data['Well'] == i]
-                    data.append(self.Data[feature][self.Data['Well'] == i])
+                        data = self.Dataframe[feature][self.Dataframe['Well'] == i]
+                    data.append(self.Dataframe[feature][self.Dataframe['Well'] == i])
             return data
         except Exception as e:
             print(e)
@@ -164,13 +165,13 @@ class Replicat():
         try:
             if Well:
                 featList.insert(0, 'Well')
-                return self.Data[featList]
+                return self.Dataframe[featList]
             else:
-                return self.Data[featList]
+                return self.Dataframe[featList]
         except Exception as e:
             print(e)
 
-    def computeDataForFeature(self, feature):
+    def computeDataForFeature(self, feature, data_type="median"):
         """
         Compute data in matrix form, get mean or median for well and save them in replicat object
         :param: feature: which feature to keep in matrix
@@ -182,33 +183,26 @@ class Replicat():
                 print('     --> Data are not normalized for replicat : ', self.name)
                 print('')
 
-            grouped_data_by_well = self.Data.groupby('Well')
+            grouped_data_by_well = self.Dataframe.groupby('Well')
 
-            mean_tmp = grouped_data_by_well.mean()
-            mean_feature = mean_tmp[feature]
-            dict_mean = mean_feature.to_dict()  # # dict : key = pos and item are mean
-            if not len(dict_mean) > 96:
-                self.DataMean = np.zeros((8, 12))
+            if data_type == "median":
+                tmp = grouped_data_by_well.mean()
             else:
-                self.DataMean = np.zeros((16, 24))
+                tmp = grouped_data_by_well.median()
+            feature = tmp[feature]
+            dict_mean = feature.to_dict()  # # dict : key = pos and item are mean
+            if not len(dict_mean) > 96:
+                self.Data = np.zeros((8, 12))
+            else:
+                self.Data = np.zeros((16, 24))
             for key, elem in dict_mean.items():
                 pos = Utils.WellFormat.getOppositeWellFormat(key)
-                self.DataMean[pos[0]][pos[1]] = elem
+                self.Data[pos[0]][pos[1]] = elem
 
-            median_tmp = grouped_data_by_well.median()
-            median_feature = median_tmp[feature]
-            dict_median = median_feature.to_dict()  # # dict : key = pos and item are mean
-            if not len(dict_median) > 96:
-                self.DataMedian = np.zeros((8, 12))
-            else:
-                self.DataMedian = np.zeros((16, 24))
-            for key, elem in dict_median.items():
-                pos = Utils.WellFormat.getOppositeWellFormat(key)
-                self.DataMedian[pos[0]][pos[1]] = elem
         except Exception as e:
             print(e)
 
-    def getDataMatrix(self, feature, method="mean", SEC=False):
+    def getDataMatrix(self, feature, SEC=False):
         """
         Return data in matrix form, get mean or median for well
         :param: feature: which feature to keep in matrix
@@ -217,24 +211,15 @@ class Replicat():
         :return: compute data in matrix form
         """
         try:
-            if method == "mean":
                 if SEC:
-                    if self.SECDataMean is None:
+                    if self.SECData is None:
                         raise ValueError('\033[0;31m[ERROR]\033[0m  Launch Systematic Error Correction before')
                     else:
-                        return self.SECDataMean
-                elif self.DataMean is None:
+                        return self.SECData
+                elif self.Data is None:
                     self.computeDataForFeature(feature)
-                return self.DataMean
-            else:
-                if SEC:
-                    if self.SECDataMedian is None:
-                        raise ValueError('\033[0;31m[ERROR]\033[0m  Launch Systematic Error Correction before')
-                    else:
-                        return self.SECDataMedian
-                if self.DataMedian is None:
-                    self.computeDataForFeature(feature)
-                return self.DataMedian
+                return self.Data
+
         except Exception as e:
             print(e)
 
@@ -247,7 +232,8 @@ class Replicat():
         """
         try:
             if not self.isNormalized:
-                self.Data = Statistic.Normalization.VariabilityNormalization(self.Data.copy(), feature=feature,
+                self.Dataframe = Statistic.Normalization.VariabilityNormalization(self.Dataframe.copy(),
+                                                                                  feature=feature,
                                                                              method=method, log2_transformation=log)
                 self.isNormalized = True
             else:
@@ -273,143 +259,77 @@ class Replicat():
 
         try:
             if Algorithm == 'Bscore':
-                if self.DataMean is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Mean of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
-                else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMean.copy(),
-                                                                                      method=method,
-                                                                                      max_iterations=max_iterations,
-                                                                                      verbose=verbose)
-                    if save:
-                        self.SECDataMean = resid
-
-                if self.DataMedian is None:
+                if self.Data is None:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  Compute Median of replicat first by using computeDataFromReplicat")
                 elif self.isSpatialNormalized is True:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.DataMedian.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.Data.copy(),
                                                                                       method=method,
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
                     if save:
-                        self.SECDataMedian = resid
+                        self.SECData = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'BZscore':
-                if self.DataMean is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Mean of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
-                else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMean.copy(),
-                                                                                        method=method,
-                                                                                        max_iterations=max_iterations,
-                                                                                        verbose=verbose)
-                    if save:
-                        self.SECDataMean = resid
-
-                if self.DataMedian is None:
+                if self.Data is None:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  Compute Median of replicat first by using computeDataFromReplicat")
                 elif self.isSpatialNormalized is True:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
                 else:
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.DataMedian.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.Data.copy(),
                                                                                         method=method,
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
                     if save:
-                        self.SECDataMedian = resid
+                        self.SECData = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'PMP':
-                if self.DataMean is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Mean of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
-                else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMean.copy(),
-                                                                      max_iteration=max_iterations, verbose=verbose)
-                    if save:
-                        self.SECDataMean = resid
-
-                if self.DataMedian is None:
+                if self.Data is None:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  Compute Median of replicat first by using computeDataFromReplicat")
                 elif self.isSpatialNormalized is True:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
                 else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.DataMedian.copy(),
+                    resid = Statistic.Normalization.PartialMeanPolish(self.Data.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
-                        self.SECDataMedian = resid
+                        self.SECData = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'MEA':
-                if self.DataMean is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Mean of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
-                else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMean.copy(), verbose=verbose)
-                    if save:
-                        self.SECDataMean = resid
-
-                if self.DataMedian is None:
+                if self.Data is None:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  Compute Median of replicat first by using computeDataFromReplicat")
                 elif self.isSpatialNormalized is True:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
                 else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.DataMedian.copy(), verbose=verbose)
+                    resid = Statistic.Normalization.MatrixErrorAmendment(self.Data.copy(), verbose=verbose)
                     if save:
-                        self.SECDataMedian = resid
+                        self.SECData = resid
                         self.isSpatialNormalized = True
 
             if Algorithm == 'DiffusionModel':
-                if self.DataMean is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Mean of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
-                else:
-                    CorrectedTable = Statistic.Normalization.diffusionModel(self.DataMean,
-                                                                            max_iterations=max_iterations,
-                                                                            verbose=verbose)
-
-                    if save:
-                        self.SECDataMedian = CorrectedTable
-
-                if self.DataMedian is None:
+                if self.Data is None:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  Compute Median of replicat first by using computeDataFromReplicat")
                 elif self.isSpatialNormalized is True:
                     raise ValueError(
                         "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
                 else:
-                    CorrectedTable = Statistic.Normalization.diffusionModel(self.DataMedian,
+                    CorrectedTable = Statistic.Normalization.diffusionModel(self.Data.copy(),
                                                                             max_iterations=max_iterations,
                                                                             verbose=verbose)
-
                     if save:
-                        self.SECDataMedian = CorrectedTable
+                        self.SECData = CorrectedTable
                         self.isSpatialNormalized = True
 
         except Exception as e:
