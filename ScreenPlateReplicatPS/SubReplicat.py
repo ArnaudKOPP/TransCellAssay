@@ -17,7 +17,7 @@ __status__ = "Production"
 
 
 class SubReplicat(ScreenPlateReplicatPS.Replicat):
-    def __init__(self, parent_replicat, RB=None, RE=None, CB=None, CE=None):
+    def __init__(self, parent_replicat, RB, RE, CB, CE):
         """
         Constructor
         """
@@ -35,8 +35,8 @@ class SubReplicat(ScreenPlateReplicatPS.Replicat):
             self.isSpatialNormalized = parent_replicat.isSpatialNormalized
 
             self.DataType = parent_replicat.DataType
-            self.Data = parent_replicat.Data[RB - 1: RE - 1, CB - 1, CE - 1]
-            self.SECData = parent_replicat.SECData[RB - 1: RE - 1, CB - 1, CE - 1]
+            self.Data = parent_replicat.Data[RB - 1: RE - 1, CB - 1: CE - 1]
+            self.SECData = parent_replicat.SECData[RB - 1: RE - 1, CB - 1: CE - 1]
 
         except Exception as e:
             print(e)
@@ -49,7 +49,7 @@ class SubReplicat(ScreenPlateReplicatPS.Replicat):
         try:
             return ("\n SubReplicat : \n " + repr(self.name) +
                     "\n Normalized Data : \n" + repr(self.isNormalized) +
-                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized))
+                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
             print(e)
 
@@ -61,6 +61,6 @@ class SubReplicat(ScreenPlateReplicatPS.Replicat):
         try:
             return ("\n SubReplicat : \n " + repr(self.name) +
                     "\n Normalized Data : \n" + repr(self.isNormalized) +
-                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized))
+                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
             print(e)

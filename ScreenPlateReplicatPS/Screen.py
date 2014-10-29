@@ -121,7 +121,7 @@ class Screen():
                     "\n Threshold : \n" + repr(self.Threshold) +
                     "\n Neg Control \n" + repr(self.Neg) +
                     "\n Pos Control \n" + repr(self.Pos) +
-                    "\n Tox Control \n" + repr(self.Tox))
+                    "\n Tox Control \n" + repr(self.Tox) + "\n")
         except Exception as e:
             print(e)
 
@@ -134,6 +134,6 @@ class Screen():
                     "\n Threshold : \n" + repr(self.Threshold) +
                     "\n Neg Control \n" + repr(self.Neg) +
                     "\n Pos Control \n" + repr(self.Pos) +
-                    "\n Tox Control \n" + repr(self.Tox))
+                    "\n Tox Control \n" + repr(self.Tox) + "\n")
         except Exception as e:
             print(e)

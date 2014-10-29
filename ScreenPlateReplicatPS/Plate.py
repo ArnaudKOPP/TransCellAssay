@@ -150,18 +150,6 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def getNumberReplicat(self):
-        """
-        return number of replicat
-        double usage with __len__ method:property
-        :return: int
-        """
-        try:
-            return len(self.replicat)
-        except Exception as e:
-            print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error in getting number of replicat')
-
     def addInfo(self, key, value):
         """
         Add Info into the dict
@@ -409,15 +397,19 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def __add__(self, replicat):
+    def __add__(self, object):
         """
-        Add replicat object, use + operator
-        :param replicat:
+        Add object object, use + operator
+        :param object:
         """
         try:
-            assert isinstance(replicat, ScreenPlateReplicatPS.Replicat)
-            name = replicat.name
-            self.replicat[name] = replicat
+            if isinstance(object, ScreenPlateReplicatPS.Replicat):
+                name = object.name
+                self.replicat[name] = object
+            elif isinstance(object, ScreenPlateReplicatPS.PlateSetup):
+                self.PlateSetup = object
+            else:
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
         except Exception as e:
             print(e)
 
@@ -453,7 +445,7 @@ class Plate():
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateSetup : \n" + repr(self.PlateSetup) +
                 "\n Array Result :\n" + repr(self.Result) +
-                "\n Data normalized ?" + repr(self.isNormalized) +
+                "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:
@@ -470,7 +462,7 @@ class Plate():
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateSetup : \n" + repr(self.PlateSetup) +
                 "\n Array Result :\n" + repr(self.Result) +
-                "\n Data normalized ?" + repr(self.isNormalized) +
+                "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:

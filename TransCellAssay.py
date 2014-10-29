@@ -123,12 +123,12 @@ USAGE
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
-        subplate1 = ScreenPlateReplicatPS.SubPlate(plaque1)
+        subplate1 = ScreenPlateReplicatPS.SubPlate(plaque1, 1, 5, 3, 6)
         subplate1.setName("subplate1")
         print(subplate1['rep1'])
         print(subplate1.Name)
-        print(platesetup.platesetup.iloc[1: 5, 3: 6])
-
+        print(subplate1)
+        print(subplate1.Data)
 
         # Statistic.QC.PlateQualityControl(plaque1, features="Nuc Intensity", cneg="NT", cpos="SINV C", SEDT=False,
         # SECdata=False, verbose=True)

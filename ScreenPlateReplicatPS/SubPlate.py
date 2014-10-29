@@ -18,7 +18,7 @@ __status__ = "Production"
 
 
 class SubPlate(ScreenPlateReplicatPS.Plate):
-    def __init__(self, parent_plate, RB=None, RE=None, CB=None, CE=None):
+    def __init__(self, parent_plate, RB, RE, CB, CE):
         """
         Constructor
         """
@@ -28,11 +28,12 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
                 self.ParentPlate = parent_plate
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Plate for creating SubPlate")
-            self._init_replicat(parent_plate.replicat)
+            self.replicat = {}
+            self._init_replicat(parent_plate, RB, RE, CB, CE)
             self.MetaInfo = parent_plate.MetaInfo
             self.Name = parent_plate.Name
 
-            self.PlateSetup = parent_plate.PlateSetup.platesetup[RB - 1: RE - 1, CB - 1, CE - 1]
+            self.PlateSetup = parent_plate.PlateSetup.platesetup.iloc[RB - 1: RE - 1, CB - 1: CE - 1]
             self.Threshold = parent_plate.Threshold
             self.ControlPos = None
 
@@ -45,15 +46,15 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
             self.isSpatialNormalized = parent_plate.isSpatialNormalized
 
             self.DataType = parent_plate.DataType
-            self.Data = parent_plate.Data[RB - 1: RE - 1, CB - 1, CE - 1]
-            self.SECData = parent_plate.SECData[RB - 1: RE - 1, CB - 1, CE - 1]
+            self.Data = parent_plate.Data[RB - 1: RE - 1, CB - 1: CE - 1]
+            self.SECData = parent_plate.SECData[RB - 1: RE - 1, CB - 1: CE - 1]
         except Exception as e:
             print(e)
 
-    def _init_replicat(self, plate, RB=None, RE=None, CB=None, CE=None):
+    def _init_replicat(self, plate, RB, RE, CB, CE):
         try:
             for key, value in plate.replicat.items():
-                self.replicat[value.name] = ScreenPlateReplicatPS.SubReplicat(value, RB=None, RE=None, CB=None, CE=None)
+                self.replicat[value.name] = ScreenPlateReplicatPS.SubReplicat(value, RB, RE, CB, CE)
         except Exception as e:
             print(e)
 
@@ -80,9 +81,9 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateSetup : \n" + repr(self.PlateSetup) +
                 "\n Array Result :\n" + repr(self.Result) +
-                "\n Data normalized ?" + repr(self.isNormalized) +
+                "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
-                "\n Replicat List : \n" + repr(self.replicat))
+                "\n Replicat List : \n" + repr(self.replicat) + "\n")
         except Exception as e:
             print(e)
 
@@ -97,8 +98,8 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateSetup : \n" + repr(self.PlateSetup) +
                 "\n Array Result :\n" + repr(self.Result) +
-                "\n Data normalized ?" + repr(self.isNormalized) +
+                "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
-                "\n Replicat List : \n" + repr(self.replicat))
+                "\n Replicat List : \n" + repr(self.replicat) + "\n")
         except Exception as e:
             print(e)

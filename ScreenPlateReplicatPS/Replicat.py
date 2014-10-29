@@ -343,7 +343,7 @@ class Replicat():
         try:
             return ("\n Replicat : \n " + repr(self.name) +
                     "\n Normalized Data : \n" + repr(self.isNormalized) +
-                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized))
+                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
             print(e)
 
@@ -355,6 +355,6 @@ class Replicat():
         try:
             return ("\n Replicat : \n " + repr(self.name) +
                     "\n Normalized Data : \n" + repr(self.isNormalized) +
-                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized))
+                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
             print(e)
