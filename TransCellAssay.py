@@ -128,7 +128,7 @@ USAGE
         print(subplate1['rep1'])
         print(subplate1.Name)
         print(subplate1)
-        print(subplate1.Data)
+        print(subplate1['rep1'].Data)
 
         # Statistic.QC.PlateQualityControl(plaque1, features="Nuc Intensity", cneg="NT", cpos="SINV C", SEDT=False,
         # SECdata=False, verbose=True)

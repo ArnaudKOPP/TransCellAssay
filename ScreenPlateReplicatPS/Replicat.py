@@ -211,14 +211,14 @@ class Replicat():
         :return: compute data in matrix form
         """
         try:
-                if SEC:
-                    if self.SECData is None:
-                        raise ValueError('\033[0;31m[ERROR]\033[0m  Launch Systematic Error Correction before')
-                    else:
-                        return self.SECData
-                elif self.Data is None:
-                    self.computeDataForFeature(feature)
-                return self.Data
+            if SEC:
+                if self.SECData is None:
+                    raise ValueError('\033[0;31m[ERROR]\033[0m  Launch Systematic Error Correction before')
+                else:
+                    return self.SECData
+            elif self.Data is None:
+                self.computeDataForFeature(feature)
+            return self.Data
 
         except Exception as e:
             print(e)
@@ -234,7 +234,8 @@ class Replicat():
             if not self.isNormalized:
                 self.Dataframe = Statistic.Normalization.VariabilityNormalization(self.Dataframe.copy(),
                                                                                   feature=feature,
-                                                                             method=method, log2_transformation=log)
+                                                                                  method=method,
+                                                                                  log2_transformation=log)
                 self.isNormalized = True
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
@@ -285,7 +286,8 @@ class Replicat():
 
                 if Algorithm == 'PMP':
                     CorrectedTable = Statistic.Normalization.PartialMeanPolish(self.Data.copy(),
-                                                                      max_iteration=max_iterations, verbose=verbose)
+                                                                               max_iteration=max_iterations,
+                                                                               verbose=verbose)
                     if save:
                         self.SECData = CorrectedTable
                         self.isSpatialNormalized = True
@@ -310,7 +312,6 @@ class Replicat():
     def __repr__(self):
         """
         Definition for the representation
-        :return:
         """
         try:
             return ("\n Replicat : \n " + repr(self.name) +
@@ -322,7 +323,6 @@ class Replicat():
     def __str__(self):
         """
         Definition for the print
-        :return:
         """
         try:
             return ("\n Replicat : \n " + repr(self.name) +

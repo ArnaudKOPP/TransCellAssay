@@ -20,6 +20,11 @@ class SubReplicat(ScreenPlateReplicatPS.Replicat):
     def __init__(self, parent_replicat, RB, RE, CB, CE):
         """
         Constructor
+        :param parent_replicat: Replicat Parent object
+        :param RB: Row Begin
+        :param RE: Row End
+        :param CB: Col Begin
+        :param CE: Col End
         """
         try:
             if isinstance(parent_replicat, ScreenPlateReplicatPS.Replicat):
@@ -44,7 +49,6 @@ class SubReplicat(ScreenPlateReplicatPS.Replicat):
     def __repr__(self):
         """
         Definition for the representation
-        :return:
         """
         try:
             return ("\n SubReplicat : \n " + repr(self.name) +
@@ -56,7 +60,6 @@ class SubReplicat(ScreenPlateReplicatPS.Replicat):
     def __str__(self):
         """
         Definition for the print
-        :return:
         """
         try:
             return ("\n SubReplicat : \n " + repr(self.name) +

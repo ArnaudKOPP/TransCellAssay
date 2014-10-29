@@ -347,7 +347,8 @@ class Plate():
 
                 if Algorithm == 'PMP':
                     CorrectedTable = Statistic.Normalization.PartialMeanPolish(self.Data.copy(),
-                                                                      max_iteration=max_iterations, verbose=verbose)
+                                                                               max_iteration=max_iterations,
+                                                                               verbose=verbose)
                     if save:
                         self.SECData = CorrectedTable
                         self.isSpatialNormalized = True
@@ -409,7 +410,6 @@ class Plate():
     def __repr__(self):
         """
         Definition for the representation
-        :return:
         """
         try:
             return (
@@ -426,7 +426,6 @@ class Plate():
     def __str__(self):
         """
         Definition for the print
-        :return:
         """
         try:
             return (

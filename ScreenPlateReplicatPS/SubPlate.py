@@ -21,6 +21,11 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
     def __init__(self, parent_plate, RB, RE, CB, CE):
         """
         Constructor
+        :param parent_plate: Plate Parent object
+        :param RB: Row Begin
+        :param RE: Row End
+        :param CB: Col Begin
+        :param CE: Col End
         """
         try:
             if isinstance(parent_plate, ScreenPlateReplicatPS.Plate):
@@ -52,6 +57,14 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
             print(e)
 
     def _init_replicat(self, plate, RB, RE, CB, CE):
+        """
+        select zone in replicat and put them into a dict
+        :param plate: Plate object
+        :param RB: Row Begin
+        :param RE: Row End
+        :param CB: Col Begin
+        :param CE: Col End
+        """
         try:
             for key, value in plate.replicat.items():
                 self.replicat[value.name] = ScreenPlateReplicatPS.SubReplicat(value, RB, RE, CB, CE)
@@ -73,7 +86,6 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
     def __repr__(self):
         """
         Definition for the representation
-        :return:
         """
         try:
             return (
@@ -90,7 +102,6 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
     def __str__(self):
         """
         Definition for the print
-        :return:
         """
         try:
             return (
