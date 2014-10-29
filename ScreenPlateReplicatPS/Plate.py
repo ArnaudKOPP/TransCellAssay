@@ -321,14 +321,14 @@ class Plate():
                                                     max_iterations=max_iterations)
                 return 0
 
-            if Algorithm == 'Bscore':
-                if self.Data is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Median of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
-                else:
+            if self.Data is None:
+                raise ValueError(
+                    "\033[0;31m[ERROR]\033[0m  Compute Median of replicat first by using computeDataFromReplicat")
+            elif self.isSpatialNormalized is True:
+                raise ValueError(
+                    "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
+            else:
+                if Algorithm == 'Bscore':
                     ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.Data.copy(),
                                                                                       method=method,
                                                                                       max_iterations=max_iterations,
@@ -336,14 +336,7 @@ class Plate():
                     if save:
                         self.SECData = resid
                         self.isSpatialNormalized = True
-            if Algorithm == 'BZscore':
-                if self.Data is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Mean of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
-                else:
+                if Algorithm == 'BZscore':
                     ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.Data.copy(),
                                                                                         method=method,
                                                                                         max_iterations=max_iterations,
@@ -352,41 +345,20 @@ class Plate():
                         self.SECData = resid
                         self.isSpatialNormalized = True
 
-            if Algorithm == 'PMP':
-                if self.Data is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Mean of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        '\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed')
-                else:
-                    resid = Statistic.Normalization.PartialMeanPolish(self.Data.copy(),
+                if Algorithm == 'PMP':
+                    CorrectedTable = Statistic.Normalization.PartialMeanPolish(self.Data.copy(),
                                                                       max_iteration=max_iterations, verbose=verbose)
                     if save:
-                        self.SECData = resid
+                        self.SECData = CorrectedTable
                         self.isSpatialNormalized = True
 
-            if Algorithm == 'MEA':
-                if self.Data is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Mean of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
-                else:
-                    resid = Statistic.Normalization.MatrixErrorAmendment(self.Data.copy(), verbose=verbose)
+                if Algorithm == 'MEA':
+                    CorrectedTable = Statistic.Normalization.MatrixErrorAmendment(self.Data.copy(), verbose=verbose)
                     if save:
-                        self.SECData = resid
+                        self.SECData = CorrectedTable
                         self.isSpatialNormalized = True
 
-            if Algorithm == 'DiffusionModel':
-                if self.Data is None:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  Compute Mean of replicat first by using computeDataFromReplicat")
-                elif self.isSpatialNormalized is True:
-                    raise ValueError(
-                        "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
-                else:
+                if Algorithm == 'DiffusionModel':
                     CorrectedTable = Statistic.Normalization.diffusionModel(self.Data.copy(),
                                                                             max_iterations=max_iterations,
                                                                             verbose=verbose)
