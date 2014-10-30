@@ -3,10 +3,12 @@ Plate is designed for manipulating one or more replicat
 """
 
 import numpy as np
+
 import SOM.PlateSetup
 import SOM.Replicat
-import Statistic.ResultArray
+import SOM.ResultArray
 import Statistic.Normalization.SystematicError
+
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"

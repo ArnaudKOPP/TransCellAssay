@@ -24,6 +24,7 @@ class Screen():
         Constructor
         self.PlateList = {} # dict that contain all plate
         self.Info = {} # Dict that contain info
+        self.type = None # type of screen : siRNA or compounds
         self.Threshold = None  # Threeshold for considering Cell as positive
         self.Neg = None # Negative reference for the screen
         self.Pos = None # Positive reference for the screen
@@ -32,6 +33,7 @@ class Screen():
         """
         self.PlateList = {}
         self.Info = {}
+        self.type = None
         self.Threshold = None
         self.Neg = None
         self.Pos = None

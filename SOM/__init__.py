@@ -3,5 +3,12 @@ from SOM.Plate import *
 from SOM.PlateSetup import *
 from SOM.Replicat import *
 from SOM.Screen import *
+from SOM.ResultArray import *
+from SOM.Analysis import *
 from SOM.Sub.SubPlate import *
 from SOM.Sub.SubReplicat import *
+from SOM.Product.Product import *
+from SOM.Product.WellData import *
+from SOM.Product.ProductType import *
+from SOM.Product.Compound import *
+from SOM.Product.siRNA import *

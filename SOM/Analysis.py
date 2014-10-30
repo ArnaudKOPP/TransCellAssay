@@ -2,8 +2,7 @@
 Score defined method for compute some score on data
 """
 
-import Statistic.ResultArray
-import Statistic.Score as score
+import Statistic.Score
 import SOM
 
 __author__ = "Arnaud KOPP"
@@ -30,11 +29,11 @@ def computePlateAnalyzis(Plate, feature, neg, threshold=50, direction='Up'):
         if isinstance(Plate, SOM.Plate):
             platesetup = Plate.getPlateSetup()
             size = platesetup.getSize()
-            result = Statistic.Result(size=(size[0] * size[1]))
+            result = SOM.Result(size=(size[0] * size[1]))
             x = platesetup.getPSasDict()
             result.initGeneWell(x)
             try:
-                meanCount, sdvalue = score.getMeanSDCellCount(Plate)
+                meanCount, sdvalue = Statistic.Score.getMeanSDCellCount(Plate)
                 result.addDataDict(meanCount, 'CellsCount', by='Pos')
                 result.addDataDict(sdvalue, 'SDCellsCunt', by='Pos')
                 PercentCell, sdPercentCell = Statistic.Score.getPercentPosCell(Plate, feature, neg, threshold,

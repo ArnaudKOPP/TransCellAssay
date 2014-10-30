@@ -142,24 +142,20 @@ class PlateSetup():
         except Exception as e:
             print(e)
 
-    def __getitem__(self, position, human_readable=False):
+    def __getitem__(self, position):
         """
         Return geneName from specified position
         A1 = (0,0)
-        :param position: A1 or (0, 0)/(1, 1)
-        :param human_readable: for human index A1 = (1, 1)
+        :param position: A1 or (0, 0)
         :return: string geneName of platesetup
         """
         try:
-            # # for (1, 1) format
+            # # for (0, 0) format
             if isinstance(position, tuple):
-                if human_readable:
-                    return self.platesetup.iloc[position[0] - 1, position[1] - 1]
-                else:
-                    return self.platesetup.iloc[position[0], position[1]]
+                return self.platesetup.iloc[position[0], position[1]]
             # # for 'A1' format
             elif isinstance(position, str):
-                return self.platesetup.loc[[position[0]], [position[1]]]
+                return self.platesetup.loc[[position[0]], [position[1:]]]
         except Exception as e:
             print(e)
 

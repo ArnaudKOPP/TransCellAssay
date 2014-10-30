@@ -18,6 +18,7 @@ It will certainly be like a toolbox for the moment, so programming skill is need
 1. Machine Learning ( classification, clustering, Dimensionality Reduction, ...)
 2. Bayesian Inference (FDR...)
 3. GSEA, PP-interaction, -Omics data interaction
+4. Web interface
 
 ##DEPENDENCIES
 1. Python > 3.3

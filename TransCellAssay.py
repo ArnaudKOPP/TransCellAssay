@@ -125,6 +125,8 @@ USAGE
 
         # Graphics.plotDistribution('C5', plaque1, 'Nuc Intensity')
 
+        print(platesetup['A10'])
+
         subplate1 = SOM.SubPlate(plaque1, 1, 5, 3, 6)
         subplate1.setName("subplate1")
         print(subplate1)
@@ -165,7 +167,7 @@ USAGE
 
 
 
-        Graphics.boxplotByWell(rep1.Dataframe, "Nuc Intensity")
+        # Graphics.boxplotByWell(rep1.Dataframe, "Nuc Intensity")
         # Graphics.PlateHeatmap(rep1.DataMean)
         # Graphics.SystematicError(rep1.DataMean)
         # Graphics.plotSurf3D_Plate(rep1.DataMean)

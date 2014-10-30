@@ -22,6 +22,10 @@ class Product():
             if isinstance(Plate, SOM.Plate):
                 assert isinstance(Name, str)
                 self.name = Name
+                self.WellData = SOM.Product.WellData.__init__()
+                self.position = None
+                self.RefPlate = Plate
+                self.Type = None
         except Exception as e:
             print(e)
 
