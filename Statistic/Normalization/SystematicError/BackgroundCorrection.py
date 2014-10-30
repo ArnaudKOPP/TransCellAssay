@@ -5,7 +5,7 @@ Then, a kriging interpolation can be made but not sur for the moment.
 We substract then the calculated background to value from plate or replicat.
 """
 
-import ScreenPlateReplicatPS
+import SOM
 import numpy as np
 
 __author__ = "Arnaud KOPP"
@@ -20,7 +20,7 @@ __status__ = "Production"
 
 class BackgroundCorrection():
     def __init__(self, Screen):
-        if isinstance(Screen, ScreenPlateReplicatPS.Screen):
+        if isinstance(Screen, SOM.Screen):
             self.screen = Screen
             self.BackgroundModelMean = None
             self.BackgroundModelMedian = None
@@ -41,7 +41,7 @@ class BackgroundCorrection():
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, ScreenPlateReplicatPS.Plate):
+                    if not isinstance(value, SOM.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         if self.BackgroundModelMean is None:
@@ -57,12 +57,12 @@ class BackgroundCorrection():
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, ScreenPlateReplicatPS.Plate):
+                    if not isinstance(value, SOM.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in value.replicat.items():
-                            if not isinstance(repValue, ScreenPlateReplicatPS.Replicat):
+                            if not isinstance(repValue, SOM.Replicat):
                                 raise TypeError
                             else:
                                 if self.BackgroundModelMean is None:
@@ -97,7 +97,7 @@ class BackgroundCorrection():
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, ScreenPlateReplicatPS.Plate):
+                    if not isinstance(value, SOM.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         value.SECData -= self.BackgroundModelMean
@@ -107,12 +107,12 @@ class BackgroundCorrection():
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, ScreenPlateReplicatPS.Plate):
+                    if not isinstance(value, SOM.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in value.replicat.items():
-                            if not isinstance(repValue, ScreenPlateReplicatPS.Replicat):
+                            if not isinstance(repValue, SOM.Replicat):
                                 raise TypeError
                             else:
                                 value.SECData -= self.BackgroundModelMean

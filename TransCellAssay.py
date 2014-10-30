@@ -9,7 +9,7 @@ import sys
 import time
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
-import ScreenPlateReplicatPS
+import SOM
 import Statistic
 import numpy as np
 import Statistic.Normalization
@@ -80,19 +80,19 @@ USAGE
         # # reading TEST
         time_norm_start = time.time()
 
-        screen_test = ScreenPlateReplicatPS.Screen()
-        plaque1 = ScreenPlateReplicatPS.Plate()
+        screen_test = SOM.Screen()
+        plaque1 = SOM.Plate()
         plaque1.setName('Plate 1')
-        platesetup = ScreenPlateReplicatPS.PlateSetup()
+        platesetup = SOM.PlateSetup()
         platesetup.setPlateSetup("/home/akopp/Bureau/test/Pl1PP.csv")
         plaque1.addPlateSetup(platesetup)
-        rep1 = ScreenPlateReplicatPS.Replicat()
+        rep1 = SOM.Replicat()
         rep1.setName("rep1")
         rep1.setData("/home/akopp/Bureau/test/Pl1rep_1.csv")
-        rep2 = ScreenPlateReplicatPS.Replicat()
+        rep2 = SOM.Replicat()
         rep2.setName("rep2")
         rep2.setData("/home/akopp/Bureau/test/Pl1rep_2.csv")
-        rep3 = ScreenPlateReplicatPS.Replicat()
+        rep3 = SOM.Replicat()
         rep3.setName("rep3")
         rep3.setData("/home/akopp/Bureau/test/Pl1rep_3.csv")
         plaque1.addReplicat(rep1)
@@ -117,17 +117,19 @@ USAGE
         print("\033[0;32mNormalization Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         time_norm_start = time.time()
-        plaque1.computeDataFromReplicat('Nuc Intensity')
-        plaque1.SystematicErrorCorrection(method='average', apply_down=True, save=True, verbose=False)
-        plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # # apply only when replicat are not SE norm
+        # plaque1.computeDataFromReplicat('Nuc Intensity')
+        # plaque1.SystematicErrorCorrection(method='average', apply_down=True, save=True, verbose=False)
+        # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # # apply only when replicat are not SE norm
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
-        subplate1 = ScreenPlateReplicatPS.SubPlate(plaque1, 1, 5, 3, 6)
+        # Graphics.plotDistribution('C5', plaque1, 'Nuc Intensity')
+
+        subplate1 = SOM.SubPlate(plaque1, 1, 5, 3, 6)
         subplate1.setName("subplate1")
-        print(subplate1['rep1'])
-        print(subplate1.Name)
         print(subplate1)
+        print(subplate1['rep1'].Data)
+        subplate1['rep1'].computeDataForFeature('Nuc Intensity')
         print(subplate1['rep1'].Data)
 
         # Statistic.QC.PlateQualityControl(plaque1, features="Nuc Intensity", cneg="NT", cpos="SINV C", SEDT=False,
@@ -163,7 +165,7 @@ USAGE
 
 
 
-        # Graphics.boxplotByWell(rep1.Data, "Nuc Intensity")
+        Graphics.boxplotByWell(rep1.Dataframe, "Nuc Intensity")
         # Graphics.PlateHeatmap(rep1.DataMean)
         # Graphics.SystematicError(rep1.DataMean)
         # Graphics.plotSurf3D_Plate(rep1.DataMean)

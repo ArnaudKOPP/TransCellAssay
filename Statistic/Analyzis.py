@@ -4,7 +4,7 @@ Score defined method for compute some score on data
 
 import Statistic.ResultArray
 import Statistic.Score as score
-import ScreenPlateReplicatPS
+import SOM
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -27,7 +27,7 @@ def computePlateAnalyzis(Plate, feature, neg, threshold=50, direction='Up'):
     :return: return a result object
     """
     try:
-        if isinstance(Plate, ScreenPlateReplicatPS.Plate):
+        if isinstance(Plate, SOM.Plate):
             platesetup = Plate.getPlateSetup()
             size = platesetup.getSize()
             result = Statistic.Result(size=(size[0] * size[1]))

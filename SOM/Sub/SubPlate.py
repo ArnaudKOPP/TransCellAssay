@@ -3,7 +3,7 @@ Class for manipulating sub Plate object, sub Plate can serve in case that plate 
 of Plate
 """
 
-import ScreenPlateReplicatPS
+import SOM
 import numpy as np
 import pandas as pd
 
@@ -17,7 +17,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class SubPlate(ScreenPlateReplicatPS.Plate):
+class SubPlate(SOM.Plate):
     def __init__(self, parent_plate, RB, RE, CB, CE):
         """
         Constructor
@@ -28,8 +28,8 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
         :param CE: Col End
         """
         try:
-            if isinstance(parent_plate, ScreenPlateReplicatPS.Plate):
-                ScreenPlateReplicatPS.Plate.__init__(self)
+            if isinstance(parent_plate, SOM.Plate):
+                SOM.Plate.__init__(self)
                 self.ParentPlate = parent_plate
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Plate for creating SubPlate")
@@ -51,8 +51,20 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
             self.isSpatialNormalized = parent_plate.isSpatialNormalized
 
             self.DataType = parent_plate.DataType
-            self.Data = parent_plate.Data[RB - 1: RE - 1, CB - 1: CE - 1]
-            self.SECData = parent_plate.SECData[RB - 1: RE - 1, CB - 1: CE - 1]
+            if parent_plate.Data is None:
+                self.Data = None
+            else:
+                self.Data = parent_plate.Data[RB - 1: RE - 1, CB - 1: CE - 1]
+            if parent_plate.SECData is None:
+                self.SECData = None
+            else:
+                self.SECData = parent_plate.SECData[RB - 1: RE - 1, CB - 1: CE - 1]
+
+            self.RB = RB
+            self.RE = RE
+            self.CB = CB
+            self.CE = CE
+
         except Exception as e:
             print(e)
 
@@ -67,7 +79,7 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
         """
         try:
             for key, value in plate.replicat.items():
-                self.replicat[value.name] = ScreenPlateReplicatPS.SubReplicat(value, RB, RE, CB, CE)
+                self.replicat[value.name] = SOM.SubReplicat(value, RB, RE, CB, CE)
         except Exception as e:
             print(e)
 
@@ -77,7 +89,7 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
         :param replicat:
         """
         try:
-            assert isinstance(replicat, ScreenPlateReplicatPS.SubReplicat)
+            assert isinstance(replicat, SOM.SubReplicat)
             name = replicat.name
             self.replicat[name] = replicat
         except Exception as e:
@@ -89,12 +101,12 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
         """
         try:
             return (
-                "\n SubPlate : \n" + repr(self.Name) +
+                "\n SubPlate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateSetup : \n" + repr(self.PlateSetup) +
                 "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
-                "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
+                "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat) + "\n")
         except Exception as e:
             print(e)
@@ -105,12 +117,12 @@ class SubPlate(ScreenPlateReplicatPS.Plate):
         """
         try:
             return (
-                "\n SubPlate : \n" + repr(self.Name) +
+                "\n SubPlate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateSetup : \n" + repr(self.PlateSetup) +
                 "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
-                "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
+                "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat) + "\n")
         except Exception as e:
             print(e)

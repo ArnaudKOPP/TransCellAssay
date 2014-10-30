@@ -1,7 +1,7 @@
 """
 Cell count method
 """
-import ScreenPlateReplicatPS
+import SOM
 import numpy as np
 
 __author__ = "Arnaud KOPP"
@@ -20,7 +20,7 @@ def getMeanSDCellCount(plate):
     :param plate : Give a TCA.Plate object
     :return: return a dict that contain mean value for well, with well position id ofr key in dict
     """
-    if not isinstance(plate, ScreenPlateReplicatPS.Plate):
+    if not isinstance(plate, SOM.Plate):
         raise TypeError
     else:
         dataDict = plate.getAllData()

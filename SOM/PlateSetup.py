@@ -157,7 +157,7 @@ class PlateSetup():
                     return self.platesetup.iloc[position[0] - 1, position[1] - 1]
                 else:
                     return self.platesetup.iloc[position[0], position[1]]
-            ## for 'A1' format
+            # # for 'A1' format
             elif isinstance(position, str):
                 return self.platesetup.loc[[position[0]], [position[1]]]
         except Exception as e:

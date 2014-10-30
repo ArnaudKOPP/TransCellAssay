@@ -12,7 +12,7 @@ We expect good separation between positive and negative control in a plate with 
 SSMD,CVD and Z-factor are in robust version
 """
 
-import ScreenPlateReplicatPS
+import SOM
 import numpy as np
 import pandas as pd
 import Statistic.Test.SystematicErrorDetectionTest
@@ -29,7 +29,7 @@ __status__ = "Production"
 
 def PlateQualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, verbose=False):
     try:
-        if not isinstance(plate, ScreenPlateReplicatPS.Plate):
+        if not isinstance(plate, SOM.Plate):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
         else:
             neg_well = plate.PlateSetup.getGeneWell(cneg)
@@ -51,7 +51,7 @@ def PlateQualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, 
 
 def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=False, verbose=False):
     try:
-        if not isinstance(replicat, ScreenPlateReplicatPS.Replicat):
+        if not isinstance(replicat, SOM.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
         else:
             negdata = _get_data_control(replicat.Dataframe, feature=feature, c_ref=cneg)
@@ -66,7 +66,6 @@ def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=Fa
                     if replicat.SECData is None:
                         raise ValueError("\033[0;31m[ERROR]\033[0m SEC Before")
                     Statistic.Test.SystematicErrorDetectionTest(replicat.SECData, verbose=True)
-
 
             print("Replicat : ", replicat.name)
             print("mean neg :", np.mean(negdata), " Standard dev : ", np.std(negdata))

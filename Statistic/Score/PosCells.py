@@ -3,7 +3,7 @@ Positive cell count method
 """
 
 import numpy as np
-import ScreenPlateReplicatPS
+import SOM
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -30,7 +30,7 @@ def getPercentPosCell(plate, feature, control, threshold, direction):
     dict_percent_sd_cell = {}
 
     try:
-        if isinstance(plate, ScreenPlateReplicatPS.Plate):
+        if isinstance(plate, SOM.Plate):
             replicat_Dict = plate.getAllReplicat()
             ps = plate.PlateSetup
             control_well = ps.getGeneWell(control)

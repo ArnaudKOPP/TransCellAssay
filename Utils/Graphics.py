@@ -145,9 +145,10 @@ def boxplotByWell(dataframe, feature):
         import pandas as pd
         import matplotlib.pyplot as plt
 
+        pd.options.display.mpl_style = 'default'
         if isinstance(dataframe, pd.DataFrame):
             bp = dataframe.boxplot(column=feature, by='Well')
-            plt.show()
+            plt.show(block=True)
         else:
             raise TypeError
     except Exception as e:
@@ -156,11 +157,11 @@ def boxplotByWell(dataframe, feature):
 
 def plotScreen(Screen):
     try:
-        import ScreenPlateReplicatPS
+        import SOM
         import matplotlib.pyplot as plt
         import numpy as np
 
-        if isinstance(Screen, ScreenPlateReplicatPS.Screen):
+        if isinstance(Screen, SOM.Screen):
             fig = plt.figure()
             ax = fig.add_subplot(111)
             max = 0
@@ -182,5 +183,25 @@ def plotScreen(Screen):
             plt.show()
         else:
             raise TypeError("\033[0;31m[ERROR]\033[0m Must Provided a Screen")
+    except Exception as e:
+        print(e)
+
+
+def plotDistribution(Well, Plate, feature):
+    try:
+        import matplotlib.pyplot as plt
+        import pandas as pd
+        import SOM
+
+        pd.options.display.mpl_style = 'default'
+        if isinstance(Plate, SOM.Plate):
+            rep_series = dict()
+            for key, value in Plate.replicat.items():
+                rep_series[key] = pd.Series(value.Dataframe[feature][value.Dataframe['Well'] == Well])
+                rep_series[key].name = key
+            # # Plotting with pandas
+            for key, value in rep_series.items():
+                value.plot(kind="kde", legend=True)
+            plt.show(block=True)
     except Exception as e:
         print(e)

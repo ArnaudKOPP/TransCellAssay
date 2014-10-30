@@ -3,8 +3,8 @@ Plate is designed for manipulating one or more replicat
 """
 
 import numpy as np
-import ScreenPlateReplicatPS.PlateSetup
-import ScreenPlateReplicatPS.Replicat
+import SOM.PlateSetup
+import SOM.Replicat
 import Statistic.ResultArray
 import Statistic.Normalization.SystematicError
 
@@ -48,7 +48,7 @@ class Plate():
         self.MetaInfo = {}
         self.Name = None
 
-        self.PlateSetup = ScreenPlateReplicatPS.PlateSetup()
+        self.PlateSetup = SOM.PlateSetup()
         self.Threshold = None
         self.ControlPos = ((0, 11), (0, 23))
 
@@ -123,7 +123,7 @@ class Plate():
         :param replicat: Give a replicat object
         """
         try:
-            assert isinstance(replicat, ScreenPlateReplicatPS.Replicat)
+            assert isinstance(replicat, SOM.Replicat)
             name = replicat.name
             self.replicat[name] = replicat
         except Exception as e:
@@ -212,7 +212,7 @@ class Plate():
         :param platesetup:
         """
         try:
-            assert isinstance(platesetup, ScreenPlateReplicatPS.PlateSetup)
+            assert isinstance(platesetup, SOM.PlateSetup)
             self.PlateSetup = platesetup
         except Exception as e:
             print(e)
@@ -376,10 +376,10 @@ class Plate():
         :param object:
         """
         try:
-            if isinstance(object, ScreenPlateReplicatPS.Replicat):
+            if isinstance(object, SOM.Replicat):
                 name = object.name
                 self.replicat[name] = object
-            elif isinstance(object, ScreenPlateReplicatPS.PlateSetup):
+            elif isinstance(object, SOM.PlateSetup):
                 self.PlateSetup = object
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
@@ -413,12 +413,12 @@ class Plate():
         """
         try:
             return (
-                "\n Plate : \n" + repr(self.Name) +
+                "\n Plate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateSetup : \n" + repr(self.PlateSetup) +
                 "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
-                "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
+                "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:
             print(e)
@@ -429,12 +429,12 @@ class Plate():
         """
         try:
             return (
-                "\n Plate : \n" + repr(self.Name) +
+                "\n Plate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateSetup : \n" + repr(self.PlateSetup) +
                 "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
-                "\n Data systematic error removed ? : \n" + repr(self.isSpatialNormalized) +
+                "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:
             print(e)

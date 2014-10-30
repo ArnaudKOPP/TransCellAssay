@@ -314,9 +314,9 @@ class Replicat():
         Definition for the representation
         """
         try:
-            return ("\n Replicat : \n " + repr(self.name) +
-                    "\n Normalized Data : \n" + repr(self.isNormalized) +
-                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n")
+            return ("\n Replicat : " + repr(self.name) +
+                    "\n Normalized Data : " + repr(self.isNormalized) +
+                    "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
             print(e)
 
@@ -325,8 +325,8 @@ class Replicat():
         Definition for the print
         """
         try:
-            return ("\n Replicat : \n " + repr(self.name) +
-                    "\n Normalized Data : \n" + repr(self.isNormalized) +
-                    "\n Spatial Normalized : \n" + repr(self.isSpatialNormalized) + "\n")
+            return ("\n Replicat : " + repr(self.name) +
+                    "\n Normalized Data : " + repr(self.isNormalized) +
+                    "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
             print(e)

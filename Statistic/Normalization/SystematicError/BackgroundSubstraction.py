@@ -3,7 +3,7 @@ Substract a determined background of the screen/plate/replicat
 Analogous to BackgroundCorrection but here it's a determined background that we provided
 """
 
-import ScreenPlateReplicatPS
+import SOM
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -24,7 +24,7 @@ class BackgroundSubstraction():
 
     def BackgroundSubstraction(self, Screen):
         try:
-            if isinstance(Screen, ScreenPlateReplicatPS.Screen):
+            if isinstance(Screen, SOM.Screen):
                 self._process(Screen)
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m  Must provied Screen Object")
