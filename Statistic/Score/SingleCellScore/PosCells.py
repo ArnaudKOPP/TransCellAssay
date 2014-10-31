@@ -4,6 +4,7 @@ Positive cell count method
 
 import numpy as np
 import SOM
+import Utils.WellFormat
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -15,7 +16,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def getPercentPosCell(plate, feature, control, threshold, direction):
+def getPercentPosCell(plate, feature, control, threshold, direction, verbose=False):
     """
     get % of Cell over threshold, default threshold is 50%
     This function take some time and need to be very improve
@@ -40,11 +41,12 @@ def getPercentPosCell(plate, feature, control, threshold, direction):
                 data_control = replicat.getDataByWells(control_well, feature=feature)
                 threshold_value = np.percentile(data_control, threshold)
                 # data from replicat
-                data = replicat.Data
+                data = replicat.Dataframe
                 # get all well from data
                 well_list = data.Well.unique()
                 # iterate on well
                 for well in well_list:
+                    # # Take long time here ~ 130 ms
                     xdata = data[feature][data['Well'] == well]
                     len_total = len(xdata)
                     if direction == 'Up':
@@ -62,6 +64,24 @@ def getPercentPosCell(plate, feature, control, threshold, direction):
                     dict_percent_sd_cell[key] = np.std(value)
             except Exception as e:
                 print(e)
+
+            if verbose:
+                mean = np.zeros(plate.PlateSetup.platesetup.shape)
+                sd = np.zeros(plate.PlateSetup.platesetup.shape)
+
+                for k, v in dict_percent_cell.items():
+                    well = Utils.WellFormat.getOppositeWellFormat(k)
+                    mean[well[0]][well[1]] = v
+
+                for k, v in dict_percent_sd_cell.items():
+                    well = Utils.WellFormat.getOppositeWellFormat(k)
+                    sd[well[0]][well[1]] = v
+
+                print("Mean of number of Cells for given Threshold by well : ")
+                print(mean)
+                print("Standart deviation of number of Cells for given Threshold by Well : ")
+                print(sd)
+
             return dict_percent_cell, dict_percent_sd_cell
         else:
             raise TypeError

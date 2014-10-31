@@ -1,0 +1,46 @@
+The structure of TransCellAssay package :
+
+
+
+Screen Object Model
+-SOM
+    Screen, Plate, Replicat, PlateSetup object
+    --Sub : Manipulating Sub Plate/Replicat
+    --Gene : For manipulating Gene (for further development)
+
+
+Statistics part
+-Statistics
+    --Normalization
+        ---SystematicError
+        ---VariabilityNormalization
+    --QC
+    --Score
+        ---SingleCellScore
+    --Test
+
+Input Output part like formating and database crap
+-IO
+    --DataBase
+    --FileFormat
+
+
+Graphics, WellFormat, ...
+-Utils
+
+
+Machine Learning part
+-Machine Learning
+    --Classification
+    --Clustering
+    --DimensionalityReduction
+        ---supervised
+        ---unsupervised
+
+
+Bayesian stats part
+-Bayesian
+
+
+Dose Response Analysis part like IC50
+-DoseResponseAnalysis

@@ -14,12 +14,6 @@ It will certainly be like a toolbox for the moment, so programming skill is need
 4. Quality Control 
 5. Scoring (SSMD, T-Statistics,...)
 
-### TODO
-1. Machine Learning ( classification, clustering, Dimensionality Reduction, ...)
-2. Bayesian Inference (FDR...)
-3. GSEA, PP-interaction, -Omics data interaction
-4. Web interface
-
 ##DEPENDENCIES
 1. Python > 3.3
 2. Pandas > 0.14
@@ -27,6 +21,12 @@ It will certainly be like a toolbox for the moment, so programming skill is need
 4. Scipy > 0.12
 5. Matplotlib > 1.3.1
 6. Scikit-learn 
+
+##TODO
+[TODO](TODO.md)
+
+##Organisation of package
+[Organisation](Organisation.txt)
 
 ##CONTACT  
 kopp@igbmc.fr  

@@ -16,6 +16,7 @@ import Statistic.Normalization
 import Statistic.Score
 import Statistic.Test
 import Statistic.QC
+import cProfile
 from Utils import Graphics
 
 __author__ = "Arnaud KOPP"
@@ -117,13 +118,20 @@ USAGE
         print("\033[0;32mNormalization Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         time_norm_start = time.time()
-        # plaque1.computeDataFromReplicat('Nuc Intensity')
+        plaque1.computeDataFromReplicat('Nuc Intensity')
+        print(plaque1.Data)
         # plaque1.SystematicErrorCorrection(method='average', apply_down=True, save=True, verbose=False)
         # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # # apply only when replicat are not SE norm
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         # Graphics.plotDistribution('C5', plaque1, 'Nuc Intensity')
+
+        Statistic.Score.getMeanSDCellCount(plaque1, verbose=True)
+        cProfile.runctx(
+            "Statistic.Score.getPercentPosCell(plaque1, 'Nuc Intensity', 'NT', 50, direction='down', verbose=True)",
+            globals(),
+            locals())
 
         print(platesetup['A10'])
 

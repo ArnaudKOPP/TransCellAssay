@@ -3,6 +3,7 @@ Cell count method
 """
 import SOM
 import numpy as np
+import Utils.WellFormat
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -14,7 +15,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def getMeanSDCellCount(plate):
+def getMeanSDCellCount(plate, verbose=False):
     """
     get mean of number of cell per well accross replicat
     :param plate : Give a TCA.Plate object
@@ -54,6 +55,24 @@ def getMeanSDCellCount(plate):
                 SDValue[key] = np.std(value)
             MeanCountList = [(i, sum(v) / len(v)) for i, v in dictMeanByRep.items()]
             MeanCount = dict(MeanCountList)  # # convert to dict
+
+            if verbose:
+                mean = np.zeros(plate.PlateSetup.platesetup.shape)
+                sd = np.zeros(plate.PlateSetup.platesetup.shape)
+
+                for k, v in MeanCount.items():
+                    well = Utils.WellFormat.getOppositeWellFormat(k)
+                    mean[well[0]][well[1]] = v
+
+                for k, v in SDValue.items():
+                    well = Utils.WellFormat.getOppositeWellFormat(k)
+                    sd[well[0]][well[1]] = v
+
+                print("Mean of number of Cells by well : ")
+                print(mean)
+                print("Standart deviation of number of Cells by Well : ")
+                print(sd)
+
             return MeanCount, SDValue
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

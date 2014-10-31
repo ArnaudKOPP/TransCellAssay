@@ -7,8 +7,4 @@ from SOM.ResultArray import *
 from SOM.Analysis import *
 from SOM.Sub.SubPlate import *
 from SOM.Sub.SubReplicat import *
-from SOM.Product.Product import *
-from SOM.Product.WellData import *
-from SOM.Product.ProductType import *
-from SOM.Product.Compound import *
-from SOM.Product.siRNA import *
+from SOM.Gene.Gene import *
