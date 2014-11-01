@@ -3,7 +3,7 @@ Score defined method for compute some score on data
 """
 
 import Statistic.Score
-import SOM
+import Core
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -26,10 +26,10 @@ def computePlateAnalyzis(Plate, feature, neg, threshold=50, direction='Up'):
     :return: return a result object
     """
     try:
-        if isinstance(Plate, SOM.Plate):
+        if isinstance(Plate, Core.Plate):
             platesetup = Plate.getPlateSetup()
             size = platesetup.getSize()
-            result = SOM.Result(size=(size[0] * size[1]))
+            result = Core.Result(size=(size[0] * size[1]))
             x = platesetup.getPSasDict()
             result.initGeneWell(x)
             try:

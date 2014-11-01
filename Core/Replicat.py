@@ -223,7 +223,7 @@ class Replicat():
         except Exception as e:
             print(e)
 
-    def Normalization(self, feature, method='Zscore', log=True):
+    def Normalization(self, feature, method='Zscore', log=True, neg=None, pos=None):
         """
         Performed normalization on data
         :param: feature; which feature to normalize
@@ -232,10 +232,11 @@ class Replicat():
         """
         try:
             if not self.isNormalized:
-                self.Dataframe = Statistic.Normalization.VariabilityNormalization(self.Dataframe.copy(),
+                self.Dataframe = Statistic.Normalization.VariabilityNormalization(self.Dataframe,
                                                                                   feature=feature,
                                                                                   method=method,
-                                                                                  log2_transformation=log)
+                                                                                  log2_transformation=log,
+                                                                                  Cneg=neg, Cpos=pos)
                 self.isNormalized = True
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
@@ -267,7 +268,7 @@ class Replicat():
                     "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
             else:
                 if Algorithm == 'Bscore':
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.Data.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.Data,
                                                                                       method=method,
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
@@ -276,7 +277,7 @@ class Replicat():
                         self.isSpatialNormalized = True
 
                 if Algorithm == 'BZscore':
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.Data.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.Data,
                                                                                         method=method,
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
@@ -285,7 +286,7 @@ class Replicat():
                         self.isSpatialNormalized = True
 
                 if Algorithm == 'PMP':
-                    CorrectedTable = Statistic.Normalization.PartialMeanPolish(self.Data.copy(),
+                    CorrectedTable = Statistic.Normalization.PartialMeanPolish(self.Data,
                                                                                max_iteration=max_iterations,
                                                                                verbose=verbose)
                     if save:
@@ -293,13 +294,13 @@ class Replicat():
                         self.isSpatialNormalized = True
 
                 if Algorithm == 'MEA':
-                    CorrectedTable = Statistic.Normalization.MatrixErrorAmendment(self.Data.copy(), verbose=verbose)
+                    CorrectedTable = Statistic.Normalization.MatrixErrorAmendment(self.Data, verbose=verbose)
                     if save:
                         self.SECData = CorrectedTable
                         self.isSpatialNormalized = True
 
                 if Algorithm == 'DiffusionModel':
-                    CorrectedTable = Statistic.Normalization.diffusionModel(self.Data.copy(),
+                    CorrectedTable = Statistic.Normalization.diffusionModel(self.Data,
                                                                             max_iterations=max_iterations,
                                                                             verbose=verbose)
                     if save:

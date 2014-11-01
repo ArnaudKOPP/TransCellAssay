@@ -31,6 +31,7 @@ def VariabilityNormalization(data, feature, method=False, log2_transformation=Tr
         if isinstance(data, pd.DataFrame):
             # apply log2 transformation on data
             if log2_transformation:
+                data = data[data[feature] > 0]
                 data[feature] = np.log2(data[feature])
 
             if not method:
@@ -39,11 +40,11 @@ def VariabilityNormalization(data, feature, method=False, log2_transformation=Tr
 
             # apply a z-score transformation on data
             if method == 'Zscore':
-                data[feature] = (data[feature] - np.mean(data[feature])) / np.std(data[feature])
+                data[feature] = (data[feature] - np.nanmean(data[feature])) / np.nanstd(data[feature])
 
             # apply a Robust z-score transformation on data
             if method == 'RobustZscore':
-                data[feature] = (data[feature] - np.median(data[feature])) / mad(data[feature])
+                data[feature] = (data[feature] - np.nanmedian(data[feature])) / mad(data[feature])
 
             # apply a percent of control transformation on data
             if method == 'PercentOfControl':
@@ -53,11 +54,11 @@ def VariabilityNormalization(data, feature, method=False, log2_transformation=Tr
                     else:
                         # Using positive control
                         CposData = getDataByWells(data, feature=feature, wells=Cneg)
-                        data = ((data[feature]) / (np.mean(CposData))) * 100
+                        data[feature] = ((data[feature]) / (np.mean(CposData))) * 100
                 else:
                     # Using negative control
                     CnegData = getDataByWells(data, feature=feature, wells=Cneg)
-                    data = ((data[feature]) / (np.mean(CnegData))) * 100
+                    data[feature] = ((data[feature]) / (np.mean(CnegData))) * 100
 
             # apply a normalized percent inhibition transformation on data
             if method == 'NormalizedPercentInhibition':
@@ -67,7 +68,7 @@ def VariabilityNormalization(data, feature, method=False, log2_transformation=Tr
                     raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative Control")
                 CnegData = getDataByWells(data, feature=feature, wells=Cneg)
                 CposData = getDataByWells(data, feature=feature, wells=Cpos)
-                data = ((np.mean(CposData) - data[feature]) / (np.mean(CposData) - np.mean(CnegData))) * 100
+                data[feature] = ((np.mean(CposData) - data[feature]) / (np.mean(CposData) - np.mean(CnegData))) * 100
 
             # return transformed data
             return data

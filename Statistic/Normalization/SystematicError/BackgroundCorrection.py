@@ -5,7 +5,7 @@ Then, a kriging interpolation can be made but not sur for the moment.
 We substract then the calculated background to value from plate or replicat.
 """
 
-import SOM
+import Core
 import numpy as np
 
 __author__ = "Arnaud KOPP"
@@ -20,10 +20,9 @@ __status__ = "Production"
 
 class BackgroundCorrection():
     def __init__(self, Screen):
-        if isinstance(Screen, SOM.Screen):
+        if isinstance(Screen, Core.Screen):
             self.screen = Screen
-            self.BackgroundModelMean = None
-            self.BackgroundModelMedian = None
+            self.BackgroundModel = None
         else:
             raise TypeError
 
@@ -41,46 +40,38 @@ class BackgroundCorrection():
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, SOM.Plate):
+                    if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
-                        if self.BackgroundModelMean is None:
-                            self.BackgroundModelMean = np.zeros(value.Data.shape)
-                        if self.BackgroundModelMedian is None:
-                            self.BackgroundModelMedian = np.zeros(value.DataMedian.shape)
-                        self.BackgroundModelMean += value.Data
-                        self.BackgroundModelMedian += value.DataMedian
-                self.BackgroundModelMedian *= 1 / len(self.screen)
-                self.BackgroundModelMean *= 1 / len(self.screen)
+                        if self.BackgroundModel is None:
+                            self.BackgroundModel = np.zeros(value.Data.shape)
+                        self.BackgroundModel += value.Data
+                self.BackgroundModel *= 1 / len(self.screen)
             elif apply_on == "Replicat":
                 objectCnt = 0
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, SOM.Plate):
+                    if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in value.replicat.items():
-                            if not isinstance(repValue, SOM.Replicat):
+                            if not isinstance(repValue, Core.Replicat):
                                 raise TypeError
                             else:
                                 if self.BackgroundModelMean is None:
-                                    self.BackgroundModelMean = np.zeros(repValue.DataMean.shape)
-                                if self.BackgroundModelMedian is None:
-                                    self.BackgroundModelMedian = np.zeros(repValue.DataMedian.shape)
-                                self.BackgroundModelMean += repValue.DataMean
-                                self.BackgroundModelMedian += repValue.DataMedian
+                                    self.BackgroundModelMean = np.zeros(repValue.Data.shape)
+                                self.BackgroundModel += repValue.Data
                                 objectCnt += 1
-                self.BackgroundModelMedian *= 1 / objectCnt
-                self.BackgroundModelMean *= 1 / objectCnt
+                self.BackgroundModel *= 1 / objectCnt
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
             if verbose:
                 np.set_printoptions(suppress=True)
                 print("Background Evaluation table (Median) :")
                 print("Apply strategy was : ", apply_on)
-                print(self.BackgroundModelMedian)
+                print(self.BackgroundModel)
                 print("")
         except Exception as e:
             print(e)
@@ -97,26 +88,24 @@ class BackgroundCorrection():
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, SOM.Plate):
+                    if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
-                        value.SECData -= self.BackgroundModelMean
-                        value.SECDataMedian -= self.BackgroundModelMedian
+                        value.SECData -= self.BackgroundModel
                         value.isSpatialNormalized = True
             elif apply_on == "Replicat":
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, SOM.Plate):
+                    if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in value.replicat.items():
-                            if not isinstance(repValue, SOM.Replicat):
+                            if not isinstance(repValue, Core.Replicat):
                                 raise TypeError
                             else:
-                                value.SECData -= self.BackgroundModelMean
-                                value.SECDataMedian -= self.BackgroundModelMedian
+                                value.SECData -= self.BackgroundModel
                                 value.isSpatialNormalized = True
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")

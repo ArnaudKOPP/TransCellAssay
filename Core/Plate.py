@@ -3,10 +3,9 @@ Plate is designed for manipulating one or more replicat
 """
 
 import numpy as np
-
-import SOM.PlateSetup
-import SOM.Replicat
-import SOM.ResultArray
+import Core.PlateSetup
+import Core.Replicat
+import Core.ResultArray
 import Statistic.Normalization.SystematicError
 
 
@@ -50,7 +49,7 @@ class Plate():
         self.MetaInfo = {}
         self.Name = None
 
-        self.PlateSetup = SOM.PlateSetup()
+        self.PlateSetup = Core.PlateSetup()
         self.Threshold = None
         self.ControlPos = ((0, 11), (0, 23))
 
@@ -125,7 +124,7 @@ class Plate():
         :param replicat: Give a replicat object
         """
         try:
-            assert isinstance(replicat, SOM.Replicat)
+            assert isinstance(replicat, Core.Replicat)
             name = replicat.name
             self.replicat[name] = replicat
         except Exception as e:
@@ -214,7 +213,7 @@ class Plate():
         :param platesetup:
         """
         try:
-            assert isinstance(platesetup, SOM.PlateSetup)
+            assert isinstance(platesetup, Core.PlateSetup)
             self.PlateSetup = platesetup
         except Exception as e:
             print(e)
@@ -235,7 +234,7 @@ class Plate():
         :param result: result object
         """
         try:
-            assert isinstance(result, Statistic.Result)
+            assert isinstance(result, Core.Result)
             self.Result = result
         except Exception as e:
             print(e)
@@ -287,7 +286,7 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def Normalization(self, feature, technics='Zscore', log=True):
+    def Normalization(self, feature, technics='Zscore', log=True, neg=None, pos=None):
         """
         Apply Well correction on all replicat data
         call function like from replicat object
@@ -297,7 +296,7 @@ class Plate():
         """
         try:
             for key, value in self.replicat.items():
-                value.Normalization(feature=feature, method=technics, log=log)
+                value.Normalization(feature=feature, method=technics, log=log, neg=neg, pos=pos)
             self.isNormalized = True
         except Exception as e:
             print(e)
@@ -331,7 +330,7 @@ class Plate():
                     "\033[0;31m[ERROR]\033[0m  SystematicErrorCorrection -> Systematics error have already been removed")
             else:
                 if Algorithm == 'Bscore':
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.Data.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.MedianPolish(self.Data,
                                                                                       method=method,
                                                                                       max_iterations=max_iterations,
                                                                                       verbose=verbose)
@@ -339,7 +338,7 @@ class Plate():
                         self.SECData = resid
                         self.isSpatialNormalized = True
                 if Algorithm == 'BZscore':
-                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.Data.copy(),
+                    ge, ce, re, resid, tbl_org = Statistic.Normalization.BZMedianPolish(self.Data,
                                                                                         method=method,
                                                                                         max_iterations=max_iterations,
                                                                                         verbose=verbose)
@@ -348,7 +347,7 @@ class Plate():
                         self.isSpatialNormalized = True
 
                 if Algorithm == 'PMP':
-                    CorrectedTable = Statistic.Normalization.PartialMeanPolish(self.Data.copy(),
+                    CorrectedTable = Statistic.Normalization.PartialMeanPolish(self.Data,
                                                                                max_iteration=max_iterations,
                                                                                verbose=verbose)
                     if save:
@@ -356,13 +355,13 @@ class Plate():
                         self.isSpatialNormalized = True
 
                 if Algorithm == 'MEA':
-                    CorrectedTable = Statistic.Normalization.MatrixErrorAmendment(self.Data.copy(), verbose=verbose)
+                    CorrectedTable = Statistic.Normalization.MatrixErrorAmendment(self.Data, verbose=verbose)
                     if save:
                         self.SECData = CorrectedTable
                         self.isSpatialNormalized = True
 
                 if Algorithm == 'DiffusionModel':
-                    CorrectedTable = Statistic.Normalization.diffusionModel(self.Data.copy(),
+                    CorrectedTable = Statistic.Normalization.diffusionModel(self.Data,
                                                                             max_iterations=max_iterations,
                                                                             verbose=verbose)
                     if save:
@@ -378,10 +377,10 @@ class Plate():
         :param object:
         """
         try:
-            if isinstance(object, SOM.Replicat):
+            if isinstance(object, Core.Replicat):
                 name = object.name
                 self.replicat[name] = object
-            elif isinstance(object, SOM.PlateSetup):
+            elif isinstance(object, Core.PlateSetup):
                 self.PlateSetup = object
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")

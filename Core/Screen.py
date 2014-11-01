@@ -2,7 +2,7 @@
 Screen is designed for manipulating screen that contain multiple different plate
 """
 
-import SOM.Plate
+import Core.Plate
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -46,7 +46,7 @@ class Screen():
         :param plate: input plate
         """
         try:
-            assert isinstance(plate, SOM.Plate)
+            assert isinstance(plate, Core.Plate)
             self.PlateList[plate.Name] = plate
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -98,7 +98,7 @@ class Screen():
         :param plate: input plate
         """
         try:
-            assert isinstance(plate, SOM.Plate)
+            assert isinstance(plate, Core.Plate)
             self.PlateList[plate.Name] = plate
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

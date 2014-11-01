@@ -14,7 +14,7 @@ large standart deviation, weakens one's belief that the compound i is truly acti
 may be greater than the cutoff value.
 """
 
-import SOM
+import Core
 import numpy as np
 
 __author__ = "Arnaud KOPP"
@@ -41,7 +41,7 @@ def t_stat_score(plate, cNeg, variance='unequal', paired=False, SECData=True, ve
     :return: score data
     """
     try:
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             # if no neg was provided raise AttributeError
             if cNeg is None:
                 raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
@@ -77,7 +77,7 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
     try:
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             ttest_score = np.zeros(plate.PlateSetup.platesetup.shape)
 
             # # replace 0 with NaN
@@ -166,7 +166,7 @@ def _PairedTStatScore(plate, cNeg, SECData=True, verbose=False):
     try:
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             ttest_score = np.zeros(plate.PlateSetup.platesetup.shape)
 
             # # replace 0 with NaN

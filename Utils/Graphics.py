@@ -157,11 +157,11 @@ def boxplotByWell(dataframe, feature):
 
 def plotScreen(Screen):
     try:
-        import SOM
+        import Core
         import matplotlib.pyplot as plt
         import numpy as np
 
-        if isinstance(Screen, SOM.Screen):
+        if isinstance(Screen, Core.Screen):
             fig = plt.figure()
             ax = fig.add_subplot(111)
             max = 0
@@ -191,10 +191,10 @@ def plotDistribution(Well, Plate, feature):
     try:
         import matplotlib.pyplot as plt
         import pandas as pd
-        import SOM
+        import Core
 
         pd.options.display.mpl_style = 'default'
-        if isinstance(Plate, SOM.Plate):
+        if isinstance(Plate, Core.Plate):
             rep_series = dict()
             for key, value in Plate.replicat.items():
                 rep_series[key] = pd.Series(value.Dataframe[feature][value.Dataframe['Well'] == Well])

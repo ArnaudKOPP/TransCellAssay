@@ -3,7 +3,7 @@ Class for manipulating sub Plate object, sub Plate can serve in case that plate 
 of Plate
 """
 
-import SOM
+import Core
 import numpy as np
 import pandas as pd
 
@@ -17,7 +17,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class SubPlate(SOM.Plate):
+class SubPlate(Core.Plate):
     def __init__(self, parent_plate, RB, RE, CB, CE):
         """
         Constructor
@@ -28,8 +28,8 @@ class SubPlate(SOM.Plate):
         :param CE: Col End
         """
         try:
-            if isinstance(parent_plate, SOM.Plate):
-                SOM.Plate.__init__(self)
+            if isinstance(parent_plate, Core.Plate):
+                Core.Plate.__init__(self)
                 self.ParentPlate = parent_plate
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Plate for creating SubPlate")
@@ -79,7 +79,7 @@ class SubPlate(SOM.Plate):
         """
         try:
             for key, value in plate.replicat.items():
-                self.replicat[value.name] = SOM.SubReplicat(value, RB, RE, CB, CE)
+                self.replicat[value.name] = Core.SubReplicat(value, RB, RE, CB, CE)
         except Exception as e:
             print(e)
 
@@ -89,7 +89,7 @@ class SubPlate(SOM.Plate):
         :param replicat:
         """
         try:
-            assert isinstance(replicat, SOM.SubReplicat)
+            assert isinstance(replicat, Core.SubReplicat)
             name = replicat.name
             self.replicat[name] = replicat
         except Exception as e:

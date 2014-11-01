@@ -9,7 +9,7 @@ import sys
 import time
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
-import SOM
+import Core
 import Statistic
 import numpy as np
 import Statistic.Normalization
@@ -81,31 +81,36 @@ USAGE
         # # reading TEST
         time_norm_start = time.time()
 
-        screen_test = SOM.Screen()
-        plaque1 = SOM.Plate()
+        screen_test = Core.Screen()
+        plaque1 = Core.Plate()
         plaque1.setName('Plate 1')
-        platesetup = SOM.PlateSetup()
-        platesetup.setPlateSetup("/home/akopp/Bureau/test/Pl1PP.csv")
+        platesetup = Core.PlateSetup()
+        platesetup.setPlateSetup("/home/arnaud/Documents/FRED/Pl1PP.csv")
         plaque1.addPlateSetup(platesetup)
-        rep1 = SOM.Replicat()
+        rep1 = Core.Replicat()
         rep1.setName("rep1")
-        rep1.setData("/home/akopp/Bureau/test/Pl1rep_1.csv")
-        rep2 = SOM.Replicat()
+        rep1.setData("/home/arnaud/Documents/FRED/Pl1rep_1.csv")
+        rep2 = Core.Replicat()
         rep2.setName("rep2")
-        rep2.setData("/home/akopp/Bureau/test/Pl1rep_2.csv")
-        rep3 = SOM.Replicat()
+        rep2.setData("/home/arnaud/Documents/FRED/Pl1rep_2.csv")
+        rep3 = Core.Replicat()
         rep3.setName("rep3")
-        rep3.setData("/home/akopp/Bureau/test/Pl1rep_3.csv")
+        rep3.setData("/home/arnaud/Documents/FRED/Pl1rep_3.csv")
         plaque1.addReplicat(rep1)
         plaque1.addReplicat(rep2)
         plaque1.addReplicat(rep3)
         screen_test.addPlate(plaque1)
 
+        feature = "TargetActivationV4Cell:AvgIntenCh2"
+        neg = "Neg "
+        pos = "Spironolactone"
+
+
         time_norm_stop = time.time()
         print("\033[0;32mReading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         # # Computation TEST
-        # tmp2 = Statistic.computePlateAnalyzis(plaque1, ['Nuc Intensity'], 'NT')
+        # tmp2 = Statistic.computePlateAnalyzis(plaque1, [feature], neg)
         # print(tmp2)
 
         time_start_comp = time.time()
@@ -113,72 +118,72 @@ USAGE
         np.set_printoptions(suppress=True)
 
         time_norm_start = time.time()
-        # plaque1.Normalization('Nuc Intensity', technics='Zscore', log=True)
+        plaque1.Normalization(feature, technics=False, log=True, neg=neg, pos=pos)
         time_norm_stop = time.time()
         print("\033[0;32mNormalization Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         time_norm_start = time.time()
-        plaque1.computeDataFromReplicat('Nuc Intensity')
+        plaque1.computeDataFromReplicat(feature)
         print(plaque1.Data)
         # plaque1.SystematicErrorCorrection(method='average', apply_down=True, save=True, verbose=False)
         # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # # apply only when replicat are not SE norm
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
-        # Graphics.plotDistribution('C5', plaque1, 'Nuc Intensity')
+        # Graphics.plotDistribution('C5', plaque1, feature)
 
-        Statistic.Score.getMeanSDCellCount(plaque1, verbose=True)
-        cProfile.runctx(
-            "Statistic.Score.getPercentPosCell(plaque1, 'Nuc Intensity', 'NT', 50, direction='down', verbose=True)",
-            globals(),
-            locals())
+        # Statistic.Score.getMeanSDCellCount(plaque1, verbose=True)
+        # cProfile.runctx(
+        # "Statistic.Score.getPercentPosCell(plaque1, feature, neg, 50, direction='down', verbose=True)",
+        #     globals(),
+        #     locals())
 
         print(platesetup['A10'])
 
-        subplate1 = SOM.SubPlate(plaque1, 1, 5, 3, 6)
-        subplate1.setName("subplate1")
-        print(subplate1)
-        print(subplate1['rep1'].Data)
-        subplate1['rep1'].computeDataForFeature('Nuc Intensity')
-        print(subplate1['rep1'].Data)
+        # subplate1 = Core.SubPlate(plaque1, 1, 5, 3, 6)
+        # subplate1.setName("subplate1")
+        # print(subplate1)
+        # print(subplate1['rep1'].Data)
+        # subplate1['rep1'].computeDataForFeature(feature)
+        # print(subplate1['rep1'].Data)
 
-        # Statistic.QC.PlateQualityControl(plaque1, features="Nuc Intensity", cneg="NT", cpos="SINV C", SEDT=False,
+        # Statistic.QC.PlateQualityControl(plaque1, features=feature, cneg=neg, cpos=pos, SEDT=False,
         # SECdata=False, verbose=True)
         #
         # print("\n \033[0;32m     SSMD TESTING \033[0m")
         # time_norm_start = time.time()
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, SECData=True, verbose=True)
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, robust_version=False, SECData=True, verbose=True)
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, variance='equal', SECData=True, verbose=True)
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=False, variance='equal', robust_version=False,
-        #                            SECData=True, verbose=True)
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, SECData=False, verbose=True)
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, robust_version=False, SECData=False, verbose=True)
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='UMVUE', SECData=True, verbose=True)
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='UMVUE', robust_version=False, SECData=True,
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=False, SECData=False, verbose=True)
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=False, robust_version=False, SECData=False, verbose=True)
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=False, verbose=True)
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=False, variance='equal', robust_version=False,
+        # SECData=False, verbose=True)
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, SECData=False, verbose=True)
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, robust_version=False, SECData=False, verbose=True)
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', SECData=False, verbose=True)
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', robust_version=False, SECData=False,
         #                            verbose=True)
         #
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='UMVUE', SECData=True, verbose=True,
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', SECData=False, verbose=True,
         #                            inplate_data=True)
-        # Statistic.score.ssmd_score(plaque1, cNeg='NT', paired=True, method='UMVUE', robust_version=False, SECData=True,
+        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', robust_version=False, SECData=False,
         #                            verbose=True, inplate_data=True)
         #
         # print("\033[0;32m    T-Stat TESTING \033[0m")
-        # Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, variance='equal', SECData=False,
+        # Statistic.Score.t_stat_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=False,
         #                              verbose=True)
-        # Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=False, variance='equal', SECData=False, verbose=True)
-        # Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, SECData=True, verbose=True)
-        # Statistic.score.t_stat_score(plaque1, cNeg='NT', paired=True, SECData=True, verbose=True)
+        # Statistic.Score.t_stat_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=False, verbose=True)
+        # Statistic.Score.t_stat_score(plaque1, cNeg=neg, paired=True, SECData=False, verbose=True)
+        # Statistic.Score.t_stat_score(plaque1, cNeg=neg, paired=True, SECData=False, verbose=True)
         # time_norm_stop = time.time()
         #
         # print("\033[0;32mSSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
 
 
-        # Graphics.boxplotByWell(rep1.Dataframe, "Nuc Intensity")
-        # Graphics.PlateHeatmap(rep1.DataMean)
-        # Graphics.SystematicError(rep1.DataMean)
-        # Graphics.plotSurf3D_Plate(rep1.DataMean)
+        # Graphics.boxplotByWell(rep1.Dataframe, feature)
+        # Graphics.PlateHeatmap(rep1.Data)
+        # Graphics.SystematicError(rep1.Data)
+        # Graphics.plotSurf3D_Plate(rep1.Data)
         # Graphics.plotScreen(screen_test)
         # rep1.SystematicErrorCorrection(Methods='MEA', verbose=True)
         # Statistic.Test.SystematicErrorDetectionTest(rep1.Data, alpha=0.05, verbose=True)

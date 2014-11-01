@@ -2,7 +2,7 @@
 Class for manipulating Subreplicat
 """
 
-import SOM
+import Core
 import numpy as np
 import pandas as pd
 import Utils
@@ -17,7 +17,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class SubReplicat(SOM.Replicat):
+class SubReplicat(Core.Replicat):
     def __init__(self, parent_replicat, RB, RE, CB, CE):
         """
         Constructor
@@ -28,8 +28,8 @@ class SubReplicat(SOM.Replicat):
         :param CE: Col End
         """
         try:
-            if isinstance(parent_replicat, SOM.Replicat):
-                SOM.Replicat.__init__(self)
+            if isinstance(parent_replicat, Core.Replicat):
+                Core.Replicat.__init__(self)
                 self.ParentReplicat = parent_replicat
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Replicat for creating SubReplicat")

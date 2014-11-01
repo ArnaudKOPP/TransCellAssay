@@ -1,7 +1,7 @@
 """
 Cell count method
 """
-import SOM
+import Core
 import numpy as np
 import Utils.WellFormat
 
@@ -21,7 +21,7 @@ def getMeanSDCellCount(plate, verbose=False):
     :param plate : Give a TCA.Plate object
     :return: return a dict that contain mean value for well, with well position id ofr key in dict
     """
-    if not isinstance(plate, SOM.Plate):
+    if not isinstance(plate, Core.Plate):
         raise TypeError
     else:
         dataDict = plate.getAllData()

@@ -3,7 +3,7 @@ Positive cell count method
 """
 
 import numpy as np
-import SOM
+import Core
 import Utils.WellFormat
 
 __author__ = "Arnaud KOPP"
@@ -31,7 +31,7 @@ def getPercentPosCell(plate, feature, control, threshold, direction, verbose=Fal
     dict_percent_sd_cell = {}
 
     try:
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             replicat_Dict = plate.getAllReplicat()
             ps = plate.PlateSetup
             control_well = ps.getGeneWell(control)
@@ -44,10 +44,13 @@ def getPercentPosCell(plate, feature, control, threshold, direction, verbose=Fal
                 data = replicat.Dataframe
                 # get all well from data
                 well_list = data.Well.unique()
+
+                df_groupby = data.groupby("Well")
+
                 # iterate on well
                 for well in well_list:
                     # # Take long time here ~ 130 ms
-                    xdata = data[feature][data['Well'] == well]
+                    xdata = df_groupby.get_group(well)
                     len_total = len(xdata)
                     if direction == 'Up':
                         len_thres = len(np.extract(xdata > threshold_value, xdata))

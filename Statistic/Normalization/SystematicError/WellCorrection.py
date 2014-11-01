@@ -18,7 +18,7 @@ normalized measurement ) is subtracted from or added to the original measurement
 to zero
 """
 
-import SOM
+import Core
 import numpy as np
 
 __author__ = "Arnaud KOPP"
@@ -33,7 +33,7 @@ __status__ = "Production"
 
 class WellCorrection():
     def __init__(self, screen):
-        if isinstance(screen, SOM.Screen):
+        if isinstance(screen, Core.Screen):
             self.screen = screen
         else:
             raise TypeError
@@ -51,7 +51,7 @@ class WellCorrection():
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, SOM.Plate):
+                    if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         return 0
@@ -61,12 +61,12 @@ class WellCorrection():
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
-                    if not isinstance(value, SOM.Plate):
+                    if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in value.replicat.items():
-                            if not isinstance(repValue, SOM.Replicat):
+                            if not isinstance(repValue, Core.Replicat):
                                 raise TypeError
                             else:
                                 return 0

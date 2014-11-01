@@ -3,7 +3,7 @@ Substract a determined background of the screen/plate/replicat
 Analogous to BackgroundCorrection but here it's a determined background that we provided
 """
 
-import SOM
+import Core
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -24,7 +24,7 @@ class BackgroundSubstraction():
 
     def BackgroundSubstraction(self, Screen):
         try:
-            if isinstance(Screen, SOM.Screen):
+            if isinstance(Screen, Core.Screen):
                 self._process(Screen)
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m  Must provied Screen Object")
@@ -37,8 +37,7 @@ class BackgroundSubstraction():
             for key, value in Screen.PlateList.items():
                 # iterate on all replicat in the plate
                 for repName, repValue in value.replicat.items():
-                    repValue.SECDataMean = repValue.DataMean - self.background
-                    repValue.SECDataMedian = repValue.DataMedian - self.background
+                    repValue.SECData = repValue.Data - self.background
                     repValue.isSpatialNormalized = True
         except Exception as e:
             print(e)

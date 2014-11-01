@@ -19,7 +19,7 @@ reference in the whole screen are formed as another group. The means and variabi
 used to calculate the ssmd.
 """
 
-import SOM
+import Core
 import numpy as np
 import scipy.special
 from Statistic.Stat import mad
@@ -52,7 +52,7 @@ def ssmd_score(plate, cNeg, paired=True, robust_version=True, method='UMVUE', va
     :return: Corrected data
     """
     try:
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             # if no neg was provided raise AttributeError
             if cNeg is None:
                 raise AttributeError('Must provided negative control')
@@ -103,7 +103,7 @@ def _UnpairedSSMD(plate, cNeg, variance='unequal', SECData=True, verbose=False):
         # if no neg was provided raise AttributeError
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             SSMD = np.zeros(plate.PlateSetup.platesetup.shape)
 
             # # replace 0 with NaN
@@ -195,7 +195,7 @@ def _UnpairedSSMDr(plate, cNeg, variance='unequal', SECData=True, verbose=False)
         # if no neg was provided raise AttributeError
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             SSMD = np.zeros(plate.PlateSetup.platesetup.shape)
 
             # # replace 0 with NaN
@@ -287,7 +287,7 @@ def _PairedSSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
         # if no neg was provided raise AttributeError
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             SSMD = np.zeros(plate.PlateSetup.platesetup.shape)
 
             # # replace 0 with NaN
@@ -371,7 +371,7 @@ def _PairedSSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
         # if no neg was provided raise AttributeError
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             SSMDr = np.zeros(plate.PlateSetup.platesetup.shape)
 
             # # replace 0 with NaN
@@ -456,7 +456,7 @@ def _SSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
         # if no neg was provided raise AttributeError
         if cNeg is None:
             raise AttributeError('Must provided negative control')
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             ps = plate.PlateSetup
             ssmd = np.zeros(ps.platesetup.shape)
 
@@ -526,7 +526,7 @@ def _SSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
         # if no neg was provided raise AttributeError
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, SOM.Plate):
+        if isinstance(plate, Core.Plate):
             ps = plate.PlateSetup
             ssmdr = np.zeros(ps.platesetup.shape)
 

@@ -2,7 +2,7 @@
 Class for representing siRNA or wathever that target a gene
 """
 
-import SOM
+import Core
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"

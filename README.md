@@ -25,9 +25,6 @@ It will certainly be like a toolbox for the moment, so programming skill is need
 ##TODO
 [TODO](TODO.md)
 
-##Organisation of package
-[Organisation](Organisation.txt)
-
 ##CONTACT  
 kopp@igbmc.fr  
 
