@@ -9,15 +9,8 @@ import sys
 import time
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
-import Core
-import Statistic
 import numpy as np
-import Statistic.Normalization
-import Statistic.Score
-import Statistic.Test
-import Statistic.QC
-import cProfile
-from Utils import Graphics
+import TransCellAssay as TCA
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -81,19 +74,19 @@ USAGE
         # # reading TEST
         time_norm_start = time.time()
 
-        screen_test = Core.Screen()
-        plaque1 = Core.Plate()
+        screen_test = TCA.Core.Screen()
+        plaque1 = TCA.Core.Plate()
         plaque1.setName('Plate 1')
-        platesetup = Core.PlateSetup()
+        platesetup = TCA.Core.PlateSetup()
         platesetup.setPlateSetup("/home/arnaud/Documents/FRED/Pl1PP.csv")
         plaque1.addPlateSetup(platesetup)
-        rep1 = Core.Replicat()
+        rep1 = TCA.Core.Replicat()
         rep1.setName("rep1")
         rep1.setData("/home/arnaud/Documents/FRED/Pl1rep_1.csv")
-        rep2 = Core.Replicat()
+        rep2 = TCA.Core.Replicat()
         rep2.setName("rep2")
         rep2.setData("/home/arnaud/Documents/FRED/Pl1rep_2.csv")
-        rep3 = Core.Replicat()
+        rep3 = TCA.Core.Replicat()
         rep3.setName("rep3")
         rep3.setData("/home/arnaud/Documents/FRED/Pl1rep_3.csv")
         plaque1.addReplicat(rep1)
@@ -110,7 +103,7 @@ USAGE
         print("\033[0;32mReading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         # # Computation TEST
-        # tmp2 = Statistic.computePlateAnalyzis(plaque1, [feature], neg)
+        # tmp2 = Stat.computePlateAnalyzis(plaque1, [feature], neg)
         # print(tmp2)
 
         time_start_comp = time.time()
@@ -118,67 +111,53 @@ USAGE
         np.set_printoptions(suppress=True)
 
         time_norm_start = time.time()
-        plaque1.Normalization(feature, technics=False, log=True, neg=neg, pos=pos)
+        plaque1.Normalization(feature, technics='Zscore', log=True, neg=neg, pos=pos)
         time_norm_stop = time.time()
         print("\033[0;32mNormalization Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         time_norm_start = time.time()
         plaque1.computeDataFromReplicat(feature)
         print(plaque1.Data)
-        # plaque1.SystematicErrorCorrection(method='average', apply_down=True, save=True, verbose=False)
+        plaque1.SystematicErrorCorrection(method='median', apply_down=True, save=True, verbose=False)
         # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # # apply only when replicat are not SE norm
+        plaque1.computeDataFromReplicat(feature)
+        print(plaque1.SECData)
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
-        # Graphics.plotDistribution('C5', plaque1, feature)
+        TCA.getMeanSDCellCount(plaque1, verbose=True)
+        TCA.getPercentPosCell(plaque1, feature, neg, 50, direction='down', verbose=True)
+        TCA.PlateQualityControl(plaque1, features=feature, cneg=neg, cpos=pos, SEDT=False, SECdata=False, verbose=True)
 
-        # Statistic.Score.getMeanSDCellCount(plaque1, verbose=True)
-        # cProfile.runctx(
-        # "Statistic.Score.getPercentPosCell(plaque1, feature, neg, 50, direction='down', verbose=True)",
-        #     globals(),
-        #     locals())
+        # TCA.Graphics.plotDistribution('C5', plaque1, feature)
 
-        print(platesetup['A10'])
-
-        # subplate1 = Core.SubPlate(plaque1, 1, 5, 3, 6)
-        # subplate1.setName("subplate1")
-        # print(subplate1)
-        # print(subplate1['rep1'].Data)
-        # subplate1['rep1'].computeDataForFeature(feature)
-        # print(subplate1['rep1'].Data)
-
-        # Statistic.QC.PlateQualityControl(plaque1, features=feature, cneg=neg, cpos=pos, SEDT=False,
-        # SECdata=False, verbose=True)
-        #
         # print("\n \033[0;32m     SSMD TESTING \033[0m")
         # time_norm_start = time.time()
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=False, SECData=False, verbose=True)
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=False, robust_version=False, SECData=False, verbose=True)
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=False, verbose=True)
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=False, variance='equal', robust_version=False,
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=False, SECData=False, verbose=True)
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=False, robust_version=False, SECData=False, verbose=True)
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=False, verbose=True)
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=False, variance='equal', robust_version=False,
         # SECData=False, verbose=True)
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, SECData=False, verbose=True)
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, robust_version=False, SECData=False, verbose=True)
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', SECData=False, verbose=True)
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', robust_version=False, SECData=False,
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=True, SECData=False, verbose=True)
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=True, robust_version=False, SECData=False, verbose=True)
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', SECData=False, verbose=True)
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', robust_version=False, SECData=False,
         #                            verbose=True)
         #
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', SECData=False, verbose=True,
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', SECData=False, verbose=True,
         #                            inplate_data=True)
-        # Statistic.Score.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', robust_version=False, SECData=False,
+        # TCA.ssmd_score(plaque1, cNeg=neg, paired=True, method='UMVUE', robust_version=False, SECData=False,
         #                            verbose=True, inplate_data=True)
         #
         # print("\033[0;32m    T-Stat TESTING \033[0m")
-        # Statistic.Score.t_stat_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=False,
+        # TCA.t_stat_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=False,
         #                              verbose=True)
-        # Statistic.Score.t_stat_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=False, verbose=True)
-        # Statistic.Score.t_stat_score(plaque1, cNeg=neg, paired=True, SECData=False, verbose=True)
-        # Statistic.Score.t_stat_score(plaque1, cNeg=neg, paired=True, SECData=False, verbose=True)
+        # TCA.t_stat_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=False, verbose=True)
+        # TCA.t_stat_score(plaque1, cNeg=neg, paired=True, SECData=False, verbose=True)
+        # TCA.t_stat_score(plaque1, cNeg=neg, paired=True, SECData=False, verbose=True)
         # time_norm_stop = time.time()
         #
         # print("\033[0;32mSSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
-
-
 
         # Graphics.boxplotByWell(rep1.Dataframe, feature)
         # Graphics.PlateHeatmap(rep1.Data)
@@ -186,15 +165,15 @@ USAGE
         # Graphics.plotSurf3D_Plate(rep1.Data)
         # Graphics.plotScreen(screen_test)
         # rep1.SystematicErrorCorrection(Methods='MEA', verbose=True)
-        # Statistic.Test.SystematicErrorDetectionTest(rep1.Data, alpha=0.05, verbose=True)
-        # Statistic.Test.SystematicErrorDetectionTest(rep1.Data, alpha=0.05, verbose=True)
-        # Statistic.Test.SystematicErrorDetectionTest(plaque1.Data, alpha=0.05, verbose=True)
+        # TCA.SystematicErrorDetectionTest(rep1.Data, alpha=0.05, verbose=True)
+        # TCA.SystematicErrorDetectionTest(rep1.Data, alpha=0.05, verbose=True)
+        # TCA.SystematicErrorDetectionTest(plaque1.Data, alpha=0.05, verbose=True)
         # rep1.SpatialNormalization(Methods='DiffusionModel', verbose=True)
         # Graphics.plotSurf3D_Plate(A)
         # Array = np.genfromtxt("/home/akopp/Bureau/testcsv.csv", delimiter=',')
-        # Statistic.Test.SystematicErrorDetectionTest(Array, alpha=0.05, verbose=True)
-        # Statistic.Normalization.MatrixErrorAmendment(Array.copy(), verbose=True, alpha=0.05)
-        # Statistic.Normalization.PartialMeanPolish(Array.copy(), verbose=True, alpha=0.05)
+        # TCA.SystematicErrorDetectionTest(Array, alpha=0.05, verbose=True)
+        # TCA.PartialMeanPolish(Array.copy(), verbose=True, alpha=0.05)
+        # TCA.MatrixErrorAmendment(Array.copy(), verbose=True, alpha=0.05)
 
         time_stop_comp = time.time()
         print("\033[0;32mComputation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))

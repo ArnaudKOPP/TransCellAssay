@@ -1,5 +1,9 @@
 # TODO
 
+## BUG
+1. SubPlate and SubReplicat are still very buggy
+2. Better Import system ???
+
 ## Principale Idea
 1. Machine Learning :
     1. Classification ( C4.5, SVM, Neural Network, K neirest Neighbor, Random Forest ...)

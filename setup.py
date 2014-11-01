@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='TransCellAssay',
     version='0.01',
-    packages=['Core', 'Utils', 'Statistic', 'IO', 'Bayesian', 'DoseResponseAnalysis', 'MachineLearning'],
+    packages=['Core', 'Utils', 'Stat', 'IO', 'Bayesian', 'DoseResponseAnalysis', 'ML'],
     install_requires=['pandas', 'numpy', 'scipy', 'matplotlib', 'xlsxwriter'],
     url='https://github.com/ArnaudKOPP/TransCellAssay',
     license='GPL V3',
