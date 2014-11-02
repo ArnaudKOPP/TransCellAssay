@@ -50,7 +50,7 @@ def getPercentPosCell(plate, feature, control, threshold, direction, verbose=Fal
                 for well in well_list:
                     # # Take long time here ~ 130 ms
                     xdata = data[feature][data['Well'] == well]
-                    # xdata = datagroupby.getgroup(well)
+                    # xdata = datagroupby.get_group(well)[feature]
                     len_total = len(xdata)
                     if direction == 'Up':
                         len_thres = len(np.extract(xdata > threshold_value, xdata))
