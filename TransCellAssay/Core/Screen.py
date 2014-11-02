@@ -114,6 +114,20 @@ class Screen():
         except Exception as e:
             print(e)
 
+    def __setitem__(self, key, value):
+        """
+        Set plate objet, use [] operator
+        :param key: name of plate
+        :param value: plate object
+        """
+        try:
+            if not isinstance(value, TCA.Plate):
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
+            else:
+                self.PlateList[key] = value
+        except Exception as e:
+            print(e)
+
     def __repr__(self):
         """
         Definition for the representation

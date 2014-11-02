@@ -389,6 +389,20 @@ class Plate():
         except Exception as e:
             print(e)
 
+    def __setitem__(self, key, value):
+        """
+        Set replicat objet, use [] operator
+        :param key: name of replicat
+        :param value: replicat object
+        """
+        try:
+            if not isinstance(value, TCA.Replicat):
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
+            else:
+                self.replicat[key] = value
+        except Exception as e:
+            print(e)
+
     def __len__(self):
         """
         Get len /number of replicat inside Plate, use len(object)
