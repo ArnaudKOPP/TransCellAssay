@@ -27,7 +27,7 @@ class BackgroundSubstraction():
             if isinstance(Screen, Core.Screen):
                 self._process(Screen)
             else:
-                raise AttributeError("\033[0;31m[ERROR]\033[0m  Must provied Screen Object")
+                raise AttributeError("\033[0;31m[ERROR]\033[0m  Must provided Screen Object")
         except Exception as e:
             print(e)
 

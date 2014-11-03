@@ -38,7 +38,7 @@ class WellCorrection():
         if isinstance(screen, Core.Screen):
             self.screen = screen
         else:
-            raise TypeError
+            raise TypeError("\033[0;31m[ERROR]\033[0m Provided Screen Object Object")
 
     def wellcorrection(self, approx="lst", apply_on='replicat', verbose=False):
         try:

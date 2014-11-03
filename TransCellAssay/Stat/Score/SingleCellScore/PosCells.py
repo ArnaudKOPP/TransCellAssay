@@ -28,65 +28,61 @@ def getPercentPosCell(plate, feature, control, threshold, direction, verbose=Fal
     dict_percent_cell = {}
     dict_percent_cell_tmp = {}
     dict_percent_sd_cell = {}
+    if not isinstance(plate, TCA.Core.Plate):
+        raise TypeError("\033[0;31m[ERROR]\033[0m  Take a Plate object in input")
+    else:
+        replicat_Dict = plate.getAllReplicat()
+        ps = plate.PlateSetup
+        control_well = ps.getGeneWell(control)
+        # iterate on replicat dict
+        for k, replicat in replicat_Dict.items():
+            # # threshold value for control
+            data_control = replicat.getDataByWells(control_well, feature=feature)
+            print(data_control)
+            threshold_value = np.percentile(data_control, threshold)
+            # data from replicat
+            data = replicat.Dataframe
+            datagroupby = data.groupby('Well')
 
-    try:
-        if isinstance(plate, TCA.Core.Plate):
-            replicat_Dict = plate.getAllReplicat()
-            ps = plate.PlateSetup
-            control_well = ps.getGeneWell(control)
-            # iterate on replicat dict
-            for k, replicat in replicat_Dict.items():
-                # # threshold value for control
-                data_control = replicat.getDataByWells(control_well, feature=feature)
-                threshold_value = np.percentile(data_control, threshold)
-                # data from replicat
-                data = replicat.Dataframe
+            # get all well from data
+            well_list = data.Well.unique()
+            # iterate on well
+            for well in well_list:
+                # # Take long time here ~ 130 ms
+                # xdata = data[feature][data['Well'] == well]
+                xdata = datagroupby.get_group(well)[feature]
+                len_total = len(xdata)
+                if direction == 'Up':
+                    len_thres = len(np.extract(xdata > threshold_value, xdata))
+                else:
+                    len_thres = len(np.extract(xdata < threshold_value, xdata))
+                # # include in dict key is the position and value is a %
+                dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
+        # determine the mean of replicat
+        dict_percent_cellList = [(i, sum(v) / len(v)) for i, v in dict_percent_cell_tmp.items()]
+        dict_percent_cell = dict(dict_percent_cellList)
+        # determine the standart deviation of % Cells
+        try:
+            for key, value in dict_percent_cell_tmp.items():
+                dict_percent_sd_cell[key] = np.std(value)
+        except Exception as e:
+            print(e)
 
-                # datagroupby = data.group_by('Well')
+        if verbose:
+            mean = np.zeros(plate.PlateSetup.platesetup.shape)
+            sd = np.zeros(plate.PlateSetup.platesetup.shape)
 
-                # get all well from data
-                well_list = data.Well.unique()
-                # iterate on well
-                for well in well_list:
-                    # # Take long time here ~ 130 ms
-                    xdata = data[feature][data['Well'] == well]
-                    # xdata = datagroupby.get_group(well)[feature]
-                    len_total = len(xdata)
-                    if direction == 'Up':
-                        len_thres = len(np.extract(xdata > threshold_value, xdata))
-                    else:
-                        len_thres = len(np.extract(xdata < threshold_value, xdata))
-                    # # include in dict key is the position and value is a %
-                    dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
-            # determine the mean of replicat
-            dict_percent_cellList = [(i, sum(v) / len(v)) for i, v in dict_percent_cell_tmp.items()]
-            dict_percent_cell = dict(dict_percent_cellList)
-            # determine the standart deviation of % Cells
-            try:
-                for key, value in dict_percent_cell_tmp.items():
-                    dict_percent_sd_cell[key] = np.std(value)
-            except Exception as e:
-                print(e)
+            for k, v in dict_percent_cell.items():
+                well = TCA.Utils.WellFormat.getOppositeWellFormat(k)
+                mean[well[0]][well[1]] = v
 
-            if verbose:
-                mean = np.zeros(plate.PlateSetup.platesetup.shape)
-                sd = np.zeros(plate.PlateSetup.platesetup.shape)
+            for k, v in dict_percent_sd_cell.items():
+                well = TCA.Utils.WellFormat.getOppositeWellFormat(k)
+                sd[well[0]][well[1]] = v
 
-                for k, v in dict_percent_cell.items():
-                    well = TCA.Utils.WellFormat.getOppositeWellFormat(k)
-                    mean[well[0]][well[1]] = v
+            print("Mean of number of Cells for given Threshold by well : ")
+            print(mean)
+            print("Standart deviation of number of Cells for given Threshold by Well : ")
+            print(sd)
 
-                for k, v in dict_percent_sd_cell.items():
-                    well = TCA.Utils.WellFormat.getOppositeWellFormat(k)
-                    sd[well[0]][well[1]] = v
-
-                print("Mean of number of Cells for given Threshold by well : ")
-                print(mean)
-                print("Standart deviation of number of Cells for given Threshold by Well : ")
-                print(sd)
-
-            return dict_percent_cell, dict_percent_sd_cell
-        else:
-            raise TypeError("\033[0;31m[ERROR]\033[0m  Take a Plate object in input")
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        return dict_percent_cell, dict_percent_sd_cell

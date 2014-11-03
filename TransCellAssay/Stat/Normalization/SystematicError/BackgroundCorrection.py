@@ -26,7 +26,7 @@ class BackgroundCorrection():
             self.screen = Screen
             self.BackgroundModel = None
         else:
-            raise TypeError
+            raise TypeError("\033[0;31m[ERROR]\033[0m Provided Screen Object Object")
 
     def BackgroundCorrection(self, apply="Plate", verbose=False):
         try:

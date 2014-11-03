@@ -67,15 +67,14 @@ class Replicat():
         try:
             return self.Dataframe
         except Exception as e:
-            print(e)
-            print('Error in exporting data')
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def setDataX(self, Array, type):
         """
         Set attribut data matrix into self.Data
-        :param Array:
-        :param type:
-        :return:
+        This method is designed for 1Data/Well or for manual analysis
+        :param Array: numpy array with good shape
+        :param type: median or mean data
         """
         try:
             if isinstance(Array, np.ndarray):
@@ -87,7 +86,7 @@ class Replicat():
                 else:
                     raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided data type")
             else:
-                raise AttributeError("\033[0;31m[ERROR]\033[0m Must provied numpy ndarray")
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided numpy ndarray")
         except Exception as e:
             print(e)
 
@@ -100,8 +99,7 @@ class Replicat():
         try:
             self.name = info
         except Exception as e:
-            print(e)
-            print('Error in setting Info')
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getName(self):
         """
@@ -111,8 +109,7 @@ class Replicat():
         try:
             return self.name
         except Exception as e:
-            print(e)
-            print('Error in getting info')
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getDataByWell(self, well, feature=None):
         """
@@ -125,10 +122,9 @@ class Replicat():
             if feature is None:
                 return self.Dataframe[self.Dataframe['Well'] == well]
             else:
-                return self.Dataframe[feature][self.data['Well'] == well]
+                return self.Dataframe[feature][self.Dataframe['Well'] == well]
         except Exception as e:
             print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error in exporting data by well')
 
     def getDataByWells(self, wells, feature=None):
         """
@@ -138,20 +134,20 @@ class Replicat():
         :return: return dataframe with data specified wells
         """
         try:
-            data = pd.DataFrame()
+            data = None
             for i in wells:
+                print(i)
                 if feature is None:
-                    if data.empty:
+                    if data is None:
                         data = self.Dataframe[self.Dataframe['Well'] == i]
                     data.append(self.Dataframe[self.Dataframe['Well'] == i])
                 else:
-                    if data.empty:
+                    if data is None:
                         data = self.Dataframe[feature][self.Dataframe['Well'] == i]
                     data.append(self.Dataframe[feature][self.Dataframe['Well'] == i])
             return data
         except Exception as e:
             print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error in exporting data for wells')
 
     def getDataByFeatures(self, featList, Well=False):
         """
@@ -183,8 +179,10 @@ class Replicat():
                 print('')
 
             grouped_data_by_well = self.Dataframe.groupby('Well')
-
-            tmp = grouped_data_by_well.median()
+            if self.DataType == 'median':
+                tmp = grouped_data_by_well.median()
+            else:
+                tmp = grouped_data_by_well.mean()
             feature = tmp[feature]
             dict_mean = feature.to_dict()  # # dict : key = pos and item are mean
             if not len(dict_mean) > 96:

@@ -97,9 +97,9 @@ class Plate():
     def setDataX(self, Array, type):
         """
         Set attribut data matrix into self.Data
-        :param Array:
-        :param type:
-        :return:
+        This method is designed for 1Data/Well or for manual analysis
+        :param Array: numpy array with good shape
+        :param type: median or mean data
         """
         try:
             if isinstance(Array, np.ndarray):
@@ -246,36 +246,27 @@ class Plate():
         except Exception as e:
             print(e)
 
-    def computeDataFromReplicat(self, feature):
+    def computeDataFromReplicat(self, feature, SECData=False):
         """
         Compute the mean/median matrix data of all replicat
         If replicat data is SpatialNorm already, this function will fill spatDataMatrix
         :param feature: which feature to have into sum up data
         """
         try:
-            tmp_array = None
+            tmp_array = np.zeros(self.PlateSetup.platesetup.shape)
             i = 0
-
-            # we thinks that replicat are not spatial norm in first time
-            isReplicatSpatNorm = False
-            prev_check = None
 
             for key, replicat in self.replicat.items():
                 i += 1
                 if replicat.Data is None:
                     replicat.computeDataForFeature(feature)
-                if tmp_array is None:
-                    tmp_array = np.zeros(replicat.Data.shape)
 
-                # Check replicat consistency with spat norm, if all rep is or not spat norm
-                isReplicatSpatNorm = replicat.isSpatialNormalized
-                if not i == 1:
-                    if not prev_check == isReplicatSpatNorm:
-                        raise Exception('\033[0;31m[ERROR]\033[0m  All replicat are uniform is spatial correction')
-                prev_check = replicat.isSpatialNormalized
-                tmp_array = tmp_array + replicat.Data
+                if not SECData:
+                    tmp_array = tmp_array + replicat.Data
+                else:
+                    tmp_array = tmp_array + replicat.SECData
 
-            if not isReplicatSpatNorm:
+            if not SECData:
                 self.Data = tmp_array / i
             else:
                 self.SECData = tmp_array / i

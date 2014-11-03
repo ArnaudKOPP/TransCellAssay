@@ -70,7 +70,7 @@ class Screen():
         try:
             self.Info.pop(key, value)
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getInfo(self):
         """
@@ -82,6 +82,47 @@ class Screen():
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def Normalization(self, feature, technics='Zscore', log=True, neg=None, pos=None):
+        """
+        Apply Well correction on all Plate data
+        call function like from Plate object
+        :param feature: feature to normalize
+        :param technics: which method to perform
+        :param log:  Performed log2 Transformation
+        """
+        try:
+            for key, value in self.PlateList.items():
+                value.Normalization(feature=feature, method=technics, log=log, neg=neg, pos=pos)
+            self.isNormalized = True
+        except Exception as e:
+            print(e)
+
+    def SystematicErrorCorrection(self, Algorithm='Bscore', method='median', apply_down=False, verbose=False,
+                                  save=False, max_iterations=100):
+        """
+        Apply Systematic Error Corection on all plate of the screen
+        :param Algorithm:
+        :param method:
+        :param apply_down:
+        :param verbose:
+        :param save:
+        :param max_iterations:
+        :return:
+        """
+        try:
+            if Algorithm == 'WellCorrection':
+                return 0
+            elif Algorithm == 'BackgroundCorrection':
+                return 0
+            elif Algorithm == 'BackgroundSubstraction':
+                return 0
+            else:
+                for key, value in self.PlateList.items():
+                    value.SystematicErrorCorrection(Algorithm=Algorithm, method=method, apply_down=apply_down,
+                                                    verbose=verbose, save=save, max_iterations=max_iterations)
+        except Exception as e:
+            print(e)
+
     def __len__(self):
         """
         get number of plate
@@ -90,7 +131,7 @@ class Screen():
         try:
             return len(self.PlateList)
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __add__(self, plate):
         """
@@ -112,7 +153,7 @@ class Screen():
         try:
             return self.PlateList[key]
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __setitem__(self, key, value):
         """
@@ -126,7 +167,7 @@ class Screen():
             else:
                 self.PlateList[key] = value
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __repr__(self):
         """
@@ -139,7 +180,7 @@ class Screen():
                     "\n Pos Control \n" + repr(self.Pos) +
                     "\n Tox Control \n" + repr(self.Tox) + "\n")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __str__(self):
         """
@@ -152,4 +193,4 @@ class Screen():
                     "\n Pos Control \n" + repr(self.Pos) +
                     "\n Tox Control \n" + repr(self.Tox) + "\n")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
