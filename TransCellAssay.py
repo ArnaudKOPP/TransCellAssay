@@ -78,26 +78,25 @@ USAGE
         plaque1 = TCA.Core.Plate()
         plaque1.setName('Plate 1')
         platesetup = TCA.Core.PlateSetup()
-        platesetup.setPlateSetup("/home/arnaud/Documents/FRED/Pl1PP.csv")
+        platesetup.setPlateSetup("/home/akopp/Bureau/test/Pl1PP.csv")
         plaque1.addPlateSetup(platesetup)
         rep1 = TCA.Core.Replicat()
         rep1.setName("rep1")
-        rep1.setData("/home/arnaud/Documents/FRED/Pl1rep_1.csv")
+        rep1.setData("/home/akopp/Bureau/test/Pl1rep_1.csv")
         rep2 = TCA.Core.Replicat()
         rep2.setName("rep2")
-        rep2.setData("/home/arnaud/Documents/FRED/Pl1rep_2.csv")
+        rep2.setData("/home/akopp/Bureau/test/Pl1rep_2.csv")
         rep3 = TCA.Core.Replicat()
         rep3.setName("rep3")
-        rep3.setData("/home/arnaud/Documents/FRED/Pl1rep_3.csv")
+        rep3.setData("/home/akopp/Bureau/test/Pl1rep_3.csv")
         plaque1.addReplicat(rep1)
         plaque1.addReplicat(rep2)
         plaque1.addReplicat(rep3)
         screen_test.addPlate(plaque1)
 
-        feature = "TargetActivationV4Cell:AvgIntenCh2"
-        neg = "Neg "
-        pos = "Spironolactone"
-
+        feature = "Nuc Intensity"
+        neg = "NT"
+        pos = "SINV C"
 
         time_norm_stop = time.time()
         print("\033[0;32mReading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
@@ -120,14 +119,14 @@ USAGE
         print(plaque1.Data)
         plaque1.SystematicErrorCorrection(method='median', apply_down=True, save=True, verbose=False)
         # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # # apply only when replicat are not SE norm
-        plaque1.computeDataFromReplicat(feature)
+        plaque1.computeDataFromReplicat(feature, SECData=True)
         print(plaque1.SECData)
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
-        TCA.getMeanSDCellCount(plaque1, verbose=True)
-        TCA.getPercentPosCell(plaque1, feature, neg, 50, direction='down', verbose=True)
-        TCA.PlateQualityControl(plaque1, features=feature, cneg=neg, cpos=pos, SEDT=False, SECdata=False, verbose=True)
+        # TCA.getMeanSDCellCount(plaque1, verbose=True)
+        # TCA.getPercentPosCell(plaque1, feature, neg, 50, direction='down', verbose=True)
+        # TCA.PlateQualityControl(plaque1, features=feature, cneg=neg, cpos=pos, SEDT=False, SECdata=False, verbose=True)
 
         # TCA.Graphics.plotDistribution('C5', plaque1, feature)
 

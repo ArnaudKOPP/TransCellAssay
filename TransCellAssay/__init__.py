@@ -10,5 +10,6 @@ from TransCellAssay.Utils import *
 from TransCellAssay.ML import *
 from TransCellAssay.Bayesian import *
 from TransCellAssay.DoseResponseAnalysis import *
+from TransCellAssay.Omics import *
 
-__all__ = ['Core', 'IO', 'Stat', 'Utils', 'ML', 'Bayesian', 'DoseResponseAnalysis']
+__all__ = ['Core', 'IO', 'Stat', 'Utils', 'ML', 'Bayesian', 'DoseResponseAnalysis', 'Omics']
