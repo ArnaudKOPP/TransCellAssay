@@ -87,38 +87,3 @@ class HolmBonferroni(AbstractCorrection):
                 if p * 1. / lp < self.a:
                     yield (i, lp)
             lp -= len(idxs)
-
-
-class FDR(object):
-    def __init__(self, p_val_distribution, results, a=.05):
-        self.corrected_pvals = fdr = []
-        for rec in results:
-            q = (sum(1 for x in p_val_distribution if x < rec.p_uncorrected)
-                 * 1.0 / len(p_val_distribution))
-            fdr.append(q)
-
-
-"""
-Generate a p-value distribution based on re-sampling, as described in:
-http://www.biomedcentral.com/1471-2105/6/168
-"""
-
-
-def calc_qval(study_count, study_n, pop_count, pop_n, pop, assoc, term_pop, obo_dag):
-    print("generating p-value distribution for FDR calculation (this might take a while)")
-    T = 1000  # number of samples
-    distribution = []
-    for i in range(T):
-        new_study = random.sample(pop, study_n)
-        new_term_study = TransCellAssay.Omics.GO.go_enrichment.count_terms(new_study, assoc, obo_dag)
-
-        smallest_p = 1
-        for term, study_count in new_term_study.items():
-            pop_count = term_pop[term]
-            oddsration, p_value = scipy.stats.fisher_exact([[study_count, study_n], [pop_count, pop_n]])
-            if p_value.two_tail < smallest_p:
-                smallest_p = p_value.two_tail
-
-        distribution.append(smallest_p)
-        print(sys.stderr, i, smallest_p)
-    return distribution

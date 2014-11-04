@@ -83,8 +83,7 @@ class OBOreader():
                 rec.namespace = after_colon(line)
             elif line.startswith("is_a:"):
                 rec._parents.append(after_colon(line).split()[0])
-            elif (line.startswith("is_obsolete:") and
-                          after_colon(line) == "true"):
+            elif line.startswith("is_obsolete:") and after_colon(line) == "true":
                 rec.is_obsolete = True
 
         return rec
@@ -157,6 +156,7 @@ class GOTerm:
 
 class GODag(dict):
     def __init__(self, obo_file="gene_ontology.1_2.obo"):
+        dict.__init__(self)
         self.load_obo_file(obo_file)
 
     def load_obo_file(self, obo_file):
@@ -180,11 +180,13 @@ class GODag(dict):
             return rec.level
 
         # make the parents references to the GO terms
-        for rec in self.itervalues():
+        for rec in self.items():
+            rec = rec[1]
             rec.parents = [self[x] for x in rec._parents]
 
         # populate children and levels
-        for rec in self.itervalues():
+        for rec in self.items():
+            rec = rec[1]
             for p in rec.parents:
                 p.children.append(rec)
 
@@ -195,7 +197,7 @@ class GODag(dict):
         for rec_id, rec in sorted(self.items()):
             print(out, rec)
 
-    def query_term(self, term, verbose=False):
+    def query_term(self, term, verbose=True):
         if term not in self:
             print("Term %s not found! ", term)
             return

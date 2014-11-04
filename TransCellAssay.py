@@ -124,6 +124,12 @@ USAGE
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
+        # # test Go enrichment
+
+        TCA.find_enrichment(study_test="/home/akopp/Bureau/study.txt",
+                            population_fn="/home/akopp/Bureau/population.txt",
+                            assoc_file="/home/akopp/Bureau/gene_id_go_id.csv")
+
         # TCA.getMeanSDCellCount(plaque1, verbose=True)
         # TCA.getPercentPosCell(plaque1, feature, neg, 50, direction='down', verbose=True)
         # TCA.PlateQualityControl(plaque1, features=feature, cneg=neg, cpos=pos, SEDT=False, SECdata=False, verbose=True)

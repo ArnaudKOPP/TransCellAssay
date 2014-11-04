@@ -15,20 +15,19 @@ __status__ = "Dev"
 
 import collections
 import scipy.stats
-from TransCellAssay.Omics.GO.testing import Bonferroni, Sidak, HolmBonferroni, FDR, calc_qval
+from TransCellAssay.Omics.GO.testing import Bonferroni, Sidak, HolmBonferroni
 
 
 class GOEnrichmentRecord(object):
     """Represents one result (from a single GOTerm) in the GOEnrichmentStudy
     """
-    _fields = "id enrichment description ratio_in_study ratio_in_pop" \
-              " p_uncorrected p_bonferroni p_holm p_sidak p_fdr".split()
+    _fields = "id enrichment description ratio_in_study ratio_in_pop p_uncorrected p_bonferroni p_holm p_sidak".split()
 
     def __init__(self, **kwargs):
         for f in self._fields:
             self.__setattr__(f, "n.a.")
 
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             assert k in self._fields, "invalid field name %s" % k
             self.__setattr__(k, v)
 
@@ -64,7 +63,7 @@ class GOEnrichmentRecord(object):
             self.description = self.goterm.name
 
     def update_fields(self, **kwargs):
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             assert k in self._fields, "invalid field name %s" % k
             self.__setattr__(k, v)
 
@@ -81,8 +80,7 @@ class GOEnrichmentStudy(object):
     """Runs Fisher's exact test, as well as multiple corrections
     """
 
-    def __init__(self, pop, assoc, obo_dag, alpha=.05, study=None,
-                 methods=["bonferroni", "sidak", "holm"]):
+    def __init__(self, pop, assoc, obo_dag, alpha=.05, study=None, methods=["bonferroni", "sidak", "holm"]):
 
         self.pop = pop
         self.assoc = assoc
@@ -103,16 +101,13 @@ class GOEnrichmentStudy(object):
         term_study = count_terms(study, self.assoc, self.obo_dag)
 
         pop_n, study_n = len(self.pop), len(study)
-
+        print("CACA")
         for term, study_count in term_study.items():
             pop_count = self.term_pop[term]
             p = scipy.stats.fisher_exact(([[study_count, study_n], [pop_count, pop_n]]))
 
-            one_record = GOEnrichmentRecord(
-                id=term,
-                p_uncorrected=p.two_tail,
-                ratio_in_study=(study_count, study_n),
-                ratio_in_pop=(pop_count, pop_n))
+            one_record = GOEnrichmentRecord(id=term, p_uncorrected=p.two_tail, ratio_in_study=(study_count, study_n),
+                                            ratio_in_pop=(pop_count, pop_n))
 
             results.append(one_record)
 
@@ -128,18 +123,10 @@ class GOEnrichmentStudy(object):
                 sidak = Sidak(pvals, self.alpha).corrected_pvals
             elif method == "holm":
                 holm = HolmBonferroni(pvals, self.alpha).corrected_pvals
-            elif method == "fdr":
-                # get the empirical p-value distributions for FDR
-                p_val_distribution = calc_qval(study_count, study_n,
-                                               pop_count, pop_n,
-                                               self.pop, self.assoc,
-                                               self.term_pop, self.obo_dag)
-                fdr = FDR(p_val_distribution,
-                          results, self.alpha).corrected_pvals
             else:
                 raise Exception("multiple test correction methods must be one of ", all_methods)
 
-        all_corrections = (bonferroni, sidak, holm, fdr)
+        all_corrections = (bonferroni, sidak, holm)
 
         for method, corrected_pvals in zip(all_methods, all_corrections):
             self.update_results(method, corrected_pvals)
@@ -179,9 +166,11 @@ def count_terms(geneset, assoc, obo_dag):
     """count the number of terms in the study group
     """
     term_cnt = collections.defaultdict(int)
-    for gene in (g for g in geneset if g in assoc):
+    for gene in geneset:
         for x in assoc[gene]:
+            print(x)
             if x in obo_dag:
+                print("Add")
                 term_cnt[obo_dag[x].id] += 1
 
     return term_cnt

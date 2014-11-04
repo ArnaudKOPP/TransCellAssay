@@ -27,7 +27,7 @@ def read_geneset(study_fn, pop_fn, compare=False):
         pop |= study
         pop -= common
         study -= common
-        print("removed %d overlapping items", (len(common), ))
+        print("removed ", len(common), " overlapping items")
         print("Set 1: {0}, Set 2: {1}".format(len(study), len(pop)))
 
     return study, pop
@@ -35,17 +35,10 @@ def read_geneset(study_fn, pop_fn, compare=False):
 
 def read_associations(assoc_fn):
     assoc = {}
-    for row in open(assoc_fn):
-        atoms = row.split()
-        if len(atoms) == 2:
-            a, b = atoms
-        elif len(atoms) > 2 and row.count('\t') == 1:
-            a, b = row.split("\t")
-        else:
-            continue
-        b = set(b.split(";"))
-        assoc[a] = b
-
+    datagp = assoc_fn.groupby('entrezgene')
+    for gene in assoc_fn.entrezgene.unique():
+        go = datagp.get_group(gene)['go_id']
+        assoc[gene] = set(go)
     return assoc
 
 
@@ -62,13 +55,25 @@ def plot_go_term(term, gml=True, disable_draw_parents=False, disable_draw_childr
         g.draw_lineage([rec], gml=gml, draw_parents=disable_draw_parents, draw_children=disable_draw_children)
 
 
-def find_enrichment():
+def read_assoc_dataframe(assoc_file):
+    """
+    Read the association file that have been make by biomaRt on R, entrezid and go_id in csv file format
+    :param assoc_file: csv file
+    :return: return data
+    """
+    import pandas as pd
+
+    data = pd.read_table(assoc_file, sep=',')
+    data = data.dropna(axis=0)
+    return data
+
+
+def find_enrichment(study_test, population_fn, assoc_file):
     alpha = 0.05
     pval = 0.05
     compare = False
-    ration = False
-    fdr = False
-    indent = False
+    ration = 1
+    indent = True
 
     min_ratio = ration
     if min_ratio is not None:
@@ -76,15 +81,13 @@ def find_enrichment():
 
     assert 0 < alpha < 1, "Test-wise alpha must fall between (0, 1)"
 
-    study_fn = None  # study file
-    pop_fn = None  # population file
-    assoc_fn = None  # association file
+    study_fn = study_test  # study file
+    pop_fn = population_fn  # population file
+    assoc_fn = read_assoc_dataframe(assoc_file)  # association file
     study, pop = read_geneset(study_fn, pop_fn, compare=compare)
     assoc = read_associations(assoc_fn)
 
     methods = ["bonferroni", "sidak", "holm"]
-    if fdr:
-        methods.append("fdr")
 
     obo_dag = GODag(obo_file="gene_ontology.1_2.obo")
     g = GOEnrichmentStudy(pop, assoc, obo_dag, alpha=alpha, study=study, methods=methods)
