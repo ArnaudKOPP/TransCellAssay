@@ -48,8 +48,9 @@ class OBOreader():
         try:
             self._handle = open(obo_file)
         except IOError:
-            self._handle = urllib.request.urlretrieve(
+            urllib.request.urlretrieve(
                 "http://geneontology.org/ontology/obo_format_1_2/gene_ontology.1_2.obo", "gene_ontology.1_2.obo")
+            self._handle = open(obo_file)
 
     def __iter__(self):
         line = self._handle.readline()
