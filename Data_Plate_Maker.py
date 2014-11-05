@@ -154,7 +154,7 @@ USAGE
         def format(x):
             return (float(x))
 
-        ## Process arguments
+        # # Process arguments
         args = parser.parse_args()
         input = args.input
         output = args.output
@@ -215,7 +215,7 @@ USAGE
                         for pos in range(len(data.Row)):
                             row = int(data.Row[pos]) + 1
                             try:
-                                col = int(data.Col[pos]) + 1
+                                col = int(data.Column[pos]) + 1
                             except:
                                 try:
                                     col = int(data.Column[pos]) + 1
