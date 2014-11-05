@@ -324,28 +324,6 @@ class GOEnrichmentRecord(object):
             self.goterm = go.go_Term[self.id]
             self.description = self.goterm.name
 
-    def update_fields(self, **kwargs):
-        for k, v in kwargs.items():
-            self.__setattr__(k, v)
-
-    def update_remaining_fields(self, min_ratio=None):
-        self.is_ratio_different = is_ratio_different(min_ratio, self.ratio_in_study[0], self.ratio_in_study[1],
-                                                     self.ratio_in_pop[0], self.ratio_in_pop[1])
-
-
-def is_ratio_different(min_ratio, study_go, study_n, pop_go, pop_n):
-    """
-    check if the ratio go /n is different between the study group and
-    the population
-    """
-    if min_ratio is None:
-        return True
-    s = float(study_go) / study_n
-    p = float(pop_go) / pop_n
-    if s > p:
-        return s / p > min_ratio
-    return p / s > min_ratio
-
 
 def read_geneset(study_fn, pop_fn, compare=False):
     pop = set(_.strip() for _ in open(pop_fn) if _.strip())
@@ -422,14 +400,10 @@ class EnrichmentStudy():
 
     def print_summary(self):
         # field names for output
-        print("Go Id     enrichment ratio_in_study ratio_in_pop Oddration p_uncorrected description")
-
+        print("  Go Id     enrichment ratio/stu ratio/pop   Oddratio       p_uncorrected         description")
+        # print first 20 go enrichment
         for rec in self.results[:20]:
-            # calculate some additional statistics
-            # (over_under, is_ratio_different)
-            rec.update_remaining_fields(min_ratio=self.min_ratio)
-            if rec.is_ratio_different:
-                print(rec.__str__(indent=self.indent))
+            print(rec.__str__(indent=self.indent))
         return 0
 
     def count_terms(self, geneset, assoc, go_tree):
