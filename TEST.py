@@ -20,8 +20,8 @@ from TransCellAssay.IO.Rest.Service import REST
 
 s = REST("test", "https://www.ebi.ac.uk/chemblws")
 res = s.get_one("targets/CHEMBL5246.json", "json")
-print(res)
-
+target = res['target']
+print(target['organism'])
 
 # go_tree = GO.GO_tree(obo_file="gene_ontology.1_2.obo")
 # go_term = go_tree.go_Term['GO:0000001']

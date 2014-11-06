@@ -29,7 +29,7 @@ from requests.models import Response
 
 
 __all__ = ["Service"]
-
+DEBUG = True
 
 class ServiceError(Exception):
     def __init__(self, value):
@@ -334,7 +334,8 @@ class REST(RESTBase):
         Creates a normal session using HTTPAdapter
         max retries is defined in the :attr:`MAX_RETRIES`
         """
-        print("Create session")
+        if DEBUG:
+            print("Create session")
         self._session = requests.session()
         adapter = requests.adapters.HTTPAdapter(max_retries=self.max_retries)
         self._session.mount('http://', adapter)
@@ -374,6 +375,9 @@ class REST(RESTBase):
         # finally
         return res.content
 
+    def _apply(self, iterable, fn, *args, **kwargs):
+        return [fn(x, *args, **kwargs) for x in iterable if x is not None]
+
     def _get_async(self, keys, frmt='json', params={}):
         # does not work under python3 so local import
         import grequests
@@ -387,7 +391,7 @@ class REST(RESTBase):
             self.last_response = ret
             return ret
         except Exception as e:
-            print("Error caught in async. " + e)
+            print("Error caught in async. ", e)
             return []
 
     def _get_all_urls(self, keys, frmt=None):
@@ -407,14 +411,17 @@ class REST(RESTBase):
         * if list is larger than ASYNC_THRESHOLD, use asynchronous call.
         """
         if isinstance(query, list) and len(query) > self.async_threshold:
-            print("Running async call for a list")
+            if DEBUG:
+                print("Running async call for a list")
             return self.get_async(query, frmt, params=params, **kargs)
         if isinstance(query, list) and len(query) <= self.async_threshold:
-            print("Running sync call for a list")
+            if DEBUG:
+                print("Running sync call for a list")
             return [self.get_one(key, frmt, params=params, **kargs) for key in query]
             # return self.get_sync(query, frmt)
         # OTHERWISE
-        print("Running http_get (single call mode)")
+        if DEBUG:
+            print("Running http_get (single call mode)")
         # return self.get_one(**{'frmt': frmt, 'query': query, 'params':params})
         return self.get_one(query, frmt, params=params, **kargs)
 
