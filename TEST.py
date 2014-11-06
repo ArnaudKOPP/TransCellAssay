@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 """
-GO testing
+For testing module in actual dev
 """
 
 __author__ = "Arnaud KOPP"
@@ -14,6 +14,13 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 import TransCellAssay.Omics.GO_enrichment as GO
+
+from TransCellAssay.IO.Rest.Service import REST
+# from TransCellAssay import REST
+
+s = REST("test", "https://www.ebi.ac.uk/chemblws")
+res = s.get_one("targets/CHEMBL5246.json", "json")
+print(res)
 
 
 # go_tree = GO.GO_tree(obo_file="gene_ontology.1_2.obo")
@@ -28,5 +35,7 @@ import TransCellAssay.Omics.GO_enrichment as GO
 # print(asso.query(3804))
 # print(asso.association[3804])
 
+'''
 enrichment = GO.EnrichmentStudy(study="/home/akopp/Bureau/study.txt", pop="/home/akopp/Bureau/population.txt",
                                 assoc="/home/akopp/Bureau/gene_id_go_id.csv")
+'''

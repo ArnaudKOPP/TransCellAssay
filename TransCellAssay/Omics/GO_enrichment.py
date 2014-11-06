@@ -399,11 +399,11 @@ class EnrichmentStudy():
 
         return self.results
 
-    def print_summary(self):
+    def print_summary(self, number=20):
         # field names for output
         print("  Go Id     enrichment ratio/stu ratio/pop   Oddratio       p_uncorrected         description")
         # print first 20 go enrichment
-        for rec in self.results[:20]:
+        for rec in self.results[:number]:
             print(rec.__str__(indent=self.indent))
         return 0
 
