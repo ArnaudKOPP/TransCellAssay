@@ -222,10 +222,10 @@ class KEGG(REST):
 
         if option:
             if database not in _valid_db_options:
-                raise ValueError(
-                    "invalid database. Since option was provided, database must be in %s" % _valid_db_options)
+                raise ValueError("\033[0;31m[ERROR]\033[0m invalid database. Since option was provided, database must "
+                                 "be in %s" % _valid_db_options)
             if option not in _valid_options:
-                raise ValueError("invalid option. Must be in %s " % _valid_options)
+                raise ValueError("\033[0;31m[ERROR]\033[0m invalid option. Must be in %s " % _valid_options)
             url += "/" + option
 
         res = self.http_get(url, frmt="txt")
@@ -239,3 +239,102 @@ class KEGG(REST):
         """
         url = "http://www/kegg.jp/dbget-bin/www_bget?" + entry
         webbrowser.open(url)
+
+    def get(self, dbentries, option=None):
+        """
+        Retrieves given database entrie
+        :param dbentries:  KEGG database entries involving the following
+            database: pathway, brite, module, disease, drug, environ, ko, genome
+            compound, glycan, reaction, rpair, rclass, enzyme **or** any organism
+            using the KEGG organism code (see :attr:`organismIds`
+            attributes) or T number (see :attr:`organismTnumbers` attribute).
+        :param option: aaseq, ntseq, mol, kcf, image, kgml
+
+        s = KEGG()
+        # retrieves a compound entry and a glycan entry
+        s.get("cpd:C01290+gl:G00092")
+        # same as above
+        s.get("C01290+G00092")
+        # retrieves a human gene entry and an E.coli O157 gene entry
+        s.get("hsa:10458+ece:Z5100")
+        # retrieves amino acid sequences of a human gene and an E.coli O157 gene
+        s.get("hsa:10458+ece:Z5100/aaseq")
+        # retrieves the image file of a pathway map
+        s.get("hsa05130/image")
+        # same as above
+        s.get("hsa05130", "image")
+        Another example here below shows how to save the image of a given pathway::
+        res = s.get("hsa05130/image")
+        # same as : res = s.get("hsa05130","image")
+        f = open("test.png", "w")
+        f.write(res)
+        f.close()
+        .. note:: The input is limited up to 10 entries (KEGG restriction).
+        """
+        _valid_options = ["aaseq", "ntseq", "mol", "kcf", "image", "kgml"]
+        _valid_db_options = ["compound", "drug"]
+
+        url = "get/" + dbentries
+
+        if option:
+            if option not in _valid_options:
+                raise ValueError("\033[0;31m[ERROR]\033[0m Invalid Option. Must be in %s" % _valid_options)
+            url += "/" + option
+
+        res = self.http_get(url, frmt="txt")
+        return res
+
+    def conv(self, target, source):
+        """
+        Convert KEGG identifiers to/from outside identifiers
+        :param target: target database (kegg orga)
+        :param source: source database (uniprot or valid dbentries
+        :return: dict with keys being the source and value being the target
+        Here are the rules to set the target and source parameters.
+        If the second argument is not a **dbentries**, source and target
+        parameters can be of two types:
+        #. gene identifiers. If the target is a KEGG Id, then the source
+        must be one of *ncbi-gi*, *ncbi-geneid* or *uniprot*.
+        .. note:: source and target can be swapped.
+        #. chemical substance identifiers. If the target is one of the
+        following kegg database: drug, compound, glycan then the source
+        must be one of *pubchem* or *chebi*.
+        .. note:: again, source and target can be swapped
+        If the second argument is a **dbentries**, it can be again of two types:
+        #. gene identifiers. The database used can be one ncbi-gi,
+        ncbi-geneid, uniprot or any KEGG organism
+        #. chemical substance identifiers. The database used can be one of
+        drug, compound, glycan, pubchem or chebi only.
+        .. note:: if the second argument is a dbentries, target and dbentries
+        cannot be swapped.
+        ::
+        # conversion from NCBI GeneID to KEGG ID for E. coli genes
+        conv("eco","ncbi-geneid")
+        # inverse of the above example
+        conv("eco","ncbi-geneid")
+        #conversion from KEGG ID to NCBI GI
+        conv("ncbi-gi","hsa:10458+ece:Z5100")
+        To make it clear by taking another example, you can either convert an
+        entire database to another (e.g., from uniprot to KEGG Id all human gene
+        IDs)::
+        uniprot_ids, kegg_ids = s.conv("hsa", "uniprot")
+        or a subset by providing a valid **dbentries**::
+        s.conv("hsa","up:Q9BV86+")
+        .. warning:: dbentries are not check and are supposed to be correct.
+        See :meth:`check_idbentries` to help you checking a dbentries.
+        """
+        isOrg = self.isOrganism(target)
+        if isOrg is False and target not in ['ncbi-gi', 'ncbi-geneid', 'uniprot', 'pubchem', 'chebi', 'drug',
+                                             'compound', 'glycan']:
+            raise ValueError(
+                "\033[0;31m[ERROR]\033[0m Invalid syntax, target must be a KEGG id or one of the allowed database")
+
+        url = "conv/" + target + "/" + source
+        res = self.http_get(url, frmt="txt")
+
+        try:
+            t = [x.split("\t")[0] for x in res.strip().split("\n")]
+            s = [x.split("\t")[1] for x in res.strip().split("\n")]
+            return dict([(x, y) for x, y in zip(t, s)])
+        except:
+            return res

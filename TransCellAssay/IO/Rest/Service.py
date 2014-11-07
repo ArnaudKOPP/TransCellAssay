@@ -378,6 +378,27 @@ class REST(RESTBase):
     def _apply(self, iterable, fn, *args, **kwargs):
         return [fn(x, *args, **kwargs) for x in iterable if x is not None]
 
+    def _get_async2(self, keys, frmt="json", params={}):
+        import asyncio
+        # # DEVELOPMENT SANDBOX for TRYING
+        session = self.session
+        try:
+            urls = self._get_all_urls(keys, frmt)
+
+            @asyncio.coroutine
+            def loop():
+                loop = asyncio.get_event_loop()
+                future = loop.run_until_complete(None, requests.get, urls)
+                response = yield from future
+                return response
+
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(loop())
+
+        except Exception as e:
+            print("Error caught in async. ", e)
+            return []
+
     def _get_async(self, keys, frmt='json', params={}):
         # does not work under python3 so local import
         import grequests
