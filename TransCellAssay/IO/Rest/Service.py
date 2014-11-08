@@ -386,9 +386,9 @@ class REST(RESTBase):
             urls = self._get_all_urls(keys, frmt)
 
             @asyncio.coroutine
-            def loop():
+            def loop(url):
                 loop = asyncio.get_event_loop()
-                future = loop.run_until_complete(None, requests.get, urls)
+                future = loop.run_until_complete(None, requests.get, url)
                 response = yield from future
                 return response
 
