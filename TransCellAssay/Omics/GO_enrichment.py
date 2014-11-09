@@ -315,7 +315,15 @@ class GOEnrichmentRecord(object):
 
     def __str__(self, indent=False):
         field_data = [self.__dict__[f] for f in self._fields]
-        return field_data
+        field_formatter = ["%s"] * 2 + ["%d/%d"] * 2 + ["%.3g/%.3g"] * 1 + ["%s"] * 1
+        assert len(field_data) == len(field_formatter)
+
+        # print dots to show the level of the term
+        dots = ""
+        if self.goterm is not None and indent:
+            dots = "." * self.goterm.level
+
+        return dots + "\t".join(a % b for (a, b) in zip(field_formatter, field_data))
 
     def __repr__(self):
         return "GOEnrichmentRecord(%s)" % self.id
@@ -401,7 +409,7 @@ class EnrichmentStudy():
 
     def print_summary(self, number=20):
         # field names for output
-        print("  Go Id     enrichment ratio/stu ratio/pop   Oddratio       p_uncorrected         description")
+        print("\t".join(GOEnrichmentRecord()._fields))
         # print first 20 go enrichment
         for rec in self.results[:number]:
             print(rec.__str__(indent=self.indent))

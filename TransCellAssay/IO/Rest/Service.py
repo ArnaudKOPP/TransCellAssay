@@ -1,5 +1,5 @@
 """
-Base Class for REST and WDSL class
+Base Class for REST services, inspired by bioservices
 """
 
 __author__ = "Arnaud KOPP"
@@ -12,21 +12,17 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 import os
-import sys
 import socket
 import platform
-import json
 import time
 import webbrowser
 import binascii
-import readline
-import TransCellAssay.IO.Rest.xml
 from urllib.request import urlopen, Request
-from urllib.parse import urlparse, urlencode
+from urllib.parse import urlencode
 from urllib.error import HTTPError
 import requests  # replacement for urllib2 (2-3 times faster)
 from requests.models import Response
-
+import aiohttp
 
 __all__ = ["Service"]
 DEBUG = True
@@ -110,7 +106,9 @@ class Service():
         The easyXML object provides utilities to ease access to the XML
         tag/attributes.
         """
-        return TransCellAssay.IO.REST.easyXML(res)
+        from TransCellAssay.IO.Rest import xml
+
+        return xml.easyXML(res)
 
     def __str__(self):
         txt = "Instance of %s service" % self.name
@@ -434,7 +432,9 @@ class REST(RESTBase):
         if isinstance(query, list) and len(query) > self.async_threshold:
             if DEBUG:
                 print("Running async call for a list")
-            return self.get_async(query, frmt, params=params, **kargs)
+            # Not implemented yet a sync funtions with Requests package, will be available in REST2 with aiohttp
+            # return self.get_async(query, frmt, params=params, **kargs)
+            return [self.get_one(key, frmt, params=params, **kargs) for key in query]
         if isinstance(query, list) and len(query) <= self.async_threshold:
             if DEBUG:
                 print("Running sync call for a list")
@@ -544,3 +544,42 @@ class REST(RESTBase):
         print(self.last_response.content)
         print(self.last_response.reason)
         print(self.last_response.status_code)
+
+
+class REST2(RESTBase):
+    """
+    The ideas (sync/async) and code using requests were inspired from the chembl
+    python wrapper but significantly changed.
+
+    This class is variant of REST by use of aiohttp for async http request
+
+    IN DEV !!!!
+
+    Get one value::
+    s = REST("test", "https://www.ebi.ac.uk/chemblws")
+    res = s.get_one("targets/CHEMBL2476.json", "json")
+    res['organism']
+    u'Homo sapiens'
+
+    """
+    content_types = {
+        'bed': 'text/x-bed',
+        'default': "application/x-www-form-urlencoded",
+        'gff3': 'text/x-gff3',
+        'fasta': 'text/x-fasta',
+        'json': 'application/json',
+        "jsonp": "text/javascript",
+        "nh": "text/x-nh",
+        'phylip': 'text/x-phyloxml+xml',
+        'phyloxml': 'text/x-phyloxml+xml',
+        'seqxml': 'text/x-seqxml+xml',
+        'txt': 'text/plain',
+        'text': 'text/plain',
+        'xml': 'application/xml',
+        'yaml': 'text/x-yaml'
+    }
+
+    def __init__(self, name, url=None, verbose=True):
+        super(REST, self).__init__(name, url, verbose=verbose)
+        self._session = None
+        self.FAST_SAVE = True
