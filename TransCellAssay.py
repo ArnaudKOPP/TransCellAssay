@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 import numpy as np
 import TransCellAssay as TCA
+import pandas as pd
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -77,35 +78,41 @@ USAGE
         screen_test = TCA.Core.Screen()
         plaque1 = TCA.Core.Plate()
         plaque1.setName('Plate 1')
-        platesetup = TCA.Core.PlateSetup()
-        platesetup.setPlateSetup("/home/akopp/Bureau/test/Pl1PP.csv")
-        plaque1.addPlateSetup(platesetup)
+        platesetup = TCA.Core.PlateMap()
+        platesetup.setPlateSetup("/home/arnaud/Desktop/TEST/Pl1PP.csv")
+        plaque1.addPlateMap(platesetup)
         rep1 = TCA.Core.Replicat()
         rep1.setName("rep1")
-        rep1.setData("/home/akopp/Bureau/test/Pl1rep_1.csv")
+        rep1.setData("/home/arnaud/Desktop/TEST/Pl1rep_1.csv")
         rep2 = TCA.Core.Replicat()
         rep2.setName("rep2")
-        rep2.setData("/home/akopp/Bureau/test/Pl1rep_2.csv")
+        rep2.setData("/home/arnaud/Desktop/TEST/Pl1rep_2.csv")
         rep3 = TCA.Core.Replicat()
         rep3.setName("rep3")
-        rep3.setData("/home/akopp/Bureau/test/Pl1rep_3.csv")
+        rep3.setData("/home/arnaud/Desktop/TEST/Pl1rep_3.csv")
         plaque1.addReplicat(rep1)
         plaque1.addReplicat(rep2)
         plaque1.addReplicat(rep3)
         screen_test.addPlate(plaque1)
 
         feature = "Nuc Intensity"
-        neg = "NT"
-        pos = "SINV C"
+        neg = "Neg2"
+        pos = "SINVc"
 
         time_norm_stop = time.time()
         print("\033[0;32mReading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
-        # # Computation TEST
-        # tmp2 = Stat.computePlateAnalyzis(plaque1, [feature], neg)
-        # print(tmp2)
-
         time_start_comp = time.time()
+
+        # # Computation TEST
+        pd.set_option('display.max_rows', 500)
+        pd.set_option('display.max_columns', 500)
+        pd.set_option('display.width', 1000)
+
+        print(platesetup)
+        tmp2 = TCA.computePlateAnalyzis(plaque1, [feature], neg, threshold=50)
+        print(tmp2)
+
         np.set_printoptions(linewidth=200)
         np.set_printoptions(suppress=True)
 
@@ -123,12 +130,6 @@ USAGE
         print(plaque1.SECData)
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
-
-        # # test Go enrichment
-
-        TCA.find_enrichment(study_test="/home/akopp/Bureau/study.txt",
-                            population_fn="/home/akopp/Bureau/population.txt",
-                            assoc_file="/home/akopp/Bureau/gene_id_go_id.csv")
 
         # TCA.getMeanSDCellCount(plaque1, verbose=True)
         # TCA.getPercentPosCell(plaque1, feature, neg, 50, direction='down', verbose=True)

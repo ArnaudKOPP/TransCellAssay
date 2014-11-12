@@ -55,7 +55,7 @@ class SubReplicat(Replicat):
             self.CE = CE
 
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def computeDataForFeature(self, feature, data_type="median"):
         """
@@ -88,7 +88,7 @@ class SubReplicat(Replicat):
             self.Data = Data[self.RB - 1: self.RE - 1, self.CB - 1: self.CE - 1]
 
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __repr__(self):
         """
@@ -99,7 +99,7 @@ class SubReplicat(Replicat):
                     "\n Normalized Data : " + repr(self.isNormalized) +
                     "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __str__(self):
         """
@@ -110,4 +110,4 @@ class SubReplicat(Replicat):
                     "\n Normalized Data : " + repr(self.isNormalized) +
                     "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)

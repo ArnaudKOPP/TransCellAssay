@@ -33,6 +33,7 @@ class Result():
             size = 384
         self.Data = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', int),
                                           ('SDCellsCunt', float), ('PositiveCells', float), ('SDPositiveCells', float),
+                                          ('mean', float), ('median', float), ('std', float), ('stdm', float),
                                           ('Infection', float), ('Toxicity', float)])
 
         self.GenePos = {}  # # To save GeneName (key)and  Gene position (value)
@@ -46,7 +47,7 @@ class Result():
         try:
             return self.Data
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def initGeneWell(self, GeneList):
         """
@@ -63,7 +64,7 @@ class Result():
                 self.GenePosI[k] = i
                 i += 1
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def addValue(self, Gene, Feature, Value):
         """
@@ -81,7 +82,7 @@ class Result():
             else:
                 self.Data[Feature][self.GenePos[Gene]] = Value
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def addDataDict(self, datadict, Feature, by='Pos'):
         """
@@ -108,7 +109,7 @@ class Result():
                 else:
                     print("\033[0;31m[ERROR]\033[0m")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getCol(self, col):
         """
@@ -134,8 +135,7 @@ class Result():
             try:
                 np.savetxt(FilePath, self.Data, delimiter=';')
             except Exception as e:
-                print(e)
-                print('\033[0;31m[ERROR]\033[0m  Error in saving results data')
+                print('\033[0;31m[ERROR]\033[0m  Error in saving results data', e)
 
     def __add__(self, other):
         """
@@ -146,7 +146,7 @@ class Result():
         try:
             print('Not yet implemented')
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __repr__(self):
         """
@@ -154,9 +154,9 @@ class Result():
         :return:
         """
         try:
-            return "A Result object: " + repr(self.Data)
+            return "Result object: " + repr(pd.DataFrame(self.Data))
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __str__(self):
         """
@@ -164,6 +164,6 @@ class Result():
         :return:
         """
         try:
-            return "A Result Array: \n " + repr(self.Data)
+            return "Result Array: \n " + repr(pd.DataFrame(self.Data))
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)

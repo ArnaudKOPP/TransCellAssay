@@ -36,7 +36,7 @@ class SubPlate(Plate):
             self.MetaInfo = parent_plate.MetaInfo
             self.Name = parent_plate.Name
 
-            self.PlateSetup = parent_plate.PlateSetup.platesetup.iloc[RB - 1: RE - 1, CB - 1: CE - 1]
+            self.PlateMap = parent_plate.PlateMap.platemap.iloc[RB - 1: RE - 1, CB - 1: CE - 1]
             self.Threshold = parent_plate.Threshold
             self.ControlPos = None
 
@@ -79,7 +79,7 @@ class SubPlate(Plate):
             for key, value in plate.replicat.items():
                 self.replicat[value.name] = SubReplicat(value, RB, RE, CB, CE)
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __add__(self, replicat):
         """
@@ -91,7 +91,7 @@ class SubPlate(Plate):
             name = replicat.name
             self.replicat[name] = replicat
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __repr__(self):
         """
@@ -101,13 +101,13 @@ class SubPlate(Plate):
             return (
                 "\n SubPlate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
-                "\n PlateSetup : \n" + repr(self.PlateSetup) +
+                "\n PlateMap : \n" + repr(self.PlateMap) +
                 "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat) + "\n")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __str__(self):
         """
@@ -117,10 +117,10 @@ class SubPlate(Plate):
             return (
                 "\n SubPlate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
-                "\n PlateSetup : \n" + repr(self.PlateSetup) +
+                "\n PlateMap : \n" + repr(self.PlateMap) +
                 "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat) + "\n")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)

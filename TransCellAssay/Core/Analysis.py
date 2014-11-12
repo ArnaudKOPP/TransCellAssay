@@ -14,7 +14,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def computePlateAnalyzis(Plate, feature, neg, threshold=50, direction='Up'):
+def computePlateAnalyzis(Plate, feature, neg, threshold=50):
     """
     Compute all score/carac implemented before, for plate
     :param Plate: Plate object
@@ -26,19 +26,25 @@ def computePlateAnalyzis(Plate, feature, neg, threshold=50, direction='Up'):
     """
     try:
         if isinstance(Plate, TransCellAssay.Plate):
-            platesetup = Plate.getPlateSetup()
-            size = platesetup.getSize()
+            platemap = Plate.getPlateMap()
+            size = platemap.getSize()
             result = TransCellAssay.Result(size=(size[0] * size[1]))
-            x = platesetup.getPSasDict()
+            x = platemap.getMapAsDict()
             result.initGeneWell(x)
             try:
                 meanCount, sdvalue = TransCellAssay.getMeanSDCellCount(Plate)
                 result.addDataDict(meanCount, 'CellsCount', by='Pos')
                 result.addDataDict(sdvalue, 'SDCellsCunt', by='Pos')
-                PercentCell, sdPercentCell = TransCellAssay.getPercentPosCell(Plate, feature, neg, threshold,
-                                                                              direction)
+                PercentCell, sdPercentCell = TransCellAssay.getPercentPosCell(Plate, feature, neg, threshold)
                 result.addDataDict(PercentCell, 'PositiveCells', by='Pos')
                 result.addDataDict(sdPercentCell, 'SDPositiveCells', by='Pos')
+
+                mean, median, std, stdm = TransCellAssay.getVariability(Plate, feature)
+                result.addDataDict(mean, 'mean', by='Pos')
+                result.addDataDict(median, 'median', by='Pos')
+                result.addDataDict(std, 'std', by='Pos')
+                result.addDataDict(stdm, 'stdm', by='Pos')
+
                 return result
             except Exception as e:
                 print(e)

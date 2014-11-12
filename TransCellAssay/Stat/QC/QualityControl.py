@@ -32,8 +32,8 @@ def PlateQualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, 
         if not isinstance(plate, TCA.Core.Plate):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
         else:
-            neg_well = plate.PlateSetup.getGeneWell(cneg)
-            pos_well = plate.PlateSetup.getGeneWell(cpos)
+            neg_well = plate.PlateMap.getGeneWell(cneg)
+            pos_well = plate.PlateMap.getGeneWell(cpos)
 
             qc_data_array = pd.DataFrame()
 

@@ -79,7 +79,7 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, Core.Plate):
-            ttest_score = np.zeros(plate.PlateSetup.platesetup.shape)
+            ttest_score = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
             ttest_score[ttest_score == 0] = np.NaN
@@ -87,7 +87,7 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
             nb_rep = len(plate.replicat)
 
             neg_value = []
-            neg_pos = plate.PlateSetup.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.getGenePos(cNeg)
             if not neg_pos:
                 raise Exception
             # search neg control value
@@ -168,12 +168,12 @@ def _PairedTStatScore(plate, cNeg, SECData=True, verbose=False):
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, Core.Plate):
-            ttest_score = np.zeros(plate.PlateSetup.platesetup.shape)
+            ttest_score = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
             ttest_score[ttest_score == 0] = np.NaN
 
-            neg_pos = plate.PlateSetup.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.getGenePos(cNeg)
             if not neg_pos:
                 raise Exception
 

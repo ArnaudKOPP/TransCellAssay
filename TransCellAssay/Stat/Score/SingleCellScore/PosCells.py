@@ -15,7 +15,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def getPercentPosCell(plate, feature, control, threshold, direction, verbose=False):
+def getPercentPosCell(plate, feature, control, threshold, verbose=False):
     """
     get % of Cell over threshold, default threshold is 50%
     This function take some time and need to be very improve
@@ -32,13 +32,12 @@ def getPercentPosCell(plate, feature, control, threshold, direction, verbose=Fal
         raise TypeError("\033[0;31m[ERROR]\033[0m  Take a Plate object in input")
     else:
         replicat_Dict = plate.getAllReplicat()
-        ps = plate.PlateSetup
-        control_well = ps.getGeneWell(control)
+        pm = plate.PlateMap
+        control_well = pm.getGeneWell(control)
         # iterate on replicat dict
         for k, replicat in replicat_Dict.items():
             # # threshold value for control
             data_control = replicat.getDataByWells(control_well, feature=feature)
-            print(data_control)
             threshold_value = np.percentile(data_control, threshold)
             # data from replicat
             data = replicat.Dataframe
@@ -52,10 +51,7 @@ def getPercentPosCell(plate, feature, control, threshold, direction, verbose=Fal
                 # xdata = data[feature][data['Well'] == well]
                 xdata = datagroupby.get_group(well)[feature]
                 len_total = len(xdata)
-                if direction == 'Up':
-                    len_thres = len(np.extract(xdata > threshold_value, xdata))
-                else:
-                    len_thres = len(np.extract(xdata < threshold_value, xdata))
+                len_thres = len(np.extract(xdata > threshold_value, xdata))
                 # # include in dict key is the position and value is a %
                 dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
         # determine the mean of replicat
@@ -66,11 +62,11 @@ def getPercentPosCell(plate, feature, control, threshold, direction, verbose=Fal
             for key, value in dict_percent_cell_tmp.items():
                 dict_percent_sd_cell[key] = np.std(value)
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
         if verbose:
-            mean = np.zeros(plate.PlateSetup.platesetup.shape)
-            sd = np.zeros(plate.PlateSetup.platesetup.shape)
+            mean = np.zeros(plate.PlateMap.platemap.shape)
+            sd = np.zeros(plate.PlateMap.platemap.shape)
 
             for k, v in dict_percent_cell.items():
                 well = TCA.Utils.WellFormat.getOppositeWellFormat(k)

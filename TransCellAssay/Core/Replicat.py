@@ -56,8 +56,7 @@ class Replicat():
                 self.Dataframe = pd.read_csv(input, decimal=",", sep=";")
                 print('Reading %s File' % InputFile)
             except Exception as e:
-                print(e)
-                print('\033[0;31m[ERROR]\033[0m  Error in reading %s File' % InputFile)
+                print('\033[0;31m[ERROR]\033[0m  Error in reading %s File' % InputFile, e)
 
     def getData(self):
         """
@@ -88,7 +87,7 @@ class Replicat():
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided numpy ndarray")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def setName(self, info):
         """
@@ -124,7 +123,7 @@ class Replicat():
             else:
                 return self.Dataframe[feature][self.Dataframe['Well'] == well]
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getDataByWells(self, wells, feature=None):
         """
@@ -136,18 +135,17 @@ class Replicat():
         try:
             data = None
             for i in wells:
-                print(i)
                 if feature is None:
                     if data is None:
                         data = self.Dataframe[self.Dataframe['Well'] == i]
-                    data.append(self.Dataframe[self.Dataframe['Well'] == i])
+                    data = data.append(self.Dataframe[self.Dataframe['Well'] == i])
                 else:
                     if data is None:
                         data = self.Dataframe[feature][self.Dataframe['Well'] == i]
-                    data.append(self.Dataframe[feature][self.Dataframe['Well'] == i])
+                    data = data.append(self.Dataframe[feature][self.Dataframe['Well'] == i])
             return data
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getDataByFeatures(self, featList, Well=False):
         """
@@ -164,7 +162,7 @@ class Replicat():
             else:
                 return self.Dataframe[featList]
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def computeDataForFeature(self, feature):
         """
@@ -194,7 +192,7 @@ class Replicat():
                 self.Data[pos[0]][pos[1]] = elem
 
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getDataMatrix(self, feature, SEC=False):
         """
@@ -215,7 +213,7 @@ class Replicat():
             return self.Data
 
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def Normalization(self, feature, method='Zscore', log=True, neg=None, pos=None):
         """
@@ -233,7 +231,7 @@ class Replicat():
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def SystematicErrorCorrection(self, Algorithm='Bscore', method='median', verbose=False, save=False,
                                   max_iterations=100):
@@ -294,7 +292,7 @@ class Replicat():
                         self.isSpatialNormalized = True
 
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __repr__(self):
         """
@@ -305,7 +303,7 @@ class Replicat():
                     "\n Normalized Data : " + repr(self.isNormalized) +
                     "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __str__(self):
         """
@@ -316,4 +314,4 @@ class Replicat():
                     "\n Normalized Data : " + repr(self.isNormalized) +
                     "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)

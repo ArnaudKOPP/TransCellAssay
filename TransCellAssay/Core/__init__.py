@@ -1,6 +1,6 @@
 __author__ = 'Arnaud KOPP'
 from TransCellAssay.Core.Plate import Plate
-from TransCellAssay.Core.PlateSetup import PlateSetup
+from TransCellAssay.Core.PlateMap import PlateMap
 from TransCellAssay.Core.Replicat import Replicat
 from TransCellAssay.Core.Screen import Screen
 from TransCellAssay.Core.Result import Result

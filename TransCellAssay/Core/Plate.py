@@ -24,7 +24,7 @@ class Plate():
     self.replicat = {}  # Dict that contain all replicat, key are name and value are replicat object
     self.MetaInfo = {}  # Store some stuff
     self.Name = None  # Name of Plate
-    self.PlateSetup = ScreenPlateReplicatPS.PlateSetup()  # Plate Setup object
+    self.PlateMap = ScreenPlateReplicatPS.PlateMap()  # Plate Setup object
     self.Threshold = None  # Threeshold for considering Cell as positive
     self.ControlPos = ((0, 11), (0, 23))  # column where control is positionned in plate (default pos)
     self.Neg = None  # Name of negative control
@@ -46,7 +46,7 @@ class Plate():
         self.MetaInfo = {}
         self.Name = None
 
-        self.PlateSetup = TCA.Core.PlateSetup()
+        self.PlateMap = TCA.Core.PlateMap()
         self.Threshold = None
         self.ControlPos = ((0, 11), (0, 23))
 
@@ -72,7 +72,7 @@ class Plate():
             for keys, values in self.MetaInfo.items():
                 print(keys, values)
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def setName(self, name):
         """
@@ -82,7 +82,7 @@ class Plate():
         try:
             self.Name = name
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getName(self):
         """
@@ -92,7 +92,7 @@ class Plate():
         try:
             return self.Name
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def setDataX(self, Array, type):
         """
@@ -113,7 +113,7 @@ class Plate():
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must provied numpy ndarray")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def addReplicat(self, replicat):
         """
@@ -125,7 +125,7 @@ class Plate():
             name = replicat.name
             self.replicat[name] = replicat
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getReplicat(self, name):
         """
@@ -136,7 +136,7 @@ class Plate():
         try:
             return self.replicat[name]
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getAllReplicat(self):
         """
@@ -146,7 +146,7 @@ class Plate():
         try:
             return self.replicat
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def addInfo(self, key, value):
         """
@@ -157,7 +157,7 @@ class Plate():
         try:
             self.MetaInfo.pop(key, value)
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getInfo(self, key):
         """
@@ -168,8 +168,7 @@ class Plate():
         try:
             return self.MetaInfo[key]
         except Exception as e:
-            print(e)
-            print('Error in getting info')
+            print("\033[0;31m[ERROR]\033[0m ", e)
 
     def getAllDataFromReplicat(self, features, Well=False):
         """
@@ -186,8 +185,7 @@ class Plate():
                 data[repTmp.getName()] = tmp
             return data
         except Exception as e:
-            print(e)
-            print('\033[0;31m[ERROR]\033[0m  Error in getAllDataFromReplicat')
+            print('\033[0;31m[ERROR]\033[0m  Error in getAllDataFromReplicat ', e)
 
     def getAllData(self):
         """
@@ -202,28 +200,28 @@ class Plate():
                 data[tmp.getName()] = datatmp
             return data
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
-    def addPlateSetup(self, platesetup):
+    def addPlateMap(self, platemap):
         """
-        Add the platesetup to the plate
-        :param platesetup:
+        Add the platemap to the plate
+        :param platemap:
         """
         try:
-            assert isinstance(platesetup, TCA.Core.PlateSetup)
-            self.PlateSetup = platesetup
+            assert isinstance(platemap, TCA.Core.PlateMap)
+            self.PlateMap = platemap
         except Exception as e:
             print(e)
 
-    def getPlateSetup(self):
+    def getPlateMap(self):
         """
-        Get the platesetup from the plate
-        :return: plateSetup
+        Get the platemap from the plate
+        :return: platemap
         """
         try:
-            return self.PlateSetup
+            return self.PlateMap
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def addResult(self, result):
         """
@@ -234,7 +232,7 @@ class Plate():
             assert isinstance(result, TCA.Core.Result)
             self.Result = result
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def getResult(self):
         """
@@ -244,7 +242,7 @@ class Plate():
         try:
             return self.Result
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def computeDataFromReplicat(self, feature, SECData=False):
         """
@@ -253,7 +251,7 @@ class Plate():
         :param feature: which feature to have into sum up data
         """
         try:
-            tmp_array = np.zeros(self.PlateSetup.platesetup.shape)
+            tmp_array = np.zeros(self.PlateMap.platemap.shape)
             i = 0
 
             for key, replicat in self.replicat.items():
@@ -272,7 +270,7 @@ class Plate():
                 self.SECData = tmp_array / i
                 self.isSpatialNormalized = True
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def Normalization(self, feature, technics='Zscore', log=True, neg=None, pos=None):
         """
@@ -287,7 +285,7 @@ class Plate():
                 value.Normalization(feature=feature, method=technics, log=log, neg=neg, pos=pos)
             self.isNormalized = True
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def SystematicErrorCorrection(self, Algorithm='Bscore', method='median', apply_down=False, verbose=False,
                                   save=False,
@@ -351,7 +349,7 @@ class Plate():
                         self.isSpatialNormalized = True
 
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __add__(self, object):
         """
@@ -362,12 +360,12 @@ class Plate():
             if isinstance(object, TCA.Core.Replicat):
                 name = object.name
                 self.replicat[name] = object
-            elif isinstance(object, TCA.Core.PlateSetup):
-                self.PlateSetup = object
+            elif isinstance(object, TCA.Core.PlateMap):
+                self.PlateMap = object
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __getitem__(self, key):
         """
@@ -378,7 +376,7 @@ class Plate():
         try:
             return self.replicat[key]
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __setitem__(self, key, value):
         """
@@ -392,7 +390,7 @@ class Plate():
             else:
                 self.replicat[key] = value
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __len__(self):
         """
@@ -402,7 +400,7 @@ class Plate():
         try:
             return len(self.replicat)
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __repr__(self):
         """
@@ -412,13 +410,13 @@ class Plate():
             return (
                 "\n Plate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
-                "\n PlateSetup : \n" + repr(self.PlateSetup) +
+                "\n PlateMap : \n" + repr(self.PlateMap) +
                 "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __str__(self):
         """
@@ -428,10 +426,10 @@ class Plate():
             return (
                 "\n Plate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
-                "\n PlateSetup : \n" + repr(self.PlateSetup) +
+                "\n PlateMap : \n" + repr(self.PlateMap) +
                 "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat))
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)

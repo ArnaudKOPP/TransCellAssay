@@ -2,6 +2,9 @@
 Variability method
 """
 
+import numpy as np
+import TransCellAssay as TCA
+
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
@@ -12,45 +15,43 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def getMean():
+def getVariability(plate, feature, verbose=False):
     """
-    get Mean of interested value
+
+    :param plate:
+    :param feature:
+    :param verbose:
     :return:
     """
-    try:
-        return 0
-    except Exception as e:
-        print(e)
+    if not isinstance(plate, TCA.Core.Plate):
+        raise TypeError("\033[0;31m[ERROR]\033[0m  Take a Plate object in input")
+    else:
+        try:
+            mean = {}
+            median = {}
 
+            for key, item in plate.replicat.items():
+                datagp = item.Dataframe.groupby('Well')
 
-def getSD():
-    """
-    get Standart deviation of interested value
-    :return:
-    """
-    try:
-        return 0
-    except Exception as e:
-        print(e)
+                # get all well from data
+                well_list = item.Dataframe.Well.unique()
+                # iterate on well
+                for well in well_list:
+                    mean.setdefault(well, []).append(np.mean(datagp.get_group(well)[feature]))
+                    median.setdefault(well, []).append(np.median(datagp.get_group(well)[feature]))
+            std = [(i, np.std(v)) for i, v in mean.items()]
+            stdm = [(i, np.std(v)) for i, v in median.items()]
+            std = dict(std)
+            stdm = dict(stdm)
 
+            mean = [(i, sum(v) / len(v)) for i, v in mean.items()]
+            median = [(i, sum(v) / len(v)) for i, v in median.items()]
+            mean = dict(mean)
+            median = dict(median)
 
-def getMedian():
-    """
-    get median of interested value
-    :return:
-    """
-    try:
-        return 0
-    except Exception as e:
-        print(e)
+            if verbose:
+                print("Nothing")
 
-
-def getMad():
-    """
-    get MAD of interested value
-    :return:
-    """
-    try:
-        return 0
-    except Exception as e:
-        print(e)
+            return mean, median, std, stdm
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)

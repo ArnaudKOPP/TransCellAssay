@@ -57,8 +57,8 @@ def getMeanSDCellCount(plate, verbose=False):
             MeanCount = dict(MeanCountList)  # # convert to dict
 
             if verbose:
-                mean = np.zeros(plate.PlateSetup.platesetup.shape)
-                sd = np.zeros(plate.PlateSetup.platesetup.shape)
+                mean = np.zeros(plate.PlateMap.platemap.shape)
+                sd = np.zeros(plate.PlateMap.platemap.shape)
 
                 for k, v in MeanCount.items():
                     well = TCA.Utils.WellFormat.getOppositeWellFormat(k)

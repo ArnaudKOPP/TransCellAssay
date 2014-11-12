@@ -105,7 +105,7 @@ def _UnpairedSSMD(plate, cNeg, variance='unequal', SECData=True, verbose=False):
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            SSMD = np.zeros(plate.PlateSetup.platesetup.shape)
+            SSMD = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
             SSMD[SSMD == 0] = np.NaN
@@ -113,7 +113,7 @@ def _UnpairedSSMD(plate, cNeg, variance='unequal', SECData=True, verbose=False):
             nb_rep = len(plate.replicat)
             rep_value = []
             neg_value = []
-            neg_pos = plate.PlateSetup.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.getGenePos(cNeg)
             if not neg_pos:
                 raise Exception
             # search neg control value
@@ -197,7 +197,7 @@ def _UnpairedSSMDr(plate, cNeg, variance='unequal', SECData=True, verbose=False)
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            SSMD = np.zeros(plate.PlateSetup.platesetup.shape)
+            SSMD = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
             SSMD[SSMD == 0] = np.NaN
@@ -205,7 +205,7 @@ def _UnpairedSSMDr(plate, cNeg, variance='unequal', SECData=True, verbose=False)
             nb_rep = len(plate.replicat)
             rep_value = []
             neg_value = []
-            neg_pos = plate.PlateSetup.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.getGenePos(cNeg)
             if not neg_pos:
                 raise Exception
             # search neg control value
@@ -289,12 +289,12 @@ def _PairedSSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            SSMD = np.zeros(plate.PlateSetup.platesetup.shape)
+            SSMD = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
             SSMD[SSMD == 0] = np.NaN
 
-            neg_pos = plate.PlateSetup.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.getGenePos(cNeg)
             if not neg_pos:
                 raise Exception
 
@@ -373,12 +373,12 @@ def _PairedSSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            SSMDr = np.zeros(plate.PlateSetup.platesetup.shape)
+            SSMDr = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
             SSMDr[SSMDr == 0] = np.NaN
 
-            neg_pos = plate.PlateSetup.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.getGenePos(cNeg)
             if not neg_pos:
                 raise Exception
 
@@ -458,8 +458,8 @@ def _SSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
         if cNeg is None:
             raise AttributeError('Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            ps = plate.PlateSetup
-            ssmd = np.zeros(ps.platesetup.shape)
+            ps = plate.PlateMap
+            ssmd = np.zeros(ps.platemap.shape)
 
             # # replace 0 with NaN
             ssmd[ssmd == 0] = np.NaN
@@ -528,8 +528,8 @@ def _SSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
         if cNeg is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            ps = plate.PlateSetup
-            ssmdr = np.zeros(ps.platesetup.shape)
+            ps = plate.PlateMap
+            ssmdr = np.zeros(ps.platemap.shape)
 
             # # replace 0 with NaN
             ssmdr[ssmdr == 0] = np.NaN
