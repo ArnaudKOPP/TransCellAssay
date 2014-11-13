@@ -110,7 +110,7 @@ USAGE
         pd.set_option('display.width', 1000)
 
         print(platesetup)
-        tmp2 = TCA.computePlateAnalyzis(plaque1, [feature], neg, threshold=50)
+        tmp2 = TCA.computePlateAnalyzis(plaque1, [feature], neg, pos, threshold=50)
         print(tmp2)
 
         np.set_printoptions(linewidth=200)

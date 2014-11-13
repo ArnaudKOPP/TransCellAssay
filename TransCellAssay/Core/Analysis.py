@@ -14,7 +14,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def computePlateAnalyzis(Plate, feature, neg, threshold=50):
+def computePlateAnalyzis(Plate, feature, neg, pos, threshold=50):
     """
     Compute all score/carac implemented before, for plate
     :param Plate: Plate object
@@ -44,6 +44,11 @@ def computePlateAnalyzis(Plate, feature, neg, threshold=50):
                 result.addDataDict(median, 'median', by='Pos')
                 result.addDataDict(std, 'std', by='Pos')
                 result.addDataDict(stdm, 'stdm', by='Pos')
+
+                toxicity, viability = TransCellAssay.get_Toxicity_Viability(plate=Plate, cell_count=meanCount, neg=neg,
+                                                                            pos=pos)
+                result.addDataDict(toxicity, 'Toxicity', by='Pos')
+                result.addDataDict(viability, 'Viability', by='Pos')
 
                 return result
             except Exception as e:
