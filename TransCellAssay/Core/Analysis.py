@@ -1,5 +1,5 @@
 """
-Score defined method for compute some score on data
+Compute basics score for plate and store result into a Result object (numpy ndarray)
 """
 
 import TransCellAssay
@@ -33,20 +33,20 @@ def computePlateAnalyzis(Plate, feature, neg, pos, threshold=50):
             result.initGeneWell(x)
             try:
                 meanCount, sdvalue = TransCellAssay.getMeanSDCellCount(Plate)
+                PercentCell, sdPercentCell = TransCellAssay.getPercentPosCell(Plate, feature, neg, threshold)
+                mean, median, std, stdm = TransCellAssay.getVariability(Plate, feature)
+                toxicity, viability = TransCellAssay.get_Toxicity_Viability(plate=Plate, cell_count=meanCount, neg=neg,
+                                                                            pos=pos)
+
+                # Add all result into Result Data Frame
                 result.addDataDict(meanCount, 'CellsCount', by='Pos')
                 result.addDataDict(sdvalue, 'SDCellsCunt', by='Pos')
-                PercentCell, sdPercentCell = TransCellAssay.getPercentPosCell(Plate, feature, neg, threshold)
                 result.addDataDict(PercentCell, 'PositiveCells', by='Pos')
                 result.addDataDict(sdPercentCell, 'SDPositiveCells', by='Pos')
-
-                mean, median, std, stdm = TransCellAssay.getVariability(Plate, feature)
                 result.addDataDict(mean, 'mean', by='Pos')
                 result.addDataDict(median, 'median', by='Pos')
                 result.addDataDict(std, 'std', by='Pos')
                 result.addDataDict(stdm, 'stdm', by='Pos')
-
-                toxicity, viability = TransCellAssay.get_Toxicity_Viability(plate=Plate, cell_count=meanCount, neg=neg,
-                                                                            pos=pos)
                 result.addDataDict(toxicity, 'Toxicity', by='Pos')
                 result.addDataDict(viability, 'Viability', by='Pos')
 
