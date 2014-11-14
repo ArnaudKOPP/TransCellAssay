@@ -38,13 +38,13 @@ class Plate(object):
     self.SECData = None  # matrix that contain data corrected or from replicat data
     """
 
-    def __init__(self):
+    def __init__(self, name=None):
         """
         Constructor
         """
         self.replicat = {}
         self.MetaInfo = {}
-        self.Name = None
+        self.Name = name
 
         self.PlateMap = TCA.Core.PlateMap()
         self.Threshold = None
@@ -362,6 +362,10 @@ class Plate(object):
                 self.replicat[name] = object
             elif isinstance(object, TCA.Core.PlateMap):
                 self.PlateMap = object
+            elif isinstance(object, list):
+                for elem in object:
+                    assert isinstance(elem, TCA.Core.Replicat)
+                    self.replicat[elem.name] = elem
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
         except Exception as e:

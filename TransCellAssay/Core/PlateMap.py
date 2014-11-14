@@ -33,11 +33,13 @@ class PlateMap(object):
         easy manipulation of different type into array (more easy that numpy)
     """
 
-    def __init__(self, ):
+    def __init__(self, platemap=None):
         """
         Constructor
         """
         self.platemap = pd.DataFrame()
+        if platemap is not None:
+            self.setPlateSetup(platemap)
 
     def setPlateSetup(self, InputFile=None):
         """

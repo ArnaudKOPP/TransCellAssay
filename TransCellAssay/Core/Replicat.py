@@ -41,12 +41,18 @@ class Replicat(object):
     self.SpatNormData = None  # matrix that contain data corrected
     """
 
-    def __init__(self):
+    def __init__(self, name=None, data=None):
         '''
         Constructor
         '''
         self.Dataframe = pd.DataFrame()
-        self.name = ""
+        if data is not None:
+            self.setData(data)
+
+        if name is not None:
+            self.name = name
+        else:
+            self.name = ""
 
         self.isNormalized = False
         self.isSpatialNormalized = False

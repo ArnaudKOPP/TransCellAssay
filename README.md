@@ -58,9 +58,3 @@ This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons
 
 ### Long long term
 1. Web interface
-
-### Need To be Refactoring
-1. ResultArray.py
-2. CellCount.py
-3. PosCells.py
-4. Analysis.py

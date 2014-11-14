@@ -90,9 +90,21 @@ USAGE
         rep3 = TCA.Core.Replicat()
         rep3.setName("rep3")
         rep3.setData("/home/arnaud/Desktop/TEST/Pl1rep_3.csv")
-        plaque1.addReplicat(rep1)
-        plaque1.addReplicat(rep2)
-        plaque1.addReplicat(rep3)
+
+        listing = list()
+        listing.append(rep1)
+        listing.append(rep2)
+        listing.append(rep3)
+        plaque1 + listing
+        # # or
+        #plaque1 + rep1
+        #plaque1 + rep2
+        #plaque1 + rep3
+
+        ## or
+        #plaque1.addReplicat(rep1)
+        #plaque1.addReplicat(rep2)
+        #plaque1.addReplicat(rep3)
         screen_test.addPlate(plaque1)
 
         feature = "Nuc Intensity"
