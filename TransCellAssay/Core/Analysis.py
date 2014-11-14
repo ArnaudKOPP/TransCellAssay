@@ -1,5 +1,5 @@
 """
-Compute basics score for plate and store result into a Result object (numpy ndarray)
+Compute basics score for plate and store result into a Result object
 """
 
 import TransCellAssay

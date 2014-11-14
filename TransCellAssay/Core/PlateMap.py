@@ -25,7 +25,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class PlateMap():
+class PlateMap(object):
     """
     classdocs
     Class for manipuling platemap
@@ -165,7 +165,7 @@ class PlateMap():
         :return:
         """
         try:
-            return "A PlateSetup object: \n" + repr(self.platemap) + "\n"
+            return "PlateMap: \n" + repr(self.platemap) + "\n"
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -176,6 +176,6 @@ class PlateMap():
         """
         try:
 
-            return "A PlateSetup object: \n" + repr(self.platemap) + "\n"
+            return "PlateMap: \n" + repr(self.platemap) + "\n"
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

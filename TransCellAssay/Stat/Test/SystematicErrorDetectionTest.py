@@ -53,7 +53,7 @@ def SystematicErrorDetectionTest(Array, alpha=0.05, verbose=False):
 
             return SEDT_Array
         else:
-            raise TypeError
+            raise TypeError("Must provided an Array")
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
 

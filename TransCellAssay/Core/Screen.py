@@ -14,7 +14,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class Screen():
+class Screen(object):
     """
     Class that defined a screen, and contain several plate
     """

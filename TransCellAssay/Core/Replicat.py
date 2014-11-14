@@ -1,5 +1,17 @@
 """
 Replicat implement the notion of technical replicat for one plate
+The replicat contains the raw data given in input by the csv, this data are stored into a pandas DataFrame.
+
+Input format MUST BE like that :
+
+WELL   X    X     X     X
+A1
+A1
+A1
+...
+B2
+B2
+
 """
 
 import pandas as pd
@@ -16,7 +28,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class Replicat():
+class Replicat(object):
     """
     classdocs
     Class for manipuling replicat of plate

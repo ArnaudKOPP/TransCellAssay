@@ -100,21 +100,27 @@ USAGE
         pos = "SINVc"
 
         time_norm_stop = time.time()
-        print("\033[0;32mReading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+        print(
+            "\033[0;32m ->Reading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
         time_start_comp = time.time()
-
-        # # Computation TEST
         pd.set_option('display.max_rows', 500)
         pd.set_option('display.max_columns', 500)
         pd.set_option('display.width', 1000)
-
-        print(platesetup)
-        tmp2 = TCA.computePlateAnalyzis(plaque1, [feature], neg, pos, threshold=50)
-        print(tmp2)
-
         np.set_printoptions(linewidth=200)
         np.set_printoptions(suppress=True)
+
+        time_norm_start = time.time()
+        TCA.PlateQualityControl(plaque1, features=feature, cneg=neg, cpos=pos, SEDT=False, SECdata=False, verbose=True)
+        time_norm_stop = time.time()
+        print("\033[0;32mQuality Control Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+
+        time_norm_start = time.time()
+        tmp2 = TCA.computePlateAnalyzis(plaque1, [feature], neg, pos, threshold=50)
+        print(tmp2)
+        time_norm_stop = time.time()
+        print("\033[0;32mCompute Plate Analyzis Executed in {0:f}s\033[0m".format(
+            float(time_norm_stop - time_norm_start)))
 
         time_norm_start = time.time()
         plaque1.Normalization(feature, technics='Zscore', log=True, neg=neg, pos=pos)
@@ -124,19 +130,17 @@ USAGE
         time_norm_start = time.time()
         plaque1.computeDataFromReplicat(feature)
         print(plaque1.Data)
+        TCA.SystematicErrorDetectionTest(plaque1.Data, alpha=0.05, verbose=True)
         plaque1.SystematicErrorCorrection(method='median', apply_down=True, save=True, verbose=False)
-        # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # # apply only when replicat are not SE norm
+        # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # apply only when replicat are not SE norm
         plaque1.computeDataFromReplicat(feature, SECData=True)
         print(plaque1.SECData)
+        TCA.SystematicErrorDetectionTest(plaque1.SECData, alpha=0.05, verbose=True)
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
-        # TCA.getMeanSDCellCount(plaque1, verbose=True)
-        # TCA.getPercentPosCell(plaque1, feature, neg, 50, direction='down', verbose=True)
-        # TCA.PlateQualityControl(plaque1, features=feature, cneg=neg, cpos=pos, SEDT=False, SECdata=False, verbose=True)
 
         # TCA.Graphics.plotDistribution('C5', plaque1, feature)
-
         # print("\n \033[0;32m     SSMD TESTING \033[0m")
         # time_norm_start = time.time()
         # TCA.ssmd_score(plaque1, cNeg=neg, paired=False, SECData=False, verbose=True)
@@ -182,7 +186,7 @@ USAGE
         # TCA.MatrixErrorAmendment(Array.copy(), verbose=True, alpha=0.05)
 
         time_stop_comp = time.time()
-        print("\033[0;32mComputation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))
+        print("\033[0;32m ->Computation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
         return 0
@@ -194,7 +198,8 @@ USAGE
         sys.stderr.write(indent + "  for help use --help")
         return 2
     time_stop = time.time()
-    print("\033[0;32m   ----> Script total time : {0:f}s\033[0m".format(float(time_stop - time_start)))
+    print("\033[0;32m   ----> TOTAL TIME (reading input + computation): {0:f}s\033[0m".format(
+        float(time_stop - time_start)))
 
 
 if __name__ == "__main__":

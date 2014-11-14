@@ -1,17 +1,64 @@
 """
-Performed basic Quality control like S/N, Z-factor or SSMD
+Performed basic Quality control like S/N, Z-factor, SSMD and CVD
 
 There are various environmental, instrumental and biological factors that contribute to assay performance in a HT
 setting. Therefore, one key the key steps in the analysis of HT screening data is the examination of the assay quality.
 To determine if the data collected from each plate meet the minimum quality requirement, and if anny pattern exist
 before and after normalization, the distribution of control and test sample data should be examined at
 experiment/plate/well level.
-
 We expect good separation between positive and negative control in a plate with good quality.
+
+AVR
+This parameters capture the data variability in both controls as opposed to signal_windows, and can be defined
+as 1-Z'factor.
+
+Z'Factor
+Despite of the fact that AVR and Z'factor has similar properties, the latter is the most widely used QC criterion,
+where the separation between positive and negative controls is calculated as a measure of the signal range of a
+particular assay in a single plate. Z'factor has its basis on normality assumption, and the use of 3 std's of the
+mean of the group comes from the 99.73% confidence limit. While Z'factor account for the variablity in the
+control wells, positional effects or any other variability in the sample wells are not captured. Although Z'factor
+is an intuitive method to determine the assay quality, several concerns were raised about the reliability of this
+parameter as an assay quality measure. Major issue associated with the Z'factor method are that the magnitude of
+the Z'factor does not necessarily correlate with the hit confirmation rates, and that Z'factor is not appropriate
+measure to compare the assay quality across different screens and assay types.
+
+Z-Factor
+This is the modified version of the Z’-factor, where the mean and std of the
+negative control are substituted with the ones for the test samples. Although Z-factor
+is more advantageous than Z’-factor due to its ability to incorporate sample variabili‐
+ty in the calculations, other issues associated with Z’-factor (as discussed above) still
+apply. Additionally, in a focused library in which many possible “hits” are clustered
+in certain plates, Z-factor would not be an appropriate QC parameter. While assays
+with Z’- or Z-factor values above 0.5 are considered to be excellent, one may want to
+include additional measures, such as visual inspection or more advanced formulations
+in the decision process, especially for cell-based assays with inherently high signal
+variability.
+
+SSMD
+It is an alternative quality metric to Z’- and Z-factor, which was recently devel‐
+oped to assess the assay quality in HT screens (Zhang 2007a; Zhang 2007b). Due to its ba‐
+sis on probabilistic and statistical theories, SSMD was shown to be a more meaningful
+parameter than previously mentioned methods for QC purposes. SSMD differs from Z’-
+and Z-factor by its ability to handle controls with different effects, which enables the se‐
+lection of multiple QC criteria for assays (Zhang et al. 2008a). The application of SSMD-
+based QC criterion was demonstrated in multiple studies in comparison to other
+commonly-used methods (Zhang 2008b; Zhang 2011b; Zhang et al. 2008a). Although
+SSMD was developed primarily for RNAi screens, it can also be used for small molecule
+screens.
+The larger the absolute value of SSMD between two populations, the greater the differentiation  between the two
+populations
+
+CVD
+As in original meaning of coefficient of variability for a random variable, CVD represents the relative SD of the
+difference with respect to mean of the difference.
+The largest the absolute value of CVD between two populations, the less the differentiation between the two
+populations. CVD is the reciprocal of SSMD.
 
 SSMD,CVD and Z-factor are in robust version
 """
 
+import os
 import numpy as np
 import pandas as pd
 import TransCellAssay as TCA
@@ -27,7 +74,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def PlateQualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, verbose=False):
+def PlateQualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, dirpath=None, verbose=False):
     try:
         if not isinstance(plate, TCA.Core.Plate):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
@@ -40,16 +87,21 @@ def PlateQualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, 
             for key, value in plate.replicat.items():
                 qc_data_array = qc_data_array.append(
                     ReplicatQualityControl(value, feature=features, cneg=neg_well, cpos=pos_well,
-                                           SEDT=SEDT, SECdata=SECdata, verbose=False))
+                                           SEDT=SEDT, SECdata=SECdata, dirpath=dirpath, verbose=False))
 
             if verbose:
                 print("\nQuality control for plat: \n")
                 print(qc_data_array)
+
+            if dirpath is not None:
+                qc_data_array.to_csv(os.path.join(dirpath, "QC_Data.csv"), index=False)
+
+            return qc_data_array
     except Exception as e:
         print(e)
 
 
-def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=False, verbose=False):
+def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=False, dirpath=None, verbose=False):
     try:
         if not isinstance(replicat, TCA.Core.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
@@ -65,7 +117,7 @@ def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=Fa
                 if SECdata:
                     if replicat.SECData is None:
                         raise ValueError("\033[0;31m[ERROR]\033[0m SEC Before")
-                    TCA.Stat.Test.SystematicErrorDetectionTest(replicat.SECData, verbose=True)
+                    TCA.SystematicErrorDetectionTest(replicat.SECData, verbose=True)
 
             print("Replicat : ", replicat.name)
             print("mean neg :", np.mean(negdata), " Standard dev : ", np.std(negdata))
@@ -76,6 +128,12 @@ def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=Fa
             qc_data_array['ZFactor'] = _zfactor(replicat.Dataframe, feature, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
+
+            if dirpath is not None:
+                with open(os.path.join(dirpath, "Replicat.txt"), "w") as text_file:
+                    print("Replicat : {}".format(replicat.name), file=text_file)
+                    print("mean neg : {}".format(np.mean(negdata)), " Standard dev : {}".format(np.std(negdata)))
+                    print("mean pos : {}".format(np.mean(posdata)), " Standard dev : {}".format(np.std(posdata)))
 
             if verbose:
                 print("\nQuality Control for replicat : ", replicat.name)
@@ -101,7 +159,7 @@ def _get_data_control(data, feature, c_ref):
             for i in c_ref:
                 if datax.empty:
                     datax = data[feature][data['Well'] == i]
-                datax.append(data[feature][data['Well'] == i])
+                datax = datax.append(data[feature][data['Well'] == i])
             return datax
     except Exception as e:
         print(e)
@@ -185,7 +243,6 @@ def _ssmd(cneg, cpos):
     commonly-used methods (Zhang 2008b; Zhang 2011b; Zhang et al. 2008a). Although
     SSMD was developed primarily for RNAi screens, it can also be used for small molecule
     screens.
-
     The larger the absolute value of SSMD between two populations, the greater the differentiation  between the two
     populations
     :param cneg: negative control data
@@ -203,7 +260,6 @@ def _cvd(cneg, cpos):
     """
     As in original meaning of coefficient of variability for a random variable, CVD represents the relative SD of the
     difference with respect to mean of the difference.
-
     The largest the absolute value of CVD between two populations, the less the differentiation between the two
     populations. CVD is the reciprocal of SSMD.
     :param cneg: negative control data

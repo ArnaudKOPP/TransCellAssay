@@ -7,4 +7,4 @@ from TransCellAssay.Core.Result import Result
 from TransCellAssay.Core.Analysis import computePlateAnalyzis
 from TransCellAssay.Core.SubPlate import SubPlate
 from TransCellAssay.Core.SubReplicat import SubReplicat
-from TransCellAssay.Core.Well import Gene
+from TransCellAssay.Core.Well import Well

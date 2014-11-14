@@ -16,7 +16,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class Plate():
+class Plate(object):
     """
     classdocs
     Class for manipuling plate and their replicat :

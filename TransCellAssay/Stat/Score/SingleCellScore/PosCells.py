@@ -1,5 +1,5 @@
 """
-Positive cell count method
+Count Positive Cell in each well, the threshold is given by the % of positive cell in negative control
 """
 
 import numpy as np
@@ -34,6 +34,7 @@ def getPercentPosCell(plate, feature, control, threshold, verbose=False):
         replicat_Dict = plate.getAllReplicat()
         pm = plate.PlateMap
         control_well = pm.getGeneWell(control)
+
         # iterate on replicat dict
         for k, replicat in replicat_Dict.items():
             # # threshold value for control
@@ -54,15 +55,14 @@ def getPercentPosCell(plate, feature, control, threshold, verbose=False):
                 len_thres = len(np.extract(xdata > threshold_value, xdata))
                 # # include in dict key is the position and value is a %
                 dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
+
         # determine the mean of replicat
         dict_percent_cellList = [(i, sum(v) / len(v)) for i, v in dict_percent_cell_tmp.items()]
         dict_percent_cell = dict(dict_percent_cellList)
+
         # determine the standart deviation of % Cells
-        try:
-            for key, value in dict_percent_cell_tmp.items():
-                dict_percent_sd_cell[key] = np.std(value)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        for key, value in dict_percent_cell_tmp.items():
+            dict_percent_sd_cell[key] = np.std(value)
 
         if verbose:
             mean = np.zeros(plate.PlateMap.platemap.shape)

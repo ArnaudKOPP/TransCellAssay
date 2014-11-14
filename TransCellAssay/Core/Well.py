@@ -12,14 +12,28 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 
-class Gene():
-    def __init__(self, name):
+class Well(object):
+    def __init__(self, name, position, refPlaque):
         try:
             self.Name = name
+            self.Position = position
+            self.RefPlaque = refPlaque
             self.Id = None
-            self.Position = None
-            self.RefPlaque = None
+            self.IdType = None
             self.TargetSequence = None
+        except Exception as e:
+            print(e)
+
+    def set_id(self, identifier, identifier_type):
+        try:
+            self.Id = identifier
+            self.IdType = identifier_type
+        except Exception as e:
+            print(e)
+
+    def set_target_sequence(self, tgt_seq):
+        try:
+            self.TargetSequence = tgt_seq
         except Exception as e:
             print(e)
 

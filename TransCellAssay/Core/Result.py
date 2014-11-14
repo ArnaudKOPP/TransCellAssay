@@ -2,7 +2,9 @@
 Result is created for store result like score and hit resulting of SSMD or other technics in a tabe-like (numpy array),
 feature are column and GeneName/Well are stored at the first col, each row represent a gene/well
 We can save the tabe in csv by using pandas Dataframe.
-This class is only compatible with single cell data, need to be more "elastic" with 1Data/Well
+
+This class store data with dict in input, where key are well and item are data.
+
 """
 
 import numpy as np
@@ -18,7 +20,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class Result():
+class Result(object):
     """
     Class for representing record array for result
     """
@@ -130,7 +132,7 @@ class Result():
         """
         try:
             tmp = pd.DataFrame(self.Data)
-            tmp.to_csv(FilePath)
+            tmp.to_csv(FilePath, index=False)
         except:
             try:
                 np.savetxt(FilePath, self.Data, delimiter=';')
