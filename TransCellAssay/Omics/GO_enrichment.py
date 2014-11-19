@@ -44,12 +44,12 @@ class OBOreader():
     Parse obo file
     """
 
-    def __init__(self, obo_file="gene_ontology.1_2.obo"):
+    def __init__(self, obo_file="go.obo"):
         try:
             self._handle = open(obo_file)
         except IOError:
             urllib.request.urlretrieve(
-                "http://geneontology.org/ontology/obo_format_1_2/gene_ontology.1_2.obo", "gene_ontology.1_2.obo")
+                "http://www.berkeleybop.org/ontologies/go/go.obo", "go.obo")
             self._handle = open(obo_file)
 
     def __iter__(self):
@@ -159,7 +159,7 @@ class GOTerm:
 
 
 class GO_tree():
-    def __init__(self, obo_file="gene_ontology.1_2.obo"):
+    def __init__(self, obo_file="go.obo"):
         self.go_Term = {}
         self.load_obo_file(obo_file)
 
@@ -318,12 +318,7 @@ class GOEnrichmentRecord(object):
         field_formatter = ["%s"] * 2 + ["%d/%d"] * 2 + ["%.3g/%.3g"] * 1 + ["%s"] * 1
         assert len(field_data) == len(field_formatter)
 
-        # print dots to show the level of the term
-        dots = ""
-        if self.goterm is not None and indent:
-            dots = "." * self.goterm.level
-
-        return dots + "\t".join(a % b for (a, b) in zip(field_formatter, field_data))
+        return "\t".join(a % b for (a, b) in zip(field_formatter, field_data))
 
     def __repr__(self):
         return "GOEnrichmentRecord(%s)" % self.id
@@ -359,11 +354,11 @@ class EnrichmentStudy():
     assoc file is csv format
     """
 
-    def __init__(self, study, pop, assoc, verbose=True):
+    def __init__(self, study, pop, assoc, verbose=True, compare=False):
         self.verbose = verbose
         self.alpha = 0.05
         self.pval = 0.05
-        self.compare = True
+        self.compare = compare
         self.ration = 1
         self.indent = True
         self.min_ratio = self.ration
@@ -409,7 +404,7 @@ class EnrichmentStudy():
 
     def print_summary(self, number=20):
         # field names for output
-        print("\t".join(GOEnrichmentRecord()._fields))
+        print("\t".join(GOEnrichmentRecord._fields))
         # print first 20 go enrichment
         for rec in self.results[:number]:
             print(rec.__str__(indent=self.indent))

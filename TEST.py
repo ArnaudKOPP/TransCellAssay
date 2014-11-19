@@ -13,6 +13,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
+'''
 from TransCellAssay.IO.Rest.Service import REST
 
 s = REST("test", "https://www.ebi.ac.uk/chemblws")
@@ -45,10 +46,11 @@ res = s.parse_kgml_pathway("hsa04660")
 # print(res)
 res['relations']
 print(res['relations'][0])
+'''
 
 import TransCellAssay.Omics.GO_enrichment as GO
 
-# go_tree = GO.GO_tree(obo_file="gene_ontology.1_2.obo")
+# go_tree = GO.GO_tree(obo_file="go.obo")
 # go_term = go_tree.go_Term['GO:0000001']
 # go_tree.query_term('GO:0045056', verbose=True)
 # print(go_term)
@@ -60,7 +62,6 @@ import TransCellAssay.Omics.GO_enrichment as GO
 # print(asso.query(3804))
 # print(asso.association[3804])
 
-'''
-enrichment = GO.EnrichmentStudy(study="/home/akopp/Bureau/study.txt", pop="/home/akopp/Bureau/population.txt",
-                                assoc="/home/akopp/Bureau/gene_id_go_id.csv")
-'''
+
+enrichment = GO.EnrichmentStudy(study="/home/arnaud/Desktop/study.txt", pop="/home/arnaud/Desktop/pop.txt",
+                                assoc="/home/arnaud/Desktop/assoc.csv", compare=False)
