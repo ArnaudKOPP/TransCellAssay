@@ -65,3 +65,8 @@ import TransCellAssay.Omics.GO_enrichment as GO
 
 enrichment = GO.EnrichmentStudy(study="/home/arnaud/Desktop/study.txt", pop="/home/arnaud/Desktop/pop.txt",
                                 assoc="/home/arnaud/Desktop/assoc.csv", compare=False)
+result = enrichment.to_dataframe()
+import pandas as pd
+
+pd.set_option('display.width', 1000)
+print(pd.DataFrame(result))

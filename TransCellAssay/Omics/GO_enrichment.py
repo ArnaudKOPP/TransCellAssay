@@ -300,15 +300,13 @@ class Association():
 class GOEnrichmentRecord(object):
     """Represents one result (from a single GOTerm) in the GOEnrichmentStudy
     """
-    _fields = "id enrichment ratio_in_study ratio_in_pop p_uncorrected description ".split()
+    _fields = "id ratio_in_study ratio_in_pop p_uncorrected description ".split()
 
     def __init__(self, id, ratio_in_study, ratio_in_pop, p_uncorrected):
         self.id = id
         self.ratio_in_study = ratio_in_study
         self.ratio_in_pop = ratio_in_pop
         self.p_uncorrected = p_uncorrected
-        self.enrichment = 'e' if ((1.0 * self.ratio_in_study[0] / self.ratio_in_study[1]) > (
-            1.0 * self.ratio_in_pop[0] / self.ratio_in_pop[1])) else 'p'
 
     def __setattr__(self, name, value):
         self.__dict__[name] = value
@@ -317,7 +315,6 @@ class GOEnrichmentRecord(object):
         field_data = [self.__dict__[f] for f in self._fields]
         field_formatter = ["%s"] * 2 + ["%d/%d"] * 2 + ["%.3g/%.3g"] * 1 + ["%s"] * 1
         assert len(field_data) == len(field_formatter)
-
         return "\t".join(a % b for (a, b) in zip(field_formatter, field_data))
 
     def __repr__(self):
@@ -354,8 +351,7 @@ class EnrichmentStudy():
     assoc file is csv format
     """
 
-    def __init__(self, study, pop, assoc, verbose=True, compare=False):
-        self.verbose = verbose
+    def __init__(self, study, pop, assoc, compare=False):
         self.alpha = 0.05
         self.pval = 0.05
         self.compare = compare
@@ -365,7 +361,6 @@ class EnrichmentStudy():
         if self.min_ratio is not None:
             assert 1 <= self.min_ratio <= 2
         assert 0 < self.alpha < 1, "Test-wise alpha must fall between (0, 1)"
-        self.methods = ["bonferroni", "sidak"]
 
         self.results = []
         self.study, self.pop = read_geneset(study, pop, compare=self.compare)
@@ -397,18 +392,27 @@ class EnrichmentStudy():
             # get go term for description and level
             rec.find_goterm(self.go_tree)
 
-        if self.verbose:
-            self.print_summary()
-
         return self.results
 
-    def print_summary(self, number=20):
-        # field names for output
-        print("\t".join(GOEnrichmentRecord._fields))
-        # print first 20 go enrichment
-        for rec in self.results[:number]:
-            print(rec.__str__(indent=self.indent))
-        return 0
+    def to_dataframe(self):
+        """
+        construct a numpy ndarray for storing result
+        :return:
+        """
+        size = len(self.results)
+        dataframe = np.zeros(size, dtype=[('ID', object), ('ratio_in_study', object), ('ratio_in_pop', object),
+                                          ('Fischer Test (OddsRation/P-value)', object), ('Description', object)])
+        i = 0
+        # # pretty ugly -> need to be more pythonic !!
+        for record in self.results:
+            assert isinstance(record, GOEnrichmentRecord)
+            dataframe["ID"][i] = record.id
+            dataframe["ratio_in_study"][i] = "%d/%d" % record.ratio_in_study
+            dataframe["ratio_in_pop"][i] = "%d/%d" % record.ratio_in_pop
+            dataframe["Fischer Test (OddsRation/P-value)"][i] = "%.3g/%.3g" % record.p_uncorrected
+            dataframe["Description"][i] = record.description
+            i += 1
+        return dataframe
 
     def count_terms(self, geneset, assoc, go_tree):
         """count the number of terms in the study group
@@ -422,68 +426,3 @@ class EnrichmentStudy():
             except:
                 continue
         return term_cnt
-
-
-def adjustPValues(pvalues, method='fdr', n=None):
-    '''returns an array of adjusted pvalues
-
-    Reimplementation of p.adjust in the R package.
-
-    p: numeric vector of p-values (possibly with 'NA's).  Any other
-    R is coerced by 'as.numeric'.
-
-    method: correction method. Valid values are:
-
-    n: number of comparisons, must be at least 'length(p)'; only set
-    this (to non-default) when you know what you are doing
-
-    For more information, see the documentation of the
-    p.adjust method in R.
-    '''
-
-    if n is None:
-        n = len(pvalues)
-
-    if method == "fdr":
-        method = "BH"
-
-    # optional, remove NA values
-    p = np.array(pvalues, dtype=np.float)
-    lp = len(p)
-
-    assert n <= lp
-
-    if n <= 1:
-        return p
-
-    if method == "bonferroni":
-        p0 = n * p
-    elif method == "holm":
-        i = np.arange(lp)
-        o = np.argsort(p)
-        ro = np.argsort(o)
-        m = np.maximum.accumulate((n - i) * p[o])
-        p0 = m[ro]
-    elif method == "hochberg":
-        i = np.arange(0, lp)[::-1]
-        o = np.argsort(1 - p)
-        ro = np.argsort(o)
-        m = np.minimum.accumulate((n - i) * p[o])
-        p0 = m[ro]
-    elif method == "BH":
-        i = np.arange(1, lp + 1)[::-1]
-        o = np.argsort(1 - p)
-        ro = np.argsort(o)
-        m = np.minimum.accumulate(float(n) / i * p[o])
-        p0 = m[ro]
-    elif method == "BY":
-        i = np.arange(1, lp + 1)[::-1]
-        o = np.argsort(1 - p)
-        ro = np.argsort(o)
-        q = np.sum(1.0 / np.arange(1, n + 1))
-        m = np.minimum.accumulate(q * float(n) / i * p[o])
-        p0 = m[ro]
-    elif method == "none":
-        p0 = p
-
-    return np.minimum(p0, np.ones(len(p0)))
