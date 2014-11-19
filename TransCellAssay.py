@@ -151,6 +151,8 @@ USAGE
         time_norm_stop = time.time()
         print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
+        TCA.ssmd_score(plaque1, cNeg=neg, paired=False, SECData=True, verbose=True)
+        TCA.t_stat_score(plaque1, cNeg=neg, paired=False, variance='equal', SECData=True, verbose=True)
 
         # TCA.Graphics.plotDistribution('C5', plaque1, feature)
         # print("\n \033[0;32m     SSMD TESTING \033[0m")
