@@ -205,3 +205,80 @@ def plotDistribution(Well, Plate, feature):
             plt.show(block=True)
     except Exception as e:
         print(e)
+
+
+def plot_3d_cloud_point(DataFrame, x=None, y=None, z=None):
+    """
+    Plot in 3d raw data with choosen features
+    :param DataFrame: dataframe without class label !!
+    :param x: x feature
+    :param y: y feature
+    :param z: z feature
+    """
+    try:
+        import pandas as pd
+
+        assert isinstance(DataFrame, pd.DataFrame)
+
+        from matplotlib import pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        from mpl_toolkits.mplot3d import proj3d
+
+        fig = plt.figure(figsize=(8, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        plt.rcParams['legend.fontsize'] = 10
+        ax.plot(DataFrame[x], DataFrame[y], DataFrame[z], '.', markersize=4, color='blue', alpha=0.5, label='Raw Data')
+
+        ax.set_xlabel(x)
+        ax.set_ylabel(y)
+        ax.set_zlabel(z)
+
+        plt.title('Raw Data point')
+        ax.legend(loc='upper right')
+        plt.show()
+    except Exception as e:
+        print(e)
+
+
+def plot_3d_per_well(DataFrame, x=None, y=None, z=None, single_cell=True):
+    """
+    Plot in 3d raw data with choosen features and with different color by well
+    :param DataFrame: dataframe without class label !!
+    :param x: x feature
+    :param y: y feature
+    :param z: z feature
+    """
+    try:
+        import pandas as pd
+        import numpy as np
+
+        assert isinstance(DataFrame, pd.DataFrame)
+
+        from matplotlib import pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        from mpl_toolkits.mplot3d import proj3d
+
+        wells = DataFrame.Well.unique()
+        fig = plt.figure(figsize=(8, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        plt.rcParams['legend.fontsize'] = 10
+        for well in wells:
+            if not single_cell:
+                ax.plot(DataFrame[x][DataFrame['Well'] == well],
+                        DataFrame[y][DataFrame['Well'] == well],
+                        DataFrame[z][DataFrame['Well'] == well], '.', markersize=4, color='blue', alpha=0.5,
+                        label='Raw Data')
+            else:
+                ax.plot(np.median(DataFrame[x][DataFrame['Well'] == well]),
+                        np.median(DataFrame[y][DataFrame['Well'] == well]),
+                        np.median(DataFrame[z][DataFrame['Well'] == well]), '.', markersize=4, color='blue', alpha=0.5,
+                        label='Raw Data')
+        ax.set_xlabel(x)
+        ax.set_ylabel(y)
+        ax.set_zlabel(z)
+
+        plt.title('Raw Data point')
+        ax.legend(loc='upper right')
+        plt.show()
+    except Exception as e:
+        print(e)
