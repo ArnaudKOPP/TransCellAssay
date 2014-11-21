@@ -1,5 +1,5 @@
 """
-Principal Component Analysis (PCA)
+Linear Discriminant Analysis (LDA)
 """
 
 __author__ = "Arnaud KOPP"
@@ -12,61 +12,65 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 import pandas as pd
-import numpy as np
 import TransCellAssay as TCA
 
 
-class PCA():
-    def __init__(self, OBJECT):
+class LDA():
+    def __init__(self, OBJECT, target):
+        """
+        Init LDA
+        :param OBJECT: can be replicat, plate or screen
+        :param target: target of LDA in Well format (A1)
+        :return:
+        """
         try:
             if isinstance(OBJECT, TCA.Replicat):
-                print("Process PCA on Replicat")
+                print("Process LDA on Replicat")
                 self.rawdata = OBJECT.Dataframe
             if isinstance(OBJECT, TCA.Plate):
-                print("Process PCA on Plate")
+                print("Process LDA on Plate")
             if isinstance(OBJECT, TCA.Screen):
-                print("Process PCA on Screen")
+                print("Process LDA on Screen")
         except Exception as e:
             print(e)
 
-    def _replicat_pca(self, replicat, n_component=5):
+    def _replicat_LDA(self, replicat, n_component=3):
         try:
             assert isinstance(replicat, TCA.Replicat)
             raw_data = replicat.Dataframe
             data = self._clear_dataframe(raw_data)
 
-            from sklearn.decomposition import PCA
+            ## DO LDA
+            from sklearn.lda import LDA
 
             X = data.as_matrix()
-            pca = PCA(n_components=n_component)
-            pca.fit(X)
-
-            transf = pca.transform(X)
-
+            LDA = LDA(n_components=n_component)
+            LDA.fit(X)
+            transf = LDA.transform(X)
 
         except Exception as e:
             print(e)
 
-    def _plate_pca(self, plate):
+    def _plate_LDA(self, plate):
         try:
             assert isinstance(plate, TCA.Plate)
         except Exception as e:
             print(e)
 
-    def _screen_pca(self, screen):
+    def _screen_LDA(self, screen):
         try:
             assert isinstance(screen, TCA.Screen)
         except Exception as e:
             print(e)
 
-    def _clear_dataframe(self, dataframe, to_remove=None):
+    def _clear_dataframe(self, dataframe, target, to_remove=None):
         try:
             # remove class label (Well columns)
             dataframe = dataframe.drop("Well", 1)
             if to_remove is not None:
                 for col in to_remove:
                     dataframe = dataframe.drop(col, 1)
-            return dataframe
+            return dataframe[dataframe['Well'] == target]
         except Exception as e:
             print(e)
 
@@ -80,6 +84,13 @@ class PCA():
             print(e)
 
     def _plot_rawdata(self, x, y, z):
+        """
+        Plot the raw data in 3d
+        :param x:
+        :param y:
+        :param z:
+        :return:
+        """
         try:
             assert isinstance(self.rawdata, pd.DataFrame)
             if x or y or z is None:

@@ -244,6 +244,24 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def computeAllcomponentFromReplicat(self):
+        """
+        compute all component mean from all replicat for each well
+        :return: dataframe
+        """
+        try:
+            df = None
+            for key, rep in self.replicat.items():
+                assert isinstance(rep, TCA.Replicat)
+                tmp = rep.Dataframe.groupby("Well")
+                if df is None:
+                    df = tmp.median()
+                else:
+                    df += tmp.median()
+            return df / len(self.replicat)
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
     def computeDataFromReplicat(self, feature, SECData=False):
         """
         Compute the mean/median matrix data of all replicat

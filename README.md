@@ -42,10 +42,7 @@ This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons
 2. Better Import system ???
 
 ### Principale Idea
-1. Machine Learning :
-    1. Classification ( C4.5, SVM, Neural Network, K neirest Neighbor, Random Forest ...)
-    2. Clustering ( K-mean, EM, Hierarchical ... )
-    3. Dimensionality reduction ( PCA, Gready Stepwise, Infogain, OneR, Greedy ... )
+1. Machine Learning like clustering or classification of hit
 2. Bayesian Inference (FDR...)
 3. GSEA (GO)
 4. PP-interaction

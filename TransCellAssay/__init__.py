@@ -8,8 +8,6 @@ from TransCellAssay.IO import *
 from TransCellAssay.Stat import *
 from TransCellAssay.Utils import *
 from TransCellAssay.ML import *
-from TransCellAssay.Bayesian import *
-from TransCellAssay.DoseResponseAnalysis import *
 from TransCellAssay.Omics import EnrichmentStudy
 
 __all__ = ['Core', 'IO', 'Stat', 'Utils', 'ML', 'Bayesian', 'DoseResponseAnalysis', 'Omics']

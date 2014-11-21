@@ -74,7 +74,7 @@ def plotSurf3D_Plate(array):
 def PlateHeatmap(array):
     """
     Plot all value of plate (replicat here)
-    :param dataFrame:
+    :param array: numpy array
     :return:
     """
     try:
@@ -90,6 +90,13 @@ def PlateHeatmap(array):
         pylab.pcolor(array, cmap=new_map)
         pylab.colorbar()
         pylab.show()
+        '''
+        import matplotlib.pyplot
+        import seaborn as sns
+        sns.set()
+        sns.heatmap(array)
+        plt.show()
+        '''
     except Exception as e:
         print(e)
 
@@ -279,6 +286,43 @@ def plot_3d_per_well(DataFrame, x=None, y=None, z=None, single_cell=True):
 
         plt.title('Raw Data point')
         ax.legend(loc='upper right')
+        plt.show()
+    except Exception as e:
+        print(e)
+
+
+'''
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import proj3d
+
+fig = plt.figure(figsize=(8, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+ax.scatter(data["Nuc Area"][data["Well"] == 'A1'], data["Nuc Intensity"][data["Well"] == 'A1'], data["Cell Intensity"][data["Well"] == 'A1'], '.', color='blue', alpha=0.5, label='E1')
+ax.scatter(data["Nuc Area"][data["Well"] == 'B1'], data["Nuc Intensity"][data["Well"] == 'B1'], data["Cell Intensity"][data["Well"] == 'B1'], '.', color='red', alpha=0.1, label='B1')
+
+plt.title('Raw Data point')
+ax.legend(loc='upper right')
+plt.show()
+'''
+
+
+def plot_raw_data(DataFrame):
+    '''
+    DataFrame must be clean of shit columns
+    :param DataFrame:
+    :return:
+    '''
+    try:
+        import pandas as pd
+        from matplotlib import pyplot as plt
+
+        assert isinstance(DataFrame, pd.DataFrame)
+
+        datagp = DataFrame.groupby("Well")
+        median = datagp.median()
+        median.plot()
         plt.show()
     except Exception as e:
         print(e)

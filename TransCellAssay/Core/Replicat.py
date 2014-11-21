@@ -318,6 +318,7 @@ class Replicat(object):
         """
         try:
             return ("\n Replicat : " + repr(self.name) +
+                    "\n Raw Data head : " + repr(self.Dataframe.head()) +
                     "\n Normalized Data : " + repr(self.isNormalized) +
                     "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
@@ -329,6 +330,7 @@ class Replicat(object):
         """
         try:
             return ("\n Replicat : " + repr(self.name) +
+                    "\n Raw Data head : " + repr(self.Dataframe.head()) +
                     "\n Normalized Data : " + repr(self.isNormalized) +
                     "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
