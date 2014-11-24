@@ -154,15 +154,16 @@ class Replicat(object):
         """
         try:
             data = None
+            datagp = self.RawData.groupby("Well")
             for i in wells:
                 if feature is None:
                     if data is None:
-                        data = self.RawData[self.RawData['Well'] == i]
-                    data = data.append(self.RawData[self.RawData['Well'] == i])
+                        data = datagp.get_group(i)
+                    data = data.append(datagp.get_group(i))
                 else:
                     if data is None:
-                        data = self.RawData[feature][self.RawData['Well'] == i]
-                    data = data.append(self.RawData[feature][self.RawData['Well'] == i])
+                        data = datagp.get_group(i)[feature]
+                    data = data.append(datagp.get_group(i)[feature])
             return data
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
