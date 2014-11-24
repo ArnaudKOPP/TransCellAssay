@@ -74,7 +74,19 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_quality_control(plate, features, cneg, cpos, SEDT=False, SECdata=False, dirpath=None, verbose=False):
+def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=False, dirpath=None, verbose=False):
+    """
+    Compute quality control on plate for selected feature
+    :param plate: Plate to compute quality object
+    :param features: feature on which we performed quality control
+    :param cneg: negative control
+    :param cpos: positive control
+    :param sedt: systematic error detection test
+    :param sec_data: use sec data or not for sedt
+    :param dirpath: directory path for saving data
+    :param verbose: print or not quality data
+    :return: return numpy array with qc
+    """
     try:
         if not isinstance(plate, TCA.Core.Plate):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
@@ -86,8 +98,8 @@ def plate_quality_control(plate, features, cneg, cpos, SEDT=False, SECdata=False
 
             for key, value in plate.replicat.items():
                 qc_data_array = qc_data_array.append(
-                    replicat_quality_control(value, feature=features, cneg=neg_well, cpos=pos_well,
-                                           SEDT=SEDT, SECdata=SECdata, dirpath=dirpath, verbose=False))
+                    replicat_quality_control(value, feature=features, neg_well=neg_well, pos_well=pos_well,
+                                             sedt=sedt, sec_data=sec_data, dirpath=dirpath, verbose=False))
 
             if verbose:
                 print("\nQuality control for plat: \n")
@@ -101,20 +113,33 @@ def plate_quality_control(plate, features, cneg, cpos, SEDT=False, SECdata=False
         print(e)
 
 
-def replicat_quality_control(replicat, feature, cneg, cpos, SEDT=False, SECdata=False, dirpath=None, verbose=False):
+def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, sec_data=False, dirpath=None,
+                             verbose=False):
+    """
+    Compute quality control on replicat for selected feature
+    :param replicat: Replicat to compute qc
+    :param feature: feature on which we performed quality control
+    :param neg_well: negative control well
+    :param pos_well: positive control well
+    :param sedt: systematic error detection test
+    :param sec_data: use sec data or not for sedt
+    :param dirpath: directory path for saving data
+    :param verbose: print or not quality data
+    :return:return numpy array with qc
+    """
     try:
         if not isinstance(replicat, TCA.Core.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
         else:
-            negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=cneg)
-            posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=cpos)
+            negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=neg_well)
+            posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=pos_well)
 
             qc_data_array = pd.DataFrame(np.zeros(1,
                                                   dtype=[('Replicat ID', str), ('AVR', float), ('Z*Factor', float),
                                                          ('ZFactor', float), ('SSMD', float), ('CVD', float)]))
 
-            if SEDT:
-                if SECdata:
+            if sedt:
+                if sec_data:
                     if replicat.SECData is None:
                         raise ValueError("\033[0;31m[ERROR]\033[0m SEC Before")
                     TCA.systematic_error_detection_test(replicat.SECData, verbose=True)
@@ -156,10 +181,12 @@ def _get_data_control(data, feature, c_ref):
             raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
         else:
             datax = pd.DataFrame()
+
+            datagp = data.groupby('Well')
             for i in c_ref:
                 if datax.empty:
-                    datax = data[feature][data['Well'] == i]
-                datax = datax.append(data[feature][data['Well'] == i])
+                    datax = datagp.get_group(i)[feature]
+                datax = datax.append(datagp.get_group(i)[feature])
             return datax
     except Exception as e:
         print(e)

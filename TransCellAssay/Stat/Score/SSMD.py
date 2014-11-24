@@ -61,27 +61,21 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
                 print('SSMD optimize for plate with replicat')
                 if not paired:
                     if robust_version:
-                        print('Using : _getUnpairedSSMDr')
                         score = _unpaired_ssmdr(plate, neg_control, variance=variance, sec_data=sec_data,
                                                 verbose=verbose)
                     else:
-                        print('Using : _getUnpairedSSMD')
                         score = _unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
                                                verbose=verbose)
                 else:
                     if robust_version:
-                        print('Using : _getPairedSSMDr')
                         score = _paired_ssmdr(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
                     else:
-                        print('Using : _getPairedSSMD')
                         score = _paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
             else:
                 print('SSMD optimize for plate without replicat')
                 if robust_version:
-                    print('Using : _SSMDr')
                     score = _ssmdr(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
                 else:
-                    print('Using : _SSMD')
                     score = _ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
             return score
         else:

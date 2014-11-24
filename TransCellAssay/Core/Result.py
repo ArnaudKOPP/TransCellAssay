@@ -146,7 +146,8 @@ class Result(object):
         :return:
         """
         try:
-            print('Not yet implemented')
+            if isinstance(to_add, np.ndarray):
+                self.result_array = np.append(self.result_array, to_add, axis=0)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
