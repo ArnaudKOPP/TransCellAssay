@@ -426,3 +426,69 @@ class EnrichmentStudy():
             except:
                 continue
         return term_cnt
+
+
+def adjustPValues(pvalues, method='fdr', n=None):
+    """
+    returns an array of adjusted pvalues
+
+    Reimplementation of p.adjust in the R package.
+
+    p: numeric vector of p-values (possibly with 'NA's).  Any other
+    R is coerced by 'as.numeric'.
+
+    method: correction method. Valid values are:
+
+    n: number of comparisons, must be at least 'length(p)'; only set
+    this (to non-default) when you know what you are doing
+
+    For more information, see the documentation of the
+    p.adjust method in R.
+    """
+
+    if n is None:
+        n = len(pvalues)
+
+    if method == "fdr":
+        method = "BH"
+
+    # optional, remove NA values
+    p = np.array(pvalues, dtype=np.float)
+    lp = len(p)
+
+    assert n <= lp
+
+    if n <= 1:
+        return p
+
+    if method == "bonferroni":
+        p0 = n * p
+    elif method == "holm":
+        i = np.arange(lp)
+        o = np.argsort(p)
+        ro = np.argsort(o)
+        m = np.maximum.accumulate((n - i) * p[o])
+        p0 = m[ro]
+    elif method == "hochberg":
+        i = np.arange(0, lp)[::-1]
+        o = np.argsort(1 - p)
+        ro = np.argsort(o)
+        m = np.minimum.accumulate((n - i) * p[o])
+        p0 = m[ro]
+    elif method == "BH":
+        i = np.arange(1, lp + 1)[::-1]
+        o = np.argsort(1 - p)
+        ro = np.argsort(o)
+        m = np.minimum.accumulate(float(n) / i * p[o])
+        p0 = m[ro]
+    elif method == "BY":
+        i = np.arange(1, lp + 1)[::-1]
+        o = np.argsort(1 - p)
+        ro = np.argsort(o)
+        q = np.sum(1.0 / np.arange(1, n + 1))
+        m = np.minimum.accumulate(q * float(n) / i * p[o])
+        p0 = m[ro]
+    elif method == "none":
+        p0 = p
+
+    return np.minimum(p0, np.ones(len(p0)))
