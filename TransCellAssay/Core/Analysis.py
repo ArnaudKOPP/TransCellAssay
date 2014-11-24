@@ -14,10 +14,10 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def computePlateAnalyzis(Plate, feature, neg, pos, threshold=50):
+def compute_plate_analyzis(plate, feature, neg, pos, threshold=50):
     """
     Compute all score/carac implemented before, for plate
-    :param Plate: Plate object
+    :param plate: Plate object
     :param feature: which feature to analyze
     :param neg: negative control reference
     :param threshold: threshold for defining % of positive cell in negative ref
@@ -25,30 +25,30 @@ def computePlateAnalyzis(Plate, feature, neg, pos, threshold=50):
     :return: return a result object
     """
     try:
-        if isinstance(Plate, TransCellAssay.Plate):
-            platemap = Plate.getPlateMap()
-            size = platemap.getSize()
+        if isinstance(plate, TransCellAssay.Plate):
+            platemap = plate.get_platemap()
+            size = platemap.get_platemape_shape()
             result = TransCellAssay.Result(size=(size[0] * size[1]))
-            x = platemap.getMapAsDict()
-            result.initGeneWell(x)
+            x = platemap.get_map_as_dict()
+            result.init_gene_well(x)
             try:
-                meanCount, sdvalue = TransCellAssay.getMeanSDCellCount(Plate)
-                PercentCell, sdPercentCell = TransCellAssay.getPercentPosCell(Plate, feature, neg, threshold)
-                mean, median, std, stdm = TransCellAssay.getVariability(Plate, feature)
-                toxicity, viability = TransCellAssay.get_Toxicity_Viability(plate=Plate, cell_count=meanCount, neg=neg,
+                meanCount, sdvalue = TransCellAssay.get_cell_count(plate)
+                PercentCell, sdPercentCell = TransCellAssay.get_percent_positive_cell(plate, feature, neg, threshold)
+                mean, median, std, stdm = TransCellAssay.get_variability(plate, feature)
+                toxicity, viability = TransCellAssay.get_toxicity_viability(plate=plate, cell_count=meanCount, neg=neg,
                                                                             pos=pos)
 
                 # Add all result into Result Data Frame
-                result.addDataDict(meanCount, 'CellsCount', by='Pos')
-                result.addDataDict(sdvalue, 'SDCellsCunt', by='Pos')
-                result.addDataDict(PercentCell, 'PositiveCells', by='Pos')
-                result.addDataDict(sdPercentCell, 'SDPositiveCells', by='Pos')
-                result.addDataDict(mean, 'mean', by='Pos')
-                result.addDataDict(median, 'median', by='Pos')
-                result.addDataDict(std, 'std', by='Pos')
-                result.addDataDict(stdm, 'stdm', by='Pos')
-                result.addDataDict(toxicity, 'Toxicity', by='Pos')
-                result.addDataDict(viability, 'Viability', by='Pos')
+                result.add_data(meanCount, 'CellsCount', by='Pos')
+                result.add_data(sdvalue, 'SDCellsCunt', by='Pos')
+                result.add_data(PercentCell, 'PositiveCells', by='Pos')
+                result.add_data(sdPercentCell, 'SDPositiveCells', by='Pos')
+                result.add_data(mean, 'Mean', by='Pos')
+                result.add_data(median, 'Median', by='Pos')
+                result.add_data(std, 'Std', by='Pos')
+                result.add_data(stdm, 'Stdm', by='Pos')
+                result.add_data(toxicity, 'Toxicity', by='Pos')
+                result.add_data(viability, 'Viability', by='Pos')
 
                 return result
             except Exception as e:

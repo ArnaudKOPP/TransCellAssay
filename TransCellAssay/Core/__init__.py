@@ -4,7 +4,7 @@ from TransCellAssay.Core.PlateMap import PlateMap
 from TransCellAssay.Core.Replicat import Replicat
 from TransCellAssay.Core.Screen import Screen
 from TransCellAssay.Core.Result import Result
-from TransCellAssay.Core.Analysis import computePlateAnalyzis
+from TransCellAssay.Core.Analysis import compute_plate_analyzis
 from TransCellAssay.Core.SubPlate import SubPlate
 from TransCellAssay.Core.SubReplicat import SubReplicat
 from TransCellAssay.Core.Well import Well

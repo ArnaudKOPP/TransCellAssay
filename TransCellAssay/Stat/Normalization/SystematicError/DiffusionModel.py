@@ -19,7 +19,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def diffusionModel(Array, max_iterations=100, verbose=False):
+def diffusion_model(Array, max_iterations=100, verbose=False):
     """
     Performed the DiffusionModel Process
     :param Array: numpy array represente matrix to normalize
@@ -31,31 +31,31 @@ def diffusionModel(Array, max_iterations=100, verbose=False):
     # # replace 0 with NaN
     Array[Array == 0] = np.NaN
 
-    EdgeEffect = DiffusionModel(Array.copy())
-    EdgeEffect.DiffusionModel(max_iterations=max_iterations)
-    BestIteration = EdgeEffect.FindIterationsForBestMatch(Array.copy())
-    ShiftMult = EdgeEffect.FindBestShiftMultCoeff(Array.copy(), BestIteration)
-    CorrectedTable = None
+    edge_effect = diffusion_model(Array.copy())
+    edge_effect.diffusion_model(max_iterations=max_iterations)
+    best_iteration = edge_effect.FindIterationsForBestMatch(Array.copy())
+    shift_mult = edge_effect.FindBestShiftMultCoeff(Array.copy(), best_iteration)
+    corrected_table = None
     # Correct the plate
-    if not BestIteration == 0:
-        CorrectedTable = EdgeEffect.CorrectThePlate(Array.copy(), BestIteration, ShiftMult[0], ShiftMult[1])
+    if not best_iteration == 0:
+        corrected_table = edge_effect.CorrectThePlate(Array.copy(), best_iteration, shift_mult[0], shift_mult[1])
 
     # # replace NaN with 0
-    CorrectedTable = np.nan_to_num(CorrectedTable)
+    corrected_table = np.nan_to_num(corrected_table)
 
     if verbose:
         np.set_printoptions(suppress=True)
         print("DiffusionModel methods for removing systematics error")
-        print("Diffusion Iteration :", BestIteration)
-        print("Diffusion Shift :", ShiftMult[0])
-        print("Diffusion multiplicative coeff: ", ShiftMult[1])
+        print("Diffusion Iteration :", best_iteration)
+        print("Diffusion Shift :", shift_mult[0])
+        print("Diffusion multiplicative coeff: ", shift_mult[1])
         print("-----Normalized Table-------")
-        print(CorrectedTable)
+        print(corrected_table)
         print("-----Original Table-------")
         print(Array)
         print("")
 
-    return CorrectedTable
+    return corrected_table
 
 
 class DiffusionModel():
@@ -78,19 +78,19 @@ class DiffusionModel():
         self.DiffusionMapsMeans = list()
         self.DiffusionMapsStdev = list()
 
-    def DiffusionModel(self, max_iterations=50):
+    def diffusion_model(self, max_iterations=50):
         """
 
         :param max_iterations:
         :return:
         """
         try:
-            self.GenerateMask()
-            self.ComputeDiffusionMaps(max_iterations=max_iterations)
+            self.generate_mask()
+            self.compute_diffusion_maps(max_iterations=max_iterations)
         except Exception as e:
             print(e)
 
-    def GetDiffusion(self, iteration):
+    def get_diffusion(self, iteration):
         """
 
         :param iteration:
@@ -101,7 +101,7 @@ class DiffusionModel():
         except Exception as e:
             print(e)
 
-    def GenerateMask(self):
+    def generate_mask(self):
         """
 
         :return:
@@ -117,33 +117,33 @@ class DiffusionModel():
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def DiffusionLaplacianFunction(self, input, output, Width, Height):
+    def diffusion_laplacian_function(self, input, output, width, height):
         """
 
         :param input:
         :param output:
-        :param Width:
-        :param Height:
+        :param width:
+        :param height:
         :return:
         """
         try:
-            for i in range(Height):
-                for j in range(Width):
+            for i in range(height):
+                for j in range(width):
                     if self.Mask[i][j] == 0:
                         output[i][j] = input[i][j] + (input[i + 1][j] + input[i - 1][j] + input[i][j + 1] + input[i][
                             j - 1] - 1 * input[i][j]) * self.CoeffDiff
                     else:
                         output[i][j] = self.Mask[i][j]
             # Normalize the plate
-            LextPlate = list()
+            lext_plate = list()
 
             # compute average
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
-                    LextPlate.append(output[X + 1][Y + 1])
+                    lext_plate.append(output[X + 1][Y + 1])
 
-            Average = np.nanmean(LextPlate)
-            Stdev = np.nanstd(LextPlate)
+            Average = np.nanmean(lext_plate)
+            Stdev = np.nanstd(lext_plate)
 
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
@@ -153,135 +153,135 @@ class DiffusionModel():
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def FindIterationsForBestMatch(self, Plate):
+    def find_iterations_for_best_match(self, plate):
         """
 
-        :param Plate:
+        :param plate:
         :return:
         """
         try:
-            BestIter = -1
-            Dist = sys.float_info.max
-            LextPlate = list()
-            TmpPlate = np.zeros(self.Array.shape)
+            bestiter = -1
+            dist = sys.float_info.max
+            lextplate = list()
+            tmpplate = np.zeros(self.Array.shape)
 
             # compute average
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
-                    LextPlate.append(Plate[X][Y])
+                    lextplate.append(plate[X][Y])
 
-            Average = np.nanmean(LextPlate)
-            Stdev = np.nanstd(LextPlate)
+            average = np.nanmean(lextplate)
+            stdev = np.nanstd(lextplate)
 
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
-                    TmpPlate[X][Y] = (Plate[X][Y] - Average) / Stdev
+                    tmpplate[X][Y] = (plate[X][Y] - average) / stdev
 
-            for iter in range(len(self.DiffusionMaps)):
-                CurrentDist = 0
+            for iteration in range(len(self.DiffusionMaps)):
+                currentdist = 0
                 for X in range(self.Array.shape[0]):
                     for Y in range(self.Array.shape[1]):
-                        CurrentDist = np.sqrt((self.DiffusionMaps[iter][X][Y] - TmpPlate[X][Y]) * (
-                            self.DiffusionMaps[iter][X][Y] - TmpPlate[X][Y]))
-                if CurrentDist < Dist:
-                    BestIter = iter
-                    Dist = CurrentDist
-            return BestIter
+                        currentdist = np.sqrt((self.DiffusionMaps[iteration][X][Y] - tmpplate[X][Y]) * (
+                            self.DiffusionMaps[iteration][X][Y] - tmpplate[X][Y]))
+                if currentdist < dist:
+                    bestiter = iteration
+                    dist = currentdist
+            return bestiter
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def FindBestShiftMultCoeff(self, inputPlate, IdxDiff):
+    def find_best_shift_mult_coeff(self, input_plate, idxdiff):
         """
 
-        :param inputPlate:
-        :param IdxDiff:
+        :param input_plate:
+        :param idxdiff:
         :return:
         """
         try:
-            TmpPlate = np.zeros(self.Array.shape)
-            ShiftMult = [0] * 2
-            MaxDist = sys.float_info.max
-            CurrentDist = 0
+            tmpplate = np.zeros(self.Array.shape)
+            shiftmult = [0] * 2
+            maxdist = sys.float_info.max
+            currentdist = 0
 
-            MinMultValue = 0  # -2147483648 < X < 466537709
-            MaxMultValue = 1000  # -2147483648 < X < 466537709
-            DeltaMultValue = 10  # -2147483648 < X < 466537709
+            minmultvalue = 0  # -2147483648 < X < 466537709
+            maxmultvalue = 1000  # -2147483648 < X < 466537709
+            deltamultvalue = 10  # -2147483648 < X < 466537709
 
-            MinShiftValue = 0  # -2147483648 < X < 466537709
-            MaxShiftValue = 1000  # -2147483648 < X < 466537709
-            DeltaShiftValue = 10  # -2147483648 < X < 466537709
+            minshiftvalue = 0  # -2147483648 < X < 466537709
+            maxshiftvalue = 1000  # -2147483648 < X < 466537709
+            deltashiftvalue = 10  # -2147483648 < X < 466537709
 
-            for DiffusionInitTemp in range(MinMultValue, MaxMultValue, DeltaMultValue):
-                for PlateInitTemp in range(MinShiftValue, MaxShiftValue, DeltaShiftValue):
-                    CurrentDist = 0
+            for DiffusionInitTemp in range(minmultvalue, maxmultvalue, deltamultvalue):
+                for PlateInitTemp in range(minshiftvalue, maxshiftvalue, deltashiftvalue):
+                    currentdist = 0
                     for X in range(self.Array.shape[0]):
                         for Y in range(self.Array.shape[1]):
-                            TmpPlate[X][Y] = self.DiffusionMaps[IdxDiff][X][Y] * DiffusionInitTemp + PlateInitTemp
-                            CurrentDist += np.sqrt(
-                                (TmpPlate[X][Y] - inputPlate[X][Y]) * (TmpPlate[X][Y] - inputPlate[X][Y]))
-                    if CurrentDist < MaxDist:
-                        MaxDist = CurrentDist
-                        ShiftMult[0] = PlateInitTemp
-                        ShiftMult[1] = DiffusionInitTemp
+                            tmpplate[X][Y] = self.DiffusionMaps[idxdiff][X][Y] * DiffusionInitTemp + PlateInitTemp
+                            currentdist += np.sqrt(
+                                (tmpplate[X][Y] - input_plate[X][Y]) * (tmpplate[X][Y] - input_plate[X][Y]))
+                    if currentdist < maxdist:
+                        maxdist = currentdist
+                        shiftmult[0] = PlateInitTemp
+                        shiftmult[1] = DiffusionInitTemp
 
-            return ShiftMult
+            return shiftmult
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def CorrectThePlate(self, inputPlate, IdxDiff, Shift, MultCoeff):
+    def correct_the_plate(self, input_plate, idxdiff, shift, multcoeff):
         """
 
-        :param inputPlate:
-        :param IdxDiff:
-        :param Shift:
-        :param MultCoeff:
+        :param input_plate:
+        :param idxdiff:
+        :param shift:
+        :param multcoeff:
         :return:
         """
         try:
-            CorrectedPlate = np.zeros(self.Array.shape)
+            corrected_plate = np.zeros(self.Array.shape)
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
-                    CorrectedPlate[X][Y] = inputPlate[X][Y] / (self.DiffusionMaps[IdxDiff][X][Y] * MultCoeff + Shift)
-            return CorrectedPlate
+                    corrected_plate[X][Y] = input_plate[X][Y] / (self.DiffusionMaps[idxdiff][X][Y] * multcoeff + shift)
+            return corrected_plate
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def ComputeDiffusionMaps(self, max_iterations=100):
+    def compute_diffusion_maps(self, max_iterations=100):
         """
 
         :param max_iterations:
         :return:
         """
         try:
-            CurrentMap = np.zeros((self.Array.shape[0] + 2, self.Array.shape[1] + 2))
-            Nextmap = np.zeros((self.Array.shape[0] + 2, self.Array.shape[1] + 2))
-            CurrentMapWithoutBorders0 = np.zeros(self.Array.shape)
+            currentmap = np.zeros((self.Array.shape[0] + 2, self.Array.shape[1] + 2))
+            nextmap = np.zeros((self.Array.shape[0] + 2, self.Array.shape[1] + 2))
+            currentmapwithoutborders0 = np.zeros(self.Array.shape)
 
-            CurrentMap = self.Mask.copy()
+            currentmap = self.Mask.copy()
 
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
-                    CurrentMapWithoutBorders0[X][Y] = CurrentMap[X + 1][Y + 1]
+                    currentmapwithoutborders0[X][Y] = currentmap[X + 1][Y + 1]
 
-            self.DiffusionMaps.append(CurrentMapWithoutBorders0)
+            self.DiffusionMaps.append(currentmapwithoutborders0)
 
-            ValueList = list()
+            valuelist = list()
 
             for i in range(max_iterations):
-                Nextmap = self.DiffusionLaplacianFunction(CurrentMap, Nextmap, self.Array.shape[1] + 2,
-                                                          self.Array.shape[0] + 2)
-                ValueList.clear()
+                nextmap = self.diffusion_laplacian_function(currentmap, nextmap, self.Array.shape[1] + 2,
+                                                            self.Array.shape[0] + 2)
+                valuelist.clear()
 
-                CurrentMapWithoutBorders = np.zeros(self.Array.shape)
+                currentmapwithoutborders = np.zeros(self.Array.shape)
 
                 for X in range(self.Array.shape[0]):
                     for Y in range(self.Array.shape[1]):
-                        CurrentMapWithoutBorders[X][Y] = Nextmap[X + 1][Y + 1]
-                        ValueList.append(CurrentMapWithoutBorders[X][Y])
+                        currentmapwithoutborders[X][Y] = nextmap[X + 1][Y + 1]
+                        valuelist.append(currentmapwithoutborders[X][Y])
 
-                self.DiffusionMaps.append(CurrentMapWithoutBorders)
-                self.DiffusionMapsMeans.append(np.nanmean(ValueList))
-                self.DiffusionMapsStdev.append(np.nanmean(ValueList))
-                CurrentMap = Nextmap.copy()
+                self.DiffusionMaps.append(currentmapwithoutborders)
+                self.DiffusionMapsMeans.append(np.nanmean(valuelist))
+                self.DiffusionMapsStdev.append(np.nanmean(valuelist))
+                currentmap = nextmap.copy()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

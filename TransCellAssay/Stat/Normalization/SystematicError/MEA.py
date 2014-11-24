@@ -8,7 +8,7 @@ the error estimates determinted in previous step.
 
 import numpy as np
 
-from TransCellAssay.Stat.Test.ttest import TTest
+from TransCellAssay.Stat.Test.ttest import ttest
 
 
 __author__ = "Arnaud KOPP"
@@ -21,7 +21,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
+def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
     """
     Implementation of Matrix Error Amendment , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
@@ -33,20 +33,20 @@ def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
             array_org = input_array.copy()
             # # count number of row and col affected by systematic error
             shape = input_array.shape
-            Nrows = []
-            Ncols = []
+            nrows = []
+            ncols = []
 
             # search systematic error in row
             for row in range(shape[0]):
-                if TTest(input_array[row, :], np.delete(input_array, row, 0), alpha=alpha):
-                    Nrows.append(row)
+                if ttest(input_array[row, :], np.delete(input_array, row, 0), alpha=alpha):
+                    nrows.append(row)
             # search systematic error in column
             for col in range(shape[1]):
-                if TTest(input_array[:, col], np.delete(input_array, col, 1), alpha=alpha):
-                    Ncols.append(col)
+                if ttest(input_array[:, col], np.delete(input_array, col, 1), alpha=alpha):
+                    ncols.append(col)
 
             # exit if not row or col affected
-            N = Nrows.__len__() + Ncols.__len__()
+            N = nrows.__len__() + ncols.__len__()
             if N == 0:
                 print('\033[0;33m[WARNING]\033[0m No Systematics Error detected')
                 return input_array
@@ -54,11 +54,11 @@ def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
             mu = 0
             # # compute mu
             for row in range(shape[0]):
-                if not row in Nrows:
+                if row not in nrows:
                     for col in range(shape[1]):
-                        if not col in Ncols:
+                        if col not in ncols:
                             mu += input_array[row][col]
-            mu /= ((shape[0] - Nrows.__len__()) * (shape[1] - Ncols.__len__()))
+            mu /= ((shape[0] - nrows.__len__()) * (shape[1] - ncols.__len__()))
 
 
             # # exact solution
@@ -66,18 +66,18 @@ def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
             A = np.zeros([N, N])
             B = np.zeros(N)
 
-            for i in range(Nrows.__len__()):
-                r = Nrows[i]
+            for i in range(nrows.__len__()):
+                r = nrows[i]
                 A[i][i] = shape[1]
-                for j in range(Nrows.__len__(), N, 1):
+                for j in range(nrows.__len__(), N, 1):
                     A[i, j] = 1.0
                 B[i] = -shape[1] * mu
                 for k in range(0, shape[1], 1):
                     B[i] += input_array[r][k]
-            for i in range(Nrows.__len__(), N, 1):
-                c = Ncols[i - Nrows.__len__()]
+            for i in range(nrows.__len__(), N, 1):
+                c = ncols[i - nrows.__len__()]
                 A[i][i] = shape[0]
-                for j in range(0, Nrows.__len__(), 1):
+                for j in range(0, nrows.__len__(), 1):
                     A[i][j] = 1.0
                 B[i] = -shape[0] * mu
                 for k in range(0, shape[0], 1):
@@ -94,14 +94,14 @@ def MatrixErrorAmendment(input_array, verbose=False, alpha=0.05):
 
             # Remove the systematic error form the plate measure
 
-            for i in range(Nrows.__len__()):
-                r = Nrows[i]
+            for i in range(nrows.__len__()):
+                r = nrows[i]
                 for j in range(shape[1]):
                     input_array[r][j] -= X[i]
 
-            for i in range(Nrows.__len__(), N, 1):
-                c = Ncols[i - Nrows.__len__()]
-                for j in range(Nrows.__len__()):
+            for i in range(nrows.__len__(), N, 1):
+                c = ncols[i - nrows.__len__()]
+                for j in range(nrows.__len__()):
                     input_array[j][c] -= X[i]
 
             np.set_printoptions(suppress=True)

@@ -38,9 +38,11 @@ class Screen(object):
         self.Neg = None
         self.Pos = None
         self.Tox = None
+        self.isNormalized = False
+        self.isSpatialNormalized = False
         self.shape = (8, 12)
 
-    def addPlate(self, plate):
+    def add_plate(self, plate):
         """
         Add plate to the screen
         :param plate: input plate
@@ -51,7 +53,7 @@ class Screen(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def getPlate(self, name):
+    def get_plate(self, name):
         """
         Return Plate specified by name
         :return: plate
@@ -61,7 +63,7 @@ class Screen(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def addInfo(self, key, value):
+    def add_info(self, key, value):
         """
         Add Info
         :param key:
@@ -72,7 +74,7 @@ class Screen(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def getInfo(self):
+    def get_info(self):
         """
         Get info with desired key
         :return: info (dict)
@@ -82,7 +84,7 @@ class Screen(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def Normalization(self, feature, technics='Zscore', log=True, neg=None, pos=None):
+    def apply_normalization(self, feature, technics='Zscore', log=True, neg=None, pos=None):
         """
         Apply Well correction on all Plate data
         call function like from Plate object
@@ -91,17 +93,20 @@ class Screen(object):
         :param log:  Performed log2 Transformation
         """
         try:
-            for key, value in self.PlateList.items():
-                value.Normalization(feature=feature, method=technics, log=log, neg=neg, pos=pos)
-            self.isNormalized = True
+            if self.isNormalized:
+                raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
+            else:
+                for key, value in self.PlateList.items():
+                    value.normalization(feature=feature, method=technics, log=log, neg=neg, pos=pos)
+                self.isNormalized = True
         except Exception as e:
             print(e)
 
-    def SystematicErrorCorrection(self, Algorithm='Bscore', method='median', apply_down=False, verbose=False,
-                                  save=False, max_iterations=100):
+    def apply_systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=False, verbose=False,
+                                          save=False, max_iterations=100):
         """
         Apply Systematic Error Corection on all plate of the screen
-        :param Algorithm:
+        :param algorithm:
         :param method:
         :param apply_down:
         :param verbose:
@@ -110,16 +115,20 @@ class Screen(object):
         :return:
         """
         try:
-            if Algorithm == 'WellCorrection':
+            if algorithm == 'WellCorrection':
                 return 0
-            elif Algorithm == 'BackgroundCorrection':
+            elif algorithm == 'BackgroundCorrection':
                 return 0
-            elif Algorithm == 'BackgroundSubstraction':
+            elif algorithm == 'BackgroundSubstraction':
                 return 0
             else:
-                for key, value in self.PlateList.items():
-                    value.SystematicErrorCorrection(Algorithm=Algorithm, method=method, apply_down=apply_down,
-                                                    verbose=verbose, save=save, max_iterations=max_iterations)
+                if self.isSpatialNormalized:
+                    raise Exception("\033[0;33m[WARNING]\033[0m Systematics error have already been removed")
+                else:
+                    for key, value in self.PlateList.items():
+                        value.systematic_error_correction(algorithm=algorithm, method=method, apply_down=apply_down,
+                                                          verbose=verbose, save=save, max_iterations=max_iterations)
+                self.isSpatialNormalized = True
         except Exception as e:
             print(e)
 
@@ -133,14 +142,17 @@ class Screen(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def __add__(self, plate):
+    def __add__(self, to_add):
         """
+        using + operator
         Add plate to the screen
-        :param plate: input plate
+        :param to_add: input plate
         """
         try:
-            assert isinstance(plate, TCA.Core.Plate)
-            self.PlateList[plate.Name] = plate
+            if isinstance(to_add, TCA.Core.Plate):
+                self.PlateList[to_add.Name] = to_add
+            else:
+                raise AttributeError
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

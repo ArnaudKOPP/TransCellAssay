@@ -28,30 +28,30 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def t_stat_score(plate, cNeg, variance='unequal', paired=False, SECData=True, verbose=False):
+def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_data=True, verbose=False):
     """
     Performed t-stat on plate object
     unpaired is for plate with replicat without great variance between them
     paired is for plate with replicat with great variance between them
     :param plate: Plate Object to analyze
-    :param cNeg:  negative control reference
+    :param neg_control:  negative control reference
     :param variance: unequal or equal variance
     :param paired: paired or unpaired
-    :param SECData: use data with Systematic Error Corrected
+    :param sec_data: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return: score data
     """
     try:
         if isinstance(plate, Core.Plate):
             # if no neg was provided raise AttributeError
-            if cNeg is None:
+            if neg_control is None:
                 raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
             if len(plate) > 1:
                 if paired:
-                    score = _PairedTStatScore(plate, cNeg, SECData=SECData, verbose=verbose)
+                    score = _paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose)
                 else:
-                    score = _UnpairedTStatScore(plate, cNeg, variance=variance, SECData=SECData,
-                                                verbose=verbose)
+                    score = _unpaired_tstat_score(plate, neg_control, variance=variance, sec_data=sec_data,
+                                                  verbose=verbose)
             else:
                 raise ValueError("\033[0;31m[ERROR]\033[0m  T-Test need at least two replicat")
             return score
@@ -61,7 +61,7 @@ def t_stat_score(plate, cNeg, variance='unequal', paired=False, SECData=True, ve
         print(e)
 
 
-def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=False):
+def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
     """
     performed unpaired t-stat score
 
@@ -69,14 +69,14 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
         - unequal : Welch t-test
         - equal : two sample t-test
     :param plate: Plate Object to analyze
-    :param cNeg: negative control reference
+    :param neg_control: negative control reference
     :param variance: unequal or equal variance
-    :param SECData: use data with Systematic Error Corrected
+    :param sec_data: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return: score data
     """
     try:
-        if cNeg is None:
+        if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, Core.Plate):
             ttest_score = np.zeros(plate.PlateMap.platemap.shape)
@@ -87,7 +87,7 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
             nb_rep = len(plate.replicat)
 
             neg_value = []
-            neg_pos = plate.PlateMap.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.get_coord(neg_control)
             if not neg_pos:
                 raise Exception
             # search neg control value
@@ -96,7 +96,7 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
                     for key, value in plate.replicat.items():
                         well_value = 0
                         try:
-                            if SECData:
+                            if sec_data:
                                 well_value = value.SECData[i][j]
                             else:
                                 well_value = value.Data[i][j]
@@ -117,7 +117,7 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
                     well_value = []
                     for key, value in plate.replicat.items():
                         try:
-                            if SECData:
+                            if sec_data:
                                 well_value.append(value.SECData[i][j])
                             else:
                                 well_value.append(value.Data[i][j])
@@ -133,7 +133,7 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
                     elif variance == 'equal':
                         ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * (
                             (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * (
-                                                                                (1 / nb_rep) * (1 / nb_neg_wells)))
+                            (1 / nb_rep) * (1 / nb_neg_wells)))
                     else:
                         raise AttributeError('\033[0;31m[ERROR]\033[0m  variance attribut must be unequal or equal.')
 
@@ -142,7 +142,7 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
 
             if verbose:
                 print("Unpaired t-test :")
-                print("Systematic Error Corrected Data : ", SECData)
+                print("Systematic Error Corrected Data : ", sec_data)
                 print("Data type : ", plate.DataType)
                 print("variance parameter : ", variance)
                 print("t-test score :")
@@ -155,17 +155,17 @@ def _UnpairedTStatScore(plate, cNeg, variance='unequal', SECData=True, verbose=F
         print(e)
 
 
-def _PairedTStatScore(plate, cNeg, SECData=True, verbose=False):
+def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
     """
     performed paired t-stat score
     :param plate: Plate Object to analyze
-    :param cNeg: negative control reference
-    :param SECData: use data with Systematic Error Corrected
+    :param neg_control: negative control reference
+    :param sec_data: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return: score data
     """
     try:
-        if cNeg is None:
+        if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, Core.Plate):
             ttest_score = np.zeros(plate.PlateMap.platemap.shape)
@@ -173,7 +173,7 @@ def _PairedTStatScore(plate, cNeg, SECData=True, verbose=False):
             # # replace 0 with NaN
             ttest_score[ttest_score == 0] = np.NaN
 
-            neg_pos = plate.PlateMap.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.get_coord(neg_control)
             if not neg_pos:
                 raise Exception
 
@@ -184,7 +184,7 @@ def _PairedTStatScore(plate, cNeg, SECData=True, verbose=False):
                     for i in range(ttest_score.shape[0]):
                         for j in range(ttest_score.shape[1]):
                             try:
-                                if SECData:
+                                if sec_data:
                                     well_value.append(replicat.SECData[i][j])
                                 else:
                                     well_value.append(replicat.Data[i][j])
@@ -205,7 +205,7 @@ def _PairedTStatScore(plate, cNeg, SECData=True, verbose=False):
                     for key, value in plate.replicat.items():
                         neg_median = _search_neg_data(value, neg_pos)
                         try:
-                            if SECData:
+                            if sec_data:
                                 well_value.append(value.SECData[i][j] - neg_median)
                             else:
                                 well_value.append(value.Data[i][j] - neg_median)
@@ -220,7 +220,7 @@ def _PairedTStatScore(plate, cNeg, SECData=True, verbose=False):
 
             if verbose:
                 print("Paired t-test :")
-                print("Systematic Error Corrected Data : ", SECData)
+                print("Systematic Error Corrected Data : ", sec_data)
                 print("Data type : ", plate.DataType)
                 print("t-test score :")
                 print(ttest_score)

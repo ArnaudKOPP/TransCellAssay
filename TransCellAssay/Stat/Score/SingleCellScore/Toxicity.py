@@ -15,7 +15,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def get_Toxicity_Viability(plate, cell_count, neg, pos):
+def get_toxicity_viability(plate, cell_count, neg, pos):
     """
     Compute toxicity and viability
     :param plate:
@@ -28,18 +28,18 @@ def get_Toxicity_Viability(plate, cell_count, neg, pos):
         raise TypeError("\033[0;31m[ERROR]\033[0m  Take a dict in input for cell count")
     else:
         try:
-            neg_well = plate.PlateMap.getGeneWell(neg)
-            pos_well = plate.PlateMap.getGeneWell(pos)
+            neg_well = plate.PlateMap.get_well(neg)
+            pos_well = plate.PlateMap.get_well(pos)
 
-            toxicityIdx = _getToxicityIdx(cell_count)
-            viability = _getViability(cell_count, neg_well, pos_well)
+            toxicityidx = _get_toxicity_idx(cell_count)
+            viability = _get_viability(cell_count, neg_well, pos_well)
 
-            return toxicityIdx, viability
+            return toxicityidx, viability
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def _getToxicityIdx(cellcount):
+def _get_toxicity_idx(cellcount):
     """
     determine a toxicity index
     :return: tox dict
@@ -48,17 +48,17 @@ def _getToxicityIdx(cellcount):
         max_cell = max(cellcount.values())
         min_cell = min(cellcount.values())
 
-        txIdx = {}
+        txidx = {}
 
         for key, item in cellcount.items():
-            txIdx[key] = (max_cell - item) / (max_cell - min_cell)
+            txidx[key] = (max_cell - item) / (max_cell - min_cell)
 
-        return txIdx
+        return txidx
     except Exception as e:
         print(e)
 
 
-def _getViability(cellcount, neg_well, pos_well):
+def _get_viability(cellcount, neg_well, pos_well):
     """
     get Viability, z-score like
     :return:

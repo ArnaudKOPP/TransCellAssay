@@ -19,20 +19,20 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def VariabilityNormalization(data, feature, method=False, log2_transformation=True, Cneg=None, Cpos=None):
-    '''
+def variability_normalization(data, feature, method=False, log2_transf=True, neg_control=None, pos_control=None):
+    """
     Take a dataframe from replicat object and apply desired strategy of variability normalization
     :param data: pd.dataframe to normalize
     :param method: which method to apply
-    :param log2_transformation: apply log2 transformation
-    :param Cneg: list of well for negative control
-    :param Cpos: list of well for positive control
+    :param log2_transf: apply log2 transformation
+    :param neg_control: list of well for negative control
+    :param pos_control: list of well for positive control
     :return: normalized data
-    '''
+    """
     try:
         if isinstance(data, pd.DataFrame):
             # apply log2 transformation on data
-            if log2_transformation:
+            if log2_transf:
                 data = data[data[feature] > 0]
                 data[feature] = np.log2(data[feature])
 
@@ -50,27 +50,27 @@ def VariabilityNormalization(data, feature, method=False, log2_transformation=Tr
 
             # apply a percent of control transformation on data
             if method == 'PercentOfControl':
-                if Cneg is None:
-                    if Cpos is None:
+                if neg_control is None:
+                    if pos_control is None:
                         raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative or Positive control")
                     else:
                         # Using positive control
-                        CposData = _getDataByWells(data, feature=feature, wells=Cneg)
-                        data[feature] = ((data[feature]) / (np.mean(CposData))) * 100
+                        pos_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
+                        data[feature] = ((data[feature]) / (np.mean(pos_data))) * 100
                 else:
                     # Using negative control
-                    CnegData = _getDataByWells(data, feature=feature, wells=Cneg)
-                    data[feature] = ((data[feature]) / (np.mean(CnegData))) * 100
+                    neg_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
+                    data[feature] = ((data[feature]) / (np.mean(neg_data))) * 100
 
             # apply a normalized percent inhibition transformation on data
             if method == 'NormalizedPercentInhibition':
-                if Cneg is None:
-                    if Cpos is None:
+                if neg_control is None:
+                    if pos_control is None:
                         raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative and Positive control")
                     raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative Control")
-                CnegData = _getDataByWells(data, feature=feature, wells=Cneg)
-                CposData = _getDataByWells(data, feature=feature, wells=Cpos)
-                data[feature] = ((np.mean(CposData) - data[feature]) / (np.mean(CposData) - np.mean(CnegData))) * 100
+                neg_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
+                pos_data = _get_data_by_wells(data, feature=feature, wells=pos_control)
+                data[feature] = ((np.mean(pos_data) - data[feature]) / (np.mean(pos_data) - np.mean(neg_data))) * 100
 
             # return transformed data
             return data
@@ -80,12 +80,12 @@ def VariabilityNormalization(data, feature, method=False, log2_transformation=Tr
         print(e)
 
 
-def _getDataByWells(dataframe, feature, wells):
-    '''
+def _get_data_by_wells(dataframe, feature, wells):
+    """
     get all data for specified wellS
     :param wells: list of wells
     :return: return dataframe with data specified wells
-    '''
+    """
     try:
         data = pd.DataFrame()
         for i in wells:

@@ -1,4 +1,4 @@
 __author__ = 'Arnaud KOPP'
 from TransCellAssay.Stat.Normalization.SystematicError import BackgroundSubstraction, BackgroundCorrection, \
-    MedianPolish, BZMedianPolish, diffusionModel, MatrixErrorAmendment, PartialMeanPolish, WellCorrection
-from TransCellAssay.Stat.Normalization.VariabilityNormalization import VariabilityNormalization
+    median_polish, bz_median_polish, diffusion_model, matrix_error_amendmend, partial_mean_polish, WellCorrection
+from TransCellAssay.Stat.Normalization.VariabilityNormalization import variability_normalization

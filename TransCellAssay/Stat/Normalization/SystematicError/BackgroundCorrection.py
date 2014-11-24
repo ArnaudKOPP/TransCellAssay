@@ -25,18 +25,19 @@ class BackgroundCorrection():
         if isinstance(Screen, Core.Screen):
             self.screen = Screen
             self.BackgroundModel = None
+            self.BackgroundModelMean = None
         else:
             raise TypeError("\033[0;31m[ERROR]\033[0m Provided Screen Object Object")
 
-    def BackgroundCorrection(self, apply="Plate", verbose=False):
+    def background_correction(self, apply="Plate", verbose=False):
         try:
-            self.BackgroundEvaluation(apply_on=apply, verbose=verbose)
-            self.BackgroundSurfaceAnalysis()
-            self.ApplyBackgroundElimination()
+            self.background_evaluation(apply_on=apply, verbose=verbose)
+            self.background_surface_analysis()
+            self.apply_background_elimination()
         except Exception as e:
             print(e)
 
-    def BackgroundEvaluation(self, apply_on, verbose, control_Well=None):
+    def background_evaluation(self, apply_on, verbose, control_well=None):
         try:
             if apply_on == "Plate":
                 # iterate on all plate
@@ -50,7 +51,7 @@ class BackgroundCorrection():
                         self.BackgroundModel += value.Data
                 self.BackgroundModel *= 1 / len(self.screen)
             elif apply_on == "Replicat":
-                objectCnt = 0
+                object_cnt = 0
                 # iterate on all plate
                 for key, value in self.screen.PlateList.items():
                     # check if plate object
@@ -65,8 +66,8 @@ class BackgroundCorrection():
                                 if self.BackgroundModelMean is None:
                                     self.BackgroundModelMean = np.zeros(repValue.Data.shape)
                                 self.BackgroundModel += repValue.Data
-                                objectCnt += 1
-                self.BackgroundModel *= 1 / objectCnt
+                                object_cnt += 1
+                self.BackgroundModel *= 1 / object_cnt
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
             if verbose:
@@ -78,13 +79,13 @@ class BackgroundCorrection():
         except Exception as e:
             print(e)
 
-    def BackgroundSurfaceAnalysis(self, plot=False):
+    def background_surface_analysis(self, plot=False):
         try:
             return 0
         except Exception as e:
             print(e)
 
-    def ApplyBackgroundElimination(self, apply_on, control_Well=None):
+    def apply_background_elimination(self, apply_on, control_well=None):
         try:
             if apply_on == "Plate":
                 # iterate on all plate

@@ -74,19 +74,19 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def PlateQualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, dirpath=None, verbose=False):
+def plate_quality_control(plate, features, cneg, cpos, SEDT=False, SECdata=False, dirpath=None, verbose=False):
     try:
         if not isinstance(plate, TCA.Core.Plate):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
         else:
-            neg_well = plate.PlateMap.getGeneWell(cneg)
-            pos_well = plate.PlateMap.getGeneWell(cpos)
+            neg_well = plate.PlateMap.get_well(cneg)
+            pos_well = plate.PlateMap.get_well(cpos)
 
             qc_data_array = pd.DataFrame()
 
             for key, value in plate.replicat.items():
                 qc_data_array = qc_data_array.append(
-                    ReplicatQualityControl(value, feature=features, cneg=neg_well, cpos=pos_well,
+                    replicat_quality_control(value, feature=features, cneg=neg_well, cpos=pos_well,
                                            SEDT=SEDT, SECdata=SECdata, dirpath=dirpath, verbose=False))
 
             if verbose:
@@ -101,13 +101,13 @@ def PlateQualityControl(plate, features, cneg, cpos, SEDT=False, SECdata=False, 
         print(e)
 
 
-def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=False, dirpath=None, verbose=False):
+def replicat_quality_control(replicat, feature, cneg, cpos, SEDT=False, SECdata=False, dirpath=None, verbose=False):
     try:
         if not isinstance(replicat, TCA.Core.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m")
         else:
-            negdata = _get_data_control(replicat.Dataframe, feature=feature, c_ref=cneg)
-            posdata = _get_data_control(replicat.Dataframe, feature=feature, c_ref=cpos)
+            negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=cneg)
+            posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=cpos)
 
             qc_data_array = pd.DataFrame(np.zeros(1,
                                                   dtype=[('Replicat ID', str), ('AVR', float), ('Z*Factor', float),
@@ -117,7 +117,7 @@ def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=Fa
                 if SECdata:
                     if replicat.SECData is None:
                         raise ValueError("\033[0;31m[ERROR]\033[0m SEC Before")
-                    TCA.SystematicErrorDetectionTest(replicat.SECData, verbose=True)
+                    TCA.systematic_error_detection_test(replicat.SECData, verbose=True)
 
             print("Replicat : ", replicat.name)
             print("mean neg :", np.mean(negdata), " Standard dev : ", np.std(negdata))
@@ -125,7 +125,7 @@ def ReplicatQualityControl(replicat, feature, cneg, cpos, SEDT=False, SECdata=Fa
             qc_data_array['Replicat ID'] = replicat.name
             qc_data_array['AVR'] = _avr(negdata, posdata)
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
-            qc_data_array['ZFactor'] = _zfactor(replicat.Dataframe, feature, negdata, posdata)
+            qc_data_array['ZFactor'] = _zfactor(replicat.RawData, feature, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 

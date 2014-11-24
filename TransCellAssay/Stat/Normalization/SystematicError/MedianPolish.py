@@ -28,7 +28,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
+def median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
     """
     Implements Tukey's median polish alghoritm for additive models
         method - default is median, alternative is mean. That would give us result equal ANOVA.
@@ -106,7 +106,7 @@ def MedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbos
         print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def BZMedianPolish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
+def bz_median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
     """
     Implements Tukey's median polish alghoritm for additive models
         method - default is median, alternative is mean. That would give us result equal ANOVA.

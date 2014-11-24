@@ -27,7 +27,7 @@ class PCA():
         try:
             if isinstance(OBJECT, TCA.Replicat):
                 print("Process PCA on Replicat")
-                self.rawdata = OBJECT.Dataframe
+                self.rawdata = OBJECT.RawData
             if isinstance(OBJECT, TCA.Plate):
                 print("Process PCA on Plate")
             if isinstance(OBJECT, TCA.Screen):
@@ -38,7 +38,7 @@ class PCA():
     def _replicat_pca(self, replicat, n_component=3):
         try:
             assert isinstance(replicat, TCA.Replicat)
-            raw_data = replicat.Dataframe
+            raw_data = replicat.RawData
             data = self._clear_dataframe(raw_data)
 
             ## DO PCA

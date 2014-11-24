@@ -3,7 +3,7 @@ Class for manipulating Subreplicat
 """
 
 from TransCellAssay.Core.Replicat import Replicat
-from TransCellAssay.Utils import getOppositeWellFormat
+from TransCellAssay.Utils import get_opposite_well_format
 import numpy as np
 
 __author__ = "Arnaud KOPP"
@@ -33,7 +33,7 @@ class SubReplicat(Replicat):
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Replicat for creating SubReplicat")
 
-            self.Dataframe = parent_replicat.Dataframe
+            self.RawData = parent_replicat.RawData
             self.name = parent_replicat.name
 
             self.isNormalized = parent_replicat.isNormalized
@@ -57,7 +57,7 @@ class SubReplicat(Replicat):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def computeDataForFeature(self, feature, data_type="median"):
+    def compute_data_for_feature(self, feature, data_type="median"):
         """
         Compute data in matrix form, get mean or median for well and save them in replicat object
         :param: feature: which feature to keep in matrix
@@ -69,7 +69,7 @@ class SubReplicat(Replicat):
                 print('     --> Data are not normalized for replicat : ', self.name)
                 print('')
 
-            grouped_data_by_well = self.Dataframe.groupby('Well')
+            grouped_data_by_well = self.RawData.groupby('Well')
 
             if data_type == "median":
                 tmp = grouped_data_by_well.mean()
@@ -82,7 +82,7 @@ class SubReplicat(Replicat):
             else:
                 Data = np.zeros((16, 24))
             for key, elem in dict_mean.items():
-                pos = getOppositeWellFormat(key)
+                pos = get_opposite_well_format(key)
                 Data[pos[0]][pos[1]] = elem
 
             self.Data = Data[self.RB - 1: self.RE - 1, self.CB - 1: self.CE - 1]

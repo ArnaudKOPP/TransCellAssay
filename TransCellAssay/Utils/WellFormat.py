@@ -12,7 +12,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def getOppositeWellFormat(Input):
+def get_opposite_well_format(Input):
     """
     Change Well Format
     A1 to (0,0) or (1,3) to B4
@@ -20,16 +20,16 @@ def getOppositeWellFormat(Input):
     :param Input: tuple or str
     :return: opposite well format
     """
-    letterEq = dict(A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14, P=15)
-    numbEq = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M',
+    lettereq = dict(A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14, P=15)
+    numbeq = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M',
               13: 'N', 14: 'O', 15: 'P'}
     try:
         if isinstance(Input, tuple):
-            newForm = "{0}{1}".format(str(numbEq[Input[0]]), Input[1] + 1)
-            return newForm
+            new_form = "{0}{1}".format(str(numbeq[Input[0]]), Input[1] + 1)
+            return new_form
         elif isinstance(Input, str):
-            newForm = letterEq[Input[0]], int(Input[1:]) - 1
-            return newForm
+            new_form = lettereq[Input[0]], int(Input[1:]) - 1
+            return new_form
         else:
             raise ValueError
     except Exception as e:

@@ -19,17 +19,17 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def SystematicErrorDetectionTest(Array, alpha=0.05, verbose=False):
+def systematic_error_detection_test(array, alpha=0.05, verbose=False):
     """
     Search for systematic error in plate or replicat, use Welch T-Test
-    :param Array: numpy array to test
+    :param array: numpy array to test
     :param alpha: alpha for t-test
     :param verbose: verbose or not
     :return: array with 0 if not SE and 1 if SE contain in col or row
     """
     try:
-        if isinstance(Array, np.ndarray):
-            Matrix = Array
+        if isinstance(array, np.ndarray):
+            Matrix = array
             shape = Matrix.shape
             SEDT_Array = np.zeros(shape)
             # search systematic error in row
@@ -46,8 +46,8 @@ def SystematicErrorDetectionTest(Array, alpha=0.05, verbose=False):
                     SEDT_Array[:, col] = 1
 
             if verbose:
-                print("Systematics Error Detection Test for plate/replicat")
-                print(u'\u03B1'" for T-Test : ", alpha)
+                print("Systematics Error Detection Test :")
+                print(u'\u03B1'" setting for T-Test : ", alpha)
                 print(SEDT_Array)
                 print("")
 

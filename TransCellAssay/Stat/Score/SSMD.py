@@ -35,19 +35,19 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def ssmd_score(plate, cNeg, paired=True, robust_version=True, method='UMVUE', variance='unequal', SECData=True,
-               inplate_data=False, verbose=False):
+def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, method='UMVUE', variance='unequal',
+                     sec_data=True, inplate_data=False, verbose=False):
     """
     Performed SSMD on plate object
         unpaired is for plate with replicat without great variance between them
         paired is for plate with replicat with great variance between them
     :param plate: Plate Object to analyze
-    :param cNeg: negative control reference
+    :param neg_control: negative control reference
     :param paired: paired or unpaired statistic
     :param robust_version: use robust version or not
     :param method: which method to use MM or UMVUE
     :param variance: unequal or equal
-    :param SECData: use data with Systematic Error Corrected
+    :param sec_data: use data with Systematic Error Corrected
     :param inplate_data: compute SSMD on plate.Data, for plate without replicat in preference
     :param verbose: be verbose or not
     :return: Corrected data
@@ -55,34 +55,34 @@ def ssmd_score(plate, cNeg, paired=True, robust_version=True, method='UMVUE', va
     try:
         if isinstance(plate, TCA.Core.Plate):
             # if no neg was provided raise AttributeError
-            if cNeg is None:
+            if neg_control is None:
                 raise AttributeError('Must provided negative control')
             if len(plate) > 1 and not inplate_data:
                 print('SSMD optimize for plate with replicat')
                 if not paired:
                     if robust_version:
                         print('Using : _getUnpairedSSMDr')
-                        score = _UnpairedSSMDr(plate, cNeg, variance=variance, SECData=SECData,
-                                               verbose=verbose)
+                        score = _unpaired_ssmdr(plate, neg_control, variance=variance, sec_data=sec_data,
+                                                verbose=verbose)
                     else:
                         print('Using : _getUnpairedSSMD')
-                        score = _UnpairedSSMD(plate, cNeg, variance=variance, SECData=SECData,
-                                              verbose=verbose)
+                        score = _unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
+                                               verbose=verbose)
                 else:
                     if robust_version:
                         print('Using : _getPairedSSMDr')
-                        score = _PairedSSMDr(plate, cNeg, method=method, SECData=SECData, verbose=verbose)
+                        score = _paired_ssmdr(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
                     else:
                         print('Using : _getPairedSSMD')
-                        score = _PairedSSMD(plate, cNeg, method=method, SECData=SECData, verbose=verbose)
+                        score = _paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
             else:
                 print('SSMD optimize for plate without replicat')
                 if robust_version:
                     print('Using : _SSMDr')
-                    score = _SSMDr(plate, cNeg, method=method, SECData=SECData, verbose=verbose)
+                    score = _ssmdr(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
                 else:
                     print('Using : _SSMD')
-                    score = _SSMD(plate, cNeg, method=method, SECData=SECData, verbose=verbose)
+                    score = _ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
             return score
         else:
             raise TypeError
@@ -90,39 +90,39 @@ def ssmd_score(plate, cNeg, paired=True, robust_version=True, method='UMVUE', va
         print(e)
 
 
-def _UnpairedSSMD(plate, cNeg, variance='unequal', SECData=True, verbose=False):
+def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
     """
     performed unpaired SSMD for plate with replicat
     :param plate: Plate Object to analyze
-    :param cNeg: negative control reference
+    :param neg_control: negative control reference
     :param variance: unequal or equal
-    :param SECData: use data with Systematic Error Corrected
+    :param sec_data: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:score data
     """
     try:
         # if no neg was provided raise AttributeError
-        if cNeg is None:
+        if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            SSMD = np.zeros(plate.PlateMap.platemap.shape)
+            ssmd = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
-            SSMD[SSMD == 0] = np.NaN
+            ssmd[ssmd == 0] = np.NaN
 
             nb_rep = len(plate.replicat)
             rep_value = []
             neg_value = []
-            neg_pos = plate.PlateMap.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.get_coord(neg_control)
             if not neg_pos:
                 raise Exception
             # search neg control value
-            for i in range(SSMD.shape[0]):
-                for j in range(SSMD.shape[1]):
+            for i in range(ssmd.shape[0]):
+                for j in range(ssmd.shape[1]):
                     for key, value in plate.replicat.items():
                         well_value = 0
                         try:
-                            if SECData:
+                            if sec_data:
                                 well_value = value.SECData[i][j]
                             else:
                                 well_value = value.Data[i][j]
@@ -140,12 +140,12 @@ def _UnpairedSSMD(plate, cNeg, variance='unequal', SECData=True, verbose=False):
             k = 2 * (scipy.special.gamma(
                 ((len(neg_value) - 1) / 2) / scipy.special.gamma((len(neg_value) - 2) / 2))) ** 2
             # search rep value for ith well
-            for i in range(SSMD.shape[0]):
-                for j in range(SSMD.shape[1]):
+            for i in range(ssmd.shape[0]):
+                for j in range(ssmd.shape[1]):
                     well_value = 0
                     for key, value in plate.replicat.items():
                         try:
-                            if SECData:
+                            if sec_data:
                                 well_value = value.SECData[i][j]
                             else:
                                 well_value = value.Data[i][j]
@@ -157,64 +157,64 @@ def _UnpairedSSMD(plate, cNeg, variance='unequal', SECData=True, verbose=False):
 
                     # # performed unpaired t-test
                     if variance == 'unequal':
-                        SSMD[i][j] = (mean_rep - mean_neg) / np.sqrt(var_rep + var_neg)
+                        ssmd[i][j] = (mean_rep - mean_neg) / np.sqrt(var_rep + var_neg)
                     elif variance == 'equal':
-                        SSMD[i][j] = (mean_rep - mean_neg) / np.sqrt(
+                        ssmd[i][j] = (mean_rep - mean_neg) / np.sqrt(
                             (2 / k) * ((nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg))
                     else:
                         raise AttributeError('\033[0;31m[ERROR]\033[0m  variance attribut must be unequal or equal.')
 
             # # replace NaN with 0
-            SSMD = np.nan_to_num(SSMD)
+            ssmd = np.nan_to_num(ssmd)
 
             if verbose:
                 print("Unpaired SSMD :")
-                print("Systematic Error Corrected Data : ", SECData)
+                print("Systematic Error Corrected Data : ", sec_data)
                 print("Data type : ", plate.DataType)
                 print("variance parameter : ", variance)
                 print("SSMD score :")
-                print(SSMD)
+                print(ssmd)
                 print("")
-            return SSMD
+            return ssmd
         else:
             raise TypeError
     except Exception as e:
         print(e)
 
 
-def _UnpairedSSMDr(plate, cNeg, variance='unequal', SECData=True, verbose=False):
+def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
     """
     performed unpaired SSMDr for plate with replicat
     :param plate: Plate Object to analyze
-    :param cNeg: negative control reference
+    :param neg_control: negative control reference
     :param variance: unequal or equal
-    :param SECData: use data with Systematic Error Corrected
+    :param sec_data: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:score data
     """
     try:
         # if no neg was provided raise AttributeError
-        if cNeg is None:
+        if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            SSMD = np.zeros(plate.PlateMap.platemap.shape)
+            ssmd = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
-            SSMD[SSMD == 0] = np.NaN
+            ssmd[ssmd == 0] = np.NaN
 
             nb_rep = len(plate.replicat)
             rep_value = []
             neg_value = []
-            neg_pos = plate.PlateMap.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.get_coord(neg_control)
             if not neg_pos:
                 raise Exception
             # search neg control value
-            for i in range(SSMD.shape[0]):
-                for j in range(SSMD.shape[1]):
+            for i in range(ssmd.shape[0]):
+                for j in range(ssmd.shape[1]):
                     for key, value in plate.replicat.items():
                         well_value = 0
                         try:
-                            if SECData:
+                            if sec_data:
                                 well_value = value.SECData[i][j]
                             else:
                                 well_value = value.Data[i][j]
@@ -232,12 +232,12 @@ def _UnpairedSSMDr(plate, cNeg, variance='unequal', SECData=True, verbose=False)
             k = 2 * (scipy.special.gamma(
                 ((len(neg_value) - 1) / 2) / scipy.special.gamma((len(neg_value) - 2) / 2))) ** 2
             # search rep value for ith well
-            for i in range(SSMD.shape[0]):
-                for j in range(SSMD.shape[1]):
+            for i in range(ssmd.shape[0]):
+                for j in range(ssmd.shape[1]):
                     well_value = 0
                     for key, value in plate.replicat.items():
                         try:
-                            if SECData:
+                            if sec_data:
                                 well_value = value.SECData[i][j]
                             else:
                                 well_value = value.Data[i][j]
@@ -249,63 +249,63 @@ def _UnpairedSSMDr(plate, cNeg, variance='unequal', SECData=True, verbose=False)
 
                     # # performed unpaired t-test
                     if variance == 'unequal':
-                        SSMD[i][j] = (median_rep - median_neg) / np.sqrt(var_rep + var_neg)
+                        ssmd[i][j] = (median_rep - median_neg) / np.sqrt(var_rep + var_neg)
                     elif variance == 'equal':
-                        SSMD[i][j] = (median_rep - median_neg) / np.sqrt(
+                        ssmd[i][j] = (median_rep - median_neg) / np.sqrt(
                             (2 / k) * ((nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg))
                     else:
                         raise AttributeError('\033[0;31m[ERROR]\033[0m  variance attribut must be unequal or equal.')
 
             # # replace NaN with 0
-            SSMD = np.nan_to_num(SSMD)
+            ssmd = np.nan_to_num(ssmd)
 
             if verbose:
                 print("Unpaired SSMDr :")
-                print("Systematic Error Corrected Data : ", SECData)
+                print("Systematic Error Corrected Data : ", sec_data)
                 print("Data type : ", plate.DataType)
                 print("variance parameter : ", variance)
                 print("SSMD score :")
-                print(SSMD)
+                print(ssmd)
                 print("")
-            return SSMD
+            return ssmd
         else:
             raise TypeError
     except Exception as e:
         print(e)
 
 
-def _PairedSSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
+def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
     """
     performed paired ssmd for plate with replicat
     :param plate: Plate Object to analyze
-    :param cNeg: negative control reference
+    :param neg_control: negative control reference
     :param method: which method to use MM or UMVUE
-    :param SECData: use data with Systematic Error Corrected
+    :param sec_data: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:score data
     """
     try:
         # if no neg was provided raise AttributeError
-        if cNeg is None:
+        if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            SSMD = np.zeros(plate.PlateMap.platemap.shape)
+            ssmd = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
-            SSMD[SSMD == 0] = np.NaN
+            ssmd[ssmd == 0] = np.NaN
 
-            neg_pos = plate.PlateMap.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.get_coord(neg_control)
             if not neg_pos:
                 raise Exception
 
             # search neg control value
             def _search_neg_data(replicat, Neg_Pos):
                 neg_value = []
-                for i in range(SSMD.shape[0]):
-                    for j in range(SSMD.shape[1]):
+                for i in range(ssmd.shape[0]):
+                    for j in range(ssmd.shape[1]):
                         well_value = 0
                         try:
-                            if SECData:
+                            if sec_data:
                                 well_value = replicat.SECData[i][j]
                             else:
                                 well_value = replicat.Data[i][j]
@@ -322,74 +322,74 @@ def _PairedSSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
                 (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1))
 
             try:
-                for i in range(SSMD.shape[0]):
-                    for j in range(SSMD.shape[1]):
+                for i in range(ssmd.shape[0]):
+                    for j in range(ssmd.shape[1]):
                         well_value = []
                         for key, value in plate.replicat.items():
                             neg_median = _search_neg_data(value, neg_pos)
-                            if SECData:
+                            if sec_data:
                                 well_value.append(value.SECData[i][j] - neg_median)
                             else:
                                 well_value.append(value.Data[i][j] - neg_median)
                         if method == 'UMVUE':
-                            SSMD[i][j] = x * (np.nanmean(well_value) / np.nanstd(well_value))
+                            ssmd[i][j] = x * (np.nanmean(well_value) / np.nanstd(well_value))
                         elif method == 'MM':
-                            SSMD[i][j] = np.nanmean(well_value) / np.nanstd(well_value)
+                            ssmd[i][j] = np.nanmean(well_value) / np.nanstd(well_value)
                         else:
                             raise AttributeError('\033[0;31m[ERROR]\033[0m  Method must me UMVUE or MM')
 
                 # # replace NaN with 0
-                SSMD = np.nan_to_num(SSMD)
+                ssmd = np.nan_to_num(ssmd)
 
                 if verbose:
                     print("Paired SSMD :")
-                    print("Systematic Error Corrected Data : ", SECData)
+                    print("Systematic Error Corrected Data : ", sec_data)
                     print("Data type : ", plate.DataType)
                     print("method parameter : ", method)
                     print("SSMD score :")
-                    print(SSMD)
+                    print(ssmd)
                     print("")
             except Exception as e:
                 print(e)
-            return SSMD
+            return ssmd
         else:
             raise TypeError
     except Exception as e:
         print(e)
 
 
-def _PairedSSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
+def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
     """
     performed paired SSMDr for plate with replicat
     :param plate: Plate Object to analyze
-    :param cNeg: negative control reference
+    :param neg_control: negative control reference
     :param method: which method to use MM or UMVUE
-    :param SECData: use data with Systematic Error Corrected
+    :param sec_data: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:score data
     """
     try:
         # if no neg was provided raise AttributeError
-        if cNeg is None:
+        if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            SSMDr = np.zeros(plate.PlateMap.platemap.shape)
+            ssmdr = np.zeros(plate.PlateMap.platemap.shape)
 
             # # replace 0 with NaN
-            SSMDr[SSMDr == 0] = np.NaN
+            ssmdr[ssmdr == 0] = np.NaN
 
-            neg_pos = plate.PlateMap.getGenePos(cNeg)
+            neg_pos = plate.PlateMap.get_coord(neg_control)
             if not neg_pos:
                 raise Exception
 
             # search neg control value
             def _search_neg_data(replicat, Neg_Pos):
                 neg_value = []
-                for i in range(SSMDr.shape[0]):
-                    for j in range(SSMDr.shape[1]):
+                for i in range(ssmdr.shape[0]):
+                    for j in range(ssmdr.shape[1]):
                         well_value = 0
                         try:
-                            if SECData:
+                            if sec_data:
                                 well_value = replicat.SECData[i][j]
                             else:
                                 well_value = replicat.Data[i][j]
@@ -406,56 +406,56 @@ def _PairedSSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
                 (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1))
 
             try:
-                for i in range(SSMDr.shape[0]):
-                    for j in range(SSMDr.shape[1]):
+                for i in range(ssmdr.shape[0]):
+                    for j in range(ssmdr.shape[1]):
                         well_value = []
                         for key, value in plate.replicat.items():
                             neg_median = _search_neg_data(value, neg_pos)
-                            if SECData:
+                            if sec_data:
                                 well_value.append(value.SECData[i][j] - neg_median)
                             else:
                                 well_value.append(value.Data[i][j] - neg_median)
                         if method == 'UMVUE':
-                            SSMDr[i][j] = x * (np.nanmedian(well_value) / mad(well_value))
+                            ssmdr[i][j] = x * (np.nanmedian(well_value) / mad(well_value))
                         elif method == 'MM':
-                            SSMDr[i][j] = np.nanmedian(well_value) / mad(well_value)
+                            ssmdr[i][j] = np.nanmedian(well_value) / mad(well_value)
                         else:
                             raise AttributeError('\033[0;31m[ERROR]\033[0m  Method must me UMVUE or MM')
 
                 # # replace NaN with 0
-                SSMDr = np.nan_to_num(SSMDr)
+                ssmdr = np.nan_to_num(ssmdr)
 
                 if verbose:
                     print("Paired SSMDr :")
-                    print("Systematic Error Corrected Data : ", SECData)
+                    print("Systematic Error Corrected Data : ", sec_data)
                     print("Data type : ", plate.DataType)
                     print("method parameter : ", method)
                     print("SSMDr score :")
-                    print(SSMDr)
+                    print(ssmdr)
                     print("")
             except Exception as e:
                 print(e)
-            return SSMDr
+            return ssmdr
         else:
             raise TypeError
     except Exception as e:
         print(e)
 
 
-def _SSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
+def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
     """
     performed SSMD for plate without replicat
     take dataMean/Median or SECDatadata from plate object
     :param plate: Plate Object to analyze
-    :param cNeg: negative control reference
+    :param neg_control: negative control reference
     :param method: which method to use MM or UMVUE
-    :param SECData: use data with Systematic Error Corrected
+    :param sec_data: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:score data
     """
     try:
         # if no neg was provided raise AttributeError
-        if cNeg is None:
+        if neg_control is None:
             raise AttributeError('Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
             ps = plate.PlateMap
@@ -464,13 +464,13 @@ def _SSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
             # # replace 0 with NaN
             ssmd[ssmd == 0] = np.NaN
 
-            neg_well = ps.getGenePos(cNeg)
+            neg_well = ps.get_coord(neg_control)
             if not neg_well:
                 raise Exception
             neg_data = []
             data = None
             try:
-                if SECData:
+                if sec_data:
                     data = plate.SECData
                 else:
                     data = plate.Data
@@ -499,7 +499,7 @@ def _SSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
 
             if verbose:
                 print('SSMD without replicat, or inplate data from plate')
-                print("Systematic Error Corrected Data : ", SECData)
+                print("Systematic Error Corrected Data : ", sec_data)
                 print("Data type : ", plate.DataType)
                 print("method parameter : ", method)
                 print("SSMD score :")
@@ -512,20 +512,20 @@ def _SSMD(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
         print(e)
 
 
-def _SSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
+def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
     """
     perfored  SSMDr for plate without replicat
     take dataMean/Median or SECDatadata from plate object
     :param plate: Plate Object to analyze
-    :param cNeg: negative control reference
+    :param neg_control: negative control reference
     :param method: which method to use MM or UMVUE
-    :param SECData: use data with Systematic Error Corrected
+    :param sec_data: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return:score data
     """
     try:
         # if no neg was provided raise AttributeError
-        if cNeg is None:
+        if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
             ps = plate.PlateMap
@@ -534,13 +534,13 @@ def _SSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
             # # replace 0 with NaN
             ssmdr[ssmdr == 0] = np.NaN
 
-            neg_well = ps.getGenePos(cNeg)
+            neg_well = ps.get_coord(neg_control)
             if not neg_well:
                 raise Exception
             neg_data = []
             data = None
             try:
-                if SECData:
+                if sec_data:
                     data = plate.SECData
                 else:
                     data = plate.Data
@@ -570,7 +570,7 @@ def _SSMDr(plate, cNeg, method='UMVUE', SECData=True, verbose=False):
 
             if verbose:
                 print('SSMDr without replicat')
-                print("Systematic Error Corrected Data : ", SECData)
+                print("Systematic Error Corrected Data : ", sec_data)
                 print("Data type : ", plate.DataType)
                 print("method parameter : ", method)
                 print("SSMD score :")

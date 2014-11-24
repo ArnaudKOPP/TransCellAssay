@@ -15,7 +15,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def getVariability(plate, feature, verbose=False):
+def get_variability(plate, feature, verbose=False):
     """
 
     :param plate:
@@ -31,10 +31,10 @@ def getVariability(plate, feature, verbose=False):
             median = {}
 
             for key, item in plate.replicat.items():
-                datagp = item.Dataframe.groupby('Well')
+                datagp = item.RawData.groupby('Well')
 
                 # get all well from data
-                well_list = item.Dataframe.Well.unique()
+                well_list = item.RawData.Well.unique()
                 # iterate on well
                 for well in well_list:
                     mean.setdefault(well, []).append(np.mean(datagp.get_group(well)[feature]))

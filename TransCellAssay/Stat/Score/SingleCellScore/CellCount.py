@@ -15,7 +15,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def getMeanSDCellCount(plate, verbose=False):
+def get_cell_count(plate, verbose=False):
     """
     get mean of number of cell per well accross replicat
     :param plate : Give a TCA.Plate object
@@ -24,48 +24,47 @@ def getMeanSDCellCount(plate, verbose=False):
     if not isinstance(plate, TCA.Core.Plate):
         raise TypeError("\033[0;31m[ERROR]\033[0m Take a Plate object in inpout")
     else:
-        dataDict = plate.getAllData()
+        data_dict = plate.get_all_raw_data()
 
-        def getNumberCellByWell(InputArray):
-            '''
+        def get_number_cell_by_well(array):
+            """
             Get Number of occurence by well
-            :param Input: is a replicat dataframe
+            :param array: is a replicat dataframe
             :return:
-            '''
+            """
             try:
-                groupbydata = InputArray.groupby('Well')
+                groupbydata = array.groupby('Well')
                 count = groupbydata.Well.count()
-                dictCount = count.to_dict()
-                return dictCount
+                dictcount = count.to_dict()
+                return dictcount
             except Exception as e:
                 print("\033[0;31m[ERROR]\033[0m", e)
 
-
-        dictMeanByRep = {}
+        dictmeanbyrep = {}
         try:
-            for k, v in dataDict.items():
-                CellCount = getNumberCellByWell(v)
-                for key in CellCount.keys():
+            for k, v in data_dict.items():
+                cellcount = get_number_cell_by_well(v)
+                for key in cellcount.keys():
                     try:
-                        dictMeanByRep.setdefault(key, []).append(CellCount[key])
+                        dictmeanbyrep.setdefault(key, []).append(cellcount[key])
                     except KeyError:
                         pass
-            SDValue = {}
-            for key, value in dictMeanByRep.items():
-                SDValue[key] = np.std(value)
-            MeanCountList = [(i, sum(v) / len(v)) for i, v in dictMeanByRep.items()]
-            MeanCount = dict(MeanCountList)  # # convert to dict
+            sdvalue = {}
+            for key, value in dictmeanbyrep.items():
+                sdvalue[key] = np.std(value)
+            meancountlist = [(i, sum(v) / len(v)) for i, v in dictmeanbyrep.items()]
+            meancount = dict(meancountlist)  # # convert to dict
 
             if verbose:
                 mean = np.zeros(plate.PlateMap.platemap.shape)
                 sd = np.zeros(plate.PlateMap.platemap.shape)
 
-                for k, v in MeanCount.items():
-                    well = TCA.Utils.WellFormat.getOppositeWellFormat(k)
+                for k, v in meancount.items():
+                    well = TCA.Utils.WellFormat.get_opposite_well_format(k)
                     mean[well[0]][well[1]] = v
 
-                for k, v in SDValue.items():
-                    well = TCA.Utils.WellFormat.getOppositeWellFormat(k)
+                for k, v in sdvalue.items():
+                    well = TCA.Utils.WellFormat.get_opposite_well_format(k)
                     sd[well[0]][well[1]] = v
 
                 print("Mean of number of Cells by well : ")
@@ -73,6 +72,6 @@ def getMeanSDCellCount(plate, verbose=False):
                 print("Standart deviation of number of Cells by Well : ")
                 print(sd)
 
-            return MeanCount, SDValue
+            return meancount, sdvalue
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

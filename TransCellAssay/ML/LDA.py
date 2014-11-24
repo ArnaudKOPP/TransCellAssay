@@ -26,7 +26,7 @@ class LDA():
         try:
             if isinstance(OBJECT, TCA.Replicat):
                 print("Process LDA on Replicat")
-                self.rawdata = OBJECT.Dataframe
+                self.rawdata = OBJECT.RawData
             if isinstance(OBJECT, TCA.Plate):
                 print("Process LDA on Plate")
             if isinstance(OBJECT, TCA.Screen):
@@ -37,7 +37,7 @@ class LDA():
     def _replicat_LDA(self, replicat, n_component=3):
         try:
             assert isinstance(replicat, TCA.Replicat)
-            raw_data = replicat.Dataframe
+            raw_data = replicat.RawData
             data = self._clear_dataframe(raw_data)
 
             ## DO LDA

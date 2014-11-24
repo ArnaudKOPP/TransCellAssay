@@ -40,7 +40,7 @@ class WellCorrection():
         else:
             raise TypeError("\033[0;31m[ERROR]\033[0m Provided Screen Object Object")
 
-    def wellcorrection(self, approx="lst", apply_on='replicat', verbose=False):
+    def well_correction(self, approx="lst", apply_on='replicat', verbose=False):
         try:
             self._apply_approx()
             self._apply_zscore()

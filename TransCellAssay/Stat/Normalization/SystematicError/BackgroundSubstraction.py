@@ -22,19 +22,19 @@ class BackgroundSubstraction():
         except Exception as e:
             print(e)
 
-    def BackgroundSubstraction(self, Screen):
+    def background_substraction(self, screen):
         try:
-            if isinstance(Screen, Core.Screen):
-                self._process(Screen)
+            if isinstance(screen, Core.Screen):
+                self._process(screen)
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m  Must provided Screen Object")
         except Exception as e:
             print(e)
 
-    def _process(self, Screen):
+    def _process(self, screen):
         try:
             # iterate on all plate
-            for key, value in Screen.PlateList.items():
+            for key, value in screen.PlateList.items():
                 # iterate on all replicat in the plate
                 for repName, repValue in value.replicat.items():
                     repValue.SECData = repValue.Data - self.background
