@@ -7,7 +7,7 @@ setup(
     install_requires=['pandas', 'numpy', 'scipy', 'scikit-learn', 'matplotlib', 'xlsxwriter', 'beautifulsoup4',
                       'requests'],
     url='https://github.com/ArnaudKOPP/TransCellAssay',
-    license='GPL V3',
+    license='CC BY-NC-ND 4.0 License',
     author='Arnaud KOPP',
     author_email='kopp.arnaud@gmail.com',
     description='Package for analyze HTS data'

@@ -22,10 +22,10 @@ from urllib.parse import urlencode
 from urllib.error import HTTPError
 import requests  # replacement for urllib2 (2-3 times faster)
 from requests.models import Response
-import aiohttp
 
 __all__ = ["Service"]
 DEBUG = True
+
 
 class ServiceError(Exception):
     def __init__(self, value):
@@ -376,49 +376,8 @@ class REST(RESTBase):
     def _apply(self, iterable, fn, *args, **kwargs):
         return [fn(x, *args, **kwargs) for x in iterable if x is not None]
 
-    def _get_async2(self, keys, frmt="json", params={}):
-        import asyncio
-        # # DEVELOPMENT SANDBOX for TRYING
-        session = self.session
-        try:
-            urls = self._get_all_urls(keys, frmt)
-
-            @asyncio.coroutine
-            def loop(url):
-                loop = asyncio.get_event_loop()
-                future = loop.run_until_complete(None, requests.get, url)
-                response = yield from future
-                return response
-
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(loop())
-
-        except Exception as e:
-            print("Error caught in async. ", e)
-            return []
-
-    def _get_async(self, keys, frmt='json', params={}):
-        # does not work under python3 so local import
-        import grequests
-
-        session = self._session
-        try:
-            urls = self._get_all_urls(keys, frmt)
-            rs = (grequests.get(url, session=session, params=params) for key, url in zip(keys, urls))
-            # execute them
-            ret = grequests.map(rs, size=min(self.async_concurrent, len(keys)))
-            self.last_response = ret
-            return ret
-        except Exception as e:
-            print("Error caught in async. ", e)
-            return []
-
     def _get_all_urls(self, keys, frmt=None):
         return ('%s/%s' % (self.url, query) for query in keys)
-
-    def get_async(self, keys, frmt='json', params={}, **kargs):
-        ret = self._get_async(keys, frmt, params=params, **kargs)
-        return self._apply(ret, self._interpret_returned_request, frmt)
 
     def get_sync(self, keys, frmt='json', **kargs):
         return [self.get_one(key, frmt=frmt, **kargs) for key in keys]
@@ -544,42 +503,3 @@ class REST(RESTBase):
         print(self.last_response.content)
         print(self.last_response.reason)
         print(self.last_response.status_code)
-
-
-class REST2(RESTBase):
-    """
-    The ideas (sync/async) and code using requests were inspired from the chembl
-    python wrapper but significantly changed.
-
-    This class is variant of REST by use of aiohttp for async http request
-
-    IN DEV !!!!
-
-    Get one value::
-    s = REST("test", "https://www.ebi.ac.uk/chemblws")
-    res = s.get_one("targets/CHEMBL2476.json", "json")
-    res['organism']
-    u'Homo sapiens'
-
-    """
-    content_types = {
-        'bed': 'text/x-bed',
-        'default': "application/x-www-form-urlencoded",
-        'gff3': 'text/x-gff3',
-        'fasta': 'text/x-fasta',
-        'json': 'application/json',
-        "jsonp": "text/javascript",
-        "nh": "text/x-nh",
-        'phylip': 'text/x-phyloxml+xml',
-        'phyloxml': 'text/x-phyloxml+xml',
-        'seqxml': 'text/x-seqxml+xml',
-        'txt': 'text/plain',
-        'text': 'text/plain',
-        'xml': 'application/xml',
-        'yaml': 'text/x-yaml'
-    }
-
-    def __init__(self, name, url=None, verbose=True):
-        super(REST, self).__init__(name, url, verbose=verbose)
-        self._session = None
-        self.FAST_SAVE = True

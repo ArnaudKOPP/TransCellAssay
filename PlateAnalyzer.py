@@ -115,7 +115,7 @@ USAGE
         pd.set_option('display.width', 1000)
         np.set_printoptions(linewidth=250)
         np.set_printoptions(suppress=True)
-
+        """
         time_norm_start = time.time()
         TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False,
                                   verbose=True)
@@ -187,6 +187,9 @@ USAGE
         # Graphics.plotSurf3D_Plate(rep1.Data)
         # Graphics.plotScreen(screen_test)
         # Graphics.plotSurf3D_Plate(A)
+        """
+        clustering = TCA.k_mean_clustering(plaque1)
+        clustering.do_cluster()
 
         time_stop_comp = time.time()
         print("\033[0;32m ->Computation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))

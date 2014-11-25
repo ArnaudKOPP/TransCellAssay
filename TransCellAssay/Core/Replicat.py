@@ -280,16 +280,16 @@ class Replicat(object):
             else:
                 if algorithm == 'Bscore':
                     ge, ce, re, resid, tbl_org = TCA.median_polish(self.Data, method=method,
-                                                                  max_iterations=max_iterations,
-                                                                  verbose=verbose)
+                                                                   max_iterations=max_iterations,
+                                                                   verbose=verbose)
                     if save:
                         self.SECData = resid
                         self.isSpatialNormalized = True
 
                 if algorithm == 'BZscore':
                     ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.Data, method=method,
-                                                                    max_iterations=max_iterations,
-                                                                    verbose=verbose)
+                                                                      max_iterations=max_iterations,
+                                                                      verbose=verbose)
                     if save:
                         self.SECData = resid
                         self.isSpatialNormalized = True
