@@ -15,7 +15,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def get_percent_positive_cell(plate, feature, control, threshold, verbose=False):
+def get_percent_positive_cell(plate, feature, control, threshold):
     """
     get % of Cell over threshold, default threshold is 50%
     This function take some time and need to be very improve
@@ -41,15 +41,10 @@ def get_percent_positive_cell(plate, feature, control, threshold, verbose=False)
                 data_control = replicat.get_raw_data_by_wells(control_well, feature=feature)
                 threshold_value = np.percentile(data_control, threshold)
                 # data from replicat
-                data = replicat.RawData
-                datagroupby = data.groupby('Well')
+                datagroupby = replicat.RawData.groupby('Well')
 
-                # get all well from data
-                well_list = data.Well.unique()
                 # iterate on well
-                for well in well_list:
-                    # # Take long time here ~ 130 ms
-                    # xdata = data[feature][data['Well'] == well]
+                for well in replicat.RawData.Well.unique():
                     xdata = datagroupby.get_group(well)[feature]
                     len_total = len(xdata)
                     len_thres = len(np.extract(xdata > threshold_value, xdata))
@@ -63,23 +58,6 @@ def get_percent_positive_cell(plate, feature, control, threshold, verbose=False)
             # determine the standart deviation of % Cells
             for key, value in dict_percent_cell_tmp.items():
                 dict_percent_sd_cell[key] = np.std(value)
-
-            if verbose:
-                mean = np.zeros(plate.PlateMap.platemap.shape)
-                sd = np.zeros(plate.PlateMap.platemap.shape)
-
-                for k, v in dict_percent_cell.items():
-                    well = TCA.Utils.WellFormat.get_opposite_well_format(k)
-                    mean[well[0]][well[1]] = v
-
-                for k, v in dict_percent_sd_cell.items():
-                    well = TCA.Utils.WellFormat.get_opposite_well_format(k)
-                    sd[well[0]][well[1]] = v
-
-                print("Mean of number of Cells for given Threshold by well : ")
-                print(mean)
-                print("Standart deviation of number of Cells for given Threshold by Well : ")
-                print(sd)
 
             return dict_percent_cell, dict_percent_sd_cell
     except Exception as e:

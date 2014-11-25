@@ -15,7 +15,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def get_variability(plate, feature, verbose=False):
+def get_variability(plate, feature):
     """
 
     :param plate:
@@ -48,9 +48,6 @@ def get_variability(plate, feature, verbose=False):
             median = [(i, sum(v) / len(v)) for i, v in median.items()]
             mean = dict(mean)
             median = dict(median)
-
-            if verbose:
-                print("Nothing")
 
             return mean, median, std, stdm
         except Exception as e:

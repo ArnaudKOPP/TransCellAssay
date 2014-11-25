@@ -15,7 +15,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def get_cell_count(plate, verbose=False):
+def get_cell_count(plate):
     """
     get mean of number of cell per well accross replicat
     :param plate : Give a TCA.Plate object
@@ -54,23 +54,6 @@ def get_cell_count(plate, verbose=False):
                 sdvalue[key] = np.std(value)
             meancountlist = [(i, sum(v) / len(v)) for i, v in dictmeanbyrep.items()]
             meancount = dict(meancountlist)  # # convert to dict
-
-            if verbose:
-                mean = np.zeros(plate.PlateMap.platemap.shape)
-                sd = np.zeros(plate.PlateMap.platemap.shape)
-
-                for k, v in meancount.items():
-                    well = TCA.Utils.WellFormat.get_opposite_well_format(k)
-                    mean[well[0]][well[1]] = v
-
-                for k, v in sdvalue.items():
-                    well = TCA.Utils.WellFormat.get_opposite_well_format(k)
-                    sd[well[0]][well[1]] = v
-
-                print("Mean of number of Cells by well : ")
-                print(mean)
-                print("Standart deviation of number of Cells by Well : ")
-                print(sd)
 
             return meancount, sdvalue
         except Exception as e:
