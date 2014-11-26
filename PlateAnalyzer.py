@@ -65,16 +65,20 @@ USAGE
         # Setup argument parser
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument("-i", "--inputFileDirectory", dest="input", action="store",
-                            help="Input path of data file ")
+                            help="Input path of data file")
         # parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
         # help="Output path for result file", required=True)
         #
         InArgs = parser.parse_args()
         InputFileDirectory = InArgs.input
+        print(InputFileDirectory)
+
+        TCA.input_directory_parser(InputFileDirectory)
+
 
         # # reading TEST
         time_norm_start = time.time()
-
+        """
         screen_test = TCA.Core.Screen()
         plaque1 = TCA.Core.Plate(name='Plate 1')
         platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/TEST/Pl1PP.csv")
@@ -115,7 +119,7 @@ USAGE
         pd.set_option('display.width', 1000)
         np.set_printoptions(linewidth=250)
         np.set_printoptions(suppress=True)
-        """
+
         time_norm_start = time.time()
         TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False,
                                   verbose=True)
@@ -187,12 +191,13 @@ USAGE
         # Graphics.plotSurf3D_Plate(rep1.Data)
         # Graphics.plotScreen(screen_test)
         # Graphics.plotSurf3D_Plate(A)
-        """
+
         clustering = TCA.k_mean_clustering(plaque1)
         clustering.do_cluster()
 
         time_stop_comp = time.time()
         print("\033[0;32m ->Computation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))
+        """
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
         return 0

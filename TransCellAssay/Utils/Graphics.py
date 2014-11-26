@@ -177,7 +177,7 @@ def plotScreen(Screen):
                     I = 0
                     platedata = list()
                     platenumber = list()
-                    for key, value in Screen.PlateList.items():
+                    for key, value in Screen.allPlate.items():
                         for repkey, repvalue in value.replicat.items():
                             platedata.append(np.log2(repvalue.DataMedian[i][j]))
                             platenumber.append(I)
@@ -309,11 +309,11 @@ plt.show()
 
 
 def plot_raw_data(DataFrame):
-    '''
+    """
     DataFrame must be clean of shit columns
     :param DataFrame:
     :return:
-    '''
+    """
     try:
         import pandas as pd
         from matplotlib import pyplot as plt

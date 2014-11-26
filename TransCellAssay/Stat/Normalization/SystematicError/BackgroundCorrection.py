@@ -41,7 +41,7 @@ class BackgroundCorrection():
         try:
             if apply_on == "Plate":
                 # iterate on all plate
-                for key, value in self.screen.PlateList.items():
+                for key, value in self.screen.allPlate.items():
                     # check if plate object
                     if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
@@ -53,7 +53,7 @@ class BackgroundCorrection():
             elif apply_on == "Replicat":
                 object_cnt = 0
                 # iterate on all plate
-                for key, value in self.screen.PlateList.items():
+                for key, value in self.screen.allPlate.items():
                     # check if plate object
                     if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
@@ -89,7 +89,7 @@ class BackgroundCorrection():
         try:
             if apply_on == "Plate":
                 # iterate on all plate
-                for key, value in self.screen.PlateList.items():
+                for key, value in self.screen.allPlate.items():
                     # check if plate object
                     if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
@@ -98,7 +98,7 @@ class BackgroundCorrection():
                         value.isSpatialNormalized = True
             elif apply_on == "Replicat":
                 # iterate on all plate
-                for key, value in self.screen.PlateList.items():
+                for key, value in self.screen.allPlate.items():
                     # check if plate object
                     if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")

@@ -34,7 +34,7 @@ class BackgroundSubstraction():
     def _process(self, screen):
         try:
             # iterate on all plate
-            for key, value in screen.PlateList.items():
+            for key, value in screen.allPlate.items():
                 # iterate on all replicat in the plate
                 for repName, repValue in value.replicat.items():
                     repValue.SECData = repValue.Data - self.background

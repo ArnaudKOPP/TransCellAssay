@@ -53,18 +53,38 @@ def mad(arr):
         print(e)
 
 
-def ssmd(Array1, Array2):
+def ssmd(array1, array2):
     """
     Performed a SSMD on two polulations
 
     The larger the absolute value of SSMD between two populations, the greater the differentiation  between the two
     populations
-    :param Array1: Must be equivalent of negative
-    :param Array2: Must be equivalent of positive
+    :param array1: Must be equivalent of negative
+    :param array2: Must be equivalent of positive
     :return: SSMD Value
     """
     try:
-        ssmd = (np.mean(Array2) - np.mean(Array1)) / (np.sqrt(np.abs(np.std(Array2) ** 2 - np.std(Array1) ** 2)))
+        ssmd = (np.mean(array2) - np.mean(array1)) / (np.sqrt(np.abs(np.std(array2) ** 2 - np.std(array1) ** 2)))
         return ssmd
+    except Exception as e:
+        print(e)
+
+
+def mann_whitney(array1, array2):
+    try:
+        import scipy.stats
+
+        u, prob = scipy.stats.mannwhitneyu(array1, array2)
+        return u, prob
+    except Exception as e:
+        print(e)
+
+
+def wilcoxon_rank_sum(array1, array2):
+    try:
+        import scipy.stats
+
+        z, p = scipy.stats.ranksums(array1, array2)
+        return z, p
     except Exception as e:
         print(e)

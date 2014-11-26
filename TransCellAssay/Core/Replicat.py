@@ -27,6 +27,8 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
+DEBUG = 1
+
 
 class Replicat(object):
     """
@@ -68,11 +70,13 @@ class Replicat(object):
         """
         try:
             self.RawData = pd.read_csv(input_file)
-            print('Reading %s File' % input_file)
+            if DEBUG:
+                print('Reading %s File' % input_file)
         except:
             try:
                 self.RawData = pd.read_csv(input, decimal=",", sep=";")
-                print('Reading %s File' % input_file)
+                if DEBUG:
+                    print('Reading %s File' % input_file)
             except Exception as e:
                 print('\033[0;31m[ERROR]\033[0m  Error in reading %s File' % input_file, e)
 
@@ -83,6 +87,16 @@ class Replicat(object):
         """
         try:
             return self.RawData
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def get_feature_list(self):
+        """
+        Get all features/component in list
+        :return: list of feature/component
+        """
+        try:
+            return self.RawData.columns.tolist()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
