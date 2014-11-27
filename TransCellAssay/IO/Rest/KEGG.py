@@ -97,19 +97,19 @@ class KEGG(REST):
         if mode == "info":
             if database not in KEGG._valid_databases_info and isOrg is False:
                 print("\033[0;31m[ERROR]\033[0m Database or organism provided is not correct (mode=info)")
-                raise ValueError
+                raise IOError
         elif mode == "list":
             if database not in KEGG._valid_databases_list and isOrg is False:
                 print("\033[0;31m[ERROR]\033[0m Database is not correct (mode=list)")
-                raise ValueError
+                raise IOError
         elif mode == "find":
             if database not in KEGG._valid_databases_find and isOrg is False:
                 print("\033[0;31m[ERROR]\033[0m Database is not correct (mode=find)")
-                raise ValueError
+                raise IOError
         elif mode == "link":
             if database not in KEGG._valid_databases_link and isOrg is False:
                 print("\033[0;31m[ERROR]\033[0m Database is not correct (mode=link)")
-                raise ValueError
+                raise IOError
         else:
             raise ValueError("Mode must be : info, list, find, link")
 
@@ -278,7 +278,7 @@ class KEGG(REST):
 
         if option:
             if option not in _valid_options:
-                raise ValueError("\033[0;31m[ERROR]\033[0m Invalid Option. Must be in %s" % _valid_options)
+                raise AttributeError("\033[0;31m[ERROR]\033[0m Invalid Option. Must be in %s" % _valid_options)
             url += "/" + option
 
         res = self.http_get(url, frmt="txt")
@@ -326,7 +326,7 @@ class KEGG(REST):
         isOrg = self.isOrganism(target)
         if isOrg is False and target not in ['ncbi-gi', 'ncbi-geneid', 'uniprot', 'pubchem', 'chebi', 'drug',
                                              'compound', 'glycan']:
-            raise ValueError(
+            raise AttributeError(
                 "\033[0;31m[ERROR]\033[0m Invalid syntax, target must be a KEGG id or one of the allowed database")
 
         url = "conv/" + target + "/" + source

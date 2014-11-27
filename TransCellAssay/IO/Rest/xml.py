@@ -40,7 +40,7 @@ class easyXML(object):
         """
         # if fixing_unicode:
         # x = unicodefix.FixingUnicode(data, verbose=False, encoding=encoding)
-        #    self.data = x.fixed_string.encode("utf-8")
+        # self.data = x.fixed_string.encode("utf-8")
         #else:
         self.data = data[:]
 
