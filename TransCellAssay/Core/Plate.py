@@ -374,6 +374,18 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def write_pickle(self, path):
+        try:
+            return 0
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def load_pickle(self, path):
+        try:
+            return 0
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
     def __add__(self, to_add):
         """
         Add object object, use + operator
@@ -438,7 +450,6 @@ class Plate(object):
                 "\n Plate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateMap : \n" + repr(self.PlateMap) +
-                "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat))
@@ -454,7 +465,6 @@ class Plate(object):
                 "\n Plate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateMap : \n" + repr(self.PlateMap) +
-                "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat))

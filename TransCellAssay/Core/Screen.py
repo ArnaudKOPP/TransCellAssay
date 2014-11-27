@@ -1,5 +1,6 @@
 """
 Screen is designed for manipulating screen that contain multiple different plate
+This class is a bit useless because of you have many plate  you will need a lot of memory !!!
 """
 
 import TransCellAssay as TCA

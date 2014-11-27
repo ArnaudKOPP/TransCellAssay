@@ -12,6 +12,7 @@ from argparse import RawDescriptionHelpFormatter
 import numpy as np
 import TransCellAssay as TCA
 import pandas as pd
+import multiprocessing as mp
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -50,16 +51,16 @@ def main(argv=None):  # IGNORE:C0111
 
     program_name = os.path.basename(sys.argv[0])
     program_shortdesc = __import__('__main__').__doc__
-    program_license = '''%s
+    program_license = """%s
 
-  Created by Arnaud on %s. Updated on %s
-  Copyright 2014 KOPP. All rights reserved.
-  Distributed on an "AS IS" basis without warranties
-  or conditions of any kind, either express or implied.
-  VERSION = %s
+      Created by Arnaud on %s. Updated on %s
+      Copyright 2014 KOPP. All rights reserved.
+      Distributed on an "AS IS" basis without warranties
+      or conditions of any kind, either express or implied.
+      VERSION = %s
 
-USAGE
-''' % (program_shortdesc, str(__date__), str(__updated__), str(__version__))
+    USAGE
+    """ % (program_shortdesc, str(__date__), str(__updated__), str(__version__))
 
     try:
         # Setup argument parser
@@ -72,8 +73,6 @@ USAGE
         InArgs = parser.parse_args()
         InputFileDirectory = InArgs.input
         print(InputFileDirectory)
-
-        TCA.input_directory_parser(InputFileDirectory)
 
 
         # # reading TEST
@@ -198,6 +197,9 @@ USAGE
         time_stop_comp = time.time()
         print("\033[0;32m ->Computation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))
         """
+        time_stop = time.time()
+        print("\033[0;32m   ----> TOTAL TIME (reading input + computation): {0:f}s\033[0m".format(
+            float(time_stop - time_start)))
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
         return 0
@@ -208,10 +210,34 @@ USAGE
         sys.stderr.write(program_name + ": " + repr(e) + "\n")
         sys.stderr.write(indent + "  for help use --help")
         return 2
-    time_stop = time.time()
-    print("\033[0;32m   ----> TOTAL TIME (reading input + computation): {0:f}s\033[0m".format(
-        float(time_stop - time_start)))
+
+
+def plate_analysis(idx):
+    try:
+        created = mp.Process()
+        current = mp.current_process()
+        print('running on :', current.name, current._identity, 'created:', created.name, created._identity)
+
+        plaque1 = TCA.Core.Plate(name='Plate 1')
+        platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/TEST/Pl1PP.csv")
+        plaque1 + platesetup
+        rep1 = TCA.Core.Replicat(name="rep1", data="/home/arnaud/Desktop/TEST/Pl1rep_1.csv")
+        rep2 = TCA.Core.Replicat(name="rep2", data="/home/arnaud/Desktop/TEST/Pl1rep_2.csv")
+        rep3 = TCA.Core.Replicat(name="rep3", data="/home/arnaud/Desktop/TEST/Pl1rep_3.csv")
+        plaque1 + rep1
+        plaque1 + rep2
+        plaque1 + rep3
+
+        print(plaque1)
+        plaque1.__de
+        print(idx)
+        return idx
+    except Exception as e:
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
 if __name__ == "__main__":
     main()
+    pool = mp.Pool(processes=mp.cpu_count())
+    results = pool.map_async(plate_analysis, range(20))
+    print(results.get())

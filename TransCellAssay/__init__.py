@@ -10,4 +10,4 @@ from TransCellAssay.Utils import *
 from TransCellAssay.ML import *
 from TransCellAssay.Omics import EnrichmentStudy
 
-__all__ = ['Core', 'IO', 'Stat', 'Utils', 'ML', 'Bayesian', 'DoseResponseAnalysis', 'Omics']
+__all__ = ['Core', 'IO', 'stat_misc.py', 'Utils', 'ML', 'Bayesian', 'DoseResponseAnalysis', 'Omics']

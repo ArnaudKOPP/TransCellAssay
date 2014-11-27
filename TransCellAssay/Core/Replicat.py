@@ -331,6 +331,18 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def write_pickle(self, path):
+        try:
+            return 0
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def load_pickle(self, path):
+        try:
+            return 0
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
     def __repr__(self):
         """
         Definition for the representation
@@ -338,8 +350,8 @@ class Replicat(object):
         try:
             return ("\n Replicat : " + repr(self.name) +
                     "\n Raw Data head : " + repr(self.RawData.head()) +
-                    "\n Normalized Data : " + repr(self.isNormalized) +
-                    "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
+                    "\n Data normalized ? : " + repr(self.isNormalized) +
+                    "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -350,7 +362,7 @@ class Replicat(object):
         try:
             return ("\n Replicat : " + repr(self.name) +
                     "\n Raw Data head : " + repr(self.RawData.head()) +
-                    "\n Normalized Data : " + repr(self.isNormalized) +
-                    "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
+                    "\n Data normalized ? : " + repr(self.isNormalized) +
+                    "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

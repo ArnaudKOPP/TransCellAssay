@@ -6,7 +6,7 @@ Non controls based normalization : Z-score and robust Z-score
 import numpy as np
 import pandas as pd
 
-from TransCellAssay.Stat.Stat import mad
+from TransCellAssay.Stat.stat_misc import mad
 
 
 __author__ = "Arnaud KOPP"

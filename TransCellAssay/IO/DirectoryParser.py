@@ -34,6 +34,8 @@ def input_directory_parser(input_dir, extension='.csv'):
 
         print(max(ind))
 
+        return full_file_paths
+
     except Exception as e:
         print('\033[0;31m[ERROR]\033[0m Error in parsing directory %s' % input_dir, e)
 
