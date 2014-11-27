@@ -83,7 +83,7 @@ class CSV_Reader():
             ## put Well value from row and col columns
             self.data['Well'] = self.data.apply(lambda x: '%s%.3g' % (x['Row'], x['Column'] + 1), axis=1)
             remove = [u'Row', u'Column']
-            #self.data = self.data.drop(remove, axis=1)
+            # self.data = self.data.drop(remove, axis=1)
             col = self.data.columns
 
             ## change , to . in float

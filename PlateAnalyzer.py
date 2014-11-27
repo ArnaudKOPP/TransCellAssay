@@ -22,8 +22,6 @@ __version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
-__date__ = '2014-09-28'
-__updated__ = '2014-10-28'
 
 DEBUG = 1
 
@@ -40,10 +38,8 @@ class CLIError(Exception):
         return self.msg
 
 
-def main(argv=None):  # IGNORE:C0111
+def main(argv=None):
     """Command line options."""
-    time_start = time.time()
-
     if argv is None:
         argv = sys.argv
     else:
@@ -53,153 +49,63 @@ def main(argv=None):  # IGNORE:C0111
     program_shortdesc = __import__('__main__').__doc__
     program_license = """%s
 
-      Created by Arnaud on %s. Updated on %s
       Copyright 2014 KOPP. All rights reserved.
       Distributed on an "AS IS" basis without warranties
       or conditions of any kind, either express or implied.
       VERSION = %s
 
     USAGE
-    """ % (program_shortdesc, str(__date__), str(__updated__), str(__version__))
+    """ % (program_shortdesc, str(__version__))
 
     try:
         # Setup argument parser
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument("-i", "--inputFileDirectory", dest="input", action="store",
-                            help="Input path of data file")
-        # parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
-        # help="Output path for result file", required=True)
-        #
-        InArgs = parser.parse_args()
-        InputFileDirectory = InArgs.input
-        print(InputFileDirectory)
+        parser.add_argument("-i", "--inputdir", dest="input", action="store",
+                            help="Input path of data file", required=True)
+        parser.add_argument("-o", "--outputdir", dest="output", action="store",
+                            help="Output path for result file")
+        parser.add_argument("-a", "--nbplate", dest="nbplate", type=int, action="store",
+                            help="Number of Plate")
+        parser.add_argument("-r", "--nbrep", dest="nbrep", default=3, type=int, action="store",
+                            help="Number of replicat per plate (default: %(default)s)")
+        parser.add_argument("-f", "--feat", dest="feat", action="store", type=str,
+                            help="Feature to analyze in simple mode")
+        parser.add_argument("-s", "--thres", dest="thres", default=50, type=int, action="store",
+                            help="Threshold for determining positive cells (default: %(default)s)")
+        parser.add_argument("-n", "--neg", dest="neg", action="store", type=str,
+                            help="Negative Control")
+        parser.add_argument("-p", "--pos", dest="pos", action="store", type=str,
+                            help="Positive Control")
+        parser.add_argument("-t", "--tox", dest="tox", action="store", type=str,
+                            help="Toxic Control")
+        parser.add_argument("-v", "--verbose", dest="verbose", default=False, type=bool, action="store",
+                            help="Print pipeline (default: %(default)s)")
+        parser.add_argument("-j", "--process", dest="process", default=mp.cpu_count(), action="store", type=int,
+                            help="Number of process to use (default: %(default)s)")
 
+        input_args = parser.parse_args()
+        global __INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __FEATURE__, __NEG__, __POS__, __TOX__, __VERBOSE__, __PROCESS__
+        __INPUT__ = input_args.input
+        __NBPLATE__ = input_args.nbplate
+        __NBREP__ = input_args.nbrep
+        __FEATURE__ = input_args.feat
+        __NEG__ = input_args.neg
+        __POS__ = input_args.pos
+        __VERBOSE__ = input_args.verbose
+        __PROCESS__ = input_args.process
 
-        # # reading TEST
-        time_norm_start = time.time()
-        """
-        screen_test = TCA.Core.Screen()
-        plaque1 = TCA.Core.Plate(name='Plate 1')
-        platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/TEST/Pl1PP.csv")
-        # plaque1.addPlateMap(platesetup)
-        # # or
-        plaque1 + platesetup
-        rep1 = TCA.Core.Replicat(name="rep1", data="/home/arnaud/Desktop/TEST/Pl1rep_1.csv")
-        rep2 = TCA.Core.Replicat(name="rep2", data="/home/arnaud/Desktop/TEST/Pl1rep_2.csv")
-        rep3 = TCA.Core.Replicat(name="rep3", data="/home/arnaud/Desktop/TEST/Pl1rep_3.csv")
+        if input_args.output is None:
+            __OUTPUT__ = os.path.join(__INPUT__, "Analyze/")
+        else:
+            __OUTPUT__ = input_args.output
 
-        # listing = list()
-        # listing.append(rep1)
-        # listing.append(rep2)
-        # listing.append(rep3)
-        # plaque1 + listing
-        # # or
-        plaque1 + rep1
-        plaque1 + rep2
-        plaque1 + rep3
+        if input_args.tox is None:
+            __TOX__ = __POS__
+        else:
+            __TOX__ = input_args.tox
 
-        ## or
-        # plaque1.addReplicat(rep1)
-        #plaque1.addReplicat(rep2)
-        #plaque1.addReplicat(rep3)
-        screen_test.add_plate(plaque1)
+        print(__INPUT__)
 
-        feature = "Nuc Intensity"
-        neg = "Neg2"
-        pos = "SINVc"
-
-        time_norm_stop = time.time()
-        print(
-            "\033[0;32m ->Reading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
-
-        time_start_comp = time.time()
-        pd.set_option('display.max_rows', 500)
-        pd.set_option('display.max_columns', 500)
-        pd.set_option('display.width', 1000)
-        np.set_printoptions(linewidth=250)
-        np.set_printoptions(suppress=True)
-
-        time_norm_start = time.time()
-        TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False,
-                                  verbose=True)
-        time_norm_stop = time.time()
-        print("\033[0;32mQuality Control Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
-
-        time_norm_start = time.time()
-        analyse = TCA.compute_plate_analyzis(plaque1, [feature], neg, pos, threshold=50)
-        print(analyse)
-        time_norm_stop = time.time()
-        print("\033[0;32mCompute Plate Analyzis Executed in {0:f}s\033[0m".format(
-            float(time_norm_stop - time_norm_start)))
-
-        time_norm_start = time.time()
-        plaque1.normalization(feature, method='Zscore', log=True, neg=neg, pos=pos)
-        time_norm_stop = time.time()
-        print("\033[0;32mNormalization Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
-
-        time_norm_start = time.time()
-        plaque1.compute_data_from_replicat(feature)
-        print(plaque1.Data)
-
-        TCA.systematic_error_detection_test(plaque1.Data, alpha=0.05, verbose=True)
-        TCA.systematic_error_detection_test(rep1.Data, alpha=0.05, verbose=True)
-        TCA.systematic_error_detection_test(rep2.Data, alpha=0.05, verbose=True)
-        TCA.systematic_error_detection_test(rep3.Data, alpha=0.05, verbose=True)
-
-        plaque1.systematic_error_correction(method='median', apply_down=True, save=True, verbose=False)
-        # plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # apply only when replicat are not SE norm
-        plaque1.compute_data_from_replicat(feature, use_sec_data=True)
-        print(plaque1.SECData)
-        TCA.systematic_error_detection_test(plaque1.SECData, alpha=0.05, verbose=True)
-        time_norm_stop = time.time()
-        print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
-
-        print("\n \033[0;32m     SSMD TESTING \033[0m")
-        time_norm_start = time.time()
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, sec_data=False, verbose=True)
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, robust_version=False, sec_data=False, verbose=True)
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=False, verbose=True)
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, variance='equal', robust_version=False,
-                             sec_data=True, verbose=True)
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=True)
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, robust_version=False, sec_data=True, verbose=True)
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', sec_data=True, verbose=True)
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', robust_version=False,
-                             sec_data=True, verbose=True)
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', sec_data=False, verbose=True,
-                             inplate_data=True)
-        TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', robust_version=False,
-                             sec_data=False, verbose=True, inplate_data=True)
-        print("\033[0;32m    T-Stat TESTING \033[0m")
-        TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=True)
-        TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=False, verbose=True)
-        TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=True)
-        test = TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=False, verbose=True)
-
-        gene = platesetup.platemap.values.flatten().reshape(96, 1)
-        stat = np.append(gene, test.flatten().reshape(96, 1), axis=1)
-        print(stat)
-
-        time_norm_stop = time.time()
-        print("\033[0;32mSSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
-
-        # TCA.Graphics.plotDistribution('C5', plaque1, feature)
-        # Graphics.boxplotByWell(rep1.Dataframe, feature)
-        # Graphics.PlateHeatmap(rep1.Data)
-        # Graphics.SystematicError(rep1.Data)
-        # Graphics.plotSurf3D_Plate(rep1.Data)
-        # Graphics.plotScreen(screen_test)
-        # Graphics.plotSurf3D_Plate(A)
-
-        clustering = TCA.k_mean_clustering(plaque1)
-        clustering.do_cluster()
-
-        time_stop_comp = time.time()
-        print("\033[0;32m ->Computation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))
-        """
-        time_stop = time.time()
-        print("\033[0;32m   ----> TOTAL TIME (reading input + computation): {0:f}s\033[0m".format(
-            float(time_stop - time_start)))
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
         return 0
@@ -212,32 +118,34 @@ def main(argv=None):  # IGNORE:C0111
         return 2
 
 
-def plate_analysis(idx):
+def simple_plate_analyzis(plateid):
     try:
+        time_start = time.time()
+        plaque = TCA.Core.Plate(name='Plate' + str(plateid))
+
         created = mp.Process()
         current = mp.current_process()
-        print('running on :', current.name, current._identity, 'created:', created.name, created._identity)
+        print('created:', created.name, created._identity, 'running on :', current.name, current._identity,
+              "for analyzis of ", plaque.Name)
 
-        plaque1 = TCA.Core.Plate(name='Plate 1')
-        platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/TEST/Pl1PP.csv")
-        plaque1 + platesetup
-        rep1 = TCA.Core.Replicat(name="rep1", data="/home/arnaud/Desktop/TEST/Pl1rep_1.csv")
-        rep2 = TCA.Core.Replicat(name="rep2", data="/home/arnaud/Desktop/TEST/Pl1rep_2.csv")
-        rep3 = TCA.Core.Replicat(name="rep3", data="/home/arnaud/Desktop/TEST/Pl1rep_3.csv")
-        plaque1 + rep1
-        plaque1 + rep2
-        plaque1 + rep3
+        # plaque + TCA.Core.PlateMap(platemap=os.path.join(__INPUT__, "Pl"+str(plateid)+"PP.csv"))
+        # for i in range(1, __NBREP__+1):
+        # plaque + TCA.Core.Replicat(name="rep"+str(i), data=os.path.join(__INPUT__, "Pl"+str(plateid)+"rep_"+str(i)+".csv"))
 
-        print(plaque1)
-        plaque1.__de
-        print(idx)
-        return idx
+        plaque = None
+        print(__INPUT__)
+        time_stop = time.time()
+        print("\033[0;32m   ----> TOTAL TIME  {0:f}s for plate :\033[0m".format(float(time_stop - time_start)), plateid)
+        return 1
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
+        return 0
 
 
 if __name__ == "__main__":
     main()
-    pool = mp.Pool(processes=mp.cpu_count())
-    results = pool.map_async(plate_analysis, range(20))
+
+    # # Do process with multiprocessing
+    pool = mp.Pool(processes=__PROCESS__)
+    results = pool.map_async(simple_plate_analyzis, range(1, 20 + 1))
     print(results.get())

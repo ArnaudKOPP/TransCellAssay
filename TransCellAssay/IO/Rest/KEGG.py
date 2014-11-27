@@ -760,7 +760,7 @@ class KEGG(REST):
                         print(name1)
                         print(name2)
                         raise Exception
-                #print(name1, 1, name2)
+                # print(name1, 1, name2)
                 sif.append([name1, 1, name2])
             elif rel['name'] == 'inhibition':
                 Id1 = rel['entry1']
@@ -778,7 +778,7 @@ class KEGG(REST):
                     name2 = name2.split()[0]
                     name1 = self.conv("uniprot", name1)[name1]
                     name2 = self.conv("uniprot", name2)[name2]
-                #print(name1, -1, name2)
+                # print(name1, -1, name2)
                 sif.append([name1, -1, name2])
             else:
                 pass

@@ -43,6 +43,7 @@ class PCA():
 
             ## DO PCA
             from sklearn.decomposition import PCA
+
             X = data.as_matrix()
             pca = PCA(n_components=n_component)
             pca.fit(X)
