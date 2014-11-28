@@ -48,8 +48,7 @@ neg = "Neg2"
 pos = "SINVc"
 
 time_norm_stop = time.time()
-print(
-    "\033[0;32m ->Reading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+print("\033[0;32m ->Reading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
 time_start_comp = time.time()
 pd.set_option('display.max_rows', 500)
@@ -59,8 +58,7 @@ np.set_printoptions(linewidth=250)
 np.set_printoptions(suppress=True)
 
 time_norm_start = time.time()
-TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False,
-                          verbose=True)
+TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
 time_norm_stop = time.time()
 print("\033[0;32mQuality Control Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
@@ -68,8 +66,7 @@ time_norm_start = time.time()
 analyse = TCA.compute_plate_analyzis(plaque1, [feature], neg, pos, threshold=50)
 print(analyse)
 time_norm_stop = time.time()
-print("\033[0;32mCompute Plate Analyzis Executed in {0:f}s\033[0m".format(
-    float(time_norm_stop - time_norm_start)))
+print("\033[0;32mCompute Plate Analyzis Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
 time_norm_start = time.time()
 plaque1.normalization(feature, method='Zscore', log=True, neg=neg, pos=pos)

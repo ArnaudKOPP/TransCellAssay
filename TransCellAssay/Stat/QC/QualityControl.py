@@ -134,19 +134,18 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=neg_well)
             posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=pos_well)
 
-            qc_data_array = pd.DataFrame(np.zeros(1,
-                                                  dtype=[('Replicat ID', str), ('AVR', float), ('Z*Factor', float),
-                                                         ('ZFactor', float), ('SSMD', float), ('CVD', float)]))
+            qc_data_array = pd.DataFrame(np.zeros(1, dtype=[('Replicat ID', str), ('AVR', float), ('Z*Factor', float),
+                                                            ('ZFactor', float), ('SSMD', float), ('CVD', float)]))
 
             if sedt:
                 if sec_data:
                     if replicat.SECData is None:
                         raise ValueError("\033[0;31m[ERROR]\033[0m SEC Before")
                     TCA.systematic_error_detection_test(replicat.SECData, verbose=True)
-
-            print("Replicat : ", replicat.name)
-            print("mean neg :", np.mean(negdata), " Standard dev : ", np.std(negdata))
-            print("mean pos :", np.mean(posdata), " Standard dev : ", np.std(posdata))
+            if verbose:
+                print("Replicat : ", replicat.name)
+                print("mean neg :", np.mean(negdata), " Standard dev : ", np.std(negdata))
+                print("mean pos :", np.mean(posdata), " Standard dev : ", np.std(posdata))
             qc_data_array['Replicat ID'] = replicat.name
             qc_data_array['AVR'] = _avr(negdata, posdata)
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
@@ -155,7 +154,7 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 
             if dirpath is not None:
-                with open(os.path.join(dirpath, "Replicat.txt"), "w") as text_file:
+                with open(os.path.join(dirpath, "Replicat_Data.txt"), "a") as text_file:
                     print("Replicat : {}".format(replicat.name), file=text_file)
                     print("mean neg : {}".format(np.mean(negdata)), " Standard dev : {}".format(np.std(negdata)),
                           file=text_file)

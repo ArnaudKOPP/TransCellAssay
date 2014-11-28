@@ -43,13 +43,16 @@ class Replicat(object):
     self.SpatNormData = None  # matrix that contain data corrected
     """
 
-    def __init__(self, name=None, data=None):
+    def __init__(self, name=None, data=None, single=True):
         """
         Constructor
         """
-        self.RawData = pd.DataFrame()
+        self.RawData = None
         if data is not None:
-            self.set_raw_data(data)
+            if not single:
+                self.set_data_overide(data)
+            else:
+                self.set_raw_data(data)
 
         if name is not None:
             self.name = name
@@ -100,7 +103,7 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def set_data_overide(self, array, array_type):
+    def set_data_overide(self, array, array_type='median'):
         """
         Set attribut data matrix into self.Data
         This method is designed for 1Data/Well or for manual analysis
