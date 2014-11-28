@@ -135,7 +135,6 @@ def simple_plate_analyzis(plateid):
               __PROCESS__)
 
         output_data_plate_dir = os.path.join(__OUTPUT__, plaque.Name)
-        print(output_data_plate_dir)
         if not os.path.exists(output_data_plate_dir):
             os.makedirs(output_data_plate_dir)
 
@@ -145,18 +144,21 @@ def simple_plate_analyzis(plateid):
             plaque + TCA.Core.Replicat(name="rep" + str(i),
                                        data=os.path.join(__INPUT__, "Pl" + str(plateid) + "rep_" + str(i) + ".csv"))
         # # BEGIN ANALYZIS HERE
-        TCA.plate_quality_control(plaque, features=__FEATURE__, cneg=__NEG__, cpos=__POS__, sedt=False,
-                                  sec_data=False, verbose=False, dirpath=output_data_plate_dir)
+        TCA.plate_quality_control(plaque, features=__FEATURE__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
+                                  verbose=False, dirpath=output_data_plate_dir)
+
         analyse = TCA.compute_plate_analyzis(plaque, [__FEATURE__], __NEG__, __POS__, threshold=50)
         analyse.write_csv(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
+
         plaque.normalization(__FEATURE__, method='Zscore', log=True, neg=__NEG__, pos=__POS__)
         plaque.compute_data_from_replicat(__FEATURE__)
         plaque.systematic_error_correction(method='median', apply_down=True, save=True, verbose=False)
         plaque.compute_data_from_replicat(__FEATURE__, use_sec_data=True)
+
         ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
                                      verbose=False)
-        ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, method='UMVUE', robust_version=True,
-                                     sec_data=True, verbose=False)
+        ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
+                                     variance="equal", verbose=False)
         tstat1 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, variance='equal', sec_data=True,
                                        verbose=False)
         tstat2 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=True, sec_data=False, verbose=False)
@@ -187,3 +189,4 @@ if __name__ == "__main__":
     pool = mp.Pool(processes=__PROCESS__)
     results = pool.map_async(simple_plate_analyzis, range(1, __NBPLATE__ + 1))
     print(results.get())
+    print("1 for sucess, 0 for fail")
