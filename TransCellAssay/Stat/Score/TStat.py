@@ -214,7 +214,6 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                     ttest_score[i][j] = np.nanmean(well_value) / (
                         np.nanstd(well_value) / np.sqrt(len(plate.replicat)))
 
-
             # # replace NaN with 0
             ttest_score = np.nan_to_num(ttest_score)
 

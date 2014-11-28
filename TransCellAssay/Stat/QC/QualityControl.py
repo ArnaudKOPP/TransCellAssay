@@ -157,8 +157,10 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             if dirpath is not None:
                 with open(os.path.join(dirpath, "Replicat.txt"), "w") as text_file:
                     print("Replicat : {}".format(replicat.name), file=text_file)
-                    print("mean neg : {}".format(np.mean(negdata)), " Standard dev : {}".format(np.std(negdata)))
-                    print("mean pos : {}".format(np.mean(posdata)), " Standard dev : {}".format(np.std(posdata)))
+                    print("mean neg : {}".format(np.mean(negdata)), " Standard dev : {}".format(np.std(negdata)),
+                          file=text_file)
+                    print("mean pos : {}".format(np.mean(posdata)), " Standard dev : {}".format(np.std(posdata)),
+                          file=text_file)
 
             if verbose:
                 print("\nQuality Control for replicat : ", replicat.name)

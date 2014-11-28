@@ -75,6 +75,7 @@ class PlateMap(object):
     def get_coord(self, to_search):
         """
         Search position of the gene and return coord
+        :param to_search: gene to search
         :return: list of coord
         """
         try:
@@ -94,6 +95,7 @@ class PlateMap(object):
     def get_well(self, to_search):
         """
         Search position of the gene and return Well (list if multiple)
+        :param to_search: gene to search
         :return: list of Well
         """
         try:

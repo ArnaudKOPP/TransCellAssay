@@ -202,7 +202,7 @@ class Replicat(object):
     def compute_data_for_feature(self, feature):
         """
         Compute data in matrix form, get mean or median for well and save them in replicat object
-        :param: feature: which feature to keep in matrix
+        :param feature: which feature to keep in matrix
         :return:
         """
         try:
@@ -232,9 +232,8 @@ class Replicat(object):
     def get_data_array(self, feature, sec=False):
         """
         Return data in matrix form, get mean or median for well
-        :param: feature: which feature to keep in matrix
-        :param: method: which method to choose mean or median default = mean
-        :param: SEC: want Systematic Error Corrected data ? default=False
+        :param feature: which feature to keep in matrix
+        :param sec: want Systematic Error Corrected data ? default=False
         :return: compute data in matrix form
         """
         try:
@@ -253,15 +252,16 @@ class Replicat(object):
     def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None):
         """
         Performed normalization on data
-        :param: feature; which feature to normalize
+        :param feature; which feature to normalize
         :param method: Performed X Transformation
         :param log:  Performed log2 Transformation
+        :param pos: postive control
+        :param neg: negative control
         """
         try:
             if not self.isNormalized:
                 self.RawData = TCA.variability_normalization(self.RawData, feature=feature, method=method,
-                                                             log2_transf=log,
-                                                             neg_control=neg, pos_control=pos)
+                                                             log2_transf=log, neg_control=neg, pos_control=pos)
                 self.isNormalized = True
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
@@ -279,6 +279,7 @@ class Replicat(object):
         systematic error within 96-well plates, whereas PMP performed better for 384 /1526 well plates.
 
         :param algorithm: Bscore, MEA, PMP or diffusion model technics, default = Bscore
+        :param method: median or mean data
         :param verbose: Output in console
         :param save: save the result into self.SpatNormData, default = False
         :param max_iterations: maximum iterations loop, default = 100
@@ -331,15 +332,25 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def write_pickle(self, path):
+    @staticmethod
+    def write_pickle(path):
+        """
+        Write pickle object
+        :param path: where to save
+        """
         try:
-            return 0
+            print(path)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def load_pickle(self, path):
+    @staticmethod
+    def load_pickle(path):
+        """
+        read pickle object
+        :param path: where to read
+        """
         try:
-            return 0
+            print(path)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

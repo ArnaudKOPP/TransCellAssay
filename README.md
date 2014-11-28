@@ -20,6 +20,7 @@ This package was developped and tested on python 3.4.
 
 ##Python Module Dependencies
 
+* Python 3.4
 * Pandas > 0.14
 * Numpy > 1.9
 * Scipy > 0.12

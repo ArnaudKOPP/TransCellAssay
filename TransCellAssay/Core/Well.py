@@ -1,5 +1,5 @@
 """
-Class for representing siRNA or wathever that target a gene
+Class for representing a well
 """
 
 __author__ = "Arnaud KOPP"
@@ -13,11 +13,18 @@ __status__ = "Dev"
 
 
 class Well(object):
-    def __init__(self, name, position, refPlaque):
+    """
+
+    :param name:
+    :param position:
+    :param refPlaque:
+    """
+
+    def __init__(self, name, position, ref_plate):
         try:
             self.Name = name
             self.Position = position
-            self.RefPlaque = refPlaque
+            self.RefPlaque = ref_plate
             self.Id = None
             self.IdType = None
             self.TargetSequence = None
@@ -25,6 +32,11 @@ class Well(object):
             print(e)
 
     def set_id(self, identifier, identifier_type):
+        """
+
+        :param identifier:
+        :param identifier_type:
+        """
         try:
             self.Id = identifier
             self.IdType = identifier_type
@@ -32,6 +44,10 @@ class Well(object):
             print(e)
 
     def set_target_sequence(self, tgt_seq):
+        """
+
+        :param tgt_seq:
+        """
         try:
             self.TargetSequence = tgt_seq
         except Exception as e:

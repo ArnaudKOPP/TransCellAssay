@@ -269,6 +269,7 @@ class Plate(object):
         """
         Compute the mean/median matrix data of all replicat
         If replicat data is SpatialNorm already, this function will fill spatDataMatrix
+        :param use_sec_data: use or not sec data from replicat
         :param feature: which feature to have into sum up data
         """
         try:
@@ -297,6 +298,8 @@ class Plate(object):
         """
         Apply Well correction on all replicat data
         call function like from replicat object
+        :param pos: positive control
+        :param neg: negative control
         :param feature: feature to normalize
         :param method: which method to perform
         :param log:  Performed log2 Transformation
@@ -374,15 +377,25 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def write_pickle(self, path):
+    @staticmethod
+    def write_pickle(path):
+        """
+        Write pickle object
+        :param path: where to save
+        """
         try:
-            return 0
+            print(path)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def load_pickle(self, path):
+    @staticmethod
+    def load_pickle(path):
+        """
+        read pickle object
+        :param path: where to read
+        """
         try:
-            return 0
+            print(path)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

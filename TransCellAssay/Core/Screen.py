@@ -57,6 +57,7 @@ class Screen(object):
     def get_plate(self, name):
         """
         Return Plate specified by name
+        :param name: name of plate
         :return: plate
         """
         try:
@@ -67,8 +68,8 @@ class Screen(object):
     def add_info(self, key, value):
         """
         Add Info
-        :param key:
-        :param value:
+        :param key: key of info
+        :param value: value of info
         """
         try:
             self.Info.pop(key, value)
@@ -89,6 +90,8 @@ class Screen(object):
         """
         Apply Well correction on all Plate data
         call function like from Plate object
+        :param pos: positive control
+        :param neg: negative control
         :param feature: feature to normalize
         :param technics: which method to perform
         :param log:  Performed log2 Transformation

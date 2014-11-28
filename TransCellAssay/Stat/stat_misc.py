@@ -71,6 +71,12 @@ def ssmd(array1, array2):
 
 
 def mann_whitney(array1, array2):
+    """
+
+    :param array1:
+    :param array2:
+    :return:
+    """
     try:
         import scipy.stats
 
@@ -81,6 +87,12 @@ def mann_whitney(array1, array2):
 
 
 def wilcoxon_rank_sum(array1, array2):
+    """
+
+    :param array1:
+    :param array2:
+    :return:
+    """
     try:
         import scipy.stats
 

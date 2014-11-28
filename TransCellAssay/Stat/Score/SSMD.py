@@ -558,7 +558,6 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             else:
                 raise AttributeError('\033[0;31m[ERROR]\033[0m  Method must be MM or UMVUE')
 
-
             # # replace NaN with 0
             ssmdr = np.nan_to_num(ssmdr)
 

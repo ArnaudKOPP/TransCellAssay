@@ -31,7 +31,7 @@ class Result(object):
         if size is not given, init by 386 plate size, defined size if 96 or 1526 plate well
         :return: none init only dataframe
         """
-        if size == None:
+        if size is None:
             size = 384
         self.result_array = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', float),
                                                   ('SDCellsCunt', float), ('PositiveCells', float),

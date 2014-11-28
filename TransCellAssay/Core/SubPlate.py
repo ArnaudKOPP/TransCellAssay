@@ -16,6 +16,10 @@ __status__ = "Production"
 
 
 class SubPlate(Plate):
+    """
+    Class subplate for creating subplate from plate
+    """
+
     def __init__(self, parent_plate, RB, RE, CB, CE):
         """
         Constructor

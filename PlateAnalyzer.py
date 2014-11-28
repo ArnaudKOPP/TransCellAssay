@@ -60,21 +60,21 @@ def main(argv=None):
     try:
         # Setup argument parser
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument("-i", "--inputdir", dest="input", action="store",
-                            help="Input path of data file", required=True)
+        parser.add_argument("-i", "--inputdir", dest="input", action="store", required=True,
+                            help="Input path of data file")
         parser.add_argument("-o", "--outputdir", dest="output", action="store",
                             help="Output path for result file")
-        parser.add_argument("-a", "--nbplate", dest="nbplate", type=int, action="store",
+        parser.add_argument("-a", "--nbplate", dest="nbplate", type=int, action="store", required=True,
                             help="Number of Plate")
-        parser.add_argument("-r", "--nbrep", dest="nbrep", default=3, type=int, action="store",
+        parser.add_argument("-r", "--nbrep", dest="nbrep", default=3, type=int, action="store", required=True,
                             help="Number of replicat per plate (default: %(default)s)")
-        parser.add_argument("-f", "--feat", dest="feat", action="store", type=str,
+        parser.add_argument("-f", "--feat", dest="feat", action="store", type=str, required=True,
                             help="Feature to analyze in simple mode")
         parser.add_argument("-s", "--thres", dest="thres", default=50, type=int, action="store",
                             help="Threshold for determining positive cells (default: %(default)s)")
-        parser.add_argument("-n", "--neg", dest="neg", action="store", type=str,
+        parser.add_argument("-n", "--neg", dest="neg", action="store", type=str, required=True,
                             help="Negative Control")
-        parser.add_argument("-p", "--pos", dest="pos", action="store", type=str,
+        parser.add_argument("-p", "--pos", dest="pos", action="store", type=str, required=True,
                             help="Positive Control")
         parser.add_argument("-t", "--tox", dest="tox", action="store", type=str,
                             help="Toxic Control")
@@ -133,7 +133,10 @@ def simple_plate_analyzis(plateid):
         # plaque + TCA.Core.Replicat(name="rep"+str(i), data=os.path.join(__INPUT__, "Pl"+str(plateid)+"rep_"+str(i)+".csv"))
 
         plaque = None
-        print(__INPUT__)
+
+        print(__INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __FEATURE__, __NEG__, __POS__, __TOX__, __VERBOSE__,
+              __PROCESS__)
+
         time_stop = time.time()
         print("\033[0;32m   ----> TOTAL TIME  {0:f}s for plate :\033[0m".format(float(time_stop - time_start)), plateid)
         return 1
@@ -147,5 +150,5 @@ if __name__ == "__main__":
 
     # # Do process with multiprocessing
     pool = mp.Pool(processes=__PROCESS__)
-    results = pool.map_async(simple_plate_analyzis, range(1, 20 + 1))
+    results = pool.map_async(simple_plate_analyzis, range(1, __NBPLATE__ + 1))
     print(results.get())

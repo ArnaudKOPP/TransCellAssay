@@ -17,6 +17,10 @@ __status__ = "Production"
 
 
 class SubReplicat(Replicat):
+    """
+    class for creating sub replicat from previous replicat
+    """
+
     def __init__(self, parent_replicat, RB, RE, CB, CE):
         """
         Constructor
@@ -60,7 +64,8 @@ class SubReplicat(Replicat):
     def compute_data_for_feature(self, feature, data_type="median"):
         """
         Compute data in matrix form, get mean or median for well and save them in replicat object
-        :param: feature: which feature to keep in matrix
+        :param data_type: median or mean data
+        :param feature: which feature to keep in matrix
         :return:
         """
         try:
@@ -78,14 +83,14 @@ class SubReplicat(Replicat):
             feature = tmp[feature]
             dict_mean = feature.to_dict()  # # dict : key = pos and item are mean
             if not len(dict_mean) > 96:
-                Data = np.zeros((8, 12))
+                data = np.zeros((8, 12))
             else:
-                Data = np.zeros((16, 24))
+                data = np.zeros((16, 24))
             for key, elem in dict_mean.items():
                 pos = get_opposite_well_format(key)
-                Data[pos[0]][pos[1]] = elem
+                data[pos[0]][pos[1]] = elem
 
-            self.Data = Data[self.RB - 1: self.RE - 1, self.CB - 1: self.CE - 1]
+            self.Data = data[self.RB - 1: self.RE - 1, self.CB - 1: self.CE - 1]
 
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
