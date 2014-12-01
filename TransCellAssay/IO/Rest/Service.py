@@ -467,8 +467,32 @@ class REST(RESTBase):
     def _apply(self, iterable, fn, *args, **kwargs):
         return [fn(x, *args, **kwargs) for x in iterable if x is not None]
 
+    def _get_async(self, keys, frmt='json', params={}):
+        # does not work under pyhon3 so local import
+        import grequests
+
+        session = self._get_session()
+        try:
+            # build the requests
+            urls = self._get_all_urls(keys, frmt)
+            self.logging.debug("grequests.get processing")
+            rs = (grequests.get(url, session=session, params=params) for key, url in zip(keys, urls))
+            # execute them
+            self.logging.debug("grequests.map call")
+            ret = grequests.map(rs, size=min(self.settings.CONCURRENT, len(keys)))
+            self.last_response = ret
+            self.logging.debug("grequests.map call done")
+            return ret
+        except Exception as err:
+            self.logging.warning("Error caught in async. " + err.message)
+            return []
+
     def _get_all_urls(self, keys, frmt=None):
         return ('%s/%s' % (self.url, query) for query in keys)
+
+    def get_async(self, keys, frmt='json', params={}, **kargs):
+        ret = self._get_async(keys, frmt, params=params, **kargs)
+        return self._apply(ret, self._interpret_returned_request, frmt)
 
     def get_sync(self, keys, frmt='json', **kargs):
         return [self.get_one(key, frmt=frmt, **kargs) for key in keys]
@@ -484,7 +508,7 @@ class REST(RESTBase):
                 print("Running async call for a list")
             # Not implemented yet a sync funtions with Requests package, will be available in REST2 with aiohttp
             # return self.get_async(query, frmt, params=params, **kargs)
-            return [self.get_one(key, frmt, params=params, **kargs) for key in query]
+            return self.get_async(query, frmt, params=params, **kargs)
         if isinstance(query, list) and len(query) <= self.async_threshold:
             if DEBUG:
                 print("Running sync call for a list")
