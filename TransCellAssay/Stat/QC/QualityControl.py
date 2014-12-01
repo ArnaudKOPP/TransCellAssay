@@ -154,7 +154,9 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 
             if dirpath is not None:
-                with open(os.path.join(dirpath, "Replicat_Data.txt"), "a") as text_file:
+                file = os.path.join(dirpath, "Replicat_Data.txt")
+                os.remove(file) if os.path.exists(file) else None
+                with open(file, "a") as text_file:
                     print("Replicat : {}".format(replicat.name), file=text_file)
                     print("mean neg : {}".format(np.mean(negdata)), " Standard dev : {}".format(np.std(negdata)),
                           file=text_file)
