@@ -63,7 +63,9 @@ time_norm_stop = time.time()
 print("\033[0;32mQuality Control Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
 time_norm_start = time.time()
-analyse = TCA.compute_plate_analyzis(plaque1, [feature], neg, pos, threshold=50)
+import profile
+# analyse = TCA.compute_plate_analyzis(plaque1, [feature], neg, pos, threshold=50)
+analyse = TCA.plate_analysis(plaque1, [feature], neg, pos, threshold=50)
 print(analyse)
 time_norm_stop = time.time()
 print("\033[0;32mCompute Plate Analyzis Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
@@ -127,8 +129,8 @@ print("\033[0;32mSSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_s
 # Graphics.plotScreen(screen_test)
 # Graphics.plotSurf3D_Plate(A)
 
-clustering = TCA.k_mean_clustering(plaque1)
-clustering.do_cluster()
+# clustering = TCA.k_mean_clustering(plaque1)
+# clustering.do_cluster()
 
 time_stop_comp = time.time()
 print("\033[0;32m ->Computation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))

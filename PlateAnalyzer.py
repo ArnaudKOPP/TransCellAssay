@@ -96,6 +96,8 @@ def main(argv=None):
 
         if input_args.output is None:
             __OUTPUT__ = os.path.join(__INPUT__, "Analyze/")
+            if os.path.exists(__OUTPUT__):
+                print('\033[0;33m[WARNING] !!!! PREVIOUS ANALYSIS WILL BE ERASE !!!!\033[0m')
         else:
             __OUTPUT__ = input_args.output
 
@@ -122,6 +124,11 @@ def main(argv=None):
 
 
 def simple_plate_analyzis(plateid):
+    """
+    Do the defined pipeline for plate with given plateid
+    :param plateid:
+    :return: 0 or 1
+    """
     try:
         time_start = time.time()
         plaque = TCA.Core.Plate(name='Plate' + str(plateid))
