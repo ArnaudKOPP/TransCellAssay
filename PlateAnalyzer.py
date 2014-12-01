@@ -166,6 +166,8 @@ def simple_plate_analyzis(plateid):
                                      verbose=False)
         ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
                                      variance="equal", verbose=False)
+        ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, method='UMVUE', sec_data=True,
+                                     verbose=False)
         tstat1 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, variance='equal', sec_data=True,
                                        verbose=False)
         tstat2 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=True, sec_data=False, verbose=False)
@@ -173,6 +175,7 @@ def simple_plate_analyzis(plateid):
         gene = plaque.PlateMap.platemap.values.flatten().reshape(96, 1)
         stat = np.append(gene, ssmd1.flatten().reshape(96, 1), axis=1)
         stat = np.append(stat, ssmd2.flatten().reshape(96, 1), axis=1)
+        stat = np.append(stat, ssmd3.flatten().reshape(96, 1), axis=1)
         stat = np.append(stat, tstat1.flatten().reshape(96, 1), axis=1)
         stat = np.append(stat, tstat2.flatten().reshape(96, 1), axis=1)
         to_save = pd.DataFrame(stat)

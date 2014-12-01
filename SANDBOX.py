@@ -19,13 +19,13 @@ time_norm_start = time.time()
 
 screen_test = TCA.Core.Screen()
 plaque1 = TCA.Core.Plate(name='Plate 1')
-platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/TEST/Pl1PP.csv")
+platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/antagomir/Pl1PP.csv")
 # plaque1.addPlateMap(platesetup)
 # # or
 plaque1 + platesetup
-rep1 = TCA.Core.Replicat(name="rep1", data="/home/arnaud/Desktop/TEST/Pl1rep_1.csv")
-rep2 = TCA.Core.Replicat(name="rep2", data="/home/arnaud/Desktop/TEST/Pl1rep_2.csv")
-rep3 = TCA.Core.Replicat(name="rep3", data="/home/arnaud/Desktop/TEST/Pl1rep_3.csv")
+rep1 = TCA.Core.Replicat(name="rep1", data="/home/arnaud/Desktop/antagomir/Pl1rep_1.csv")
+rep2 = TCA.Core.Replicat(name="rep2", data="/home/arnaud/Desktop/antagomir/Pl1rep_2.csv")
+rep3 = TCA.Core.Replicat(name="rep3", data="/home/arnaud/Desktop/antagomir/Pl1rep_3.csv")
 
 # listing = list()
 # listing.append(rep1)
@@ -44,8 +44,8 @@ plaque1 + rep3
 screen_test.add_plate(plaque1)
 
 feature = "Nuc Intensity"
-neg = "Neg2"
-pos = "SINVc"
+neg = "NT"
+pos = "SINV C"
 
 time_norm_stop = time.time()
 print("\033[0;32m ->Reading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
@@ -101,7 +101,7 @@ TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, variance='equal', r
                      sec_data=True, verbose=True)
 TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=True)
 TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, robust_version=False, sec_data=True, verbose=True)
-TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', sec_data=True, verbose=True)
+ssmd = TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', sec_data=True, verbose=True)
 TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', robust_version=False,
                      sec_data=True, verbose=True)
 TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', sec_data=False, verbose=True,
@@ -116,6 +116,7 @@ test = TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=Fal
 
 gene = platesetup.platemap.values.flatten().reshape(96, 1)
 stat = np.append(gene, test.flatten().reshape(96, 1), axis=1)
+stat = np.append(stat, ssmd.flatten().reshape(96, 1), axis=1)
 print(stat)
 
 time_norm_stop = time.time()
@@ -127,7 +128,7 @@ print("\033[0;32mSSMD T-Stat Executed in {0:f}s\033[0m".format(float(time_norm_s
 # Graphics.SystematicError(rep1.Data)
 # Graphics.plotSurf3D_Plate(rep1.Data)
 # Graphics.plotScreen(screen_test)
-# Graphics.plotSurf3D_Plate(A)
+TCA.plotSurf3D_Plate(ssmd)
 
 # clustering = TCA.k_mean_clustering(plaque1)
 # clustering.do_cluster()

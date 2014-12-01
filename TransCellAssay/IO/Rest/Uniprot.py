@@ -1,0 +1,420 @@
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Dev"
+
+import types
+import io
+from TransCellAssay.IO.Rest.Service import REST
+
+try:
+    import pandas as pd
+except:
+    print("pandas library is not installed. Not all functionalities will be  available")
+
+__all__ = ["UniProt"]
+
+
+# TODO:: falt files to get list of identifiers
+# http://www.ebi.ac.uk/uniprot/database/download.html
+# grep sp uniprot_sprot.fasta  | grep HUMAN | awk '{print substr($1, 12, length($1))}'
+
+mapping = {"UniProtKB AC/ID": "ACC+ID",
+           "UniProtKB": "ACC",
+           "UniProtKB": "ID",
+           "UniParc": "UPARC",
+           "UniRef50": "NF50",
+           "UniRef90": "NF90",
+           "UniRef100": "NF100",
+           "EMBL/GenBank/DDBJ": "EMBL_ID",
+           "EMBL/GenBank/DDBJ CDS": "EMBL",
+           "PIR": "PIR",
+           "UniGene": "UNIGENE_ID",
+           "Entrez Gene (GeneID)": "P_ENTREZGENEID",
+           "GI number*": "P_GI",
+           "IPI": "P_IPI",
+           "RefSeq Protein": "P_REFSEQ_AC",
+           "RefSeq Nucleotide": "REFSEQ_NT_ID",
+           "PDB": "PDB_ID",
+           "DisProt": "DISPROT_ID",
+           "HSSP": "HSSP_ID",
+           "DIP": "DIP_ID",
+           "MINT": "MINT_ID",
+           "Allergome": "ALLERGOME_ID",
+           "MEROPS": "MEROPS_ID",
+           "mycoCLAP": "MYCOCLAP_ID",
+           "PeroxiBase": "PEROXIBASE_ID",
+           "PptaseDB": "PPTASEDB_ID",
+           "REBASE": "REBASE_ID",
+           "TCDB": "TCDB_ID",
+           "PhosSite": "PHOSSITE_ID",
+           "DMDM": "DMDM_ID",
+           "Aarhus/Ghent-2DPAGE": "AARHUS_GHENT_2DPAGE_ID",
+           "World-2DPAGE": "WORLD_2DPAGE_ID",
+           "DNASU": "DNASU_ID",
+           "Ensembl": "ENSEMBL_ID",
+           "Ensembl Protein": "ENSEMBL_PRO_ID",
+           "Ensembl Transcript": "ENSEMBL_TRS_ID",
+           "Ensembl Genomes": "ENSEMBLGENOME_ID",
+           "Ensembl Genomes Protein": "ENSEMBLGENOME_PRO_ID",
+           "Ensembl Genomes Transcript": "ENSEMBLGENOME_TRS_ID",
+           "GeneID": "P_ENTREZGENEID",
+           "GenomeReviews": "GENOMEREVIEWS_ID",
+           "KEGG": "KEGG_ID",
+           "PATRIC": "PATRIC_ID",
+           "UCSC": "UCSC_ID",
+           "VectorBase": "VECTORBASE_ID",
+           "AGD": "AGD_ID",
+           "ArachnoServer": "ARACHNOSERVER_ID",
+           "CGD": "CGD",
+           "ConoServer": "CONOSERVER_ID",
+           "CYGD": "CYGD_ID",
+           "dictyBase": "DICTYBASE_ID",
+           "EchoBASE": "ECHOBASE_ID",
+           "EcoGene": "ECOGENE_ID",
+           "euHCVdb": "EUHCVDB_ID",
+           "EuPathDB": "EUPATHDB_ID",
+           "FlyBase": "FLYBASE_ID",
+           "GeneCards": "GENECARDS_ID",
+           "GeneFarm": "GENEFARM_ID",
+           "GenoList": "GENOLIST_ID",
+           "H-InvDB": "H_INVDB_ID",
+           "HGNC": "HGNC_ID",
+           "HPA": "HPA_ID",
+           "LegioList": "LEGIOLIST_ID",
+           "Leproma": "LEPROMA_ID",
+           "MaizeGDB": "MAIZEGDB_ID",
+           "MIM": "MIM_ID",
+           "MGI": "MGI_ID",
+           "neXtProt": "NEXTPROT_ID",
+           "Orphanet": "ORPHANET_ID",
+           "PharmGKB": "PHARMGKB_ID",
+           "PomBase": "POMBASE_ID",
+           "PseudoCAP": "PSEUDOCAP_ID",
+           "RGD": "RGD_ID",
+           "SGD": "SGD_ID",
+           "TAIR": "TAIR_ID",
+           "TubercuList": "TUBERCULIST_ID",
+           "WormBase": "WORMBASE_ID",
+           "WormBase Transcript": "WORMBASE_TRS_ID",
+           "WormBase Protein": "WORMBASE_PRO_ID",
+           "Xenbase": "XENBASE_ID",
+           "ZFIN": "ZFIN_ID",
+           "eggNOG": "EGGNOG_ID",
+           "GeneTree": "GENETREE_ID",
+           "HOGENOM": "HOGENOM_ID",
+           "HOVERGEN": "HOVERGEN_ID",
+           "KO": "KO_ID",
+           "OMA": "OMA_ID",
+           "OrthoDB": "ORTHODB_ID",
+           "ProtClustDB": "PROTCLUSTDB_ID",
+           "BioCyc": "BIOCYC_ID",
+           "Reactome": "REACTOME_ID",
+           "UniPathWay": "UNIPATHWAY_ID",
+           "CleanEx": "CLEANEX_ID",
+           "GermOnline": "GERMONLINE_ID",
+           "ChEMBL": "CHEMBL_ID",
+           "ChiTaRS": "CHITARS_ID",
+           "DrugBank": "DRUGBANK_ID",
+           "GenomeRNAi": "GENOMERNAI_ID",
+           "NextBio": "NEXTBIO_ID"}
+
+
+class UniProt(REST):
+    _mapping = mapping.copy()
+    _url = "http://www.uniprot.org"
+    _valid_columns = ['citation', 'clusters', 'comments', 'database',
+                      'domains', 'domain', 'ec', 'id', 'entry name', 'existence',
+                      'families', 'features', 'genes', 'go', 'go-id', 'interpro',
+                      'interactor', 'keywords', 'keyword-id', 'last-modified',
+                      'length', 'organism', 'organism-id', 'pathway', 'protein names',
+                      'reviewed', 'score', 'sequence', '3d', 'subcellular locations',
+                      'taxonomy', 'tools', 'version', 'virus hosts']
+
+    def __init__(self, verbose=False):
+        """**Constructor**
+
+        :param verbose: set to False to prevent informative messages
+        """
+        super(UniProt, self).__init__(name="UniProt", url=UniProt._url,
+                                      verbose=verbose)
+        self.TIMEOUT = 100
+
+    def _download_flat_files(self):
+        """Not implemented"""
+        url = "ftp://ftp.ebi.ac.uk/pub/databases/uniprot/knowledgebase/uniprot_sprot.dat.gz"
+        pass
+
+    def mapping(self, fr="ID", to="KEGG_ID", query="P13368"):
+        url = 'mapping/'  # the slash matters
+
+        query = self.devtools.list2string(query, sep=" ", space=False)
+        # if isinstance(query, list):
+        #    query = " ".join(query)
+        params = {'from': fr, 'to': to, 'format': "tab", 'query': query}
+        result = self.http_post(url, frmt="txt", data=params)
+
+        # changes in version 1.1.1 returns a dictionary instead of list
+        try:
+            result = result.split()
+            del result[0]
+            del result[0]
+        except:
+            self.logging.warning("Results seems empty...returning empty dictionary.")
+            return {}
+
+        if len(result) == 0:
+            return {}
+        else:
+            # bug fix based on ticket #19 version 1.1.2
+            # the default dict set empty list for all keys by default
+            from collections import defaultdict
+
+            result_dict = defaultdict(list)
+
+            keys = result[0::2]
+            values = result[1::2]
+            for i, key in enumerate(keys):
+                result_dict[key].append(values[i])
+        return result_dict
+
+    def multi_mapping(self, fr="ID", to="KEGG_ID", query="P13368",
+                      frmt="tab", Nmax=100):
+        """Calls mapping several times and concatenates results
+
+        .. deprecated: 1.3.1 you can now use :meth:`mapping` even for long queries since
+            we are now using a POST request, which allows arbitrary length of entries.
+        """
+        self.logging.warning("deprecated in version 1.3.1. Use mapping instead")
+        if isinstance(query, list) is False:
+            query = [query]
+
+        unique_entry_names = list(set(query))
+
+        if len(unique_entry_names) > Nmax:
+            unique_entry_names = list(unique_entry_names)
+            self.logging.info("There are more than %s unique species. Using multi stage uniprot mapping" % Nmax)
+            mapping = {}
+            # we need to split
+            # this is a hack rigt now but could be put inside bioservices
+            N, rest = divmod(len(unique_entry_names), Nmax)
+            if rest > 0:
+                N += 1
+            for i in range(0, N):
+                i1 = i * Nmax
+                i2 = (i + 1) * Nmax
+                if i2 > len(unique_entry_names):
+                    i2 = len(unique_entry_names)
+                query = ",".join(unique_entry_names[i1:i2])
+                this_mapping = self.mapping(fr=fr, to=to, query=query)
+                for k, v in this_mapping.items():
+                    mapping[k] = v
+                from easydev import precision
+
+                self.logging.info(str(precision((i + 1.) / N * 100., 2)) + "%% completed")
+        else:
+            # query=",".join([x+"_" + species for x in unique_entry_names])
+            query = ",".join(unique_entry_names)
+            mapping = self.mapping(fr=fr, to=to, query=query)
+        return mapping
+
+    def searchUniProtId(self, uniprot_id, frmt="xml"):
+        print("DEPRECATED SINCE VERSION 1.3.1. use retrieve instead")
+
+    def retrieve(self, uniprot_id, frmt="xml"):
+
+        _valid_formats = ['txt', 'xml', 'rdf', 'gff', 'fasta']
+        self.devtools.check_param_in_list(frmt, _valid_formats)
+
+        queries = self.devtools.tolist(uniprot_id)
+
+        # data = {'format':frmt}
+
+        url = ["uniprot/" + query + '.' + frmt for query in queries]
+        res = self.http_get(url, frmt="txt")
+        if frmt == "xml":
+            res = [self.easyXML(x) for x in res]
+        if isinstance(res, list) and len(res) == 1:
+            res = res[0]
+        return res
+
+    """def _batch(self, entries):
+        #TODO test and validation
+        entries = self.devtools.list2string(entries)
+        res = self.http_post("batch/", frmt="txt",
+                data={'format':'txt'},
+                files={'file': entries}, headers={'Content_Type':'form-data'}  )
+        return res
+    """
+
+    def get_fasta(self, id_):
+        """Returns FASTA string given a valid identifier
+
+
+        .. seealso:: :mod:`bioservices.apps.fasta` for dedicated tools to
+            manipulate FASTA
+        """
+        from TransCellAssay.IO.Rest.Fasta import FASTA
+
+        f = FASTA()
+        f.load_fasta(id_)
+        return f.fasta
+
+    def get_fasta_sequence(self, id_):
+        from TransCellAssay.IO.Rest.Fasta import FASTA
+
+        f = FASTA()
+        f.load_fasta(id_)
+        return f.sequence
+
+    def search(self, query, frmt="tab", columns=None,
+               include=False, sort="score", compress=False, limit=None, offset=None, maxTrials=10):
+
+        params = {}
+
+        if frmt is not None:
+            _valid_formats = ['tab', 'xls', 'fasta', 'gff', 'txt', 'xml', 'rss', 'list', 'rss', 'html']
+            self.devtools.check_param_in_list(frmt, _valid_formats)
+            params['format'] = frmt
+
+        if columns is not None:
+            self.devtools.check_param_in_list(frmt, ["tab", "xls"])
+
+            # remove unneeded spaces before/after commas if any
+            if "," in columns:
+                columns = [x.strip() for x in columns.split(",")]
+            else:
+                columns = [columns]
+
+            for col in columns:
+                if col.startswith("database(") is True:
+                    pass
+                else:
+                    self.devtools.check_param_in_list(col, self._valid_columns)
+
+            # convert back to a string as expected by uniprot
+            params['columns'] = ",".join([x.strip() for x in columns])
+
+        if include is True and frmt in ["fasta", "rdf"]:
+            params['include'] = 'yes'
+
+        if compress is True:
+            params['compress'] = 'yes'
+
+        if sort:
+            self.devtools.check_param_in_list(sort, ["score"])
+            params['sort'] = sort
+
+        if offset is not None:
+            if isinstance(offset, int):
+                params['offset'] = offset
+
+        if limit is not None:
+            if isinstance(limit, int):
+                params['limit'] = limit
+
+        # + are interpreted and have a meaning.
+        params['query'] = query.replace("+", " ")
+        # res = s.request("/uniprot/?query=zap70+AND+organism:9606&format=xml", params)
+        #print(params)
+        res = self.http_get("uniprot/", frmt="txt", params=params)
+        return res
+
+    def quick_search(self, query, include=False, sort="score", limit=None):
+        """a specialised version of :meth:`search`
+
+        This is equivalent to::
+
+            u = uniprot.UniProt()
+            u.search(query, frmt="tab", include=False, sor="score", limit=None)
+
+        :returns: a dictionary.
+
+        """
+        res = self.search(query, "tab", include=include, sort=sort, limit=limit)
+
+        # if empty result, nothing to do
+        if len(res) == 0:
+            return res
+        # else populate a dictionary
+        newres = {}
+        for line in res.split("\n")[1:-1]:
+            #print line
+            Entry, a, b, c, d, e, f = line.split("\t")
+            #print Entry, a, b, c, d, e, f
+            newres[Entry] = {'Entry name': a,
+                             'Status': b,
+                             'Protein names': c,
+                             'Gene names': d,
+                             'Organism': e,
+                             'Length': f}
+        return newres
+
+    def uniref(self, query):
+
+        try:
+            import pandas as pd
+        except:
+            print("uniref method requires Pandas")
+            return
+        res = self.http_get("uniref/", params={"query": query, 'format': 'tab'}, frmt="txt")
+        res = pd.read_csv(io.StringIO(res.strip()), sep="\t")
+        return res
+
+    def get_df(self, entries, nChunk=100, organism=None):
+
+        if isinstance(entries, str):
+            entries = [entries]
+        else:
+            entries = list(set(entries))
+        output = pd.DataFrame()
+
+        self.logging.info("fetching information from uniprot for {} entries".format(len(entries)))
+
+        nChunk = min(nChunk, len(entries))
+        N, rest = divmod(len(entries), nChunk)
+        for i in range(0, N + 1):
+            this_entries = entries[i * nChunk:(i + 1) * nChunk]
+            if len(this_entries):
+                self.logging.info("uniprot.get_df {}/{}".format(i + 1, N))
+                query = "+or+".join(this_entries)
+                if organism:
+                    query += "+and+" + organism
+                res = self.search(query, frmt="tab",
+                                  columns=",".join(self._valid_columns))
+            else:
+                break
+            if len(res) == 0:
+                self.logging.warning("some entries %s not found" % entries)
+            else:
+                df = pd.read_csv(io.StringIO(res), sep="\t")
+                if isinstance(output, type(None)):
+                    output = df.copy()
+                else:
+                    output = output.append(df, ignore_index=True)
+
+        # you may end up with duplicated...
+        output.drop_duplicates(inplace=True)
+        # you may have new entries...
+        # output = output[output.Entry.apply(lambda x: x in entries)]
+        # to transform into list:
+        columns = ['PubMed ID', 'Comments', u'Domains', 'Protein families',
+                   'Gene names', 'Gene ontology (GO)', 'Gene ontology IDs',
+                   'InterPro', 'Interacts with', 'Keywords',
+                   'Subcellular location']
+        for col in columns:
+            try:
+                res = output[col].apply(lambda x: [this.strip() for this in str(x).split(";") if this != "nan"])
+                output[col] = res
+            except:
+                self.logging.warning("column could not be parsed. %s" % col)
+        # Sequences are splitted into chunks of 10 characters. let us rmeove the
+        # spaces:
+        output.Sequence = output['Sequence'].apply(lambda x: x.replace(" ", ""))
+
+        return output
+

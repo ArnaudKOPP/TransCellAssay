@@ -133,6 +133,97 @@ class Service():
             f.write(newres)
 
 
+class WSDLService(Service):
+    """Class dedicated to the web services based on WSDL/SOAP protocol.
+
+    .. seealso:: :class:`RESTService`, :class:`Service`
+
+    """
+    _service = "WSDL"
+
+    def __init__(self, name, url, verbose=True):
+        """.. rubric:: Constructor
+
+        :param str name: a name e.g. Kegg, Reactome, ...
+        :param str url: the URL of the WSDL service
+        :param bool verbose: prints informative messages
+
+        The :attr:`serv` give  access to all WSDL functionalities of the service.
+
+        The :attr:`methods` is an alias to self.serv.methods and returns
+        the list of functionalities.
+
+        """
+        super(WSDLService, self).__init__(name, url, verbose=verbose)
+
+        print("Initialising %s service (WSDL)" % self.name)
+
+        try:
+            #: attribute to access to the methods provided by this WSDL service
+            from suds.client import Client
+
+            self.suds = Client(self.url)
+            # reference to the service
+            self.serv = self.suds.service
+            self._update_settings()
+        except Exception:
+            raise Exception("Could not connect to the service %s " % self.url)
+
+    def _update_settings(self):
+        self.TIMEOUT = self.settings.TIMEOUT
+
+    def wsdl_methods_info(self):
+        methods = self.suds.wsdl.services[0].ports[0].methods.values()
+        for method in methods:
+            try:
+                print('%s(%s) ' % (
+                    method.name,
+                    ', '.join('type:%s: %s - element %s' %
+                              (part.type, part.name, part.element) for part in
+                              method.soap.input.body.parts)))
+            except:
+                print(method)
+
+    def _get_methods(self):
+        return [x.name for x in
+                self.suds.wsdl.services[0].ports[0].methods.values()]
+
+    wsdl_methods = property(_get_methods,
+                            doc="returns methods available in the WSDL service")
+
+    def wsdl_create_factory(self, name, **kargs):
+        params = self.suds.factory.create(name)
+
+        # e.g., for eutils
+        if "email" in dict(params).keys():
+            params.email = self.settings.params['user.email'][0]
+
+        if "tool" in dict(params).keys():
+            import bioservices
+
+            params.tool = "BioServices, " + bioservices.__version__
+
+        for k, v in kargs.items():
+            from suds import sudsobject
+
+            keys = sudsobject.asdict(params).keys()
+            if k in keys:
+                params[k] = v
+            else:
+                msg = "{0} incorrect. Correct ones are {1}"
+                print(msg.format(k, keys))
+        return params
+
+    def _get_timeout(self):
+        return self.suds.options.timeout
+
+    def _set_timeout(self, value):
+        self.suds.set_options(timeout=value)
+        self.settings.TIMEOUT = value
+
+    TIMEOUT = property(_get_timeout, _set_timeout)
+
+
 class RESTBase(Service):
     _service = "REST"
 
