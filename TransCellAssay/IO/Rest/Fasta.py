@@ -32,7 +32,6 @@ class MultiFASTA(object):
 
     ids = property(_get_ids, doc="returns list of keys/accession identifiers")
 
-
     def load_fasta(self, ids):
         """Loads a single FASTA file into the dictionary
 
@@ -221,7 +220,6 @@ class FASTA(object):
         str_ = self.fasta
         return str_
 
-
     def get_fasta(self, id_):
 
         print("get_fasta is deprecated. Use load_fasta instead")
@@ -249,7 +247,6 @@ class FASTA(object):
             self._fasta = res[:]
         except:
             pass
-
 
     def save_fasta(self, filename):
         """Save FASTA file into a filename
@@ -283,7 +280,6 @@ class FASTA(object):
         self._fasta = self._fasta[0]
         if self.dbtype not in self.known_dbtypes:
             print("Only sp and gi header are recognised so far but sequence and header are loaded")
-
 
     def _interpret(self, data):
         # cleanup the data in case of empty spaces or \n characters

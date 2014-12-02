@@ -1,13 +1,5 @@
-__author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
-__credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
-__version__ = "1.0"
-__maintainer__ = "Arnaud KOPP"
-__email__ = "kopp.arnaud@gmail.com"
-__status__ = "Dev"
-
-"""This module provides a class :class:`~BioGrid`.
+"""
+This module provides a class :class:`~BioGrid`.
 
 .. topic:: What is BioGrid ?
 
@@ -27,6 +19,15 @@ __status__ = "Dev"
 
 """
 
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Dev"
+
 from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
 import re
 
@@ -34,18 +35,19 @@ __all__ = ["BioGRID"]
 
 
 class Search(PSICQUIC):
-    """ Class that carries out the actual search via psicquic.
+    """
+    Class that carries out the actual search via psicquic.
 
+    .. todo:: to be removed
+    """
 
-    .. todo:: to be removed"""
-
-    def __init__(self, data):
-        super(Search, self).__init__(verbose="ERROR")
+    def __init__(self, data, verbose=False):
+        super(Search, self).__init__(verbose=verbose)
         self.data = data
         if "biogrid" in self.activeDBs:
             self.output = self.query("biogrid", self.data)
         else:
-            self.logging.warning("BioGrid is not active")
+            print("\033[0;33m[WARNING]\033[0m BioGrid is not active")
             self.output = []
         self.interactors = self.get_interactors()
 
@@ -71,13 +73,15 @@ class BioGRID(object):
         self.biogrid = Search(self.searchString)
 
     def _biogridSearch(self, query=None, taxid=None, exp=None):
-        """Creates a search string for the biogrid database.
+        """
+        Creates a search string for the biogrid database.
 
         :param str query: the gene name(s). Can be a string or a list of strings.
         :param str taxid: the taxid for the organism of relevance. If None,
             all organisms are choosen.
         :param str exp: the experimental protocol used to identify the interactions.
-        :return: a search string for biogrid. """
+        :return: a search string for biogrid.
+        """
 
         if query is None:
             query = self.query

@@ -37,7 +37,7 @@ class ServiceError(Exception):
 
 class Service():
     """
-    Base class for REST class
+    Base class for REST/WSDL class
     """
 
     response_codes = {
@@ -106,9 +106,7 @@ class Service():
         The easyXML object provides utilities to ease access to the XML
         tag/attributes.
         """
-        from TransCellAssay.IO.Rest import xml
-
-        return xml.easyXML(res)
+        return easyXML(res)
 
     def __str__(self):
         txt = "Instance of %s service" % self.name
@@ -133,95 +131,95 @@ class Service():
             f.write(newres)
 
 
-class WSDLService(Service):
-    """Class dedicated to the web services based on WSDL/SOAP protocol.
-
-    .. seealso:: :class:`RESTService`, :class:`Service`
-
-    """
-    _service = "WSDL"
-
-    def __init__(self, name, url, verbose=True):
-        """.. rubric:: Constructor
-
-        :param str name: a name e.g. Kegg, Reactome, ...
-        :param str url: the URL of the WSDL service
-        :param bool verbose: prints informative messages
-
-        The :attr:`serv` give  access to all WSDL functionalities of the service.
-
-        The :attr:`methods` is an alias to self.serv.methods and returns
-        the list of functionalities.
-
-        """
-        super(WSDLService, self).__init__(name, url, verbose=verbose)
-
-        print("Initialising %s service (WSDL)" % self.name)
-
-        try:
-            #: attribute to access to the methods provided by this WSDL service
-            from suds.client import Client
-
-            self.suds = Client(self.url)
-            # reference to the service
-            self.serv = self.suds.service
-            self._update_settings()
-        except Exception:
-            raise Exception("Could not connect to the service %s " % self.url)
-
-    def _update_settings(self):
-        self.TIMEOUT = self.settings.TIMEOUT
-
-    def wsdl_methods_info(self):
-        methods = self.suds.wsdl.services[0].ports[0].methods.values()
-        for method in methods:
-            try:
-                print('%s(%s) ' % (
-                    method.name,
-                    ', '.join('type:%s: %s - element %s' %
-                              (part.type, part.name, part.element) for part in
-                              method.soap.input.body.parts)))
-            except:
-                print(method)
-
-    def _get_methods(self):
-        return [x.name for x in
-                self.suds.wsdl.services[0].ports[0].methods.values()]
-
-    wsdl_methods = property(_get_methods,
-                            doc="returns methods available in the WSDL service")
-
-    def wsdl_create_factory(self, name, **kargs):
-        params = self.suds.factory.create(name)
-
-        # e.g., for eutils
-        if "email" in dict(params).keys():
-            params.email = self.settings.params['user.email'][0]
-
-        if "tool" in dict(params).keys():
-            import bioservices
-
-            params.tool = "BioServices, " + bioservices.__version__
-
-        for k, v in kargs.items():
-            from suds import sudsobject
-
-            keys = sudsobject.asdict(params).keys()
-            if k in keys:
-                params[k] = v
-            else:
-                msg = "{0} incorrect. Correct ones are {1}"
-                print(msg.format(k, keys))
-        return params
-
-    def _get_timeout(self):
-        return self.suds.options.timeout
-
-    def _set_timeout(self, value):
-        self.suds.set_options(timeout=value)
-        self.settings.TIMEOUT = value
-
-    TIMEOUT = property(_get_timeout, _set_timeout)
+# class WSDLService(Service):
+# """Class dedicated to the web services based on WSDL/SOAP protocol.
+#
+#     .. seealso:: :class:`RESTService`, :class:`Service`
+#
+#     """
+#     _service = "WSDL"
+#
+#     def __init__(self, name, url, verbose=True):
+#         """.. rubric:: Constructor
+#
+#         :param str name: a name e.g. Kegg, Reactome, ...
+#         :param str url: the URL of the WSDL service
+#         :param bool verbose: prints informative messages
+#
+#         The :attr:`serv` give  access to all WSDL functionalities of the service.
+#
+#         The :attr:`methods` is an alias to self.serv.methods and returns
+#         the list of functionalities.
+#
+#         """
+#         super(WSDLService, self).__init__(name, url, verbose=verbose)
+#
+#         print("Initialising %s service (WSDL)" % self.name)
+#
+#         try:
+#             #: attribute to access to the methods provided by this WSDL service
+#             from suds.client import Client
+#
+#             self.suds = Client(self.url)
+#             # reference to the service
+#             self.serv = self.suds.service
+#             self._update_settings()
+#         except Exception:
+#             raise Exception("Could not connect to the service %s " % self.url)
+#
+#     def _update_settings(self):
+#         self.TIMEOUT = self.settings.TIMEOUT
+#
+#     def wsdl_methods_info(self):
+#         methods = self.suds.wsdl.services[0].ports[0].methods.values()
+#         for method in methods:
+#             try:
+#                 print('%s(%s) ' % (
+#                     method.name,
+#                     ', '.join('type:%s: %s - element %s' %
+#                               (part.type, part.name, part.element) for part in
+#                               method.soap.input.body.parts)))
+#             except:
+#                 print(method)
+#
+#     def _get_methods(self):
+#         return [x.name for x in
+#                 self.suds.wsdl.services[0].ports[0].methods.values()]
+#
+#     wsdl_methods = property(_get_methods,
+#                             doc="returns methods available in the WSDL service")
+#
+#     def wsdl_create_factory(self, name, **kargs):
+#         params = self.suds.factory.create(name)
+#
+#         # e.g., for eutils
+#         if "email" in dict(params).keys():
+#             params.email = self.settings.params['user.email'][0]
+#
+#         if "tool" in dict(params).keys():
+#             import bioservices
+#
+#             params.tool = "BioServices, " + bioservices.__version__
+#
+#         for k, v in kargs.items():
+#             from suds import sudsobject
+#
+#             keys = sudsobject.asdict(params).keys()
+#             if k in keys:
+#                 params[k] = v
+#             else:
+#                 msg = "{0} incorrect. Correct ones are {1}"
+#                 print(msg.format(k, keys))
+#         return params
+#
+#     def _get_timeout(self):
+#         return self.suds.options.timeout
+#
+#     def _set_timeout(self, value):
+#         self.suds.set_options(timeout=value)
+#         self.settings.TIMEOUT = value
+#
+#     TIMEOUT = property(_get_timeout, _set_timeout)
 
 
 class RESTBase(Service):
@@ -475,16 +473,16 @@ class REST(RESTBase):
         try:
             # build the requests
             urls = self._get_all_urls(keys, frmt)
-            self.logging.debug("grequests.get processing")
+            print("grequests.get processing")
             rs = (grequests.get(url, session=session, params=params) for key, url in zip(keys, urls))
             # execute them
-            self.logging.debug("grequests.map call")
-            ret = grequests.map(rs, size=min(self.settings.CONCURRENT, len(keys)))
+            print("grequests.map call")
+            ret = grequests.map(rs, size=min(self.async_concurrent, len(keys)))
             self.last_response = ret
-            self.logging.debug("grequests.map call done")
+            print("grequests.map call done")
             return ret
-        except Exception as err:
-            self.logging.warning("Error caught in async. " + err.message)
+        except Exception as e:
+            print("Error caught in async. ", e)
             return []
 
     def _get_all_urls(self, keys, frmt=None):
@@ -506,9 +504,9 @@ class REST(RESTBase):
         if isinstance(query, list) and len(query) > self.async_threshold:
             if DEBUG:
                 print("Running async call for a list")
-            # Not implemented yet a sync funtions with Requests package, will be available in REST2 with aiohttp
+            # Not implemented yet a sync funtions with Requests package
+            return [self.get_one(key, frmt, params=params, **kargs) for key in query]
             # return self.get_async(query, frmt, params=params, **kargs)
-            return self.get_async(query, frmt, params=params, **kargs)
         if isinstance(query, list) and len(query) <= self.async_threshold:
             if DEBUG:
                 print("Running sync call for a list")
@@ -536,6 +534,8 @@ class REST(RESTBase):
             kargs['params'] = params
             kargs['timeout'] = self.timeout
             # res = self.session.get(url, **{'timeout':self.timeout, 'params':params})
+            if DEBUG:
+                print(url)
             res = self.session.get(url, **kargs)
 
             self.last_response = res
@@ -577,6 +577,8 @@ class REST(RESTBase):
             url = '%s/%s' % (self.url, query)
 
         try:
+            if DEBUG:
+                print(url)
             res = self.session.post(url, **kargs)
             self.last_response = res
             res = self._interpret_returned_request(res, frmt)
@@ -618,3 +620,140 @@ class REST(RESTBase):
         print(self.last_response.content)
         print(self.last_response.reason)
         print(self.last_response.status_code)
+
+
+def tolist(data, verbose=True):
+    """Transform an object into a list if possible
+
+    :param data: a list, tuple, or simple type (e.g. int)
+    :return: a list
+    """
+    if isinstance(data, list) or isinstance(data, tuple):
+        return data  # nothing to do
+    elif isinstance(data, float):
+        return [data]
+    elif isinstance(data, int):
+        return [data]
+    elif isinstance(data, str):
+        return [data]
+    else:
+        try:
+            data = data.tolist()
+            return data
+        except:
+            if verbose:
+                print("not known type. cast to list")
+            return list(data)
+
+
+def list2string(data, sep=",", space=True):
+    """Transform a list into a string
+
+    :param list data: list of items that have a string representation.
+        the input data could also be a simple object, in which case
+        it is simply returned with a cast into a string
+    :param str sep: the separator to be use
+    """
+    data = tolist(data)
+    if space is True:
+        sep = sep + " "
+    res = sep.join([str(x) for x in data])
+    return res
+
+
+def check_param_in_list(param, valid_values, name=None):
+    """Checks that the value of param is amongst valid
+
+    :param param: a parameter to be checked
+    :param list valid_values: a list of values
+
+    ::
+
+        check_param_in_list(1, [1,2,3])
+        check_param_in_list(mode, ["on", "off"])
+    """
+    if isinstance(valid_values, list) is False:
+        raise TypeError(
+            "the valid_values second argument must be a list of valid values. {0} was provided.".format(valid_values))
+
+    if param not in valid_values:
+        if name:
+            msg = "Incorrect value provided for {} ({})".format(name, param)
+        else:
+            msg = "Incorrect value provided (%s)" % param
+        msg += "    Correct values are %s" % valid_values
+        raise ValueError(msg)
+
+
+import xml.etree.ElementTree as ET
+import bs4
+from urllib.request import urlopen
+
+
+class easyXML(object):
+    """
+    class to ease the introspection of XML documents.
+    This class uses the standard xml module as well as the package BeautifulSoup
+    to help introspecting the XML documents.
+    """
+
+    def __init__(self, data, encoding="utf-8"):
+        """
+        :param data: an XML document format
+        :param fixing_unicode: use only with HGNC service to fix issue with the
+            XML returned by that particular service. No need to use otherwise.
+            See :class:`~bioservices.hgnc.HGNC` documentation for details.
+        :param encoding: default is utf-8 used. Used to fix the HGNC XML only.
+
+
+        The data parameter must be a string containing the XML document. If you
+        have an URL instead, use :class:`readXML`
+
+        """
+        # if fixing_unicode:
+        # x = unicodefix.FixingUnicode(data, verbose=False, encoding=encoding)
+        # self.data = x.fixed_string.encode("utf-8")
+        # else:
+        self.data = data[:]
+
+        try:
+            self.root = ET.fromstring(self.data)
+        except:
+            self.root = self.data[:]
+        self._soup = None
+        self.prettify = self.soup.prettify
+        self.findAll = self.soup.findAll
+
+    def getchildren(self):
+        """
+        returns all children of the root XML document
+        This is just an alias to self.soup.getchildren()
+        """
+        return self.root.getchildren()
+
+    def _get_soup(self):
+        if self._soup is None:
+            self._soup = bs4.BeautifulSoup(self.data)
+        return self._soup
+
+    soup = property(_get_soup, doc="Returns the beautiful soup instance")
+
+    def __str__(self):
+        txt = self.soup.prettify()
+        return txt
+
+    def __getitem__(self, i):
+        return self.findAll(i)
+
+
+class readXML(easyXML):
+    """
+    Read XML and converts to beautifulsoup data structure
+    easyXML accepts as input a string. This class accepts a filename instead
+    inherits from easyXML
+    """
+
+    def __init__(self, filename, fixing_unicode=False, encoding="utf-8"):
+        url = urlopen(filename, "r")
+        self.data = url.read()
+        super(readXML, self).__init__(self.data, fixing_unicode, encoding)
