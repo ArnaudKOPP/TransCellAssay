@@ -458,7 +458,7 @@ class REST(RESTBase):
             try:
                 return res.json()
             except:
-                return res
+                return res.content
         # finally
         return res.content
 
@@ -684,6 +684,33 @@ def check_param_in_list(param, valid_values, name=None):
         msg += "    Correct values are %s" % valid_values
         raise ValueError(msg)
 
+
+import json
+
+
+def to_json(self, dictionary):
+    return json.dumps(dictionary)
+
+
+def check_range(value, a, b, strict=False):
+    """
+    Check that a value lies in a given range
+    :param value: value to test
+    :param a: lower bound
+    :param b: upper bound
+    :return: nothing
+    """
+
+    if strict is True:
+        if value <= a:
+            raise ValueError(" {} must be greater (or equal) than {}".format(value, a))
+        if value >= b:
+            raise ValueError(" {} must be less (or less) than {}".format(value, b))
+    elif strict is False:
+        if value < a:
+            raise ValueError(" {} must be greater than {}".format(value, a))
+        if value > b:
+            raise ValueError(" {} must be less than {}".format(value, b))
 
 import xml.etree.ElementTree as ET
 import bs4

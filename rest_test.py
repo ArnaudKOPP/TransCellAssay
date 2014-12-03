@@ -2,15 +2,35 @@
 # encoding: utf-8
 
 # #### Psicquic REST TEST
-from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
+# from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
 
-p = PSICQUIC()
+# p = PSICQUIC()
 # p.print_status()
 # print(p.query("string", "species:10090", firstResult=0, maxResults=100, output="tab25"))
-print(p.query("biogrid", "ZAP70"))
+# print(p.query("biogrid", "ZAP70"))
 # print(p.query("biogrid", "ZAP70 AND species:10090"))
-
+# res = p.query("intact", "zap70")
+# for x in res:
+# print(x)
 # print(p.queryAll("ZAP70 AND species:9606"))
+
+# #### Biogrid REST TEST
+from TransCellAssay.IO.Rest.Biogrid import Biogrid
+
+b = Biogrid()
+print(b.get_biogrid_version())
+print(b._supported_organism_list())
+print(b.SupportedOrganismId)
+print(b.SupportedOrganismId["9606"])
+res = b.interaction(geneList="31623", searchbiogridids="true", includeInteractors="true", caca="grzefg")
+print(res)
+
+import pandas as pd
+from io import StringIO
+
+data = pd.read_table(StringIO(res), header=None)
+print(data)
+
 
 # #### UNIPROT REST TEST
 # from TransCellAssay.IO.Rest.Uniprot import UniProt

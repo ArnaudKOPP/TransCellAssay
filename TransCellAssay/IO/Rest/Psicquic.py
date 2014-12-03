@@ -287,12 +287,9 @@ class PSICQUIC(REST):
         N = len(names)
 
         for i in range(0, N):
-            print("%s\t %s\t %s\t %s\t" % (names[i], actives[i], counts[i], versions[i]))
-            # print("%s\t %s\t %s\t %s\t %s %s %s %s\n" % (names[i], actives[i], counts[i], versions[i], resturls[i],
-            # soapurls[i], restexs[i], restricted[i]))
-
-
-    # todo a property for the version of PISCQUIC
+            # print("%s\t %s\t %s\t %s\t" % (names[i], actives[i], counts[i], versions[i]))
+            print("%s\t %s\t %s\t %s\t %s %s %s %s\n" % (names[i], actives[i], counts[i], versions[i], resturls[i],
+                                                         soapurls[i], restexs[i], restricted[i]))
 
     def _get_registry(self):
         if self._registry is None:
@@ -438,16 +435,17 @@ class PSICQUIC(REST):
             res = self.http_get(url, frmt="xml", params=params)
         else:
             res = self.http_get(url, frmt="txt", params=params)
-            res = res.strip().split("\n")
+            if res is not None:
+                res = res.strip().split("\n")
 
         if output.startswith("tab"):
-            res = self._convert_tab2dict(res)
+            if res is not None:
+                res = self._convert_tab2dict(res)
 
         return res
 
     def _convert_tab2dict(self, data):
         """
-
         https://code.google.com/p/psicquic/wiki/MITAB26Format
         """
         results = []
@@ -488,15 +486,14 @@ class PSICQUIC(REST):
             print("Found %s in %s" % (len(results[name]), name))
         return results
 
-
     def getInteractionCounter(self, query):
-        """Returns a dictionary with database as key and results as values
+        """
+        Returns a dictionary with database as key and results as values
 
         :param str query: a valid query
         :return: a dictionary which key as database and value as number of entries
 
         Consider only the active database.
-
         """
         # get the active names only
         activeDBs = self.activeDBs[:]

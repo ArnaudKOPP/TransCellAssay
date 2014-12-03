@@ -27,7 +27,7 @@ __status__ = "Dev"
 
 """
 import os
-from TransCellAssay.IO.Rest.Service import REST
+from TransCellAssay.IO.Rest.Service import REST, check_param_in_list, check_range, tolist
 import webbrowser
 
 __all__ = ["ChEMBL"]
@@ -38,12 +38,9 @@ class ChEMBL(REST):
 
     Here is a quick example to retrieve a target given its ChEMBL Id
 
-    .. doctest::
-
-        >>> from bioservices import ChEMBL
-        >>> s = ChEMBL(verbose=False)
-        >>> resjson = s.get_target_by_chemblId('CHEMBL240')
-        >>> resjson['proteinAccession']
+        s = ChEMBL(verbose=False)
+        resjson = s.get_target_by_chemblId('CHEMBL240')
+        resjson['proteinAccession']
         'Q12809'
 
     By default, most methods return dictionaries (converted from json objects returned
@@ -69,11 +66,10 @@ class ChEMBL(REST):
     _inspect_example = ('CHEMBL1', 'compound')
 
     def __init__(self, verbose=False, cache=False):
-        super(ChEMBL, self).__init__(url=ChEMBL._url,
-                                     name="ChEMBL", verbose=verbose, cache=cache)
+        super(ChEMBL, self).__init__(url=ChEMBL._url, name="ChEMBL", verbose=verbose)
 
     def _process(self, query, frmt, request):
-        self.devtools.check_param_in_list(frmt, ["json", "xml"])
+        check_param_in_list(frmt, ["json", "xml"])
         request = request + "." + frmt
         if isinstance(query, str):
             res = self.http_get(request % query, frmt=frmt)
@@ -103,7 +99,8 @@ class ChEMBL(REST):
             return res
 
     def get_compounds_by_chemblId(self, query, frmt="json"):
-        """Get compound by ChEMBLId
+        """
+        Get compound by ChEMBLId
 
         :param query: a compound ChEMBLId or a list of those ones.
             if the identifier is invalid, the number 404 is returned.
@@ -123,12 +120,9 @@ class ChEMBL(REST):
          * smiles
          * stdInChiKey
 
-        ::
-
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print (s._chemblId_example)
-            >>> resjson = s.get_compounds_by_chemblId(s._chemblId_example)
+            s = ChEMBL(verbose=False)
+            print (s._chemblId_example)
+            resjson = s.get_compounds_by_chemblId(s._chemblId_example)
 
         """
         res = self._process(query, frmt, "compounds/%s")
@@ -136,15 +130,12 @@ class ChEMBL(REST):
 
     def get_compounds_by_chemblId_form(self, query, frmt="json"):
         """
-
         :param query: valid chembl identifier (or list)
         :param str frmt: json or xml (Default to json)
 
         See :meth:`get_compounds_by_chemblId` for full doc.
 
-        ::
-
-            >>> s.get_compounds_by_chemblId_form("CHEMBL2")
+            s.get_compounds_by_chemblId_form("CHEMBL2")
             [{u'chemblId': u'CHEMBL1347191', u'parent': False},
              {u'chemlId': u'CHEMBL1558', u'parent': False},
              {u'chemblId': u'CHEMBL2', u'parent': True}]
@@ -155,7 +146,6 @@ class ChEMBL(REST):
 
     def get_compounds_by_chemblId_drug_mechanism(self, query, frmt="json"):
         """
-
         :param query: valid chembl identifier (or list)
         :param str frmt: json or xml (Default to json)
 
@@ -163,7 +153,7 @@ class ChEMBL(REST):
 
         ::
 
-            >>> s.get_compounds_by_chemblId_drug_mechanism("CHEMBL3")
+            s.get_compounds_by_chemblId_drug_mechanism("CHEMBL3")
             [{u'chemblId': u'CHEMBL1347191', u'parent': False},
             {u'chemblId': u'CHEMBL1558', u'parent': False},
             {u'chemblId': u'CHEMBL2', u'parent': True}]
@@ -173,7 +163,8 @@ class ChEMBL(REST):
         return res
 
     def get_individual_compounds_by_inChiKey(self, query, frmt="json"):
-        """Get individual compound by standard InChi Key
+        """
+        Get individual compound by standard InChi Key
 
         :param str query: a valid InChi key or a list.
         :param str frmt: json or xml (Default to json)
@@ -188,19 +179,18 @@ class ChEMBL(REST):
          * species
          * synonyms
 
-        .. doctest::
 
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._inChiKey_example)
+            s = ChEMBL(verbose=False)
+            print(s._inChiKey_example)
             QFFGVLORLPOAEC-SNVBAGLBSA-N
-            >>> resjson = s.get_individual_compounds_by_inChiKey(s._inChiKey_example)
+            resjson = s.get_individual_compounds_by_inChiKey(s._inChiKey_example)
         """
         res = self._process(query, frmt, "compounds/stdinchikey/%s")
         return self._postprocess(res, 'compound')
 
     def get_compounds_by_SMILES(self, query, frmt="json"):
-        """Get list of compounds by Canonical SMILES
+        """
+        Get list of compounds by Canonical SMILES
 
         :param str query: a valid compound ChEMBLId or a list of those ones.
         :param str frmt: json or xml (Default to json)
@@ -211,22 +201,23 @@ class ChEMBL(REST):
         has a unique key 'compounds'. The value of that key is a list of compound
         records. For each compound record dictionary see :meth:`get_compounds_by_chemblId`.
 
-        ::
 
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._smiles_example)
-            >>> resjson = s.get_compounds_by_SMILES(s._smiles_example)
+            s = ChEMBL(verbose=False)
+            print(s._smiles_example)
+            resjson = s.get_compounds_by_SMILES(s._smiles_example)
         """
         res = self._process(query, frmt, "compounds/smiles/%s")
         return res
 
     def get_compounds_containing_SMILES(self, query, frmt="json"):
-        """Deprecated. Use get_compounds_substructure"""
-        self.logging.error("Deprecated. Use get_compounds_substructure")
+        """
+        Deprecated. Use get_compounds_substructure
+        """
+        print("Deprecated. Use get_compounds_substructure")
 
     def get_compounds_substructure(self, query, frmt="json"):
-        """Get list of compounds containing the substructure represented
+        """
+        Get list of compounds containing the substructure represented
         by the given Canonical SMILES
 
         :param str query: a valid SMILES string or a list of those ones.
@@ -234,18 +225,16 @@ class ChEMBL(REST):
         :return: see :meth:`get_compounds_by_SMILES`
 
 
-        ::
-
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._smiles_example)
-            >>> res = s.get_compounds_substructure(s._smiles_struct_example)
+            s = ChEMBL(verbose=False)
+            print(s._smiles_example)
+            res = s.get_compounds_substructure(s._smiles_struct_example)
         """
         res = self._process(query, frmt, "compounds/substructure/%s")
         return res
 
     def get_compounds_similar_to_SMILES(self, query, similarity=90, frmt="json"):
-        """Get list of compounds similar to the one represented by the given Canonical SMILES.
+        """
+        Get list of compounds similar to the one represented by the given Canonical SMILES.
 
         The similarity is at a cutoff percentage score (minimum value=70%, maximum value=100%).
 
@@ -260,21 +249,18 @@ class ChEMBL(REST):
          * similarity
          * species
 
-        ::
-
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._smiles_similar_example)
-            >>> resjson = s.get_compounds_similar_to_SMILES(s._smiles_example, "100")
-            >>> resjson = s.get_compounds_similar_to_SMILES(s._smiles_similar_example)
+            s = ChEMBL(verbose=False)
+            print(s._smiles_similar_example)
+            resjson = s.get_compounds_similar_to_SMILES(s._smiles_example, "100")
+            resjson = s.get_compounds_similar_to_SMILES(s._smiles_similar_example)
         """
-        self.devtools.check_range(similarity, 70, 100)
+        check_range(similarity, 70, 100)
         res = self._process(query, frmt, "compounds/similarity/%s/" + str(similarity))
         return self._postprocess(res, 'compounds')
 
-    def get_image_of_compounds_by_chemblId(self, query, dimensions=500,
-                                           save=True, view=True, engine="rdkit"):
-        """Get the image of a given compound in PNG png format.
+    def get_image_of_compounds_by_chemblId(self, query, dimensions=500, save=True, view=True, engine="rdkit"):
+        """
+        Get the image of a given compound in PNG png format.
 
         :param str query: a valid compound ChEMBLId or a list/tuple of valid compound ChEMBLIds.
         :param int dimensions: optional argument. An integer z (:math:`1 \leq z \leq 500`)
@@ -289,18 +275,16 @@ class ChEMBL(REST):
             :include-source:
             :width: 50%
 
-            >>> from pylab import imread, imshow
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> res = s.get_image_of_compounds_by_chemblId(s._image_chemblId_example)
-            >>> imshow(imread(res['filenames'][0]))
+            s = ChEMBL(verbose=False)
+            res = s.get_image_of_compounds_by_chemblId(s._image_chemblId_example)
+            imshow(imread(res['filenames'][0]))
 
         .. todo:: ignorecoords option
         """
         # NOTE: not async requests here.
-        self.devtools.check_range(dimensions, 1, 500)
-        self.devtools.check_param_in_list(engine, ['rdkit'])
-        queries = self.devtools.transform_into_list(query)
+        check_range(dimensions, 1, 500)
+        check_param_in_list(engine, ['rdkit'])
+        queries = tolist(query)
 
         res = {'filenames': [], 'images': [], 'chemblids': []}
         for query in queries:
@@ -315,7 +299,6 @@ class ChEMBL(REST):
             with open(file_out, "wb") as thisfile:
                 thisfile.write(bytes(target_data))
                 thisfile.close()
-                self.logging.info("saved to %s" % file_out)
 
             fout = file_out
             res['chemblids'].append(query)
@@ -326,7 +309,8 @@ class ChEMBL(REST):
         return res
 
     def get_compounds_activities(self, query, frmt="json"):
-        """Get individual compound bioactivities
+        """
+        Get individual compound bioactivities
 
         :param str query: valid chembl identifier (or list)
         :param str frmt: json or xml (Default to json)
@@ -345,18 +329,16 @@ class ChEMBL(REST):
          * units
          * value
 
-        ::
-
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._bioactivities_example)
-            >>> resjson = s.get_compounds_activities(s._bioactivities_example)
+            s = ChEMBL(verbose=False)
+            print(s._bioactivities_example)
+            resjson = s.get_compounds_activities(s._bioactivities_example)
         """
         res = self._process(query, frmt, "compounds/%s/bioactivities")
         return res
 
     def get_target_by_chemblId(self, query, frmt="json"):
-        """Get target by ChEMBLId
+        """
+        Get target by ChEMBLId
 
         :param str query: target ChEMBLId
         :param str frmt: json or xml (Default to json)
@@ -371,29 +353,26 @@ class ChEMBL(REST):
          * proteinAccession
          * targetType
 
-        ::
 
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._target_chemblId_example)
-            >>> resjson = s.get_target_by_chemblId(s._target_chemblId_example)
+            s = ChEMBL(verbose=False)
+            print(s._target_chemblId_example)
+            resjson = s.get_target_by_chemblId(s._target_chemblId_example)
         """
         res = self._process(query, frmt, "targets/%s")
         return res
 
     def get_target_by_uniprotId(self, query, frmt="json"):
-        """Get individual target by UniProt Accession Id
+        """
+        Get individual target by UniProt Accession Id
 
         :param str query: a valid uniprot accession Id.
         :param str frmt: json or xml (Default to json)
         :return: see :meth:`get_target_by_chemblId`
 
-        ::
 
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._target_chemblId_example)
-            >>> resjson = s.get_target_by_uniprotId(s._target_uniprotId_example)
+            s = ChEMBL(verbose=False)
+            print(s._target_chemblId_example)
+            resjson = s.get_target_by_uniprotId(s._target_uniprotId_example)
         """
         res = self._process(query, frmt, "targets/uniprot/%s")
         if frmt == 'json':
@@ -401,7 +380,8 @@ class ChEMBL(REST):
         return res
 
     def get_target_by_refseq(self, query, frmt='json'):
-        """Get individual target by RefSeq Accession identifier
+        """
+        Get individual target by RefSeq Accession identifier
 
         :param str query: a valid RefSeq accession Id
         :param str frmt: json or xml (Default to json)
@@ -423,18 +403,17 @@ class ChEMBL(REST):
 
         :return: see :meth:`get_compounds_activities`
 
-        ::
 
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._target_bioactivities_example)
-            >>> resjson = s.get_target_bioactivities(s._target_bioactivities_example)
+            s = ChEMBL(verbose=False)
+            print(s._target_bioactivities_example)
+            resjson = s.get_target_bioactivities(s._target_bioactivities_example)
         """
         res = self._process(query, frmt, "targets/%s/bioactivities")
         return self._postprocess(res, 'bioactivities')
 
     def get_all_targets(self, frmt="json"):
-        """Get all targets in a dictionary
+        """
+        Get all targets in a dictionary
 
         :param str frmt: json or xml (Default to json)
         :return: Target Record in a dictionary (default is json)
@@ -451,18 +430,17 @@ class ChEMBL(REST):
           * synonyms
           * targetType
 
-        ::
 
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> res = s.get_all_targets()
+            s = ChEMBL(verbose=False)
+            res = s.get_all_targets()
         """
-        self.devtools.check_param_in_list(frmt, ["json", "xml"])
+        check_param_in_list(frmt, ["json", "xml"])
         res = self.http_get("targets." + frmt, frmt=frmt)
         return self._postprocess(res, 'targets')
 
     def get_assays_by_chemblId(self, query, frmt="json"):
-        """Get assay by ChEMBLId
+        """
+        Get assay by ChEMBLId
 
         :param str query: a valid assay ChEMBLId.
         :param str frmt: json or xml (Default to json)
@@ -480,78 +458,74 @@ class ChEMBL(REST):
          * journal
          * numBioactivities
 
-        .. doctest::
 
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._assays_example)
+            s = ChEMBL(verbose=False)
+            print(s._assays_example)
             CHEMBL1217643
-            >>> resjson = s.get_assays_by_chemblId(s._assays_example)
+            resjson = s.get_assays_by_chemblId(s._assays_example)
 
         """
         res = self._process(query, frmt, "assays/%s")
         return res
 
     def get_assays_bioactivities(self, query, frmt="json"):
-        """Get individual assay bioactivities
+        """
+        Get individual assay bioactivities
 
         :param str query: a valid assay ChEMBLId.
         :param str frmt: json or xml (Default to json)
         :return: Bioactivity records for a given assay (dictionary)
 
-        ::
 
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._assays_example)
-            >>> resjson = s.get_assays_bioactivities(s._assays_example)
+            s = ChEMBL(verbose=False)
+            print(s._assays_example)
+            resjson = s.get_assays_bioactivities(s._assays_example)
         """
         res = self._process(query, frmt, "assays/%s/bioactivities")
         return res
 
     def get_alternative_compound_form(self, query, frmt="json"):
-        """ Get list of alternative compound forms (e.g. parent and salts) of compound
+        """
+        Get list of alternative compound forms (e.g. parent and salts) of compound
 
         :param query: a valid compound ChEMBLId
         :param frmt: json or xml (Default to json)
         :return: List of ChEMBLIDs which correspond to alternative forms of query compound
 
-        >>> from bioservices import *
-        >>> s = ChEMBL(verbose=False)
-        >>> resjson = s.get_alternative_compound_form(s._alt_compound_form_example)
+        s = ChEMBL(verbose=False)
+        resjson = s.get_alternative_compound_form(s._alt_compound_form_example)
         """
 
         res = self._process(query, frmt, "compounds/%s/form")
         return res
 
     def get_approved_drugs(self, query, frmt="json"):
-        """Get list of approved drugs chembl compound details
+        """
+        Get list of approved drugs chembl compound details
 
         :param query: a valid target ChEMBLId
         :param frmt: json or xml (Default to json)
         :return: list of approved drugs ChEMBL compound details (dictionary)
 
-        >>> from bioservices import *
-        >>> s = ChEMBL(verbose=False)
-        >>> resjson = s.get_approved_drugs(s._target_approved_drugs_example)
+        s = ChEMBL(verbose=False)
+        resjson = s.get_approved_drugs(s._target_approved_drugs_example)
         """
         res = self._process(query, frmt, "targets/%s/approvedDrug")
         return res
 
     def inspect(self, query, item_type):
-        """Open the URL of a query in a browser.
+        """
+        Open the URL of a query in a browser.
 
         :param str query: a valid ChEMBLId of a compound, target or assay.
         :param str item_type: a valid type. Might be compound, target or assay
 
-        ::
 
-            >>> from bioservices import *
-            >>> s = ChEMBL(verbose=False)
-            >>> print(s._assays_example)
-            >>> s.inspect(*s._inspect_example)
-            >>> print(s._assays_example)
-            >>> s.inspect(s._assays_example,'assay')
+            s = ChEMBL(verbose=False)
+            print(s._assays_example)
+            s.inspect(*s._inspect_example)
+            print(s._assays_example)
+            s.inspect(s._assays_example,'assay')
 
         """
         url = "https://www.ebi.ac.uk/chembldb/%s/inspect/%s" % (item_type, query)

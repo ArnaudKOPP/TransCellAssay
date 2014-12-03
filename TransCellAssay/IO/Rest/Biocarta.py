@@ -1,13 +1,5 @@
-__author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
-__credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
-__version__ = "1.0"
-__maintainer__ = "Arnaud KOPP"
-__email__ = "kopp.arnaud@gmail.com"
-__status__ = "Dev"
-
-"""Interface to some part of the UniProt web service
+"""
+Interface to some part of the UniProt web service
 
 .. topic:: What is UniProt ?
 
@@ -32,34 +24,40 @@ __status__ = "Dev"
 .. http://www.uniprot.org/docs/pkinfam
 
 """
-from TransCellAssay.IO.Rest.Service import REST
-from TransCellAssay.IO.Rest.xml import readXML
+__author__ = "Arnaud KOPP"
+__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
+__license__ = "CC BY-NC-ND 4.0 License"
+__version__ = "1.0"
+__maintainer__ = "Arnaud KOPP"
+__email__ = "kopp.arnaud@gmail.com"
+__status__ = "Dev"
+
+from TransCellAssay.IO.Rest.Service import REST, readXML
 
 __all__ = ["BioCarta"]
 
 
 class BioCarta(REST):
-    """Interface to `BioCarta <http://www.biocarta.com>`_ pages
-
+    """
+    Interface to `BioCarta <http://www.biocarta.com>`_ pages
 
     This is not a REST interface actually but rather a parser to some of the
     HTML pages relatd to pathways.
 
     One can retrieve the pathways names and their list of proteins.
 
-        >>> from bioservics import *
-        >>> b = BioCarta()
-        >>> pathways = b.get_pathway_names()
-        >>> proteins = b.get_pathway_protein_names(pathways[0])
-
+        b = BioCarta()
+        pathways = b.get_pathway_names()
+        proteins = b.get_pathway_protein_names(pathways[0])
 
     .. warning:: biocarta pathways layout can be accesses from PID
-
     """
     _url = "http://www.biocarta.com/"
 
     def __init__(self, verbose=True):
-        """**Constructor**
+        """
+        **Constructor**
 
         :param verbose: set to False to prevent informative messages
         """
@@ -69,7 +67,8 @@ class BioCarta(REST):
         self._allPathwaysURL = "http://www.biocarta.com/genes/allPathways.asp"
 
     def get_pathway_names(self, startswith=""):
-        """returns pathways from biocarta
+        """
+        returns pathways from biocarta
 
         all human and mouse. can perform a selectiom
         """
@@ -81,7 +80,8 @@ class BioCarta(REST):
         return pathways
 
     def get_pathway_protein_names(self, pathway):
-        """returns list of list. Each elements is made of 3 items: gene name,
+        """
+        returns list of list. Each elements is made of 3 items: gene name,
         locusId and accession (often empty
 
         Requires to parse HTML page such as
@@ -104,7 +104,6 @@ class BioCarta(REST):
         """
         url = self._url + "/pathfiles/" + pathway
         x = readXML(url)
-        self.logging.info("Reading " + url)
         protein_url = [this.get("href") for this in x.findAll("a") \
                        if 'href' in this and "Protein" in this.get("href")]
         if len(protein_url) == 0:
@@ -115,7 +114,6 @@ class BioCarta(REST):
             link = str(link)  # get rid of unicode ?
             link = link.strip("')")
             url = self._url + "/pathfiles/" + link
-            self.logging.info("Reading " + url)
             x = readXML(url)
 
             # seems to work
