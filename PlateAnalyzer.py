@@ -27,6 +27,7 @@ DEBUG = 1
 
 
 class CLIError(Exception):
+    """Generic exception to raise and log different fatal errors."""
     def __init__(self, msg):
         super(CLIError).__init__(type(self))
         self.msg = "E: %s" % msg
@@ -66,7 +67,7 @@ def main(argv=None):
                             help="Output path for result file")
         parser.add_argument("-a", "--nbplate", dest="nbplate", type=int, action="store", required=True,
                             help="Number of Plate")
-        parser.add_argument("-r", "--nbrep", dest="nbrep", default=3, type=int, action="store", required=True,
+        parser.add_argument("-r", "--nbrep", dest="nbrep", default=3, type=int, action="store",
                             help="Number of replicat per plate (default: %(default)s)")
         parser.add_argument("-f", "--feat", dest="feat", action="store", type=str, required=True,
                             help="Feature to analyze in simple mode")
@@ -192,11 +193,96 @@ def simple_plate_analyzis(plateid):
         return 0
 
 
+def plate_analysis_1data(plateid):
+    """
+    Do the defined pipeline for plate with given plateid
+    :param plateid:
+    :return: 0 or 1
+    """
+    try:
+        time_start = time.time()
+        plaque = TCA.Core.Plate(name='Plate' + str(plateid))
+
+        created = mp.Process()
+        current = mp.current_process()
+        print('created:', created.name, created._identity, 'running on :', current.name, current._identity,
+              "for analyzis of ", plaque.Name)
+
+        print(__INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __FEATURE__, __NEG__, __POS__, __TOX__, __VERBOSE__,
+              __PROCESS__)
+
+        output_data_plate_dir = os.path.join(__OUTPUT__, plaque.Name)
+        if not os.path.exists(output_data_plate_dir):
+            os.makedirs(output_data_plate_dir)
+
+        def df_to_array(df, feat):
+            size = len(df)
+            if size == 96:
+                array = np.zeros((8, 12))
+            else:
+                array = np.zeros((16, 24))
+            for i in range(size):
+                array[df['Row'][i]][df['Column'][i]] = df[feat][i]
+            return array
+
+        # # CREATE PLATE OBJECT HERE
+        plaque + TCA.Core.PlateMap(platemap=os.path.join(__INPUT__, "Pl" + str(plateid) + "PP.csv"))
+        for i in range(1, __NBREP__ + 1):
+            data = pd.read_csv(os.path.join(__INPUT__, "toulouse pl " + str(plateid) + "." + str(i) + ".csv"))
+            plaque + TCA.Core.Replicat(name="rep" + str(i), data=df_to_array(data, __FEATURE__), single=False)
+
+        TCA.plate_quality_control(plaque, features=__FEATURE__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
+                                  verbose=False, dirpath=output_data_plate_dir)
+
+        plaque.compute_data_from_replicat(__FEATURE__, use_sec_data=False)
+        plaque.systematic_error_correction(method='median', apply_down=True, save=True, verbose=False)
+        plaque.compute_data_from_replicat(__FEATURE__, use_sec_data=True)
+
+        TCA.systematic_error_detection_test(plaque.Data, verbose=True)
+
+        ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
+                                     verbose=False)
+        ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
+                                     variance="equal", verbose=False)
+        ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, method='UMVUE', sec_data=True,
+                                     verbose=False)
+        ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, method='MM', sec_data=True,
+                                     verbose=False)
+        tstat1 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, variance='equal', sec_data=True,
+                                       verbose=False)
+        tstat2 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=True, sec_data=False, verbose=False)
+
+        gene = plaque.PlateMap.platemap.values.flatten().reshape(96, 1)
+        final_array = np.append(gene, plaque.Data.flatten().reshape(96, 1), axis=1)
+        final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(96, 1), axis=1)
+        final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(96, 1), axis=1)
+        final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(96, 1), axis=1)
+        final_array = np.append(final_array, ssmd1.flatten().reshape(96, 1), axis=1)
+        final_array = np.append(final_array, ssmd2.flatten().reshape(96, 1), axis=1)
+        final_array = np.append(final_array, ssmd3.flatten().reshape(96, 1), axis=1)
+        final_array = np.append(final_array, ssmd4.flatten().reshape(96, 1), axis=1)
+        final_array = np.append(final_array, tstat1.flatten().reshape(96, 1), axis=1)
+        final_array = np.append(final_array, tstat2.flatten().reshape(96, 1), axis=1)
+        to_save = pd.DataFrame(final_array)
+        to_save.to_csv(os.path.join(output_data_plate_dir, "ssmd_tstat.csv"))
+
+        # # CLEAR PLATE OBJECT FOR MEMORY SAVING AND AVOID CRAPPY EFFECT
+        plaque = None
+
+        time_stop = time.time()
+        print("\033[0;32m   ----> TOTAL TIME  {0:f}s for plate :\033[0m".format(float(time_stop - time_start)), plateid)
+        return 1
+
+    except Exception as e:
+        print("\033[0;31m[ERROR]\033[0m", e)
+        return 0
+
 if __name__ == "__main__":
     main()
 
     # # Do process with multiprocessing
     pool = mp.Pool(processes=__PROCESS__)
-    results = pool.map_async(simple_plate_analyzis, range(1, __NBPLATE__ + 1))
+    # results = pool.map_async(simple_plate_analyzis, range(1, __NBPLATE__ + 1))
+    results = pool.map_async(plate_analysis_1data, range(1, __NBPLATE__ + 1))
     print(results.get())
     print("1 for sucess, 0 for fail")
