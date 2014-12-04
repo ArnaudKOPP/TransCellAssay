@@ -89,7 +89,7 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
     """
     try:
         if not isinstance(plate, TCA.Core.Plate):
-            raise TypeError("\033[0;31m[ERROR]\033[0m")
+            raise TypeError("\033[0;31m[ERROR]\033[0m Need A Plate")
         else:
             neg_well = plate.PlateMap.get_well(cneg)
             pos_well = plate.PlateMap.get_well(cpos)
@@ -129,10 +129,14 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
     """
     try:
         if not isinstance(replicat, TCA.Core.Replicat):
-            raise TypeError("\033[0;31m[ERROR]\033[0m")
+            raise TypeError("\033[0;31m[ERROR]\033[0m Need A Replicat")
         else:
-            negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=neg_well)
-            posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=pos_well)
+            if replicat.RawData is not None:
+                negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=neg_well)
+                posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=pos_well)
+            else:
+                negdata = _get_data_control_array(replicat.Data, c_ref=neg_well)
+                posdata = _get_data_control_array(replicat.Data, c_ref=pos_well)
 
             qc_data_array = pd.DataFrame(np.zeros(1, dtype=[('Replicat ID', str), ('AVR', float), ('Z*Factor', float),
                                                             ('ZFactor', float), ('SSMD', float), ('CVD', float)]))
@@ -149,13 +153,14 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             qc_data_array['Replicat ID'] = replicat.name
             qc_data_array['AVR'] = _avr(negdata, posdata)
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
-            qc_data_array['ZFactor'] = _zfactor(replicat.RawData, feature, negdata, posdata)
+            if replicat.RawData is not None:
+                qc_data_array['ZFactor'] = _zfactor(replicat.RawData, feature, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 
             if dirpath is not None:
                 file = os.path.join(dirpath, "Replicat_Data.txt")
-                os.remove(file) if os.path.exists(file) else None
+                # os.remove(file) if os.path.exists(file) else None
                 with open(file, "a") as text_file:
                     print("Replicat : {}".format(replicat.name), file=text_file)
                     print("mean neg : {}".format(np.mean(negdata)), " Standard dev : {}".format(np.std(negdata)),
@@ -167,6 +172,26 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
                 print("\nQuality Control for replicat : ", replicat.name)
                 print(qc_data_array)
             return qc_data_array
+    except Exception as e:
+        print(e)
+
+
+def _get_data_control_array(array, c_ref):
+    """
+    Grab value from array with from specified position
+    :param array: array
+    :param c_ref: ref in well format (A1)
+    :return: 1d array with data from desired Wells
+    """
+    try:
+        if not isinstance(array, np.ndarray):
+            raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
+        else:
+            data = list()
+            for i in c_ref:
+                pos = TCA.get_opposite_well_format(i)
+                data.append(array[pos[0]][pos[1]])
+            return data
     except Exception as e:
         print(e)
 
