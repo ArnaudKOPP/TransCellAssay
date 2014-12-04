@@ -155,6 +155,8 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
             if replicat.RawData is not None:
                 qc_data_array['ZFactor'] = _zfactor(replicat.RawData, feature, negdata, posdata)
+            else:
+                qc_data_array['ZFactor'] = _zfactor(replicat.Data, feature, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 
@@ -277,11 +279,14 @@ def _zfactor(data, feature, cneg, cpos):
     :return: zfactor value
     """
     try:
-        if not isinstance(data, pd.DataFrame):
-            raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
-        else:
+        if isinstance(data, pd.DataFrame):
             zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data[feature])) / (np.abs(np.mean(cpos) - np.mean(cneg))))
             return zfactor
+        elif isinstance(data, np.ndarray):
+            zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data.flatten())) / (np.abs(np.mean(cpos) - np.mean(cneg))))
+            return zfactor
+        else:
+            raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
     except Exception as e:
         print(e)
 
