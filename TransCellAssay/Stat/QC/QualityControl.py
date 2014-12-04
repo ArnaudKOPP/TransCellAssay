@@ -99,7 +99,7 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
             for key, value in plate.replicat.items():
                 qc_data_array = qc_data_array.append(
                     replicat_quality_control(value, feature=features, neg_well=neg_well, pos_well=pos_well,
-                                             sedt=sedt, sec_data=sec_data, dirpath=dirpath, verbose=False))
+                                             sedt=sedt, sec_data=sec_data, verbose=False))
 
             if verbose:
                 print("\nQuality control for plat: \n")
@@ -113,8 +113,7 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
         print(e)
 
 
-def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, sec_data=False, dirpath=None,
-                             verbose=False):
+def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, sec_data=False, verbose=False):
     """
     Compute quality control on replicat for selected feature
     :param replicat: Replicat to compute qc
@@ -138,19 +137,20 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
                 negdata = _get_data_control_array(replicat.Data, c_ref=neg_well)
                 posdata = _get_data_control_array(replicat.Data, c_ref=pos_well)
 
-            qc_data_array = pd.DataFrame(np.zeros(1, dtype=[('Replicat ID', str), ('AVR', float), ('Z*Factor', float),
-                                                            ('ZFactor', float), ('SSMD', float), ('CVD', float)]))
+            qc_data_array = pd.DataFrame(np.zeros(1, dtype=[('Replicat ID', str), ('Neg Mean', float), ('Neg SD', float)
+                , ('Pos Mean', float), ('Pos SD', float), ('AVR', float),
+                                                            ('Z*Factor', float), ('ZFactor', float), ('SSMD', float),
+                                                            ('CVD', float)]))
 
             if sedt:
                 if sec_data:
                     if replicat.SECData is None:
                         raise ValueError("\033[0;31m[ERROR]\033[0m SEC Before")
-                    TCA.systematic_error_detection_test(replicat.SECData, verbose=True)
-            if verbose:
-                print("Replicat : ", replicat.name)
-                print("mean neg :", np.mean(negdata), " Standard dev : ", np.std(negdata))
-                print("mean pos :", np.mean(posdata), " Standard dev : ", np.std(posdata))
             qc_data_array['Replicat ID'] = replicat.name
+            qc_data_array['Neg Mean'] = np.mean(negdata)
+            qc_data_array['Neg SD'] = np.std(negdata)
+            qc_data_array['Pos Mean'] = np.mean(posdata)
+            qc_data_array['Pos SD'] = np.std(posdata)
             qc_data_array['AVR'] = _avr(negdata, posdata)
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
             if replicat.RawData is not None:
@@ -159,16 +159,6 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
                 qc_data_array['ZFactor'] = _zfactor(replicat.Data, feature, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
-
-            if dirpath is not None:
-                file = os.path.join(dirpath, "Replicat_Data.txt")
-                # os.remove(file) if os.path.exists(file) else None
-                with open(file, "a") as text_file:
-                    print("Replicat : {}".format(replicat.name), file=text_file)
-                    print("mean neg : {}".format(np.mean(negdata)), " Standard dev : {}".format(np.std(negdata)),
-                          file=text_file)
-                    print("mean pos : {}".format(np.mean(posdata)), " Standard dev : {}".format(np.std(posdata)),
-                          file=text_file)
 
             if verbose:
                 print("\nQuality Control for replicat : ", replicat.name)
