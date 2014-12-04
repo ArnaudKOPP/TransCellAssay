@@ -19,7 +19,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def systematic_error_detection_test(array, alpha=0.05, verbose=False):
+def systematic_error_detection_test(array, alpha=0.05, verbose=False, path=None):
     """
     Search for systematic error in plate or replicat, use Welch T-Test
     :param array: numpy array to test
@@ -51,6 +51,11 @@ def systematic_error_detection_test(array, alpha=0.05, verbose=False):
                 print(SEDT_Array)
                 print("")
 
+            if path is not None:
+                try:
+                    np.savetxt(fname=path, X=SEDT_Array, delimiter=',')
+                except Exception as e:
+                    print("\033[0;31m[ERROR]\033[0m", e)
             return SEDT_Array
         else:
             raise TypeError("Must provided an Array")

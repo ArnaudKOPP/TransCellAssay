@@ -48,6 +48,12 @@ class Replicat(object):
         Constructor
         """
         self.RawData = None
+        self.isNormalized = False
+        self.isSpatialNormalized = False
+        self.DataType = "median"
+        self.Data = None
+        self.SECData = None
+
         if data is not None:
             if not single:
                 self.set_data_overide(data)
@@ -58,13 +64,6 @@ class Replicat(object):
             self.name = name
         else:
             self.name = ""
-
-        self.isNormalized = False
-        self.isSpatialNormalized = False
-
-        self.DataType = "median"
-        self.Data = None
-        self.SECData = None
 
     def set_raw_data(self, input_file):
         """

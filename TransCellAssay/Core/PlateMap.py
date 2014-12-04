@@ -87,7 +87,7 @@ class PlateMap(object):
                     if to_search == mat[r][c]:
                         list_coord.append((r, c))
             if not list_coord:
-                raise AttributeError('\033[0;31m[ERROR]\033[0m  This gene don\'t exist')
+                raise AttributeError('\033[0;31m[ERROR]\033[0m  This gene don\'t exist: %s' % to_search)
             return list_coord
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -109,7 +109,7 @@ class PlateMap(object):
                     if mat[r][c] == to_search:
                         list_well.append(Utils.get_opposite_well_format((r, c)))
             if not list_well:
-                raise AttributeError('\033[0;31m[ERROR]\033[0m  This gene don\'t exist')
+                raise AttributeError('\033[0;31m[ERROR]\033[0m  This gene don\'t exist: %s' % to_search)
             return list_well
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
