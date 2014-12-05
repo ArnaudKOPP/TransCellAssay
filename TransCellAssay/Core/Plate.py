@@ -36,9 +36,10 @@ class Plate(object):
     self.DataType = "median" # median or mean data, default is median
     self.Data = None  # matrix that contain data from replicat of interested features to analyze
     self.SECData = None  # matrix that contain data corrected or from replicat data
+    self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
-    def __init__(self, name=None, platemap=None):
+    def __init__(self, name=None, platemap=None, skip=None):
         """
         Constructor
         """
@@ -64,6 +65,8 @@ class Plate(object):
         self.DataType = "median"
         self.Data = None
         self.SECData = None
+
+        self.skip_well = skip
 
     def print_meta_info(self):
         """
@@ -148,6 +151,33 @@ class Plate(object):
         """
         try:
             return self.replicat
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def set_skip_well(self, to_skip):
+        """
+        Set the well to skip in neg or pos control
+        :param to_skip: list of well to skip (1,3) or B3
+        """
+        try:
+            well_list = list()
+            for elem in to_skip:
+                if isinstance(elem, tuple):
+                    well_list.append(elem)
+                elif isinstance(elem, str):
+                    well_list.append(TCA.get_opposite_well_format(elem))
+                else:
+                    pass
+            self.skip_well = well_list
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def get_skip_well(self):
+        """
+        Set the well to skip in neg or pos control
+        """
+        try:
+            return self.skip_well
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
