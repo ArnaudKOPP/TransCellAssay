@@ -150,7 +150,8 @@ def simple_plate_analyzis(plateid):
         plaque + TCA.Core.PlateMap(platemap=os.path.join(__INPUT__, "Pl" + str(plateid) + "PP.csv"))
         for i in range(1, __NBREP__ + 1):
             plaque + TCA.Core.Replicat(name="rep" + str(i),
-                                       data=os.path.join(__INPUT__, "Pl" + str(plateid) + "rep_" + str(i) + ".csv"))
+                                       data=os.path.join(__INPUT__,
+                                                         "toulouse pl " + str(plateid) + "." + str(i) + ".csv"))
         # # BEGIN ANALYZIS HERE
         TCA.plate_quality_control(plaque, features=__FEATURE__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
                                   verbose=False, dirpath=output_data_plate_dir)
@@ -229,7 +230,10 @@ def plate_analysis_1data(plateid):
         plaque + TCA.Core.PlateMap(platemap=os.path.join(__INPUT__, "Pl" + str(plateid) + "PP.csv"))
         for i in range(1, __NBREP__ + 1):
             data = pd.read_csv(os.path.join(__INPUT__, "toulouse pl " + str(plateid) + "." + str(i) + ".csv"))
-            plaque + TCA.Core.Replicat(name="rep" + str(i), data=df_to_array(data, __FEATURE__), single=False)
+            array = df_to_array(data, __FEATURE__)
+            np.savetxt(fname=os.path.join(output_data_plate_dir, "rep" + str(i)) + ".csv", X=array, delimiter=",",
+                       fmt='%1.4f')
+            plaque + TCA.Core.Replicat(name="rep" + str(i), data=array, single=False)
 
         TCA.plate_quality_control(plaque, features=__FEATURE__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
                                   verbose=False, dirpath=output_data_plate_dir)
@@ -282,7 +286,7 @@ if __name__ == "__main__":
 
     # # Do process with multiprocessing
     pool = mp.Pool(processes=__PROCESS__)
-    # results = pool.map_async(simple_plate_analyzis, range(1, __NBPLATE__ + 1))
-    results = pool.map_async(plate_analysis_1data, range(1, __NBPLATE__ + 1))
+    results = pool.map_async(simple_plate_analyzis, range(1, __NBPLATE__ + 1))
+    # results = pool.map_async(plate_analysis_1data, range(1, __NBPLATE__ + 1))
     print(results.get())
     print("1 for sucess, 0 for fail")
