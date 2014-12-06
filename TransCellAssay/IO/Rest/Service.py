@@ -12,14 +12,14 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 import os
-import socket
+# import socket
 import platform
-import time
+# import time
 import webbrowser
 import binascii
-from urllib.request import urlopen, Request
-from urllib.parse import urlencode
-from urllib.error import HTTPError
+# from urllib.request import urlopen, Request
+# from urllib.parse import urlencode
+# from urllib.error import HTTPError
 import requests  # replacement for urllib2 (2-3 times faster)
 from requests.models import Response
 
@@ -35,7 +35,7 @@ class ServiceError(Exception):
         return repr(self.value)
 
 
-class Service():
+class Service(object):
     """
     Base class for REST/WSDL class
     """
@@ -54,7 +54,6 @@ class Service():
 
     def __init__(self, name, url=None, verbose=True, request_per_sec=3):
         """
-
         :param name: a name for this service
         :param url: its URL
         :param verbose: prints informative message
@@ -121,7 +120,9 @@ class Service():
         webbrowser.open(url + str(id))
 
     def save_str_to_image(self, data, filename):
-        """Save string object into a file converting into binary"""
+        """
+        Save string object into a file converting into binary
+        """
         with open(filename, 'wb') as f:
             try:
                 # python3
@@ -132,10 +133,8 @@ class Service():
 
 
 # class WSDLService(Service):
-# """Class dedicated to the web services based on WSDL/SOAP protocol.
-#
-#     .. seealso:: :class:`RESTService`, :class:`Service`
-#
+# """
+#     Class dedicated to the web services based on WSDL/SOAP protocol.
 #     """
 #     _service = "WSDL"
 #
@@ -222,157 +221,157 @@ class Service():
 #     TIMEOUT = property(_get_timeout, _set_timeout)
 
 
-class RESTBase(Service):
-    _service = "REST"
-
-    def __init__(self, name, url=None, verbose=True):
-        super(RESTBase, self).__init__(name, url, verbose=verbose)
-        print("Initialising %s service (REST)" % self.name)
-        self.last_response = None
-
-    def http_get(self):
-        raise NotImplementedError
-
-    def http_post(self):
-        raise NotImplementedError
-
-    def http_put(self):
-        raise NotImplementedError
-
-    def http_delete(self):
-        raise NotImplementedError
-
-
-class RESTService(RESTBase):
-    """
-    Class to manipulate REST Service
-    """
-
-    def __init__(self, name, url=None, verbose=True):
-        """
-        :param name: a name like Kegg Reactome
-        :param url: url of rest service
-        :param verbose: verbose
-        """
-        super(RESTService, self).__init__(name, url, verbose=verbose)
-        self.verbose = verbose
-        if self.verbose:
-            print("\033[0;33m[WARNING]\033[0m Use REST class instead of RESTService")
-        self.trials = 5
-        self.timesleep = 1
-
-    def getUserAgent(self):
-        try:
-            import urllib
-
-            urllib_agent = 'Python-urllib/%s' % urllib.request.__version__
-        except Exception:
-            raise Exception
-        ClientVersion = ''
-        user_agent = 'EBI-Sample-CLient/%s (%s; Python %s; %s) %s' % (ClientVersion, os.path.basename(__file__, ),
-                                                                      platform.python_version(), platform.system(),
-                                                                      urllib_agent)
-        return user_agent
-
-    def request(self, path, format='xml', baseUrl=True):
-        """
-        Send a request via an url to the web service
-        :param path: the request will be formed as self.url+/+path
-        :param format:
-        :param baseUrl:
-        :return: res
-        """
-        for i in range(self.trials):
-            res = self._get_requests(path, format=format, baseUrl=baseUrl)
-            if res is not None:
-                break
-            print("\033[0;33m[WARNING]\033[0m Request seemed to have failed.")
-            if i != self.trials - 1:
-                print("Trying again {}/{}".format(i + 1, self.trials))
-            time.sleep(self.timesleep)
-        return res
-
-    def http_get(self, path, format='xml', baseUrl=True):
-        return self.request(path, format=format, baseUrl=baseUrl)
-
-    def _get_requests(self, path, format='xml', baseUrl=True):
-        if path.startswith(self.url):
-            url = path
-        elif baseUrl is False:
-            url = path
-        else:
-            url = self.url + "/" + path
-
-        if self.verbose:
-            print("REST: %s request begins" % self.name)
-            print("--Fetching url=%s" % url)
-
-        if len(url) > 2000:
-            raise ValueError("URL length (%s) exceeds 2000. Please use a different URL" % len(url))
-
-        try:
-            res = urlopen(url).read()
-            if format == 'xml':
-                if self.easyXMLConversion:
-                    try:
-                        res = self.easyXML(res)
-                    except Exception as e:
-                        print(e)
-            self.last_response = res
-            return res
-        except socket.timeout:
-            raise socket.timeout(
-                "Time out. consider increasing the timeout attribute (currently set to {})".format(self.timeout))
-
-    def requestPost(self, requestUrl, params, extra=None):
-        """
-        request with a post method
-        :param requestUrl: the entire URL to request
-        :param params: the dictionary of param/value pairs
-        :param extra:an additional string to add after the params if
-            needed. Could be usefule if a parameter/value can not be added to the
-            dictionary. For instance is a parameter has several values
-            Solved in requests module.
-        note:: this is a HTTP POST request
-        note:: use only by ::`ncbiblast` service so far.
-        """
-        requestData = urlencode(params)
-        print(requestData)
-        if extra is not None:
-            requestData += extra
-        # concatenate the two parts
-        # Errors are indicated by HTTP status code.
-        try:
-            # set HTTP User-agent
-            user_agent = self.getUserAgent()
-            http_headers = {'User-Agent': user_agent}
-            print(requestUrl)
-            req = Request(requestUrl, None, http_headers)
-            # Make submission (HTTP, POST)
-            print(req)
-            reqH = urlopen(req, requestData)
-            jobId = reqH.read()
-            reqH.close()
-        except HTTPError as e:
-            print(e)
-            raise
-        return jobId
-
-    def urlencode(self, params):
-        """
-        Returns a string compatible with a url request
-        The pair of key/value are converted into a single string by concatenated
-        the "&key=value" string for each key/value in the dictionary.
-        :param params: keys are parameters
-        :return:
-        """
-        if isinstance(params, dict) is False:
-            raise TypeError("Params must be a dictionary.")
-        postData = urlencode(params)
-        return postData
+# class RESTBase(Service):
+# _service = "REST"
+#
+#     def __init__(self, name, url=None, verbose=True):
+#         super(RESTBase, self).__init__(name, url, verbose=verbose)
+#         print("Initialising %s service (REST)" % self.name)
+#         self.last_response = None
+#
+#     def http_get(self):
+#         raise NotImplementedError
+#
+#     def http_post(self):
+#         raise NotImplementedError
+#
+#     def http_put(self):
+#         raise NotImplementedError
+#
+#     def http_delete(self):
+#         raise NotImplementedError
 
 
-class REST(RESTBase):
+# class RESTService(RESTBase):
+# """
+#     Class to manipulate REST Service
+#     """
+#
+#     def __init__(self, name, url=None, verbose=True):
+#         """
+#         :param name: a name like Kegg Reactome
+#         :param url: url of rest service
+#         :param verbose: verbose
+#         """
+#         super(RESTService, self).__init__(name, url, verbose=verbose)
+#         self.verbose = verbose
+#         if self.verbose:
+#             print("\033[0;33m[WARNING]\033[0m Use REST class instead of RESTService")
+#         self.trials = 5
+#         self.timesleep = 1
+#
+#     def getUserAgent(self):
+#         try:
+#             import urllib
+#
+#             urllib_agent = 'Python-urllib/%s' % urllib.request.__version__
+#         except Exception:
+#             raise Exception
+#         ClientVersion = ''
+#         user_agent = 'EBI-Sample-CLient/%s (%s; Python %s; %s) %s' % (ClientVersion, os.path.basename(__file__, ),
+#                                                                       platform.python_version(), platform.system(),
+#                                                                       urllib_agent)
+#         return user_agent
+#
+#     def request(self, path, format='xml', baseUrl=True):
+#         """
+#         Send a request via an url to the web service
+#         :param path: the request will be formed as self.url+/+path
+#         :param format:
+#         :param baseUrl:
+#         :return: res
+#         """
+#         for i in range(self.trials):
+#             res = self._get_requests(path, format=format, baseUrl=baseUrl)
+#             if res is not None:
+#                 break
+#             print("\033[0;33m[WARNING]\033[0m Request seemed to have failed.")
+#             if i != self.trials - 1:
+#                 print("Trying again {}/{}".format(i + 1, self.trials))
+#             time.sleep(self.timesleep)
+#         return res
+#
+#     def http_get(self, path, format='xml', baseUrl=True):
+#         return self.request(path, format=format, baseUrl=baseUrl)
+#
+#     def _get_requests(self, path, format='xml', baseUrl=True):
+#         if path.startswith(self.url):
+#             url = path
+#         elif baseUrl is False:
+#             url = path
+#         else:
+#             url = self.url + "/" + path
+#
+#         if self.verbose:
+#             print("REST: %s request begins" % self.name)
+#             print("--Fetching url=%s" % url)
+#
+#         if len(url) > 2000:
+#             raise ValueError("URL length (%s) exceeds 2000. Please use a different URL" % len(url))
+#
+#         try:
+#             res = urlopen(url).read()
+#             if format == 'xml':
+#                 if self.easyXMLConversion:
+#                     try:
+#                         res = self.easyXML(res)
+#                     except Exception as e:
+#                         print(e)
+#             self.last_response = res
+#             return res
+#         except socket.timeout:
+#             raise socket.timeout(
+#                 "Time out. consider increasing the timeout attribute (currently set to {})".format(self.timeout))
+#
+#     def requestPost(self, requestUrl, params, extra=None):
+#         """
+#         request with a post method
+#         :param requestUrl: the entire URL to request
+#         :param params: the dictionary of param/value pairs
+#         :param extra:an additional string to add after the params if
+#             needed. Could be usefule if a parameter/value can not be added to the
+#             dictionary. For instance is a parameter has several values
+#             Solved in requests module.
+#         note:: this is a HTTP POST request
+#         note:: use only by ::`ncbiblast` service so far.
+#         """
+#         requestData = urlencode(params)
+#         print(requestData)
+#         if extra is not None:
+#             requestData += extra
+#         # concatenate the two parts
+#         # Errors are indicated by HTTP status code.
+#         try:
+#             # set HTTP User-agent
+#             user_agent = self.getUserAgent()
+#             http_headers = {'User-Agent': user_agent}
+#             print(requestUrl)
+#             req = Request(requestUrl, None, http_headers)
+#             # Make submission (HTTP, POST)
+#             print(req)
+#             reqH = urlopen(req, requestData)
+#             jobId = reqH.read()
+#             reqH.close()
+#         except HTTPError as e:
+#             print(e)
+#             raise
+#         return jobId
+#
+#     def urlencode(self, params):
+#         """
+#         Returns a string compatible with a url request
+#         The pair of key/value are converted into a single string by concatenated
+#         the "&key=value" string for each key/value in the dictionary.
+#         :param params: keys are parameters
+#         :return:
+#         """
+#         if isinstance(params, dict) is False:
+#             raise TypeError("Params must be a dictionary.")
+#         postData = urlencode(params)
+#         return postData
+
+
+class REST(Service):
     """
     The ideas (sync/async) and code using requests were inspired from the chembl
     python wrapper but significantly changed.
@@ -406,8 +405,10 @@ class REST(RESTBase):
 
     def __init__(self, name, url=None, verbose=True):
         super(REST, self).__init__(name, url, verbose=verbose)
+        print("Initialising %s service (REST)" % self.name)
         self._session = None
         self.FAST_SAVE = True
+        self.last_response = None
 
     def _get_session(self):
         if self._session is None:
@@ -535,7 +536,7 @@ class REST(RESTBase):
             kargs['timeout'] = self.timeout
             # res = self.session.get(url, **{'timeout':self.timeout, 'params':params})
             if DEBUG:
-                print(url)
+                print("Target URL :%s" % url)
             res = self.session.get(url, **kargs)
 
             self.last_response = res
@@ -620,6 +621,12 @@ class REST(RESTBase):
         print(self.last_response.content)
         print(self.last_response.reason)
         print(self.last_response.status_code)
+
+    def http_put(self):
+        raise NotImplementedError
+
+    def http_delete(self):
+        raise NotImplementedError
 
 
 def tolist(data, verbose=True):
