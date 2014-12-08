@@ -110,29 +110,13 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
             neg_position = plate.PlateMap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
-            # search neg control value
-            # for i in range(ssmd.shape[0]):
-            # for j in range(ssmd.shape[1]):
-            #         for key, value in plate.replicat.items():
-            #             if value.skip_well is not None:
-            #                 neg_position = [x for x in neg_position if (x not in value.skip_well)]
-            #             try:
-            #                 if sec_data:
-            #                     well_value = value.SECData[i][j]
-            #                 else:
-            #                     well_value = value.Data[i][j]
-            #             except Exception:
-            #                 raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
-            #             # check if neg value
-            #             for neg_i in neg_position:
-            #                 if neg_i[0] == i:
-            #                     if neg_i[1] == j:
-            #                         neg_value.append(well_value)
-            # ALT Version
+
             for key, value in plate.replicat.items():
                 if value.skip_well is not None:
-                    neg_position = [x for x in neg_position if (x not in value.skip_well)]
-                for neg in neg_position:
+                    valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
+                else:
+                    valid_neg_position = neg_position
+                for neg in valid_neg_position:
                     try:
                         if sec_data:
                             neg_value.append(value.SECData[neg[0]][neg[1]])
@@ -217,28 +201,13 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
             neg_position = plate.PlateMap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
-            # search neg control value
-            # for i in range(ssmd.shape[0]):
-            # for j in range(ssmd.shape[1]):
-            #         for key, value in plate.replicat.items():
-            #             if value.skip_well is not None:
-            #                 neg_position = [x for x in neg_position if (x not in value.skip_well)]
-            #             try:
-            #                 if sec_data:
-            #                     well_value = value.SECData[i][j]
-            #                 else:
-            #                     well_value = value.Data[i][j]
-            #             except Exception:
-            #                 raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
-            #             # check if neg value
-            #             for neg_i in neg_position:
-            #                 if neg_i[0] == i:
-            #                     if neg_i[1] == j:
-            #                         neg_value.append(well_value)
+
             for key, value in plate.replicat.items():
                 if value.skip_well is not None:
-                    neg_position = [x for x in neg_position if (x not in value.skip_well)]
-                for neg in neg_position:
+                    valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
+                else:
+                    valid_neg_position = neg_position
+                for neg in valid_neg_position:
                     try:
                         if sec_data:
                             neg_value.append(value.SECData[neg[0]][neg[1]])
@@ -320,9 +289,11 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                 raise Exception("Not Well for control")
 
             # search neg control value
-            def _search_neg_data(replicat, Neg_Pos):
+            def _search_neg_data(replicat, neg_pos):
                 if value.skip_well is not None:
-                    Neg_Pos = [x for x in Neg_Pos if (x not in value.skip_well)]
+                    valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
+                else:
+                    valid_neg_pos = neg_pos
                 neg_value = []
                 for i in range(ssmd.shape[0]):
                     for j in range(ssmd.shape[1]):
@@ -334,7 +305,7 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         # check if neg value
-                        for neg_i in Neg_Pos:
+                        for neg_i in valid_neg_pos:
                             if neg_i[0] == i:
                                 if neg_i[1] == j:
                                     neg_value.append(well_value)
@@ -405,9 +376,11 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                 raise Exception("Not Well for control")
 
             # search neg control value
-            def _search_neg_data(replicat, Neg_Pos):
+            def _search_neg_data(replicat, neg_pos):
                 if value.skip_well is not None:
-                    Neg_Pos = [x for x in Neg_Pos if (x not in value.skip_well)]
+                    valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
+                else:
+                    valid_neg_pos = neg_pos
                 neg_value = []
                 for i in range(ssmdr.shape[0]):
                     for j in range(ssmdr.shape[1]):
@@ -419,7 +392,7 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         # check if neg value
-                        for neg_i in Neg_Pos:
+                        for neg_i in valid_neg_pos:
                             if neg_i[0] == i:
                                 if neg_i[1] == j:
                                     neg_value.append(well_value)
@@ -489,8 +462,10 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
 
             neg_well = ps.get_coord(neg_control)
             if plate.skip_well is not None:
-                neg_well = [x for x in neg_well if (x not in plate.skip_well)]
-            if not neg_well:
+                valid_neg_pos = [x for x in neg_well if (x not in plate.skip_well)]
+            else:
+                valid_neg_pos = neg_well
+            if not valid_neg_pos:
                 raise Exception("Not Well for control")
             neg_data = []
             data = None
@@ -504,7 +479,7 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             if data is None:
                 raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
             # grab all neg data
-            for neg_pos in neg_well:
+            for neg_pos in valid_neg_pos:
                 neg_data.append(data[neg_pos[0]][neg_pos[1]])
             # check if len is sufficient
             if len(neg_data) < 2:
@@ -561,8 +536,10 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
 
             neg_well = ps.get_coord(neg_control)
             if plate.skip_well is not None:
-                neg_well = [x for x in neg_well if (x not in plate.skip_well)]
-            if not neg_well:
+                valid_neg_pos = [x for x in neg_well if (x not in plate.skip_well)]
+            else:
+                valid_neg_pos = neg_well
+            if not valid_neg_pos:
                 raise Exception("Not Well for control")
             neg_data = []
             data = None
@@ -576,7 +553,7 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             if data is None:
                 raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
             # grab all neg data
-            for neg_pos in neg_well:
+            for neg_pos in valid_neg_pos:
                 neg_data.append(data[neg_pos[0]][neg_pos[1]])
             # check if len is sufficient
             if len(neg_data) < 2:

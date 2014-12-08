@@ -90,28 +90,13 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
             neg_position = plate.PlateMap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
-            # search neg control value
-            # for i in range(ttest_score.shape[0]):
-            # for j in range(ttest_score.shape[1]):
-            #         for key, value in plate.replicat.items():
-            #             well_value = 0
-            #             try:
-            #                 if sec_data:
-            #                     well_value = value.SECData[i][j]
-            #                 else:
-            #                     well_value = value.Data[i][j]
-            #             except Exception:
-            #                 raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
-            #             # check if neg value
-            #             for neg_i in neg_position:
-            #                 if neg_i[0] == i:
-            #                     if neg_i[1] == j:
-            #                         neg_value.append(well_value)
-            # ALT Version
+
             for key, value in plate.replicat.items():
                 if value.skip_well is not None:
-                    neg_position = [x for x in neg_position if (x not in value.skip_well)]
-                for neg in neg_position:
+                    valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
+                else:
+                    valid_neg_position = neg_position
+                for neg in valid_neg_position:
                     try:
                         if sec_data:
                             neg_value.append(value.SECData[neg[0]][neg[1]])
@@ -193,7 +178,9 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
             def _search_neg_data(replicat, Neg_Pos):
                 neg_value = []
                 if value.skip_well is not None:
-                    Neg_Pos = [x for x in Neg_Pos if (x not in value.skip_well)]
+                    valid_neg_pos = [x for x in Neg_Pos if (x not in value.skip_well)]
+                else:
+                    valid_neg_pos = Neg_Pos
                 try:
                     for i in range(ttest_score.shape[0]):
                         for j in range(ttest_score.shape[1]):
@@ -205,7 +192,7 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                             except Exception:
                                 raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                             # check if neg value
-                            for neg_i in Neg_Pos:
+                            for neg_i in valid_neg_pos:
                                 if neg_i[0] == i:
                                     if neg_i[1] == j:
                                         neg_value.append(well_value)
