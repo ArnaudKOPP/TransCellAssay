@@ -122,20 +122,22 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
     :param pos_well: positive control well
     :param sedt: systematic error detection test
     :param sec_data: use sec data or not for sedt
-    :param dirpath: directory path for saving data
     :param verbose: print or not quality data
     :return:return numpy array with qc
     """
     try:
+        valid_neg_well = [x for x in neg_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
+        valid_pos_well = [x for x in pos_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
+
         if not isinstance(replicat, TCA.Core.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m Need A Replicat")
         else:
             if replicat.RawData is not None:
-                negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=neg_well)
-                posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=pos_well)
+                negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_neg_well)
+                posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_pos_well)
             else:
-                negdata = _get_data_control_array(replicat.Data, c_ref=neg_well)
-                posdata = _get_data_control_array(replicat.Data, c_ref=pos_well)
+                negdata = _get_data_control_array(replicat.Data, c_ref=valid_neg_well)
+                posdata = _get_data_control_array(replicat.Data, c_ref=valid_pos_well)
 
             qc_data_array = pd.DataFrame(np.zeros(1, dtype=[('Replicat ID', str), ('Neg Mean', float), ('Neg SD', float)
                 , ('Pos Mean', float), ('Pos SD', float), ('AVR', float),
