@@ -201,7 +201,9 @@ class Replicat(object):
         try:
             data = None
             datagp = self.RawData.groupby("Well")
-            for i in wells:
+            check_well = self.RawData.Well.unique()
+            gen = (i for i in wells if i in check_well)
+            for i in gen:
                 if feature is None:
                     if data is None:
                         data = datagp.get_group(i)

@@ -126,23 +126,33 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
     :return:return numpy array with qc
     """
     try:
-        valid_neg_well = [x for x in neg_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
-        valid_pos_well = [x for x in pos_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
+        if replicat.skip_well is not None:
+            valid_neg_well = [x for x in neg_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
+            valid_pos_well = [x for x in pos_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
+        else:
+            valid_neg_well = neg_well
+            valid_pos_well = pos_well
 
         if not isinstance(replicat, TCA.Core.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m Need A Replicat")
         else:
             if replicat.RawData is not None:
+                # # Check if well exist in raw data for avoiding error
+                unique_well = replicat.RawData.Well.unique()
+                valid_pos_well = (i for i in valid_pos_well if i in unique_well)
+                valid_neg_well = (i for i in valid_neg_well if i in unique_well)
+
                 negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_neg_well)
                 posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_pos_well)
             else:
                 negdata = _get_data_control_array(replicat.Data, c_ref=valid_neg_well)
                 posdata = _get_data_control_array(replicat.Data, c_ref=valid_pos_well)
 
-            qc_data_array = pd.DataFrame(np.zeros(1, dtype=[('Replicat ID', str), ('Neg Mean', float), ('Neg SD', float)
-                , ('Pos Mean', float), ('Pos SD', float), ('AVR', float),
-                                                            ('Z*Factor', float), ('ZFactor', float), ('SSMD', float),
-                                                            ('CVD', float)]))
+            qc_data_array = pd.DataFrame(
+                np.zeros(1, dtype=[('Replicat ID', str), ('Neg Mean', float), ('Neg SD', float),
+                                   ('Pos Mean', float), ('Pos SD', float), ('AVR', float),
+                                   ('Z*Factor', float), ('ZFactor', float), ('SSMD', float),
+                                   ('CVD', float)]))
 
             if sedt:
                 if sec_data:
@@ -203,7 +213,6 @@ def _get_data_control(data, feature, c_ref):
             raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
         else:
             datax = pd.DataFrame()
-
             datagp = data.groupby('Well')
             for i in c_ref:
                 if datax.empty:
