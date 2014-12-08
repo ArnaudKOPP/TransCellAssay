@@ -181,6 +181,37 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def check_data_consistency(self):
+        """
+        Check if all replicat have same well
+        :return: 0 if error, 1 if data good
+        """
+        try:
+            from itertools import chain
+
+            # Collect the input lists for use with chain below
+            all_lists = []
+            name = []
+            for key, value in self.replicat.items():
+                all_lists.append(list(value.RawData.Well.unique()))
+                name.append(key)
+
+            for A, B in zip(all_lists, name):
+                # Combine all the lists into one
+                super_list = list(chain(*all_lists))
+                # Get the unique items remaining in the combined list
+                super_set = set(super_list)
+                # Compute the unique items in this list and print them
+                uniques = super_set - set(A)
+                if len(uniques) > 0:
+                    print("\033[0;33m[WARNING]\033[0m Missing Well in Raw Data replicat ", B, " : ", sorted(uniques))
+                    print("---> Missing Value can insert ERROR in further Analyzis")
+                    return 0
+
+            return 1
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
     def add_info(self, key, value):
         """
         Add Info into the dict
