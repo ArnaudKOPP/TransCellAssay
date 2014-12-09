@@ -111,8 +111,7 @@ class GOTerm:
 
     def __str__(self):
         obsolete = "obsolete" if self.is_obsolete else ""
-        return "%s\tlevel-%02d\t%s [%s] %s" % (self.id, self.level, self.name,
-                                               self.namespace, obsolete)
+        return "%s\tlevel-%02d\t%s [%s] %s" % (self.id, self.level, self.name, self.namespace, obsolete)
 
     def __repr__(self):
         return "GOTerm('%s')" % (self.id)
@@ -298,7 +297,8 @@ class Association():
 
 
 class GOEnrichmentRecord(object):
-    """Represents one result (from a single GOTerm) in the GOEnrichmentStudy
+    """
+    Represents one result (from a single GOTerm) in the GOEnrichmentStudy
     """
     _fields = "id ratio_in_study ratio_in_pop p_uncorrected description ".split()
 
@@ -401,7 +401,9 @@ class EnrichmentStudy():
         """
         size = len(self.results)
         dataframe = np.zeros(size, dtype=[('ID', object), ('ratio_in_study', object), ('ratio_in_pop', object),
-                                          ('Fischer Test (OddsRation/P-value)', object), ('Description', object)])
+                                          ('Fischer Test OddsRation', object), ('Fischer Test P-value', object),
+                                          ('FDR (BH)', object), ('BY', object), ('holm', object), ('hochberg', object),
+                                          ('Description', object)])
         i = 0
         # # pretty ugly -> need to be more pythonic !!
         for record in self.results:
@@ -409,13 +411,20 @@ class EnrichmentStudy():
             dataframe["ID"][i] = record.id
             dataframe["ratio_in_study"][i] = "%d/%d" % record.ratio_in_study
             dataframe["ratio_in_pop"][i] = "%d/%d" % record.ratio_in_pop
-            dataframe["Fischer Test (OddsRation/P-value)"][i] = "%.3g/%.3g" % record.p_uncorrected
+            dataframe["Fischer Test OddsRation"][i] = "%.3g" % record.p_uncorrected[0]
+            dataframe["Fischer Test P-value"][i] = "%.3g" % record.p_uncorrected[1]
             dataframe["Description"][i] = record.description
             i += 1
+        dataframe["holm"] = adjustPValues(pvalues=dataframe["Fischer Test P-value"], method='holm')
+        dataframe["hochberg"] = adjustPValues(pvalues=dataframe["Fischer Test P-value"], method='hochberg')
+        dataframe["FDR (BH)"] = adjustPValues(pvalues=dataframe["Fischer Test P-value"])
+        dataframe["BY"] = adjustPValues(pvalues=dataframe["Fischer Test P-value"], method='BY')
+
         return dataframe
 
     def count_terms(self, geneset, assoc, go_tree):
-        """count the number of terms in the study group
+        """
+        count the number of terms in the study group
         """
         term_cnt = collections.defaultdict(int)
         for gene in geneset:

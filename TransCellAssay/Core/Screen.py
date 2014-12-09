@@ -120,11 +120,11 @@ class Screen(object):
         """
         try:
             if algorithm == 'WellCorrection':
-                return 0
+                raise NotImplementedError('Use a lot of memory, for the moment this function is not activated')
             elif algorithm == 'BackgroundCorrection':
-                return 0
+                raise NotImplementedError('Use a lot of memory, for the moment this function is not activated')
             elif algorithm == 'BackgroundSubstraction':
-                return 0
+                raise NotImplementedError('Use a lot of memory, for the moment this function is not activated')
             else:
                 if self.isSpatialNormalized:
                     raise Exception("\033[0;33m[WARNING]\033[0m Systematics error have already been removed")
@@ -143,6 +143,16 @@ class Screen(object):
         """
         try:
             return len(self.allPlate)
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def __sub__(self, to_rm):
+        """
+        Remove plate from screen, use - operator
+        :param to_rm:
+        """
+        try:
+            del self.allPlate[to_rm]
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

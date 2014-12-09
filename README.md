@@ -7,14 +7,14 @@ Data input is designed to be Single Cell data but 1data/well will work also.
 ##HOW TO USE IT
 
 This package has been designed with the aim to facilitate the development of data analysis pipeline, so programming skills are needed for the moment. 
-This package was developped and tested on python 3.4.
+This package was developped and tested on python 3.4. It can replace CellHTS2 or similar software
 
 ### What TCA do :
 
 * Controls based and non-controls based normalization, logarithmic transformation
 * Systematic Error Detection Test
 * Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and basic background Correction/Well Correction
-* Quality Control 
+* Quality Control for control, data consistency across replicat (check if data are missing)
 * Scoring (SSMD, T-Statistics,...)
 * Go enrichment (still in development)
 
@@ -46,7 +46,6 @@ This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons
 
 ###Performance enhancement
 
-* Refactoring Plate Analysis (cell count, ...) to use more numpy ndarray
 * Using Cython for certain part of work ??
 
 ### BUG

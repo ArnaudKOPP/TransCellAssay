@@ -174,16 +174,17 @@ class Plate(object):
 
     def get_skip_well(self):
         """
-        Set the well to skip in neg or pos control
+        get the well to skip in neg or pos control
         """
         try:
             return self.skip_well
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def check_data_consistency(self):
+    def check_data_consistency(self, remove=False):
         """
         Check if all replicat have same well
+        :param remove: remove or not replicat with data error
         :return: 0 if error, 1 if data good
         """
         try:
@@ -204,8 +205,14 @@ class Plate(object):
                 # Compute the unique items in this list and print them
                 uniques = super_set - set(A)
                 if len(uniques) > 0:
-                    print("\033[0;33m[WARNING]\033[0m Missing Well in Raw Data replicat ", B, " : ", sorted(uniques))
-                    print("---> Missing Value can insert ERROR in further Analyzis")
+                    print("\033[0;33m !!!!! [WARNING] !!!!! \033[0m")
+                    print("Missing Well in Raw Data replicat ", B, " : ", sorted(uniques))
+                    print("Missing Value can insert ERROR in further Analyzis")
+                    if remove:
+                        del self.replicat[B]
+                        print(B, "Will be removed ---->")
+                    else:
+                        print("----> Can be removed with appropriate parameters : remove True or False")
                     return 0
 
             return 1
@@ -460,9 +467,19 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def __sub__(self, to_rm):
+        """
+        Remove replicat from plate, use - operator
+        :param to_rm:
+        """
+        try:
+            del self.replicat[to_rm]
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
     def __add__(self, to_add):
         """
-        Add object object, use + operator
+        Add replicat to plate, use + operator
         :param to_add:
         """
         try:
