@@ -2,10 +2,6 @@
 
 This Python packages is for analysis of Transfected Cell Assay in High Throughput Screening environment.   
 Data input is designed to be Single Cell data but 1data/well will work also.
-
-
-##HOW TO USE IT
-
 This package has been designed with the aim to facilitate the development of data analysis pipeline, so programming skills are needed for the moment. 
 This package was developped and tested on python 3.4. It can replace CellHTS2 or similar software
 
@@ -42,18 +38,7 @@ This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons
 © 2014 KOPP Arnaud All Rights Reserved
 
 
-## Next
-
-###Performance enhancement
-
-* Using Cython for certain part of work ??
-
-### BUG
-
-* SubPlate and SubReplicat are still very buggy
-* Better Import system ???
-
-### Principale Idea to implement
+##Principale Idea to implement
 
 * Machine Learning like clustering or classification of hit
 * Bayesian Inference (FDR...)
