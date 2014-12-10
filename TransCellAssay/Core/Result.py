@@ -34,7 +34,7 @@ class Result(object):
         if size is None:
             size = 384
         self.result_array = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', float),
-                                                  ('SDCellsCunt', float), ('PositiveCells', float),
+                                                  ('SDCellsCount', float), ('PositiveCells', float),
                                                   ('SDPositiveCells', float),
                                                   ('Mean', float), ('Std', float), ('Median', float), ('Stdm', float),
                                                   ('Viability', float), ('Toxicity', float)])
