@@ -16,6 +16,7 @@ import numpy as np
 import scipy.stats
 import pandas as pd
 import urllib.request
+from TransCellAssay.Utils.utils import reporthook
 
 typedef_tag, term_tag = "[Typedef]", "[Term]"
 
@@ -49,7 +50,7 @@ class OBOreader():
             self._handle = open(obo_file)
         except IOError:
             urllib.request.urlretrieve(
-                "http://www.berkeleybop.org/ontologies/go/go.obo", "go.obo")
+                "http://www.berkeleybop.org/ontologies/go/go.obo", "go.obo", reporthook)
             self._handle = open(obo_file)
 
     def __iter__(self):

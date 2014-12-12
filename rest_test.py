@@ -19,17 +19,23 @@ from TransCellAssay.IO.Rest.Biogrid import Biogrid
 
 b = Biogrid()
 print(b.get_biogrid_version())
-print(b._supported_organism_list())
-print(b.SupportedOrganismId)
-print(b.SupportedOrganismId["9606"])
-res = b.interaction(geneList="31623", searchbiogridids="true", includeInteractors="true", caca="grzefg")
-print(res)
+# print(b._supported_organism_list())
+# print(b.SupportedOrganismId)
+# print(b.SupportedOrganismId["9606"])
+# res = b.interaction(geneList="31623", searchbiogridids="true", includeInteractors="true", caca="grzefg")
+# print(res)
 
-import pandas as pd
-from io import StringIO
+# import pandas as pd
+# from io import StringIO
 
-data = pd.read_table(StringIO(res), header=None)
-print(data)
+# data = pd.read_table(StringIO(res), header=None)
+# print(data)
+
+# import pandas as pd
+# from io import StringIO
+#
+# data = pd.read_table(StringIO(res), header=None)
+# print(data)
 
 
 # #### UNIPROT REST TEST
@@ -62,16 +68,17 @@ print(data)
 # target = res['target']
 # print(target['organism'])
 
-# from TransCellAssay.IO.Rest.KEGG import KEGG, KEGGParser
-# k = KEGG()
-# print(k.Tnumber2code("T01001"))
-# print(k.code2Tnumber("hsa"))
-# print(k.isOrganism("hsa"))
+from TransCellAssay.IO.Rest.KEGG import KEGG, KEGGParser
 
-# print(k.info())
-# print(k.info("hsa"))
-# print(k.info("T01001"))  # same as above
-# print(k.info("pathway"))
+k = KEGG()
+print(k.Tnumber2code("T01001"))
+print(k.code2Tnumber("hsa"))
+print(k.isOrganism("hsa"))
+
+print(k.info())
+print(k.info("hsa"))
+print(k.info("T01001"))  # same as above
+print(k.info("pathway"))
 
 # k.list('organism')
 # print(k.organismIds)
