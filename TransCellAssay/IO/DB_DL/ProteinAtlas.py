@@ -11,3 +11,10 @@ __version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
+
+
+class ProteinAtlas(object):
+    """
+    Class for parsing data from protein atlas
+    """
+    raise NotImplementedError

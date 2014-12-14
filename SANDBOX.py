@@ -191,9 +191,9 @@ from TransCellAssay.IO.Rest.Biogrid import Biogrid
 
 b = Biogrid()
 print(b.get_biogrid_version())
-# print(b._supported_organism_list())
+print(b._supported_organism_list())
 # print(b.SupportedOrganismId)
-# print(b.SupportedOrganismId["9606"])
+print(b.SupportedOrganismId["9606"])
 # res = b.interaction(geneList="31623", searchbiogridids="true", includeInteractors="true", caca="grzefg")
 # print(res)
 
@@ -240,17 +240,17 @@ print(b.get_biogrid_version())
 # target = res['target']
 # print(target['organism'])
 
-from TransCellAssay.IO.Rest.KEGG import KEGG, KEGGParser
+# from TransCellAssay.IO.Rest.KEGG import KEGG, KEGGParser
 
-k = KEGG()
-print(k.Tnumber2code("T01001"))
-print(k.code2Tnumber("hsa"))
-print(k.isOrganism("hsa"))
+# k = KEGG()
+# print(k.Tnumber2code("T01001"))
+# print(k.code2Tnumber("hsa"))
+# print(k.isOrganism("hsa"))
 
-print(k.info())
-print(k.info("hsa"))
-print(k.info("T01001"))  # same as above
-print(k.info("pathway"))
+# print(k.info())
+# print(k.info("hsa"))
+# print(k.info("T01001"))  # same as above
+# print(k.info("pathway"))
 
 # k.list('organism')
 # print(k.organismIds)

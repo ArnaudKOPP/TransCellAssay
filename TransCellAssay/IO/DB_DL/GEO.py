@@ -11,3 +11,10 @@ __version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
+
+
+class GEO(object):
+    """
+    Class for parsing GEO data file
+    """
+    raise NotImplementedError

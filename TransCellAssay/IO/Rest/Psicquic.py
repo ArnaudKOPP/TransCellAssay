@@ -368,7 +368,7 @@ class PSICQUIC(REST):
     registry_versions = property(_get_registry_version,
                                  doc="returns version of each service")
 
-    def query(self, service, query, output="tab25", version="current", firstResult=None, maxResults=None):
+    def query(self, service, query, output="tab25", firstResult=None, maxResults=None):
         """
         Send a query to a specific database
 
