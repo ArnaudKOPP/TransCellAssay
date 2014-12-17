@@ -1,7 +1,8 @@
 """
 GEO File Parser
 
-http://www.proteinatlas.org/about/download
+http://www.ncbi.nlm.nih.gov/geo/
+ftp://ftp.ncbi.nih.gov/pub/geo/DATA/SOFT/GDS/
 """
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -17,4 +18,14 @@ class GEO(object):
     """
     Class for parsing GEO data file
     """
-    raise NotImplementedError
+
+    def __init__(self):
+        raise NotImplementedError
+
+    @classmethod
+    def download_data(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def init_db(cls):
+        raise NotImplementedError

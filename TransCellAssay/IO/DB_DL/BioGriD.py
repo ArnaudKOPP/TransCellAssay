@@ -15,21 +15,11 @@ import sqlite3
 from io import StringIO
 from collections import namedtuple
 from operator import itemgetter
-from TransCellAssay.IO.DB_DL.PPIDataBase import PPIDatabase
-import errno
+import urllib.request
+from TransCellAssay.Utils.utils import reporthook
 
 
-def mkdir_p(path, mode=0o777):
-    try:
-        os.makedirs(path, mode)
-    except OSError as err:
-        if err.errno == errno.EEXIST:
-            pass
-        else:
-            raise
-
-
-class BioGRID(PPIDatabase):
+class BioGRID(object):
     """
     Access `BioGRID <http://thebiogrid.org>`_ PPI data.
     Example ::
@@ -97,7 +87,6 @@ class BioGRID(PPIDatabase):
               'source_database'
     ]
 
-    DOMAIN = "PPI"
     SERVER_FILE = "BIOGRID-ALL.sqlite"
 
     TAXID_MAP = {
@@ -111,16 +100,14 @@ class BioGRID(PPIDatabase):
     }
 
     def __init__(self):
-        self.filename = serverfiles.localpath_download(
-            self.DOMAIN, self.SERVER_FILE)
-
-        # assert version matches
+        self.filename = "BIOGRID-ALL.sqlite"
+        if not os.path.isfile(self.filename):
+            self.download_data()
         self.db = sqlite3.connect(self.filename)
         self.init_db_index()
 
     def organisms(self):
-        cur = self.db.execute("select distinct organism_interactor \n"
-                              "from proteins")
+        cur = self.db.execute("select distinct organism_interactor from proteins")
         return map(itemgetter(0), cur.fetchall())
 
     def ids(self, taxid=None):
@@ -131,15 +118,10 @@ class BioGRID(PPIDatabase):
 
         """
         if taxid is None:
-            cur = self.db.execute("""\
-                select biogrid_id_interactor
-                from proteins""")
+            cur = self.db.execute("""select biogrid_id_interactor from proteins""")
         else:
             cur = self.db.execute("""\
-                select biogrid_id_interactor
-                from proteins
-                where organism_interactor=?""",
-                                  (taxid,))
+                select biogrid_id_interactor from proteins where organism_interactor=?""", (taxid,))
 
         return [t[0] for t in cur.fetchall()]
 
@@ -264,23 +246,27 @@ class BioGRID(PPIDatabase):
         return res
 
     @classmethod
-    def download_data(cls, address):
+    def download_data(cls, address=None):
         """
         Pass the address of the latest BIOGRID-ALL release (in tab2 format).
         """
-        stream = urllib2.urlopen(address)
+        if address is None:
+            address = "http://thebiogrid.org/downloads/archives/Latest%20Release/BIOGRID-ALL-LATEST.tab2.zip"
+        try:
+            urllib.request.urlretrieve(address, filename="BIOGRID-ALL.tab2", reporthook=reporthook)
+        except IOError:
+            raise IOError
+
+        stream = urllib.request.urlopen(address)
         stream = StringIO(stream.read())
         zfile = zipfile.ZipFile(stream)
         # Expecting only one file.
         filename = zfile.namelist()[0]
 
-        filepath = serverfiles.localpath("PPI", "BIOGRID-ALL.tab2")
-        mkdir_p(os.path.dirname(filepath))
-
-        with open(filepath, "wb") as f:
+        with open(filename, "wb") as f:
             shutil.copyfileobj(zfile.open(filename, "r"), f)
 
-        cls.init_db(filepath)
+        cls.init_db(filename)
 
     @classmethod
     def init_db(cls, filepath):

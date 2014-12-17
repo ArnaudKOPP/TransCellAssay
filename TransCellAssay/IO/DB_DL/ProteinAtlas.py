@@ -2,6 +2,8 @@
 Protein Atlas File Parser
 
 http://www.proteinatlas.org/about/download
+
+http://www.proteinatlas.org/download/proteinatlas.xml.gz
 """
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -17,4 +19,14 @@ class ProteinAtlas(object):
     """
     Class for parsing data from protein atlas
     """
-    raise NotImplementedError
+
+    def __init__(self):
+        raise NotImplementedError
+
+    @classmethod
+    def download_data(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def init_db(cls):
+        raise NotImplementedError

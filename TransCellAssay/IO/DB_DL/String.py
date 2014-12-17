@@ -16,10 +16,9 @@ import posixpath
 import textwrap
 from collections import namedtuple
 from operator import itemgetter
-from TransCellAssay.IO.DB_DL.PPIDataBase import PPIDatabase
 
 
-class STRING(PPIDatabase):
+class STRING(object):
     """
     Access `STRING <http://www.string-db.org/>`_ PPI database.
     """

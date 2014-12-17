@@ -3,14 +3,19 @@
 """
 For testing module in actual dev
 """
+import pandas as pd
+import numpy as np
 
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
+np.set_printoptions(linewidth=250)
+np.set_printoptions(suppress=True)
 """
 import os
 import sys
 import time
-import numpy as np
 import TransCellAssay as TCA
-import pandas as pd
 
 time_start = time.time()
 
@@ -51,11 +56,6 @@ time_norm_stop = time.time()
 print("\033[0;32m ->Reading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
 
 time_start_comp = time.time()
-pd.set_option('display.max_rows', 500)
-pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
-np.set_printoptions(linewidth=250)
-np.set_printoptions(suppress=True)
 
 time_norm_start = time.time()
 TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
@@ -163,15 +163,20 @@ import TransCellAssay.Omics.GO_enrichment as GO
 enrichment = GO.EnrichmentStudy(study="/home/arnaud/Desktop/study.txt", pop="/home/arnaud/Desktop/pop.txt",
                                 assoc="/home/arnaud/Desktop/assoc.csv", compare=False)
 result = enrichment.to_dataframe()
-import pandas as pd
 
-pd.set_option('display.width', 1000)
 print(pd.DataFrame(result))
 
 
 time_stop = time.time()
 print("\033[0;32m   ----> TOTAL TIME : {0:f}s\033[0m".format(float(time_stop - time_start)))
 """
+
+# ### Array Express REST TEST
+from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
+
+ae = ArrayExpress()
+res = ae.query_experiments(species="Homo sapiens", ef="organism_part", efv="liver")
+
 
 # #### Psicquic REST TEST
 # from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
@@ -187,17 +192,16 @@ print("\033[0;32m   ----> TOTAL TIME : {0:f}s\033[0m".format(float(time_stop - t
 # print(p.queryAll("ZAP70 AND species:9606"))
 
 # #### Biogrid REST TEST
-from TransCellAssay.IO.Rest.Biogrid import Biogrid
+# from TransCellAssay.IO.Rest.Biogrid import Biogrid
 
-b = Biogrid()
-print(b.get_biogrid_version())
-print(b._supported_organism_list())
+# b = Biogrid()
+# print(b.get_biogrid_version())
+# print(b._supported_organism_list())
 # print(b.SupportedOrganismId)
-print(b.SupportedOrganismId["9606"])
+# print(b.SupportedOrganismId["9606"])
 # res = b.interaction(geneList="31623", searchbiogridids="true", includeInteractors="true", caca="grzefg")
 # print(res)
 
-# import pandas as pd
 # from io import StringIO
 
 # data = pd.read_table(StringIO(res), header=None)
