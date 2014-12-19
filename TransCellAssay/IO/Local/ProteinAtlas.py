@@ -3,7 +3,11 @@ Protein Atlas File Parser
 
 http://www.proteinatlas.org/about/download
 
+All data in xml file ~ 8 gb uncompressed
 http://www.proteinatlas.org/download/proteinatlas.xml.gz
+
+RNA data in csv file
+http://www.proteinatlas.org/download/rna.csv.zip
 """
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
@@ -14,19 +18,40 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
+import os
+import zipfile
+import gzip
+import urllib.request
+import pandas as pd
+from TransCellAssay.Utils.utils import reporthook
+
 
 class ProteinAtlas(object):
     """
     Class for parsing data from protein atlas
     """
+    RNA_DATA = "http://www.proteinatlas.org/download/rna.csv.zip"
+    DATA = "http://www.proteinatlas.org/download/proteinatlas.xml.gz"
 
     def __init__(self):
         raise NotImplementedError
 
     @classmethod
-    def download_data(cls):
-        raise NotImplementedError
-
+    def download_data(cls, force_update=True):
+        try:
+            if force_update or not os.path.isfile(cls.RNA_DATA):
+                urllib.request.urlretrieve(url=cls.RNA_DATA, filename="rna.csv.zip", reporthook=reporthook)
+                with zipfile.ZipFile("rna.csv.zip", 'r') as myzip:
+                    myzip.extractall()
+        except Exception as e:
+            print(e)
+        try:
+            if force_update or not os.path.isfile(cls.DATA):
+                urllib.request.urlretrieve(url=cls.DATA, filename="proteinatlas.xml.gz", reporthook=reporthook)
+                with gzip.GzipFile("proteinatlas.xml.gz", "r") as mygzip:
+                    mygzip.extractall()
+        except Exception as e:
+            print(e)
     @classmethod
     def init_db(cls):
         raise NotImplementedError
