@@ -14,6 +14,8 @@ import csv
 import sqlite3
 import posixpath
 import textwrap
+import urllib.request
+from TransCellAssay.Utils.utils import reporthook
 from collections import namedtuple
 from operator import itemgetter
 
@@ -48,20 +50,10 @@ class STRING(object):
         - `source`: protein alias source (text)
 
     """
-    DOMAIN = "PPI"
     FILENAME = "string.protein.{taxid}.sqlite"
-    VERSION = "3.0"
 
-    # Mapping from taxonomy.common_taxids() to taxids in STRING.
-
-    TAXID_MAP = {"352472": "44689",  # Dictyostelium discoideum
-                 "562": None,
-                 "2104": "272634",  # Mycoplasma pneumoniae M129
-                 "4530": "39947",  # Oryza sativa Japonica Group
-                 "4754": None,
-                 "8355": None,
-                 "4577": None,
-                 "11103": None}
+    # Homo sapiens and mus musculus default id
+    TAXID_MAP = ("9606", "10090")
 
     def __init__(self, taxid=None, database=None):
         if taxid is not None and database is not None:
@@ -77,13 +69,10 @@ class STRING(object):
                 self.filename = database
                 self.db = sqlite3.connect(database)
         elif taxid is not None and database is None:
-            self.filename = serverfiles.localpath_download(
-                self.DOMAIN, self.FILENAME.format(taxid=taxid)
-            )
+            self.filename = self.FILENAME.format(taxid=taxid)
         elif taxid is None and database is None:
             # Back compatibility
-            self.filename = serverfiles.localpath_download(
-                "PPI", "string-protein.sqlite")
+            self.filename = "string-protein.sqlite"
         else:
             assert False, "Not reachable"
 
@@ -92,14 +81,11 @@ class STRING(object):
 
     @classmethod
     def default_db_filename(cls, taxid):
-        return serverfiles.localpath(
-            cls.DOMAIN, cls.FILENAME.format(taxid=taxid))
+        return cls.FILENAME.format(taxid=taxid)
 
     @classmethod
-    def common_taxids(cls):
-        common = taxonomy.common_taxids()
-        common = [cls.TAXID_MAP.get(id, id) for id in common]
-        return filter(None, common)
+    def defaults_taxids(cls):
+        return cls.TAXID_MAP
 
     def organisms(self):
         """
@@ -227,7 +213,7 @@ class STRING(object):
         Pass the version of the  STRING release e.g. v9.1.
         """
         if taxids is None:
-            taxids = cls.common_taxids()
+            taxids = cls.defaults_taxids()
 
         for taxid in taxids:
             cls.init_db(version, taxid)
@@ -235,7 +221,7 @@ class STRING(object):
     @classmethod
     def init_db(cls, version, taxid, cache_dir=None, dbfilename=None):
         if cache_dir is None:
-            cache_dir = serverfiles.localpath(cls.DOMAIN)
+            cache_dir = os.path.join(os.path.curdir, "TMP")
 
         if dbfilename is None:
             dbfilename = cls.default_db_filename(taxid)
@@ -260,7 +246,7 @@ class STRING(object):
 
         def download(filename, url):
             with open(pjoin(cache_dir, filename + ".tmp"), "wb") as dest:
-                wget(url, dst_obj=dest, progress=True)
+                urllib.request.urlretrieve(url=url, filename=dest, reporthook=reporthook)
 
             shutil.move(pjoin(cache_dir, filename + ".tmp"),
                         pjoin(cache_dir, filename))
@@ -278,11 +264,6 @@ class STRING(object):
         links_file = gzip.GzipFile(fileobj=links_fileobj)
         actions_file = gzip.GzipFile(fileobj=actions_fileobj)
         aliases_file = gzip.GzipFile(fileobj=aliases_fileobj)
-
-        def st_size(filename):
-            return os.stat(pjoin(cache_dir, filename)).st_size
-
-        filesize = st_size(links_filename)
 
         con = sqlite3.connect(dbfilename)
 
@@ -312,8 +293,6 @@ class STRING(object):
                      ORDER BY protein_id1)
             """)
 
-            filesize = st_size(actions_filename)
-
             actions_file.readline()  # read header line
 
             reader = csv.reader(actions_file, delimiter="\t")
@@ -326,7 +305,6 @@ class STRING(object):
             con.executemany("INSERT INTO actions VALUES (?, ?, ?, ?, ?)",
                             read_actions(reader))
 
-            filesize = st_size(aliases_filename)
             aliases_file.readline()  # read header line
 
             reader = csv.reader(aliases_file, delimiter="\t")
@@ -467,18 +445,14 @@ class STRINGDetailed(STRING):
         if taxid is not None and detailed_database is not None:
             raise ValueError("taxid and detailed_database are exclusive")
 
-        db_file = serverfiles.localpath(self.DOMAIN, self.FILENAME)
+        db_file = self.FILENAME
         if taxid is not None and detailed_database is None:
-            detailed_database = serverfiles.localpath_download(
-                self.DOMAIN,
-                self.FILENAME_DETAILED.format(taxid=taxid)
-            )
+            detailed_database = self.FILENAME_DETAILED.format(taxid=taxid)
         elif taxid is None and detailed_database is not None:
             detailed_database = detailed_database
         elif taxid is None and detailed_database is None:
             # Back compatibility
-            detailed_database = serverfiles.localpath_download(
-                "PPI", "string-protein-detailed.sqlite")
+            detailed_database = "string-protein-detailed.sqlite"
 
         self.db_detailed = sqlite3.connect(detailed_database)
         self.db_detailed.execute("ATTACH DATABASE ? as string", (db_file,))
@@ -507,12 +481,9 @@ class STRINGDetailed(STRING):
     @classmethod
     def init_db(cls, version, taxid, cache_dir=None, dbfilename=None):
         if cache_dir is None:
-            cache_dir = serverfiles.localpath(cls.DOMAIN)
+            cache_dir = os.path.join(os.path.curdir, "TMP")
         if dbfilename is None:
-            dbfilename = serverfiles.localpath(
-                cls.DOMAIN,
-                "string-protein-detailed.{taxid}.sqlite".format(taxid=taxid)
-            )
+            dbfilename = "string-protein-detailed.{taxid}.sqlite".format(taxid=taxid)
 
         pjoin = os.path.join
 
@@ -523,7 +494,7 @@ class STRINGDetailed(STRING):
         url = url.format(version=version)
 
         if not os.path.exists(pjoin(cache_dir, filename)):
-            wget(url, cache_dir, progress=True)
+            urllib.request.urlretrieve(url=url, filename=filename, reporthook=reporthook)
 
         links_fileobj = open(pjoin(cache_dir, filename), "rb")
         links_file = gzip.GzipFile(fileobj=links_fileobj)
@@ -584,7 +555,7 @@ class STRINGDetailed(STRING):
     @classmethod
     def download_data(cls, version, taxids=None):
         if taxids is None:
-            taxids = cls.common_taxids()
+            taxids = cls.defaults_taxids()
 
         for taxid in taxids:
             cls.init_db(version, taxid)

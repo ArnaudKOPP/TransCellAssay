@@ -194,7 +194,7 @@ class REST(Service):
 
     TIMEOUT = property(_get_timeout, _set_timeout)
 
-    def _process_get_request(self, url, session, frmt, data=None, **kwargs):
+    def _process_get_request(self, url, session, frmt, **kwargs):
         try:
             res = session.get(url, **kwargs)
             self.last_response = res
@@ -490,9 +490,6 @@ class easyXML(object):
     def __init__(self, data, encoding="utf-8"):
         """
         :param data: an XML document format
-        :param fixing_unicode: use only with HGNC service to fix issue with the
-            XML returned by that particular service. No need to use otherwise.
-            See :class:`~bioservices.hgnc.HGNC` documentation for details.
         :param encoding: default is utf-8 used. Used to fix the HGNC XML only.
 
 
@@ -500,10 +497,6 @@ class easyXML(object):
         have an URL instead, use :class:`readXML`
 
         """
-        # if fixing_unicode:
-        # x = unicodefix.FixingUnicode(data, verbose=False, encoding=encoding)
-        # self.data = x.fixed_string.encode("utf-8")
-        # else:
         self.data = data[:]
 
         try:
@@ -543,7 +536,7 @@ class readXML(easyXML):
     inherits from easyXML
     """
 
-    def __init__(self, filename, fixing_unicode=False, encoding="utf-8"):
+    def __init__(self, filename, encoding="utf-8"):
         url = urlopen(filename, "r")
         self.data = url.read()
-        super(readXML, self).__init__(self.data, fixing_unicode, encoding)
+        super(readXML, self).__init__(self.data, encoding)

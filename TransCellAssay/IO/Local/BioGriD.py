@@ -58,8 +58,6 @@ class BioGRID(object):
          """)
     ]
 
-    VERSION = "2.0"
-
     # All column names in the BioGRID tab2 source table.
     FIELDS = ['biogrid_interaction_id',
               'entrez_gene_interactor_a',
@@ -88,16 +86,6 @@ class BioGRID(object):
     ]
 
     SERVER_FILE = "BIOGRID-ALL.sqlite"
-
-    TAXID_MAP = {
-        "4530": "39947",
-        "4932": "559292",
-        "562": "511145",
-        "5833": "36329",
-        "2104": None,
-        "4754": None,
-        "31033": None
-    }
 
     def __init__(self):
         self.filename = "BIOGRID-ALL.sqlite"

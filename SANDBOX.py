@@ -172,10 +172,10 @@ print("\033[0;32m   ----> TOTAL TIME : {0:f}s\033[0m".format(float(time_stop - t
 """
 
 # ### Array Express REST TEST
-from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
+# from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
 
-ae = ArrayExpress()
-res = ae.query_experiments(species="Homo sapiens", ef="organism_part", efv="liver")
+# ae = ArrayExpress()
+# res = ae.query_experiments(species="Homo sapiens", ef="organism_part", efv="liver")
 
 
 # #### Psicquic REST TEST
