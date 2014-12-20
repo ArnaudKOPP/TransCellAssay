@@ -65,8 +65,6 @@ class Service(object):
         self.url = url
         self.timeout = 30
         self.max_retries = 3
-        self.async_concurrent = 50
-        self.async_threshold = 10
         try:
             if self.url is not None:
                 urlopen(self.url)
@@ -194,15 +192,6 @@ class REST(Service):
 
     TIMEOUT = property(_get_timeout, _set_timeout)
 
-    def _process_get_request(self, url, session, frmt, **kwargs):
-        try:
-            res = session.get(url, **kwargs)
-            self.last_response = res
-            res = self._interpret_returned_request(res, frmt)
-            return res
-        except Exception:
-            return None
-
     def _interpret_returned_request(self, res, frmt):
         # must be a response
         if isinstance(res, Response) is False:
@@ -219,61 +208,24 @@ class REST(Service):
         # finally
         return res.content
 
-    def _apply(self, iterable, fn, *args, **kwargs):
-        return [fn(x, *args, **kwargs) for x in iterable if x is not None]
-
-    def _get_async(self, keys, frmt='json', params={}):
-        # does not work under pyhon3 so local import
-        import grequests
-
-        session = self._get_session()
-        try:
-            # build the requests
-            urls = self._get_all_urls(keys, frmt)
-            print("grequests.get processing")
-            rs = (grequests.get(url, session=session, params=params) for key, url in zip(keys, urls))
-            # execute them
-            print("grequests.map call")
-            ret = grequests.map(rs, size=min(self.async_concurrent, len(keys)))
-            self.last_response = ret
-            print("grequests.map call done")
-            return ret
-        except Exception as e:
-            print("Error caught in async. ", e)
-            return []
-
-    def _get_all_urls(self, keys, frmt=None):
-        return ('%s/%s' % (self.url, query) for query in keys)
-
-    def get_async(self, keys, frmt='json', params={}, **kargs):
-        ret = self._get_async(keys, frmt, params=params, **kargs)
-        return self._apply(ret, self._interpret_returned_request, frmt)
-
-    def get_sync(self, keys, frmt='json', **kargs):
-        return [self.get_one(key, frmt=frmt, **kargs) for key in keys]
-
     def http_get(self, query, frmt='json', params={}, **kargs):
         """
         * query is the suffix that will be appended to the main url attribute.
         * query is either a string or a list of strings.
-        * if list is larger than ASYNC_THRESHOLD, use asynchronous call.
         """
-        if isinstance(query, list) and len(query) > self.async_threshold:
-            if DEBUG:
-                print("Running async call for a list")
-            # Not implemented yet a sync funtions with Requests package
-            return [self.get_one(key, frmt, params=params, **kargs) for key in query]
-            # return self.get_async(query, frmt, params=params, **kargs)
-        if isinstance(query, list) and len(query) <= self.async_threshold:
+        if isinstance(query, list):
             if DEBUG:
                 print("Running sync call for a list")
-            return [self.get_one(key, frmt, params=params, **kargs) for key in query]
-            # return self.get_sync(query, frmt)
+            # return [self.get_one(key, frmt, params=params, **kargs) for key in query]
+            return self.get_sync(query, frmt)
         # OTHERWISE
         if DEBUG:
             print("Running http_get (single call mode)")
         # return self.get_one(**{'frmt': frmt, 'query': query, 'params':params})
         return self.get_one(query, frmt, params=params, **kargs)
+
+    def get_sync(self, keys, frmt='json', **kargs):
+        return [self.get_one(key, frmt=frmt, **kargs) for key in keys]
 
     def get_one(self, query, frmt='json', params={}, **kargs):
         """
@@ -308,7 +260,7 @@ class REST(Service):
             print("Issue while Your current timeout is {0}. ".format(self.timeout))
 
     def http_post(self, query, params=None, data=None, frmt='xml', headers=None, files=None, **kargs):
-        # query and frmt are bioservices parameters. Others are post parameters
+        # query and frmt are services parameters. Others are post parameters
         # NOTE in requests.get you can use params parameter
         # BUT in post, you use data
         # only single post implemented for now unlike get that can be asynchronous
@@ -354,7 +306,7 @@ class REST(Service):
             urllib_agent = 'Python-urllib/%s' % urllib.request.__version__
         except Exception:
             raise Exception
-        ClientVersion = ''
+        ClientVersion = __version__
         user_agent = 'EBI-Sample-CLient/%s (%s; Python %s; %s) %s' % (ClientVersion, os.path.basename(__file__, ),
                                                                       platform.python_version(), platform.system(),
                                                                       urllib_agent)
@@ -451,7 +403,7 @@ def check_param_in_list(param, valid_values, name=None):
 import json
 
 
-def to_json(self, dictionary):
+def to_json(dictionary):
     return json.dumps(dictionary)
 
 
@@ -475,6 +427,7 @@ def check_range(value, a, b, strict=False):
         if value > b:
             raise ValueError(" {} must be less than {}".format(value, b))
 
+
 import xml.etree.ElementTree as ET
 import bs4
 from urllib.request import urlopen
@@ -487,11 +440,9 @@ class easyXML(object):
     to help introspecting the XML documents.
     """
 
-    def __init__(self, data, encoding="utf-8"):
+    def __init__(self, data):
         """
         :param data: an XML document format
-        :param encoding: default is utf-8 used. Used to fix the HGNC XML only.
-
 
         The data parameter must be a string containing the XML document. If you
         have an URL instead, use :class:`readXML`
@@ -536,7 +487,7 @@ class readXML(easyXML):
     inherits from easyXML
     """
 
-    def __init__(self, filename, encoding="utf-8"):
+    def __init__(self, filename):
         url = urlopen(filename, "r")
         self.data = url.read()
-        super(readXML, self).__init__(self.data, encoding)
+        super(readXML, self).__init__(self.data)

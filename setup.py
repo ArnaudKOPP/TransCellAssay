@@ -1,5 +1,4 @@
 from distutils.core import setup
-from Cython.Build import cythonize
 
 setup(
     name='TransCellAssay',
@@ -13,11 +12,3 @@ setup(
     author_email='kopp.arnaud@gmail.com',
     description='Package for analyze HTS data'
 )
-
-setup(
-    ext_modules=cythonize("TransCellAssay/Stat/PlateAnalyzis.py"),
-)
-
-"""
-python3 setup.py build_ext --inplace
-"""
