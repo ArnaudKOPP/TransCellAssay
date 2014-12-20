@@ -22,14 +22,6 @@ __all__ = ["Service"]
 DEBUG = True
 
 
-class ServiceError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
-
 class Service(object):
     """
     Base class for REST/WSDL class
@@ -216,12 +208,9 @@ class REST(Service):
         if isinstance(query, list):
             if DEBUG:
                 print("Running sync call for a list")
-            # return [self.get_one(key, frmt, params=params, **kargs) for key in query]
-            return self.get_sync(query, frmt)
-        # OTHERWISE
+            return [self.get_one(key, frmt, params=params, **kargs) for key in query]
         if DEBUG:
             print("Running http_get (single call mode)")
-        # return self.get_one(**{'frmt': frmt, 'query': query, 'params':params})
         return self.get_one(query, frmt, params=params, **kargs)
 
     def get_sync(self, keys, frmt='json', **kargs):
@@ -247,6 +236,11 @@ class REST(Service):
                 print("Target URL :%s" % url)
             res = self.session.get(url, **kargs)
 
+            if res.status_code != 200:
+                print("\033[0;33m[WARNING]\033[0m Requests Status is not OK : {0} : {1}".format(res.status_code,
+                                                                                                self.response_codes[
+                                                                                                    res.status_code]))
+
             self.last_response = res
             res = self._interpret_returned_request(res, frmt)
             try:
@@ -266,9 +260,7 @@ class REST(Service):
         # only single post implemented for now unlike get that can be asynchronous
         # or list of queries
         if headers is None:
-            headers = {}
-            headers['User-Agent'] = self.getUserAgent()
-            headers['Accept'] = self.content_types[frmt]
+            headers = {'User-Agent': self.getUserAgent(), 'Accept': self.content_types[frmt]}
 
         print("Running http_post (single call mode)")
         kargs.update({'query': query})
@@ -306,26 +298,13 @@ class REST(Service):
             urllib_agent = 'Python-urllib/%s' % urllib.request.__version__
         except Exception:
             raise Exception
-        ClientVersion = __version__
-        user_agent = 'EBI-Sample-CLient/%s (%s; Python %s; %s) %s' % (ClientVersion, os.path.basename(__file__, ),
+        clientversion = __version__
+        user_agent = 'EBI-Sample-CLient/%s (%s; Python %s; %s) %s' % (clientversion, os.path.basename(__file__, ),
                                                                       platform.python_version(), platform.system(),
                                                                       urllib_agent)
         return user_agent
 
-    def get_headers(self, content='default'):
-        """
-        :param str content: ste to default that is application/x-www-form-urlencoded
-        so that it has the same behaviour as urllib2 (Sept 2014)
-        """
-        headers = {}
-        headers['User-Agent'] = self.getUserAgent()
-        headers['Accept'] = self.content_types[content]
-        headers['Content-Type'] = self.content_types[content]
-        # "application/json;odata=verbose" required in reactome
-        # headers['Content-Type'] = "application/json;odata=verbose" required in reactome
-        return headers
-
-    def debug_message(self):
+    def debug_last_response(self):
         print(self.last_response.content)
         print(self.last_response.reason)
         print(self.last_response.status_code)
@@ -338,7 +317,8 @@ class REST(Service):
 
 
 def tolist(data, verbose=True):
-    """Transform an object into a list if possible
+    """
+    Transform an object into a list if possible
 
     :param data: a list, tuple, or simple type (e.g. int)
     :return: a list
@@ -362,7 +342,8 @@ def tolist(data, verbose=True):
 
 
 def list2string(data, sep=",", space=True):
-    """Transform a list into a string
+    """
+    Transform a list into a string
 
     :param list data: list of items that have a string representation.
         the input data could also be a simple object, in which case
@@ -371,13 +352,14 @@ def list2string(data, sep=",", space=True):
     """
     data = tolist(data)
     if space is True:
-        sep = sep + " "
+        sep += " "
     res = sep.join([str(x) for x in data])
     return res
 
 
 def check_param_in_list(param, valid_values, name=None):
-    """Checks that the value of param is amongst valid
+    """
+    Checks that the value of param is amongst valid
 
     :param param: a parameter to be checked
     :param list valid_values: a list of values

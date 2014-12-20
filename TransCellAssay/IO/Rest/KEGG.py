@@ -15,8 +15,8 @@ pages.
 
 
 * organisms (**org**) are made of a three-letter (or four-letter) code (e.g.,
-  **hsa** stands for Human Sapiens) used in KEGG (see  :attr:`~bioservices.kegg.KEGG.organismIds`).
-* **db** is a database name. See :attr:`~bioservices.kegg.KEGG.databases`
+  **hsa** stands for Human Sapiens) used in KEGG (see  :attr:`~Rest.kegg.KEGG.organismIds`).
+* **db** is a database name. See :attr:`~Rest.kegg.KEGG.databases`
   attribute and :ref:`kegg_database` section.
 * **entry_id** is a unique identifier. It is a combination of the database name
   and the identifier of an entry joined by a colon sign (e.g. 'embl:J00231').
@@ -24,29 +24,29 @@ pages.
   Here are some examples of entry Ids:
 
     * **genes_id**: A KEGG organism and a gene name (e.g. 'eco:b0001').
-    * **enzyme_id**: 'ec' and an enzyme code. (e.g. 'ec:1.1.1.1'). See :attr:`~bioservices.kegg.KEGG.enzymeIds`.
+    * **enzyme_id**: 'ec' and an enzyme code. (e.g. 'ec:1.1.1.1'). See :attr:`~Rest.kegg.KEGG.enzymeIds`.
     * **compound_id**: 'cpd' and a compound number (e.g. 'cpd:C00158').
       Some compounds also have 'glycan_id' and
       both IDs are accepted and converted internally.
-      See :attr:`~bioservices.kegg.KEGG.compoundIds`.
+      See :attr:`~Rest.kegg.KEGG.compoundIds`.
     * **drug_id**: 'dr' and a drug number (e.g. 'dr:D00201'). See
-      :attr:`~bioservices.kegg.KEGG.drugIds`.
+      :attr:`~Rest.kegg.KEGG.drugIds`.
     * **glycan_id**: 'gl' and a glycan number (e.g.
     * 'gl:G00050'). Some glycans also have 'compound_id' and both
       IDs are accepted and converted internally. see
-      :attr:`~bioservices.kegg.KEGG.glycanIds` attribute.
+      :attr:`~Rest.kegg.KEGG.glycanIds` attribute.
     * **reaction_id**:  'rn' and a reaction number (e.g.
     * 'rn:R00959' is a reaction which catalyze cpd:C00103 into cpd:C00668).
-      See :attr:`~bioservices.kegg.KEGG.reactionIds` attribute.
+      See :attr:`~Rest.kegg.KEGG.reactionIds` attribute.
     * **pathway_id**: 'path' and a pathway number. Pathway numbers prefixed
       by 'map' specify the reference pathway and pathways prefixed by
       a KEGG organism specify pathways specific to the organism (e.g.
-      'path:map00020', 'path:eco00020'). See :attr:`~bioservices.kegg.KEGG.pathwayIds` attribute.
+      'path:map00020', 'path:eco00020'). See :attr:`~Rest.kegg.KEGG.pathwayIds` attribute.
     * **motif_id**: a motif database names ('ps' for prosite, 'bl' for blocks,
       'pr' for prints, 'pd' for prodom, and 'pf' for pfam) and a motif entry
       name. (e.g. 'pf:DnaJ' means a Pfam  database entry 'DnaJ').
     * **ko_id**: identifier made of 'ko' and a ko number (e.g. 'ko:K02598').
-      See :attr:`~bioservices.kegg.KEGG.koIds` attribute.
+      See :attr:`~Rest.kegg.KEGG.koIds` attribute.
 
 
 .. _kegg_database:
@@ -119,7 +119,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
-from TransCellAssay.IO.Rest.Service import REST, ServiceError
+from TransCellAssay.IO.Rest.Service import REST
 from functools import reduce
 import webbrowser
 
@@ -138,7 +138,7 @@ class KEGG(REST):
     Here are some examples. In order to retrieve the entry of the gene identifier 7535 of the
     **hsa** organism, type::
 
-        from bioservices import KEGG
+        import KEGG
         s = KEGG()
         print(s.get("hsa:7535"))
 
@@ -331,7 +331,7 @@ class KEGG(REST):
 
         if organism:
             if organism not in self.organismIds:
-                raise ServiceError(
+                raise Exception(
                     "Not a valid organism Invalid organism provided (%s). See the organismIds attribute" % organism)
             if query not in ["pathway", "module"]:
                 print("""\033[0;31m[ERROR]\033[0m If organism is set, then the first argument (database) must be
@@ -942,7 +942,6 @@ class KEGGParser(KEGG):
     The :meth:`parse` method is a dispatcher so you do not have to worry about the
     type of entry you are using. It can be a pathway, a gene, a compound...
     ::
-        from bioservices import *
         s = KEGGParser()
         # Retrieve a KEGG entry
         res = s.get("hsa04150")
