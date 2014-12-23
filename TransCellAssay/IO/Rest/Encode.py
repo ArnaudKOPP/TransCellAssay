@@ -19,6 +19,16 @@ class Encode(REST):
     """
     Class for doing REST requests to Encode
     """
-
+    # TODO finish this class
     def __init__(self, verbose=False):
         super(Encode, self).__init__(name="Encode", url="https://www.encodeproject.org/", verbose=verbose)
+        # Force return from the server in JSON format
+        self.HEADERS = {'accept': 'application/json'}
+
+    def test(self):
+        # This URL locates the ENCODE biosample with accession number ENCBS000AAA
+        url = "biosample/ENCBS000AAA/?frame=object"
+
+        # GET the object
+        response = self.http_get(url, headers=self.HEADERS)
+        return response

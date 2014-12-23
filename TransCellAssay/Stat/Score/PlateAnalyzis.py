@@ -15,6 +15,8 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
+# TODO improve performance !! ~ 2.5s to performe this on plate with 3 replicats
+
 
 def plate_analysis(plate, feature, neg, pos, threshold=50):
     """

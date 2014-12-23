@@ -170,6 +170,21 @@ print(pd.DataFrame(result))
 time_stop = time.time()
 print("\033[0;32m   ----> TOTAL TIME : {0:f}s\033[0m".format(float(time_stop - time_start)))
 """
+# ### Encode REST TEST
+# from TransCellAssay.IO.Rest.Encode import Encode
+# encode = Encode()
+# response = encode.test()
+
+# import json
+# Print the object
+# print(json.dumps(response, indent=4, separators=(',', ': ')))
+
+# ### String REST TEST
+from TransCellAssay.IO.Rest.String import String
+
+str = String()
+response = str.test()
+print(response)
 
 # ### Array Express REST TEST
 # from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
@@ -217,22 +232,24 @@ print("\033[0;32m   ----> TOTAL TIME : {0:f}s\033[0m".format(float(time_stop - t
 # #### UNIPROT REST TEST
 # from TransCellAssay.IO.Rest.Uniprot import UniProt
 # u = UniProt()
-#
+
 # print(u.mapping("ACC", "KEGG_ID", query='P43403 P29317'))
 # res = u.search("P43403")
 # print(res)
-# # Returns sequence on the ZAP70_HUMAN accession Id
+# Returns sequence on the ZAP70_HUMAN accession Id
 # sequence = u.search("ZAP70_HUMAN", columns="sequence")
 # print(sequence)
-#
-# es = u.retrieve("P09958", frmt="xml")
+
 # fasta = u.retrieve([u'P29317', u'Q5BKX8', u'Q8TCD6'], frmt='fasta')
 # print(fasta[0])
-#
+
+# res = u.retrieve("P09958", frmt="xml")
+# print(res)
+
 # res = u.get_fasta("P09958")
 # print(res)
 # print(u.get_fasta_sequence("P09958"))
-#
+
 # print(u.search('zap70+AND+organism:9606', frmt='list'))
 # print(u.search("zap70+and+taxonomy:9606", frmt="tab", limit=3, columns="entry name,length,id, genes"))
 

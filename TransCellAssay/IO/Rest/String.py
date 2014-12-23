@@ -22,4 +22,12 @@ class String(REST):
     """
 
     def __init__(self, verbose=False):
-        super(String, self).__init__(name="String", url="http://string-db.org/", verbose=verbose)
+        super(String, self).__init__(name="String", url="http://string-db.org/api", verbose=verbose)
+
+    def test(self):
+        # test url
+        url = "tsv/abstractsList?identifiers=4932.YML115C%0D4932.YJR075W%0D4932.YEL036"
+
+        # GET the object
+        response = self.http_get(url)
+        return response
