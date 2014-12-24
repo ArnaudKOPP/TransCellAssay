@@ -7,22 +7,25 @@ This package was developped and tested on python 3.4. It can replace CellHTS2 or
 
 ### What TCA do :
 
-* Controls based and non-controls based normalization, logarithmic transformation
-* Systematic Error Detection Test
-* Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and basic background Correction/Well Correction
 * Quality Control for control, data consistency across replicat (check if data are missing)
+* Controls based and non-controls based normalization, logarithmic transformation
+* Systematic Error Detection Test (edge effect or something else)
+* Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and basic background Correction/Well Correction
 * Scoring (SSMD, T-Statistics,...)
-* Go enrichment (still in development)
+* Basic Go enrichment with list of gene
 
 ##Python Module Dependencies
 
 * Python 3.4
-* Pandas > 0.14
-* Numpy > 1.9
-* Scipy > 0.12
-* Matplotlib > 1.3.1
+* Pandas 
+* Numpy 
+* Scipy 
+* Matplotlib 
 * Scikit-learn 
-* requests, beautifulsoup4, xlsxwriter
+* requests, beautifulsoup4 for REST part
+* xlsxwriter
+
+Python package in most recent version is a must
 
 ##CONTACT 
  
