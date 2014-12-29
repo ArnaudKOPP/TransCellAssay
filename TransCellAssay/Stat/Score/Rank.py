@@ -16,11 +16,20 @@ from scipy.stats import rankdata
 import numpy as np
 
 
-def getRankStat(plate, SECdata=False):
+def getRankStat(plate, SECdata=False, method="average", size=96):
     # TODO implement this class
     try:
         if isinstance(plate, TCA.Plate):
-            return 0
+            name = plate.PlateMap.platemap.values.flatten().reshape(size, 1)
+            for key, value in plate.replicat:
+                if SECdata:
+                    rank = _get_data_rank(value.SECdata, method=method)
+                    name = np.append(name, rank.flatten().reshape(size, 1), axis=1)
+                else:
+                    rank = _get_data_rank(value.Data, method=method)
+                    name = np.append(name, rank.flatten().reshape(size, 1), axis=1)
+
+            name = np.append(np.mean(name, axis=1).reshape(size, 1), axis=1)
         else:
             raise TypeError
     except Exception as e:
