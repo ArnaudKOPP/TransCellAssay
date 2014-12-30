@@ -37,9 +37,12 @@ class ProteinAtlas(object):
         raise NotImplementedError
 
     @classmethod
-    def download_data(cls, force_update=True):
+    def download_data(cls, force_update=True, location=None):
         try:
             if force_update or not os.path.isfile(cls.RNA_DATA):
+                if location is not None:
+                    urllib.request.urlretrieve(url=cls.RNA_DATA, filename=os.path.join(location, "rna.csv.zip"),
+                                               reporthook=reporthook)
                 urllib.request.urlretrieve(url=cls.RNA_DATA, filename="rna.csv.zip", reporthook=reporthook)
                 with zipfile.ZipFile("rna.csv.zip", 'r') as myzip:
                     myzip.extractall()
@@ -47,6 +50,9 @@ class ProteinAtlas(object):
             print(e)
         try:
             if force_update or not os.path.isfile(cls.DATA):
+                if location is not None:
+                    urllib.request.urlretrieve(url=cls.DATA, filename=os.path.join(location, "proteinatlas.xml.gz"),
+                                               reporthook=reporthook)
                 urllib.request.urlretrieve(url=cls.DATA, filename="proteinatlas.xml.gz", reporthook=reporthook)
                 with gzip.GzipFile("proteinatlas.xml.gz", "r") as mygzip:
                     mygzip.extractall()

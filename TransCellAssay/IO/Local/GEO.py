@@ -23,7 +23,7 @@ class GEO(object):
         raise NotImplementedError
 
     @classmethod
-    def download_data(cls):
+    def download_data(cls, location=None):
         raise NotImplementedError
 
     @classmethod

@@ -234,13 +234,16 @@ class BioGRID(object):
         return res
 
     @classmethod
-    def download_data(cls, address=None):
+    def download_data(cls, address=None, location=None):
         """
         Pass the address of the latest BIOGRID-ALL release (in tab2 format).
         """
         if address is None:
             address = "http://thebiogrid.org/downloads/archives/Latest%20Release/BIOGRID-ALL-LATEST.tab2.zip"
         try:
+            if location is not None:
+                urllib.request.urlretrieve(address, filename=os.path.join(location, "BIOGRID-ALL.tab2"),
+                                           reporthook=reporthook)
             urllib.request.urlretrieve(address, filename="BIOGRID-ALL.tab2", reporthook=reporthook)
         except IOError:
             raise IOError
