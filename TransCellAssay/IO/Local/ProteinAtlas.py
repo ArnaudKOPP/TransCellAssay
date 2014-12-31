@@ -43,7 +43,8 @@ class ProteinAtlas(object):
                 if location is not None:
                     urllib.request.urlretrieve(url=cls.RNA_DATA, filename=os.path.join(location, "rna.csv.zip"),
                                                reporthook=reporthook)
-                urllib.request.urlretrieve(url=cls.RNA_DATA, filename="rna.csv.zip", reporthook=reporthook)
+                else:
+                    urllib.request.urlretrieve(url=cls.RNA_DATA, filename="rna.csv.zip", reporthook=reporthook)
                 with zipfile.ZipFile("rna.csv.zip", 'r') as myzip:
                     myzip.extractall()
         except Exception as e:
@@ -53,7 +54,8 @@ class ProteinAtlas(object):
                 if location is not None:
                     urllib.request.urlretrieve(url=cls.DATA, filename=os.path.join(location, "proteinatlas.xml.gz"),
                                                reporthook=reporthook)
-                urllib.request.urlretrieve(url=cls.DATA, filename="proteinatlas.xml.gz", reporthook=reporthook)
+                else:
+                    urllib.request.urlretrieve(url=cls.DATA, filename="proteinatlas.xml.gz", reporthook=reporthook)
                 with gzip.GzipFile("proteinatlas.xml.gz", "r") as mygzip:
                     mygzip.extractall()
         except Exception as e:

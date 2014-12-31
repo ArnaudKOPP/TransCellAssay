@@ -244,7 +244,8 @@ class BioGRID(object):
             if location is not None:
                 urllib.request.urlretrieve(address, filename=os.path.join(location, "BIOGRID-ALL.tab2"),
                                            reporthook=reporthook)
-            urllib.request.urlretrieve(address, filename="BIOGRID-ALL.tab2", reporthook=reporthook)
+            else:
+                urllib.request.urlretrieve(address, filename="BIOGRID-ALL.tab2", reporthook=reporthook)
         except IOError:
             raise IOError
 
