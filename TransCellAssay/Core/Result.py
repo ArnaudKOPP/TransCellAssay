@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Result is created for store result like score and hit resulting of SSMD or other technics in a tabe-like (numpy array),
 feature are column and GeneName/Well are stored at the first col, each row represent a gene/well
@@ -11,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

@@ -38,7 +38,7 @@ If you find it useful, fork the repository, improve it and request a pull.
 ##License
 
 This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons.org/licenses/by-nc-nd/4.0/)  
-© 2014 KOPP Arnaud All Rights Reserved
+© 2014-2015 KOPP Arnaud All Rights Reserved
 
 
 ##Principale Idea to implement

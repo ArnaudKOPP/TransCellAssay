@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Parse defined method for reading data from a directory (replicat data and platesetup)
 PlXrep_0.csv, PlXrep_1.csv ... name for replicat
@@ -8,7 +9,7 @@ import os
 import re
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

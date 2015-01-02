@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 This module provides a class :class:`~BioGrid`.
 
@@ -59,7 +60,7 @@ translate	                    boolean	    FALSE	    true,false	                 
 """
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

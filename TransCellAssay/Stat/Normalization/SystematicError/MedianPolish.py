@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Tukey's two-ways median polish is utilized to calculate the row and col effect within plates using a non-controls-based
 approach. In this method, the row and col medians are iteratively subtracted from all wells until the maximum tolerance
@@ -19,7 +20,7 @@ from TransCellAssay.Stat.stat_misc import mad
 
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

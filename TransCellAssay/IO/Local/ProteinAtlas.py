@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Protein Atlas File Parser
 
@@ -10,7 +11,7 @@ RNA data in csv file
 http://www.proteinatlas.org/download/rna.csv.zip
 """
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

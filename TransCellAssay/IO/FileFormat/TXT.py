@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Librarie for easy play with HTS txt data file (HCS explorer output style)
 """
@@ -5,7 +6,7 @@ Librarie for easy play with HTS txt data file (HCS explorer output style)
 import pandas as pd
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

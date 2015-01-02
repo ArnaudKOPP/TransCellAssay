@@ -5,7 +5,7 @@ REST Documentation : http://string-db.org/help/index.jsp?topic=/org.string-db.do
 """
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"
@@ -20,6 +20,7 @@ class String(REST):
     """
     Class for doing REST requests to String-db
     """
+    # TODO finish this class
 
     def __init__(self, verbose=False):
         super(String, self).__init__(name="String", url="http://string-db.org/api", verbose=verbose)

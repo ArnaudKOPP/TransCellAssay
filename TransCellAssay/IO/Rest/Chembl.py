@@ -1,5 +1,6 @@
+# coding=utf-8
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"
@@ -7,7 +8,8 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
-"""This module provides a class :class:`ChEMBL`
+"""
+This module provides a class :class:`ChEMBL`
 
 .. topic:: What is ChEMBL
 

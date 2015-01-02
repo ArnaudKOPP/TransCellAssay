@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Search for systematic error in plate or replicat, use Welch T-Test
 """
@@ -6,8 +7,8 @@ from scipy import stats
 import numpy as np
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
-__credits__ = ["© 2014 KOPP Arnaud All Rights Reserved"]
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
+__credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"

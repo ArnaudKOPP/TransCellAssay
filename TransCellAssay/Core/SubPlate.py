@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Class for manipulating sub Plate object, sub Plate can serve in case that plate are not full or we focus only on part
 of Plate
@@ -6,7 +7,7 @@ from TransCellAssay.Core import Plate
 from TransCellAssay.Core.SubReplicat import SubReplicat
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

@@ -1,9 +1,10 @@
+# coding=utf-8
 """
 Rank Stat
 """
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"
@@ -17,7 +18,7 @@ import numpy as np
 
 
 def getRankStat(plate, SECdata=False, method="average", size=96):
-    # TODO implement this class
+    # TODO finish and test implementation of this class
     try:
         if isinstance(plate, TCA.Plate):
             name = plate.PlateMap.platemap.values.flatten().reshape(size, 1)

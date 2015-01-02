@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Controls based normalization : Percent Of Control and Normalized percent of inhibition
 Non controls based normalization : Z-score and robust Z-score
@@ -7,12 +8,11 @@ Use this with caution, if you want to keep some event with 0 in value, don't nor
 
 import numpy as np
 import pandas as pd
-
 from TransCellAssay.Stat.stat_misc import mad
 
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

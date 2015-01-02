@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Platemap is designed to store matrix who represent the plate map, compatible with 96, 384 Well (1526 is tricky)
 The matrix is representing by a pandas DataFrame (numpy array like)
@@ -16,7 +17,7 @@ import pandas as pd
 from TransCellAssay import Utils as Utils
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

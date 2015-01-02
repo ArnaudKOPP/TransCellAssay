@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 The majority of of the spatial effect are caused by uneven temperature gradients across assay plates due to inefficient
 incubation conditions. To predict the amount of evaporation in each well in a time and space dependent manner, and its
@@ -10,7 +11,7 @@ import numpy as np
 import sys
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

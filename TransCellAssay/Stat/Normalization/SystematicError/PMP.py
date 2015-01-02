@@ -1,5 +1,7 @@
+# coding=utf-8
 """
 Main steps of the PMP method:
+
     -Compute mean value of all entities of the given plate that are not affected by the systematic error.
     -For each row, compute the mean value and estimates the row bias; for each col, compute the mean and estimates the
 row bias.
@@ -11,12 +13,11 @@ previous step for each row and col.
 """
 
 import numpy as np
-
 from TransCellAssay.Stat.Test.ttest import ttest
 
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

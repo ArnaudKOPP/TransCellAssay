@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 This class is for Kegg REST api
 KEGG is a database resource for understanding high-level functions and
@@ -111,7 +112,7 @@ gene name.
 """
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

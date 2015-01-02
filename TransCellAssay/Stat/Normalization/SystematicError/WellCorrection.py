@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 This method follows an analogous strategy to the background correction method; however, a least-squares approximation
 or polynomial fitting is performed independently for each well accross all plates. The fitted value are then substracted
@@ -24,7 +25,7 @@ from TransCellAssay import Core
 
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

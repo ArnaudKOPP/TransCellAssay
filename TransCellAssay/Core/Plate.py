@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Plate is designed for manipulating one or more replicat
 """
@@ -7,7 +8,7 @@ import TransCellAssay as TCA
 
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

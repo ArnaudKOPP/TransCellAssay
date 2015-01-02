@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Screen is designed for manipulating screen that contain multiple different plate
 This class is a bit useless because of you have many plate  you will need a lot of memory !!!
@@ -6,7 +7,7 @@ This class is a bit useless because of you have many plate  you will need a lot 
 import TransCellAssay as TCA
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"

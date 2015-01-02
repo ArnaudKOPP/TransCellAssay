@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Sigmoid fitting for dose response analysis
 """
@@ -7,7 +8,7 @@ import pylab
 from scipy.optimize import curve_fit
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"
