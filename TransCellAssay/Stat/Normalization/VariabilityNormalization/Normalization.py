@@ -36,15 +36,14 @@ def variability_normalization(data, feature, method=False, log2_transf=True, neg
         if isinstance(data, pd.DataFrame):
             # apply log2 transformation on data
             if log2_transf:
-                data = data[data[feature] > 0]
+                data.loc[:] = data[data[feature] > 0]
                 data.loc[:, feature] = np.log2(data[feature])
-
             # apply a z-score transformation on data
             if method == 'Zscore':
-                data.loc[:, feature] = (data[feature] - np.nanmean(data[feature])) / np.nanstd(data[feature])
+                data.loc[:, feature] = (data.loc[:, feature] - np.nanmean(data[feature])) / np.nanstd(data[feature])
             # apply a Robust z-score transformation on data
             elif method == 'RobustZscore':
-                data.loc[:, feature] = (data[feature] - np.nanmedian(data[feature])) / mad(data[feature])
+                data.loc[:, feature] = (data.loc[:, feature] - np.nanmedian(data[feature])) / mad(data[feature])
             # apply a percent of control transformation on data
             elif method == 'PercentOfControl':
                 if neg_control is None:
@@ -67,7 +66,7 @@ def variability_normalization(data, feature, method=False, log2_transf=True, neg
                 neg_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
                 pos_data = _get_data_by_wells(data, feature=feature, wells=pos_control)
                 data.loc[:, feature] = ((np.mean(pos_data) - data[feature]) / (
-                np.mean(pos_data) - np.mean(neg_data))) * 100
+                    np.mean(pos_data) - np.mean(neg_data))) * 100
             else:
                 print("\033[0;33m[WARNING]\033[0m  No method selected for Variability Normalization, choose : Zscore, "
                       "RobustZscore, PercentOfControl, NormalizedPercentInhibition")
