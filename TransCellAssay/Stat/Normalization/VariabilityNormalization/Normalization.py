@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Controls based normalization : Percent Of Control and Normalized percent of inhibition
-Non controls based normalization : Z-score and robust Z-score
+Non controls based normalization : Percent of Sample, Robust Percent of Sample, Z-score and robust Z-score
 
 Use this with caution, if you want to keep some event with 0 in value, don't normalize
 """
@@ -21,7 +21,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def variability_normalization(data, feature, method=False, log2_transf=True, neg_control=None, pos_control=None):
+def variability_normalization(data, feature, method=None, log2_transf=True, neg_control=None, pos_control=None):
     """
     Take a dataframe from replicat object and apply desired strategy of variability normalization
     :param data: pd.dataframe to normalize
@@ -40,11 +40,15 @@ def variability_normalization(data, feature, method=False, log2_transf=True, neg
                 data.loc[:, feature] = np.log2(data[feature])
             # apply a z-score transformation on data
             if method == 'Zscore':
-                data.loc[:, feature] = (data.loc[:, feature] - np.nanmean(data[feature])) / np.nanstd(data[feature])
+                data.loc[:, feature] = (data.loc[:, feature] - np.mean(data[feature])) / np.std(data[feature])
             # apply a Robust z-score transformation on data
             elif method == 'RobustZscore':
-                data.loc[:, feature] = (data.loc[:, feature] - np.nanmedian(data[feature])) / mad(data[feature])
+                data.loc[:, feature] = (data.loc[:, feature] - np.median(data[feature])) / mad(data[feature])
             # apply a percent of control transformation on data
+            elif method == 'PercentOfSample':
+                data.loc[:, feature] = (data.loc[:, feature] - np.mean(data.loc[:, feature]) * 100)
+            elif method == 'RobustPercentOfSample':
+                data.loc[:, feature] = (data.loc[:, feature] - np.median(data.loc[:, feature]) * 100)
             elif method == 'PercentOfControl':
                 if neg_control is None:
                     if pos_control is None:
@@ -65,8 +69,8 @@ def variability_normalization(data, feature, method=False, log2_transf=True, neg
                     raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative Control")
                 neg_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
                 pos_data = _get_data_by_wells(data, feature=feature, wells=pos_control)
-                data.loc[:, feature] = ((np.mean(pos_data) - data[feature]) / (
-                    np.mean(pos_data) - np.mean(neg_data))) * 100
+                data.loc[:, feature] = ((np.mean(pos_data) - data[feature]) /
+                                        (np.mean(pos_data) - np.mean(neg_data))) * 100
             else:
                 print("\033[0;33m[WARNING]\033[0m  No method selected for Variability Normalization, choose : Zscore, "
                       "RobustZscore, PercentOfControl, NormalizedPercentInhibition")

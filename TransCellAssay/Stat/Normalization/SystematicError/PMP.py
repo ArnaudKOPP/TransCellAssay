@@ -30,7 +30,11 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
     """
     Implementation of Partial Mean Polish , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
-    :param: input_array: numpy ndarray represent data
+    :param alpha:
+    :param verbose:
+    :param max_iteration:
+    :param epsilon:
+    :param input_array: numpy ndarray represent data
     :return:
     """
     try:

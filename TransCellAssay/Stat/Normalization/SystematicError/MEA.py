@@ -8,7 +8,6 @@ the error estimates determinted in previous step.
 """
 
 import numpy as np
-
 from TransCellAssay.Stat.Test.ttest import ttest
 
 
@@ -26,7 +25,9 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
     """
     Implementation of Matrix Error Amendment , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
-    :param: input_array: numpy ndarray represent data
+    :param alpha:
+    :param verbose:
+    :param input_array: numpy ndarray represent data
     :return:
     """
     try:
