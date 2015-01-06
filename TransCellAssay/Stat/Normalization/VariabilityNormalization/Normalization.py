@@ -4,10 +4,14 @@ Controls based normalization : Percent Of Control and Normalized percent of inhi
 Non controls based normalization : Percent of Sample, Robust Percent of Sample, Z-score and robust Z-score
 
 Use this with caution, if you want to keep some event with 0 in value, don't normalize
+
+Add Feature Scaling normalization :
+http://en.wikipedia.org/wiki/Feature_scaling
 """
 
 import numpy as np
 import pandas as pd
+import TransCellAssay as TCA
 from TransCellAssay.Stat.stat_misc import mad
 
 
@@ -19,6 +23,35 @@ __version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
+
+
+def feature_scaling(plate, feature, mean_scaling=False):
+    """
+    Feature Scaling to [0,1] or [0, mean of max] if mean_scaling is True
+    :param plate: Plate object
+    :param feature: Which feature to scale
+    :param mean_scaling: if True, the max is the mean of max accross all replicat (instead of 1)
+    """
+    if isinstance(plate, TCA.Plate):
+        min_lst = []
+        max_lst = []
+
+        # search min and max accross all replicat
+        for key, value in plate.replicat.items():
+            min_lst.append(np.min(value.RawData[feature]))
+            max_lst.append(np.max(value.RawData[feature]))
+
+        # apply feature scaling accross all replicat
+        for key, value in plate.replicat.items():
+            value.RawData.loc[:, feature] = (
+                (value.RawData.loc[:, feature] - min(min_lst)) / (max(max_lst) - min(min_lst)))
+            if mean_scaling:
+                value.RawData.loc[:, feature] *= (sum(max_lst) / len(max_lst))
+            value.isNormalized = True
+
+        plate.isNormalized = True
+    else:
+        raise TypeError
 
 
 def variability_normalization(data, feature, method=None, log2_transf=True, neg_control=None, pos_control=None):
@@ -46,23 +79,25 @@ def variability_normalization(data, feature, method=None, log2_transf=True, neg_
                 data.loc[:, feature] = (data.loc[:, feature] - np.median(data[feature])) / mad(data[feature])
             # apply a percent of control transformation on data
             elif method == 'PercentOfSample':
-                data.loc[:, feature] = (data.loc[:, feature] - np.mean(data.loc[:, feature]) * 100)
+                data.loc[:, feature] = (data.loc[:, feature] / np.mean(data[feature])) * 100
             elif method == 'RobustPercentOfSample':
-                data.loc[:, feature] = (data.loc[:, feature] - np.median(data.loc[:, feature]) * 100)
+                data.loc[:, feature] = (data.loc[:, feature] / np.median(data[feature])) * 100
             elif method == 'PercentOfControl':
+                # TODO don't work
                 if neg_control is None:
                     if pos_control is None:
                         raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative or Positive control")
                     else:
                         # Using positive control
                         pos_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
-                        data.loc[:, feature] = ((data[feature]) / (np.mean(pos_data))) * 100
+                        data.loc[:, feature] = (data.loc[:, feature] / np.mean(pos_data)) * 100
                 else:
                     # Using negative control
                     neg_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
-                    data.loc[:, feature] = ((data[feature]) / (np.mean(neg_data))) * 100
+                    data.loc[:, feature] = (data.loc[:, feature] / np.mean(neg_data)) * 100
             # apply a normalized percent inhibition transformation on data
             elif method == 'NormalizedPercentInhibition':
+                # TODO don't work
                 if neg_control is None:
                     if pos_control is None:
                         raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative and Positive control")

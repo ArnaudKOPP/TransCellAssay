@@ -25,10 +25,10 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
     """
     Implementation of Matrix Error Amendment , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
-    :param alpha:
-    :param verbose:
+    :param alpha: alpha for TTrest
+    :param verbose: print or not result
     :param input_array: numpy ndarray represent data
-    :return:
+    :return: normalized array
     """
     try:
         if isinstance(input_array, np.ndarray):
@@ -48,8 +48,8 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
                     ncols.append(col)
 
             # exit if not row or col affected
-            N = nrows.__len__() + ncols.__len__()
-            if N == 0:
+            n = nrows.__len__() + ncols.__len__()
+            if n == 0:
                 print('\033[0;33m[WARNING]\033[0m No Systematics Error detected')
                 return input_array
 
@@ -62,49 +62,48 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
                             mu += input_array[row][col]
             mu /= ((shape[0] - nrows.__len__()) * (shape[1] - ncols.__len__()))
 
-
-            # # exact solution
-            X = np.zeros(N)
-            A = np.zeros([N, N])
-            B = np.zeros(N)
+            # exact solution
+            x = np.zeros(n)
+            a = np.zeros([n, n])
+            b = np.zeros(n)
 
             for i in range(nrows.__len__()):
                 r = nrows[i]
-                A[i][i] = shape[1]
-                for j in range(nrows.__len__(), N, 1):
-                    A[i, j] = 1.0
-                B[i] = -shape[1] * mu
+                a[i][i] = shape[1]
+                for j in range(nrows.__len__(), n, 1):
+                    a[i, j] = 1.0
+                b[i] = -shape[1] * mu
                 for k in range(0, shape[1], 1):
-                    B[i] += input_array[r][k]
-            for i in range(nrows.__len__(), N, 1):
+                    b[i] += input_array[r][k]
+            for i in range(nrows.__len__(), n, 1):
                 c = ncols[i - nrows.__len__()]
-                A[i][i] = shape[0]
+                a[i][i] = shape[0]
                 for j in range(0, nrows.__len__(), 1):
-                    A[i][j] = 1.0
-                B[i] = -shape[0] * mu
+                    a[i][j] = 1.0
+                b[i] = -shape[0] * mu
                 for k in range(0, shape[0], 1):
-                    B[i] += input_array[k][c]
+                    b[i] += input_array[k][c]
 
-            A = np.linalg.inv(A)
+            a = np.linalg.inv(a)
 
-            # X = Inv(A) * B, X is the estimated row and column error
+            # x = Inv(a) * b, x is the estimated row and column error
 
-            for i in range(N):
-                X[i] = 0.0
-                for j in range(N):
-                    X[i] += A[i][j] * B[j]
+            for i in range(n):
+                x[i] = 0.0
+                for j in range(n):
+                    x[i] += a[i][j] * b[j]
 
             # Remove the systematic error form the plate measure
 
             for i in range(nrows.__len__()):
                 r = nrows[i]
                 for j in range(shape[1]):
-                    input_array[r][j] -= X[i]
+                    input_array[r][j] -= x[i]
 
-            for i in range(nrows.__len__(), N, 1):
+            for i in range(nrows.__len__(), n, 1):
                 c = ncols[i - nrows.__len__()]
                 for j in range(nrows.__len__()):
-                    input_array[j][c] -= X[i]
+                    input_array[j][c] -= x[i]
 
             np.set_printoptions(suppress=True)
             if verbose:

@@ -390,15 +390,15 @@ class Plate(object):
         :param method: for bscore : use median or average method
         :param apply_down: apply strategie to replicat, if true apply SEC on replicat !! not re-use function on plate
         :param verbose: verbose : output the result ?
-        :param save: save: save the residual into self.SpatNormData , default = False
+        :param save: save: save the residual into self.SECData , default = False
         :param max_iterations: max iterations for all technics
-        :param alpha:
+        :param alpha: alpha for TTest
         """
         try:
             if apply_down:
                 for key, value in self.replicat.items():
                     value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
-                                                      max_iterations=max_iterations)
+                                                      max_iterations=max_iterations, alpha=alpha)
                 return 0
 
             if self.Data is None:

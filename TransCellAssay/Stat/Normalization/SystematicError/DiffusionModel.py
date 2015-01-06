@@ -20,26 +20,26 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def diffusion_model(Array, max_iterations=100, verbose=False):
+def diffusion_model(array, max_iterations=100, verbose=False):
     """
     Performed the DiffusionModel Process
-    :param Array: numpy array represente matrix to normalize
+    :param array: numpy array represente matrix to normalize
     :param max_iterations: max iterations in process
     :param verbose: print result
     :return: result array
     """
 
     # # replace 0 with NaN
-    Array[Array == 0] = np.NaN
+    array[array == 0] = np.NaN
 
-    edge_effect = diffusion_model(Array.copy())
+    edge_effect = diffusion_model(array.copy())
     edge_effect.diffusion_model(max_iterations=max_iterations)
-    best_iteration = edge_effect.FindIterationsForBestMatch(Array.copy())
-    shift_mult = edge_effect.FindBestShiftMultCoeff(Array.copy(), best_iteration)
+    best_iteration = edge_effect.FindIterationsForBestMatch(array.copy())
+    shift_mult = edge_effect.FindBestShiftMultCoeff(array.copy(), best_iteration)
     corrected_table = None
     # Correct the plate
     if not best_iteration == 0:
-        corrected_table = edge_effect.CorrectThePlate(Array.copy(), best_iteration, shift_mult[0], shift_mult[1])
+        corrected_table = edge_effect.CorrectThePlate(array.copy(), best_iteration, shift_mult[0], shift_mult[1])
 
     # # replace NaN with 0
     corrected_table = np.nan_to_num(corrected_table)
@@ -53,7 +53,7 @@ def diffusion_model(Array, max_iterations=100, verbose=False):
         print("-----Normalized Table-------")
         print(corrected_table)
         print("-----Original Table-------")
-        print(Array)
+        print(array)
         print("")
 
     return corrected_table

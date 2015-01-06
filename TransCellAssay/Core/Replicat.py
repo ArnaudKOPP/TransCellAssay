@@ -304,7 +304,7 @@ class Replicat(object):
             print("\033[0;31m[ERROR]\033[0m", e)
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=False,
-                                    max_iterations=100):
+                                    max_iterations=100, alpha=0.05):
         """
 
         Apply a spatial normalization for remove edge effect
@@ -316,7 +316,7 @@ class Replicat(object):
         :param algorithm: Bscore, MEA, PMP or diffusion model technics, default = Bscore
         :param method: median or mean data
         :param verbose: Output in console
-        :param save: save the result into self.SpatNormData, default = False
+        :param save: save the result into self.SECData, default = False
         :param max_iterations: maximum iterations loop, default = 100
         """
 
@@ -346,13 +346,13 @@ class Replicat(object):
 
                 if algorithm == 'PMP':
                     corrected_data_array = TCA.partial_mean_polish(self.Data, max_iteration=max_iterations,
-                                                                   verbose=verbose)
+                                                                   verbose=verbose, alpha=alpha)
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'MEA':
-                    corrected_data_array = TCA.matrix_error_amendmend(self.Data, verbose=verbose)
+                    corrected_data_array = TCA.matrix_error_amendmend(self.Data, verbose=verbose, alpha=alpha)
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True

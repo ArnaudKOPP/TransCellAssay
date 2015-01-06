@@ -20,7 +20,6 @@ to zero
 """
 
 import numpy as np
-
 from TransCellAssay import Core
 
 
@@ -79,7 +78,6 @@ class WellCorrection():
             print(e)
 
     def _apply_zscore(self, data):
-
         try:
             datax = (data - np.mean(data)) / np.std(data)
             return datax

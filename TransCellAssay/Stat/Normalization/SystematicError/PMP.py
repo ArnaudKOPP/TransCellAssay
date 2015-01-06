@@ -30,12 +30,12 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
     """
     Implementation of Partial Mean Polish , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
-    :param alpha:
-    :param verbose:
-    :param max_iteration:
-    :param epsilon:
+    :param alpha: alpha for TTest
+    :param verbose: print or not result
+    :param max_iteration: max iteration for PMP
+    :param epsilon: epsilon for convergence
     :param input_array: numpy ndarray represent data
-    :return:
+    :return: normalized array
     """
     try:
         if isinstance(input_array, np.ndarray):
@@ -55,8 +55,8 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
                     ncols.append(col)
 
             # exit if not row or col affected
-            N = nrows.__len__() + ncols.__len__()
-            if N == 0:
+            n = nrows.__len__() + ncols.__len__()
+            if n == 0:
                 print('\033[0;33m[WARNING]\033[0m No Systematics Error detected')
                 return input_array
 
@@ -69,8 +69,8 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
                             mu += input_array[row][col]
             mu /= ((shape[0] - nrows.__len__()) * (shape[1] - ncols.__len__()))
 
-            Rmu = [0] * shape[0]
-            Cmu = [0] * shape[1]
+            rmu = [0] * shape[0]
+            cmu = [0] * shape[1]
 
             loop = 1
             converge = 0.0
@@ -79,22 +79,22 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
                 converge = 0.0
                 for i in nrows:
                     for j in range(shape[1]):
-                        Rmu[i] += input_array[i][j]
-                    Rmu[i] /= shape[1]
+                        rmu[i] += input_array[i][j]
+                    rmu[i] /= shape[1]
 
                 for j in ncols:
                     for i in range(shape[0]):
-                        Cmu[j] += input_array[i][j]
-                    Cmu[j] /= shape[0]
+                        cmu[j] += input_array[i][j]
+                    cmu[j] /= shape[0]
 
                 for i in nrows:
-                    diff = mu - Rmu[i]
+                    diff = mu - rmu[i]
                     converge += np.absolute(diff)
                     for j in range(shape[1]):
                         input_array[i][j] += diff
 
                 for j in ncols:
-                    diff = mu - Cmu[i]
+                    diff = mu - cmu[i]
                     converge += np.absolute(diff)
                     for i in range(shape[0]):
                         input_array[i][j] += diff
