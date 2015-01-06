@@ -381,8 +381,7 @@ class Plate(object):
             print("\033[0;31m[ERROR]\033[0m", e)
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=False, verbose=False,
-                                    save=False,
-                                    max_iterations=100):
+                                    save=False, max_iterations=100, alpha=0.05):
         """
         Apply a spatial normalization for remove edge effect
         Resulting matrix are save in plate object if save = True
@@ -393,6 +392,7 @@ class Plate(object):
         :param verbose: verbose : output the result ?
         :param save: save: save the residual into self.SpatNormData , default = False
         :param max_iterations: max iterations for all technics
+        :param alpha:
         """
         try:
             if apply_down:
@@ -424,14 +424,14 @@ class Plate(object):
                         self.isSpatialNormalized = True
 
                 if algorithm == 'PMP':
-                    corrected_data_array = TCA.partial_mean_polish(self.Data, max_iteration=max_iterations,
+                    corrected_data_array = TCA.partial_mean_polish(self.Data, max_iteration=max_iterations, alpha=alpha,
                                                                    verbose=verbose)
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'MEA':
-                    corrected_data_array = TCA.matrix_error_amendmend(self.Data, verbose=verbose)
+                    corrected_data_array = TCA.matrix_error_amendmend(self.Data, verbose=verbose, alpha=alpha, )
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True
