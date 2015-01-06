@@ -65,7 +65,7 @@ class Replicat(object):
         if name is not None:
             self.name = name
         else:
-            self.name = ""
+            self.name = None
 
         self.skip_well = skip
 
@@ -388,6 +388,16 @@ class Replicat(object):
             print(path)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
+
+    def save_raw_data(self, path):
+        """
+        Save normalized Raw data
+        :param path: Where to write .csv file
+        """
+        try:
+            self.RawData.to_csv(path=path)
+        except Exception as e:
+            print(e)
 
     def __repr__(self):
         """

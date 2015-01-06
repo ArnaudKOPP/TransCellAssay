@@ -5,6 +5,7 @@ Plate is designed for manipulating one or more replicat
 
 import numpy as np
 import TransCellAssay as TCA
+import os
 
 
 __author__ = "Arnaud KOPP"
@@ -445,6 +446,22 @@ class Plate(object):
 
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
+
+    def save_raw_data(self, path):
+        """
+        Save normalized raw data
+        :param path: path where to save raw data
+        """
+        try:
+            if os.path.isdir(path):
+                for key, value in self.replicat.items():
+                    if not value.name:
+                        raise AttributeError("\033[0;31m[ERROR]\033[0m Replicat doesn't have name, picked them one !")
+                    value.save_raw_data(os.path.join(path, value.name))
+            else:
+                raise IOError("\033[0;31m[ERROR]\033[0m Directory don't exist")
+        except Exception as e:
+            print(e)
 
     @staticmethod
     def write_pickle(path):
