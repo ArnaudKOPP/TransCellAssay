@@ -83,7 +83,6 @@ def variability_normalization(data, feature, method=None, log2_transf=True, neg_
             elif method == 'RobustPercentOfSample':
                 data.loc[:, feature] = (data.loc[:, feature] / np.median(data[feature])) * 100
             elif method == 'PercentOfControl':
-                # TODO don't work
                 if neg_control is None:
                     if pos_control is None:
                         raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative or Positive control")
@@ -97,7 +96,6 @@ def variability_normalization(data, feature, method=None, log2_transf=True, neg_
                     data.loc[:, feature] = (data.loc[:, feature] / np.mean(neg_data)) * 100
             # apply a normalized percent inhibition transformation on data
             elif method == 'NormalizedPercentInhibition':
-                # TODO don't work
                 if neg_control is None:
                     if pos_control is None:
                         raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative and Positive control")
@@ -107,8 +105,9 @@ def variability_normalization(data, feature, method=None, log2_transf=True, neg_
                 data.loc[:, feature] = ((np.mean(pos_data) - data[feature]) /
                                         (np.mean(pos_data) - np.mean(neg_data))) * 100
             else:
-                print("\033[0;33m[WARNING]\033[0m  No method selected for Variability Normalization, choose : Zscore, "
-                      "RobustZscore, PercentOfControl, NormalizedPercentInhibition")
+                print("\033[0;33m[WARNING]\033[0m  No method selected for Variability Normalization, choose :\n-Zscore "
+                      "\n-RobustZscore \n-PercentOfControl \n-PercentOfSample \n-RobustPercentOfSample \n"
+                      "-NormalizedPercentInhibition")
                 return data
 
             # return transformed data

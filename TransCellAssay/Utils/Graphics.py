@@ -205,7 +205,7 @@ def plotDistribution(Well, Plate, feature):
         if isinstance(Plate, TCA.Core.Plate):
             rep_series = dict()
             for key, value in Plate.replicat.items():
-                rep_series[key] = pd.Series(value.Dataframe[feature][value.Dataframe['Well'] == Well])
+                rep_series[key] = pd.Series(value.RawData[feature][value.RawData['Well'] == Well])
                 rep_series[key].name = key
             # # Plotting with pandas
             for key, value in rep_series.items():
