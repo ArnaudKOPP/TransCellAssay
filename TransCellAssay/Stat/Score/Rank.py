@@ -1,6 +1,7 @@
 # coding=utf-8
 """
-Rank Stat
+The rank product is a biologically motivated test for the detection of differentially expressed genes
+http://docs.scipy.org/doc/scipy-dev/reference/generated/scipy.stats.rankdata.html
 """
 
 __author__ = "Arnaud KOPP"
@@ -10,29 +11,37 @@ __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Dev"
+__status__ = "Production"
 
 import TransCellAssay as TCA
 from scipy.stats import rankdata
 import numpy as np
 
 
-def rank_product(plate, SECdata=False, method="average", size=96, verbose=False):
+def rank_product(plate, secdata=False, rank_method="average", size=96, verbose=False):
+    """
+    Compute the rank product of plate with replicat data
+    :param plate: plate object
+    :param secdata: use or not systematic error corrected data
+    :param rank_method: method for rank : average, min, max, dense, ordinal
+    :param size: number of well of plate
+    :param verbose: print or not result
+    :return: return np array with result
+    """
     try:
         if isinstance(plate, TCA.Plate):
             rk_pdt = plate.PlateMap.platemap.values.flatten().reshape(size, 1)
             for key, value in plate.replicat.items():
-                if SECdata:
-                    rank = _get_data_rank(value.SECData, method=method)
+                if secdata:
+                    rank = _get_data_rank(value.SECData, method=rank_method)
                 else:
-                    rank = _get_data_rank(value.Data, method=method)
+                    rank = _get_data_rank(value.Data, method=rank_method)
                 rk_pdt = np.append(rk_pdt, rank.flatten().reshape(size, 1), axis=1)
 
-            # rk_pdt = np.append(rk_pdt, np.mean(rk_pdt, axis=1).reshape(size, 1), axis=1)
+            rk_pdt = np.append(rk_pdt, np.mean(rk_pdt[:, 1:], axis=1).reshape(size, 1), axis=1)
 
             if verbose:
                 print(rk_pdt)
-
             return rk_pdt
         else:
             raise TypeError
