@@ -103,7 +103,7 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
                                              sedt=sedt, sec_data=sec_data, verbose=False))
 
             if verbose:
-                print("\nQuality control for plat: \n")
+                print("\nQuality control for plate: ", plate.Name + "\n")
                 print(qc_data_array)
 
             if dirpath is not None:
@@ -159,6 +159,10 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
                 if sec_data:
                     if replicat.SECData is None:
                         raise ValueError("\033[0;31m[ERROR]\033[0m SEC Before")
+                    else:
+                        TCA.systematic_error_detection_test(replicat.SECData)
+                else:
+                    TCA.systematic_error_detection_test(replicat.Data, verbose=True)
             qc_data_array['Replicat ID'] = replicat.name
             qc_data_array['Neg Mean'] = np.mean(negdata)
             qc_data_array['Neg SD'] = np.std(negdata)
@@ -174,7 +178,7 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 
             if verbose:
-                print("\nQuality Control for replicat : ", replicat.name)
+                print("\nQuality Control for replicat : ", replicat.name + "\n")
                 print(qc_data_array)
             return qc_data_array
     except Exception as e:

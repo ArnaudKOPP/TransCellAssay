@@ -50,7 +50,7 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
             # exit if not row or col affected
             n = nrows.__len__() + ncols.__len__()
             if n == 0:
-                print('\033[0;33m[WARNING]\033[0m No Systematics Error detected')
+                print('\033[0;32m[INFO]\033[0m No Systematics Error detected')
                 return input_array
 
             mu = 0

@@ -77,12 +77,12 @@ class Replicat(object):
         try:
             self.RawData = pd.read_csv(input_file)
             if DEBUG:
-                print('Reading %s File' % input_file)
+                print('\033[0;32m[INFO]\033[0m Reading %s File' % input_file)
         except:
             try:
                 self.RawData = pd.read_csv(input, decimal=",", sep=";")
                 if DEBUG:
-                    print('Reading %s File' % input_file)
+                    print('\033[0;32m[INFO]\033[0m Reading %s File' % input_file)
             except Exception as e:
                 print('\033[0;31m[ERROR]\033[0m  Error in reading %s File' % input_file, e)
 

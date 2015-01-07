@@ -17,20 +17,23 @@ from scipy.stats import rankdata
 import numpy as np
 
 
-def getRankStat(plate, SECdata=False, method="average", size=96):
-    # TODO finish and test implementation of this class
+def rank_product(plate, SECdata=False, method="average", size=96, verbose=False):
     try:
         if isinstance(plate, TCA.Plate):
-            name = plate.PlateMap.platemap.values.flatten().reshape(size, 1)
-            for key, value in plate.replicat:
+            rk_pdt = plate.PlateMap.platemap.values.flatten().reshape(size, 1)
+            for key, value in plate.replicat.items():
                 if SECdata:
-                    rank = _get_data_rank(value.SECdata, method=method)
-                    name = np.append(name, rank.flatten().reshape(size, 1), axis=1)
+                    rank = _get_data_rank(value.SECData, method=method)
                 else:
                     rank = _get_data_rank(value.Data, method=method)
-                    name = np.append(name, rank.flatten().reshape(size, 1), axis=1)
+                rk_pdt = np.append(rk_pdt, rank.flatten().reshape(size, 1), axis=1)
 
-            name = np.append(np.mean(name, axis=1).reshape(size, 1), axis=1)
+            # rk_pdt = np.append(rk_pdt, np.mean(rk_pdt, axis=1).reshape(size, 1), axis=1)
+
+            if verbose:
+                print(rk_pdt)
+
+            return rk_pdt
         else:
             raise TypeError
     except Exception as e:

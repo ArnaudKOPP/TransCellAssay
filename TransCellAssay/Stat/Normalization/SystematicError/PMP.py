@@ -57,7 +57,7 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
             # exit if not row or col affected
             n = nrows.__len__() + ncols.__len__()
             if n == 0:
-                print('\033[0;33m[WARNING]\033[0m No Systematics Error detected')
+                print('\033[0;33m[INFO]\033[0m No Systematics Error detected')
                 return input_array
 
             mu = 0
