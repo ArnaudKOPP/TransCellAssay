@@ -11,137 +11,95 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 np.set_printoptions(linewidth=250)
 np.set_printoptions(suppress=True)
-"""
-import os
-import sys
-import time
+
 import TransCellAssay as TCA
 
-time_start = time.time()
 
-# # reading TEST
-time_norm_start = time.time()
+def do_it(plate_nb, verbose=False):
+    plaque1 = TCA.Core.Plate(name='Plate' + plate_nb)
+    platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/Toulouse_12_2014/Pl1PP.csv")
+    plaque1 + platesetup
+    rep1 = TCA.Core.Replicat(name="rep1",
+                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".1.csv")
+    rep2 = TCA.Core.Replicat(name="rep2",
+                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".2.csv")
+    rep3 = TCA.Core.Replicat(name="rep3",
+                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".3.csv")
+    plaque1 + rep1
+    plaque1 + rep2
+    plaque1 + rep3
+    feature = "ROI_B_Target_I_ObjectTotalInten"
+    neg = "Neg"
+    pos = "F1 ATPase B"
 
-screen_test = TCA.Core.Screen()
-plaque1 = TCA.Core.Plate(name='Plate 1')
-platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/antagomir/Pl1PP.csv")
-# plaque1.addPlateMap(platesetup)
-# # or
-plaque1 + platesetup
-rep1 = TCA.Core.Replicat(name="rep1", data="/home/arnaud/Desktop/antagomir/Pl9rep_1.csv")
-rep2 = TCA.Core.Replicat(name="rep2", data="/home/arnaud/Desktop/antagomir/Pl9rep_2.csv")
-rep3 = TCA.Core.Replicat(name="rep3", data="/home/arnaud/Desktop/antagomir/Pl9rep_3.csv")
+    plaque1.check_data_consistency()
+    rep1.DataType = "mean"
+    rep2.DataType = "mean"
+    rep3.DataType = "mean"
 
-# listing = list()
-# listing.append(rep1)
-# listing.append(rep2)
-# listing.append(rep3)
-# plaque1 + listing
-# # or
-plaque1 + rep1
-plaque1 + rep2
-plaque1 + rep3
+    # analyse = TCA.plate_analysis(plaque1, [feature], neg, pos, threshold=50)
+    # print(analyse)
 
-## or
-# plaque1.addReplicat(rep1)
-# plaque1.addReplicat(rep2)
-# plaque1.addReplicat(rep3)
-screen_test.add_plate(plaque1)
+    # plaque1.normalization(feature, method='Zscore', log=False, neg=platesetup.get_well(neg),
+    # pos=platesetup.get_well(pos))
+    TCA.feature_scaling(plaque1, feature, mean_scaling=True)
+    plaque1.compute_data_from_replicat(feature)
 
-feature = "Nuc Intensity"
-neg = "NT"
-pos = "SINV C"
+    # TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
 
-time_norm_stop = time.time()
-print("\033[0;32m ->Reading input data Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+    # TCA.systematic_error_detection_test(plaque1.Data, alpha=0.1, verbose=True)
+    plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=verbose, alpha=0.1)
 
-time_start_comp = time.time()
+    plaque1.compute_data_from_replicat(feature, use_sec_data=True)
+    print(plaque1.SECData)
 
-time_norm_start = time.time()
-TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
-time_norm_stop = time.time()
-print("\033[0;32mQuality Control Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+    # TCA.systematic_error_detection_test(plaque1.SECData, alpha=0.1, verbose=True)
 
-time_norm_start = time.time()
-analyse = TCA.plate_analysis(plaque1, [feature], neg, pos, threshold=50)
-print(analyse)
-time_norm_stop = time.time()
-print("\033[0;32mCompute Plate Analyzis Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, sec_data=False, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, robust_version=False, sec_data=False, verbose=True)
+    # ssmd = TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=True)
+    # TCA.systematic_error_detection_test(ssmd, alpha=0.1, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, variance='unequal', robust_version=False,
+    # sec_data=True, verbose=True)
 
-time_norm_start = time.time()
-plaque1.normalization(feature, method='Zscore', log=True, neg=neg, pos=pos)
-time_norm_stop = time.time()
-print("\033[0;32mNormalization Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+    TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose, method='MM')
 
-time_norm_start = time.time()
-plaque1.compute_data_from_replicat(feature)
-print(plaque1.Data)
-print('rep1')
-print(plaque1['rep1'].Data)
+    # TCA.rank_product(plaque1, secdata=True, verbose=True)
 
-# TCA.systematic_error_detection_test(plaque1.Data, alpha=0.05, verbose=True)
-# TCA.systematic_error_detection_test(rep1.Data, alpha=0.05, verbose=True)
-# TCA.systematic_error_detection_test(rep2.Data, alpha=0.05, verbose=True)
-# TCA.systematic_error_detection_test(rep3.Data, alpha=0.05, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, robust_version=False, sec_data=True, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='MM', sec_data=True, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='MM', robust_version=False,
+    # sec_data=True, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='MM', sec_data=False, verbose=True,
+    #                      inplate_data=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='MM', robust_version=False,
+    #                      sec_data=False, verbose=True, inplate_data=True)
 
-plaque1.systematic_error_correction(method='median', apply_down=True, save=True, verbose=False)
-# plaque1.SystematicErrorCorrection(apply_down=False, save=True)  # apply only when replicat are not SE norm
-plaque1.compute_data_from_replicat(feature, use_sec_data=True)
-print("SEC")
-print(plaque1.SECData)
-print('rep1')
-print(plaque1['rep1'].SECData)
-TCA.systematic_error_detection_test(plaque1.SECData, alpha=0.05, verbose=True)
-time_norm_stop = time.time()
-print("\033[0;32mSEC Executed in {0:f}s\033[0m".format(float(time_norm_stop - time_norm_start)))
+    # TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=True)
+    TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=verbose)
+    # TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
+    # TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
 
-# print("\n \033[0;32m     SSMD TESTING \033[0m")
-# time_norm_start = time.time()
-# TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, sec_data=False, verbose=True)
-# TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, robust_version=False, sec_data=False, verbose=True)
-# TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=False, verbose=True)
-TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, variance='unequal', robust_version=False,
-                     sec_data=True, verbose=True)
+    # gene = platesetup.platemap.values.flatten().reshape(96, 1)
+    # stat = np.append(gene, test.flatten().reshape(96, 1), axis=1)
+    # stat = np.append(stat, ssmd.flatten().reshape(96, 1), axis=1)
+    # print(stat)
 
-start = time.time()
-plaque1.check_data_consistency()
-stop = time.time()
-print("\033[0;32mCheck data Executed in {0:f}s\033[0m".format(float(stop - start)))
-# TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=True)
-# TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, robust_version=False, sec_data=True, verbose=True)
-# ssmd = TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', sec_data=True, verbose=True)
-# TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', robust_version=False,
-# sec_data=True, verbose=True)
-# TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', sec_data=False, verbose=True,
-#                      inplate_data=True)
-# TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='UMVUE', robust_version=False,
-#                      sec_data=False, verbose=True, inplate_data=True)
-# print("\033[0;32m    T-Stat TESTING \033[0m")
-# TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=True)
-# TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=False, verbose=True)
-# TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=True)
-# test = TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=False, verbose=True)
-#
-# gene = platesetup.platemap.values.flatten().reshape(96, 1)
-# stat = np.append(gene, test.flatten().reshape(96, 1), axis=1)
-# stat = np.append(stat, ssmd.flatten().reshape(96, 1), axis=1)
-# print(stat)
+    # TCA.Graphics.plotDistribution('C5', plaque1, feature)
+    # TCA.boxplotByWell(rep1.RawData, feature)
+    # TCA.PlateHeatmap(plaque1.Data)
+    # TCA.SystematicError(plaque1.Data)
+    # TCA.SystematicError(plaque1.SECData)
+    # TCA.plotSurf3D_Plate(rep1.Data)
+    # TCA.plotScreen(screen_test)
+    # TCA.plotSurf3D_Plate(rep1.Data)
+    # TCA.plotSurf3D_Plate(plaque1.SECData)
+    # clustering = TCA.k_mean_clustering(plaque1)
+    # clustering.do_cluster()
 
 
-# TCA.Graphics.plotDistribution('C5', plaque1, feature)
-# Graphics.boxplotByWell(rep1.Dataframe, feature)
-# Graphics.PlateHeatmap(rep1.Data)
-# Graphics.SystematicError(rep1.Data)
-# Graphics.plotSurf3D_Plate(rep1.Data)
-# Graphics.plotScreen(screen_test)
-# TCA.plotSurf3D_Plate(ssmd)
-
-# clustering = TCA.k_mean_clustering(plaque1)
-# clustering.do_cluster()
-
-time_stop_comp = time.time()
-print("\033[0;32m ->Computation Executed in {0:f}s\033[0m".format(float(time_stop_comp - time_start_comp)))
-"""
+do_it(plate_nb="2", verbose=True)
 
 """
 time_start = time.time()
@@ -180,11 +138,11 @@ print("\033[0;32m   ----> TOTAL TIME : {0:f}s\033[0m".format(float(time_stop - t
 # print(json.dumps(response, indent=4, separators=(',', ': ')))
 
 # ### String REST TEST
-from TransCellAssay.IO.Rest.String import String
+# from TransCellAssay.IO.Rest.String import String
 
-str = String()
-response = str.test()
-print(response)
+# str = String()
+# response = str.test()
+# print(response)
 
 # ### Array Express REST TEST
 # from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress

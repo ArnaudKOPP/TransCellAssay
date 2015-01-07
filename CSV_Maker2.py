@@ -95,35 +95,35 @@ USAGE
                 barcode = well['PlateId/Barcode'][0]
 
                 try:
-                    data = pd.read_csv((root + "/Well.csv"))
+                    data = pd.read_csv((root + "/Cell.csv"))
                 except:
                     try:
-                        data = pd.read_csv((root + "/Well.csv"), decimal=",", sep=";")
+                        data = pd.read_csv((root + "/Cell.csv"), decimal=",", sep=";")
                     except Exception as e:
                         print("Error in reading File", e)
 
                 data[['Row', 'Column']] = data[['Row', 'Column']].astype(int)
-                # # rename row from number to name **pretty ugly**
-                # data = data.replace({'Row': {0: 'A'}})
-                # data = data.replace({'Row': {1: 'B'}})
-                # data = data.replace({'Row': {2: 'C'}})
-                # data = data.replace({'Row': {3: 'D'}})
-                # data = data.replace({'Row': {4: 'E'}})
-                # data = data.replace({'Row': {5: 'F'}})
-                # data = data.replace({'Row': {6: 'G'}})
-                # data = data.replace({'Row': {7: 'H'}})
-                # data = data.replace({'Row': {8: 'I'}})
-                # data = data.replace({'Row': {9: 'J'}})
-                # data = data.replace({'Row': {10: 'K'}})
-                # data = data.replace({'Row': {11: 'L'}})
-                # data = data.replace({'Row': {12: 'M'}})
-                # data = data.replace({'Row': {13: 'N'}})
-                # data = data.replace({'Row': {14: 'O'}})
-                # data = data.replace({'Row': {15: 'P'}})
-                # ## insert Well columns
-                # data.insert(0, "Well", 0)
-                # ## put Well value from row and col columns
-                # data['Well'] = data.apply(lambda x: '%s%.3g' % (x['Row'], x['Column'] + 1), axis=1)
+                # rename row from number to name **pretty ugly**
+                data = data.replace({'Row': {0: 'A'}})
+                data = data.replace({'Row': {1: 'B'}})
+                data = data.replace({'Row': {2: 'C'}})
+                data = data.replace({'Row': {3: 'D'}})
+                data = data.replace({'Row': {4: 'E'}})
+                data = data.replace({'Row': {5: 'F'}})
+                data = data.replace({'Row': {6: 'G'}})
+                data = data.replace({'Row': {7: 'H'}})
+                data = data.replace({'Row': {8: 'I'}})
+                data = data.replace({'Row': {9: 'J'}})
+                data = data.replace({'Row': {10: 'K'}})
+                data = data.replace({'Row': {11: 'L'}})
+                data = data.replace({'Row': {12: 'M'}})
+                data = data.replace({'Row': {13: 'N'}})
+                data = data.replace({'Row': {14: 'O'}})
+                data = data.replace({'Row': {15: 'P'}})
+                ## insert Well columns
+                data.insert(0, "Well", 0)
+                ## put Well value from row and col columns
+                data['Well'] = data.apply(lambda x: '%s%.3g' % (x['Row'], x['Column'] + 1), axis=1)
 
                 try:
                     skip = ["FieldNumber", "CellNumber", "X", "Y", "Z", "Width", "Height", "PixelSizeX",
@@ -132,7 +132,7 @@ USAGE
 
 
                     # data = data.drop(skip, axis=1)
-                    data = data.drop(remove, axis=1)
+                    data = data.drop(skip, axis=1)
                     ## remove row with NaN(empty)
                     data = data.dropna(axis=0)
                 except Exception as e:

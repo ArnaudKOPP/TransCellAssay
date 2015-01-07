@@ -23,7 +23,7 @@ used to calculate the ssmd.
 import numpy as np
 import scipy.special
 import TransCellAssay as TCA
-from TransCellAssay.Stat.stat_misc import mad
+from TransCellAssay.Utils.stat_misc import mad
 
 
 __author__ = "Arnaud KOPP"

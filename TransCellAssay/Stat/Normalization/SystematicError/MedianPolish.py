@@ -16,7 +16,7 @@ trimmed mean : cut the outside limit default = 0.0 so its equivalent to the 'sta
 
 import numpy as np
 from scipy import stats
-from TransCellAssay.Stat.stat_misc import mad
+from TransCellAssay.Utils.stat_misc import mad
 
 
 __author__ = "Arnaud KOPP"
