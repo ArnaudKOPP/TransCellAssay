@@ -405,7 +405,7 @@ class Replicat(object):
         """
         try:
             return ("\n Replicat : " + repr(self.name) +
-                    "\n Raw Data head : " + repr(self.RawData.head()) +
+                    "\n Raw Data head : \n" + repr(self.RawData.head()) +
                     "\n Data normalized ? : " + repr(self.isNormalized) +
                     "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
@@ -417,7 +417,7 @@ class Replicat(object):
         """
         try:
             return ("\n Replicat : " + repr(self.name) +
-                    "\n Raw Data head : " + repr(self.RawData.head()) +
+                    "\n Raw Data head : \n" + repr(self.RawData.head()) +
                     "\n Data normalized ? : " + repr(self.isNormalized) +
                     "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:

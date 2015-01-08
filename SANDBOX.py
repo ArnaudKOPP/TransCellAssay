@@ -100,11 +100,11 @@ def do_it(plate_nb, verbose=False):
     # TCA.SystematicError(plaque1.SECData)
     # TCA.plotSurf3D_Plate(rep1.Data)
     # TCA.plotScreen(screen_test)
-    # TCA.plotSurf3D_Plate(rep1.Data)
-    # TCA.plotSurf3D_Plate(plaque1.SECData)
+    # TCA.plotSurf3D_Plate(rep2.Data)
+    # TCA.plotSurf3D_Plate(rep2.SECData)
     # clustering = TCA.k_mean_clustering(plaque1)
     # clustering.do_cluster()
-
+    print(plaque1)
 
 do_it(plate_nb="2", verbose=True)
 
