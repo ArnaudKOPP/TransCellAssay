@@ -18,15 +18,16 @@ from scipy.stats import rankdata
 import numpy as np
 
 
-def rank_product(plate, secdata=False, rank_method="average", size=96, verbose=False):
+def rank_product(plate, secdata=False, mean_method="mean", rank_method="average", size=96, verbose=False):
     """
     Compute the rank product of plate with replicat data
     :param plate: plate object
     :param secdata: use or not systematic error corrected data
+    :param mean_method: mean or median for rank product
     :param rank_method: method for rank : average, min, max, dense, ordinal
     :param size: number of well of plate
     :param verbose: print or not result
-    :return: return np array with result
+    :return: return np ndarray with result
     """
     try:
         if isinstance(plate, TCA.Plate):
@@ -38,7 +39,10 @@ def rank_product(plate, secdata=False, rank_method="average", size=96, verbose=F
                     rank = _get_data_rank(value.Data, method=rank_method)
                 rk_pdt = np.append(rk_pdt, rank.flatten().reshape(size, 1), axis=1)
 
-            rk_pdt = np.append(rk_pdt, np.mean(rk_pdt[:, 1:], axis=1).reshape(size, 1), axis=1)
+            if mean_method is 'mean':
+                rk_pdt = np.append(rk_pdt, np.mean(rk_pdt[:, 1:], axis=1).reshape(size, 1), axis=1)
+            elif mean_method is 'median':
+                rk_pdt = np.append(rk_pdt, np.median(rk_pdt[:, 1:], axis=1).reshape(size, 1), axis=1)
 
             if verbose:
                 print(rk_pdt)
