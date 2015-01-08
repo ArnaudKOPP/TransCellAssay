@@ -20,24 +20,32 @@ def do_it(plate_nb, verbose=False):
     platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/Toulouse_12_2014/Pl1PP.csv")
     plaque1 + platesetup
     rep1 = TCA.Core.Replicat(name="rep1",
-                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".1.csv")
+                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".1.csv",
+                             skip=((3, 0), (4, 0), (5, 11)))
     rep2 = TCA.Core.Replicat(name="rep2",
-                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".2.csv")
+                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".2.csv",
+                             skip=((6, 11)))
     rep3 = TCA.Core.Replicat(name="rep3",
                              data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".3.csv")
+
     plaque1 + rep1
     plaque1 + rep2
     plaque1 + rep3
     feature = "ROI_B_Target_I_ObjectTotalInten"
     neg = "Neg"
-    pos = "F1 ATPase B"
+    pos = "F1 ATPase A"
 
     plaque1.check_data_consistency()
     rep1.DataType = "mean"
     rep2.DataType = "mean"
     rep3.DataType = "mean"
 
-    # analyse = TCA.plate_analysis(plaque1, [feature], neg, pos, threshold=50)
+    import time
+
+    start = time.time()
+    # TCA.plate_analysis(plaque1, [feature], neg, pos, threshold=50)
+    end = time.time()
+    print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(end - start)))
     # print(analyse)
 
     # plaque1.normalization(feature, method='Zscore', log=False, neg=platesetup.get_well(neg),
@@ -45,13 +53,12 @@ def do_it(plate_nb, verbose=False):
     TCA.feature_scaling(plaque1, feature, mean_scaling=True)
     plaque1.compute_data_from_replicat(feature)
 
-    # TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
+    TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
 
     # TCA.systematic_error_detection_test(plaque1.Data, alpha=0.1, verbose=True)
-    plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=verbose, alpha=0.1)
+    plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 
     plaque1.compute_data_from_replicat(feature, use_sec_data=True)
-    print(plaque1.SECData)
 
     # TCA.systematic_error_detection_test(plaque1.SECData, alpha=0.1, verbose=True)
 
@@ -78,7 +85,7 @@ def do_it(plate_nb, verbose=False):
 
     # TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=True)
     TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=verbose)
-    # TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
+    TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
     # TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
 
     # gene = platesetup.platemap.values.flatten().reshape(96, 1)
