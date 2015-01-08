@@ -45,7 +45,7 @@ class Replicat(object):
     self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
-    def __init__(self, name=None, data=None, single=True, skip=None):
+    def __init__(self, name=None, data=None, single=True, skip=()):
         """
         Constructor
         """

@@ -114,6 +114,8 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
                 for j in range(ttest_score.shape[1]):
                     well_value = []
                     for key, value in plate.replicat.items():
+                        if (i, j) in value.skip_well:
+                            continue
                         try:
                             if sec_data:
                                 well_value.append(value.SECData[i][j])
@@ -176,35 +178,29 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                 raise Exception("Not Well for control")
 
             # search neg control value
-            def _search_neg_data(replicat, Neg_Pos):
-                neg_value = []
+            def _search_neg_data(replicat, neg_pos):
                 if value.skip_well is not None:
-                    valid_neg_pos = [x for x in Neg_Pos if (x not in value.skip_well)]
+                    valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
                 else:
-                    valid_neg_pos = Neg_Pos
-                try:
-                    for i in range(ttest_score.shape[0]):
-                        for j in range(ttest_score.shape[1]):
-                            try:
-                                if sec_data:
-                                    well_value.append(replicat.SECData[i][j])
-                                else:
-                                    well_value.append(replicat.Data[i][j])
-                            except Exception:
-                                raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
-                            # check if neg value
-                            for neg_i in valid_neg_pos:
-                                if neg_i[0] == i:
-                                    if neg_i[1] == j:
-                                        neg_value.append(well_value)
-                    return np.nanmedian(neg_value)
-                except Exception as e:
-                    print(e)
+                    valid_neg_pos = neg_pos
+                neg_value = []
+                for neg_i in valid_neg_pos:
+                    try:
+                        if sec_data:
+                            well_value = replicat.SECData[neg_i[0]][neg_i[1]]
+                        else:
+                            well_value = replicat.Data[neg_i[0]][neg_i[1]]
+                        neg_value.append(well_value)
+                    except Exception:
+                        raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                return np.nanmedian(neg_value)
 
             for i in range(ttest_score.shape[0]):
                 for j in range(ttest_score.shape[1]):
                     well_value = []
                     for key, value in plate.replicat.items():
+                        if (i, j) in value.skip_well:
+                            continue
                         neg_median = _search_neg_data(value, neg_position)
                         try:
                             if sec_data:

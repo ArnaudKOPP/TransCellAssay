@@ -112,6 +112,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
             if not neg_position:
                 raise Exception("Not Well for control")
 
+            # search neg control data
             for key, value in plate.replicat.items():
                 if value.skip_well is not None:
                     valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
@@ -136,8 +137,8 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
                 for j in range(ssmd.shape[1]):
                     well_value = 0
                     for key, value in plate.replicat.items():
-                        if value.skip_well is not None:
-                            neg_position = [x for x in neg_position if (x not in value.skip_well)]
+                        if (i, j) in value.skip_well:
+                            continue
                         try:
                             if sec_data:
                                 well_value = value.SECData[i][j]
@@ -203,6 +204,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
             if not neg_position:
                 raise Exception("Not Well for control")
 
+            # search neg control data
             for key, value in plate.replicat.items():
                 if value.skip_well is not None:
                     valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
@@ -227,6 +229,8 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
                 for j in range(ssmd.shape[1]):
                     well_value = 0
                     for key, value in plate.replicat.items():
+                        if (i, j) in value.skip_well:
+                            continue
                         try:
                             if sec_data:
                                 well_value = value.SECData[i][j]
@@ -296,20 +300,15 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                 else:
                     valid_neg_pos = neg_pos
                 neg_value = []
-                for i in range(ssmd.shape[0]):
-                    for j in range(ssmd.shape[1]):
-                        try:
-                            if sec_data:
-                                well_value = replicat.SECData[i][j]
-                            else:
-                                well_value = replicat.Data[i][j]
-                        except Exception:
-                            raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
-                        # check if neg value
-                        for neg_i in valid_neg_pos:
-                            if neg_i[0] == i:
-                                if neg_i[1] == j:
-                                    neg_value.append(well_value)
+                for neg_i in valid_neg_pos:
+                    try:
+                        if sec_data:
+                            well_value = replicat.SECData[neg_i[0]][neg_i[1]]
+                        else:
+                            well_value = replicat.Data[neg_i[0]][neg_i[1]]
+                        neg_value.append(well_value)
+                    except Exception:
+                        raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                 return np.nanmedian(neg_value)
 
             x = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
@@ -320,6 +319,8 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                     for j in range(ssmd.shape[1]):
                         well_value = []
                         for key, value in plate.replicat.items():
+                            if (i, j) in value.skip_well:
+                                continue
                             neg_median = _search_neg_data(value, neg_position)
                             if sec_data:
                                 well_value.append(value.SECData[i][j] - neg_median)
@@ -383,20 +384,15 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                 else:
                     valid_neg_pos = neg_pos
                 neg_value = []
-                for i in range(ssmdr.shape[0]):
-                    for j in range(ssmdr.shape[1]):
-                        try:
-                            if sec_data:
-                                well_value = replicat.SECData[i][j]
-                            else:
-                                well_value = replicat.Data[i][j]
-                        except Exception:
-                            raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
-                        # check if neg value
-                        for neg_i in valid_neg_pos:
-                            if neg_i[0] == i:
-                                if neg_i[1] == j:
-                                    neg_value.append(well_value)
+                for neg_i in valid_neg_pos:
+                    try:
+                        if sec_data:
+                            well_value = replicat.SECData[neg_i[0]][neg_i[1]]
+                        else:
+                            well_value = replicat.Data[neg_i[0]][neg_i[1]]
+                        neg_value.append(well_value)
+                    except Exception:
+                        raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                 return np.nanmedian(neg_value)
 
             x = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
@@ -407,6 +403,8 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                     for j in range(ssmdr.shape[1]):
                         well_value = []
                         for key, value in plate.replicat.items():
+                            if (i, j) in value.skip_well:
+                                continue
                             neg_median = _search_neg_data(value, neg_position)
                             if sec_data:
                                 well_value.append(value.SECData[i][j] - neg_median)
