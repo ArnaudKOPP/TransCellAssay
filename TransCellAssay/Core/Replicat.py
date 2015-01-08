@@ -45,14 +45,14 @@ class Replicat(object):
     self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
-    def __init__(self, name=None, data=None, single=True, skip=()):
+    def __init__(self, name=None, data=None, single=True, skip=(), datatype='median'):
         """
         Constructor
         """
         self.RawData = None
         self.isNormalized = False
         self.isSpatialNormalized = False
-        self.DataType = "median"
+        self.DataType = datatype
         self.Data = None
         self.SECData = None
 
