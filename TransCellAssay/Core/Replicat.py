@@ -18,6 +18,7 @@ B2
 import pandas as pd
 import numpy as np
 import TransCellAssay as TCA
+import os
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -389,13 +390,27 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def save_raw_data(self, path):
+    def save_raw_data(self, path, name=None):
         """
         Save normalized Raw data
+        :param name: Give name to file
         :param path: Where to write .csv file
         """
         try:
-            self.RawData.to_csv(path=path)
+            if not os.path.isdir(path):
+                os.mkdir(path)
+            if name is None:
+                if self.name is not None:
+                    print(os.path.join(path, self.name)+".csv")
+                    self.RawData.to_csv(path=os.path.join(path, self.name)+".csv", index=False)
+                    if DEBUG:
+                        print('\033[0;32m[INFO]\033[0m Writing File')
+                else:
+                    raise Exception("\033[0;33m[WARNING]\033[0m Can't save Data, need name for replicat")
+            else:
+                self.RawData.to_csv(path=os.path.join(path, name)+".csv", index=False)
+                if DEBUG:
+                    print('\033[0;32m[INFO]\033[0m Writing File')
         except Exception as e:
             print(e)
 

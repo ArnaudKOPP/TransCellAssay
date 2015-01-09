@@ -16,9 +16,9 @@ import TransCellAssay as TCA
 
 
 def do_it(plate_nb, verbose=False):
-    plaque1 = TCA.Core.Plate(name='Plate' + plate_nb)
+    plaque = TCA.Core.Plate(name='Plate' + plate_nb)
     platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/Toulouse_12_2014/Pl1PP.csv")
-    plaque1 + platesetup
+    plaque + platesetup
     rep1 = TCA.Core.Replicat(name="rep1",
                              data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".1.csv",
                              skip=((3, 0), (4, 0), (5, 11)))
@@ -28,85 +28,84 @@ def do_it(plate_nb, verbose=False):
     rep3 = TCA.Core.Replicat(name="rep3",
                              data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".3.csv")
 
-    plaque1 + rep1
-    plaque1 + rep2
-    plaque1 + rep3
+    plaque + rep1
+    plaque + rep2
+    plaque + rep3
     feature = "ROI_B_Target_I_ObjectTotalInten"
     neg = "Neg"
     pos = "F1 ATPase A"
 
-    plaque1.check_data_consistency()
+    plaque.check_data_consistency()
     rep1.DataType = "mean"
     rep2.DataType = "mean"
     rep3.DataType = "mean"
 
-    import time
-
-    start = time.time()
-    # TCA.plate_analysis(plaque1, [feature], neg, pos, threshold=50)
-    end = time.time()
-    print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(end - start)))
+    # TCA.plate_analysis(plaque, [feature], neg, pos, threshold=50)
     # print(analyse)
 
-    # plaque1.normalization(feature, method='Zscore', log=False, neg=platesetup.get_well(neg),
-    # pos=platesetup.get_well(pos))
-    TCA.feature_scaling(plaque1, feature, mean_scaling=True)
-    plaque1.compute_data_from_replicat(feature)
+    plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg))
+    # TCA.feature_scaling(plaque, feature, mean_scaling=True)
 
-    TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
+    plaque.compute_data_from_replicat(feature)
 
-    # TCA.systematic_error_detection_test(plaque1.Data, alpha=0.1, verbose=True)
-    plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+    TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
 
-    plaque1.compute_data_from_replicat(feature, use_sec_data=True)
+    # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
+    plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 
-    # TCA.systematic_error_detection_test(plaque1.SECData, alpha=0.1, verbose=True)
+    plaque.compute_data_from_replicat(feature, use_sec_data=True)
 
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, sec_data=False, verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, robust_version=False, sec_data=False, verbose=True)
-    # ssmd = TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=True)
-    # TCA.systematic_error_detection_test(ssmd, alpha=0.1, verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=False, variance='unequal', robust_version=False,
-    # sec_data=True, verbose=True)
+    # TCA.systematic_error_detection_test(plaque.SECData, alpha=0.1, verbose=True)
 
-    TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose, method='MM')
+    # TCA.rank_product(plaque, secdata=True, verbose=True)
 
-    # TCA.rank_product(plaque1, secdata=True, verbose=True)
+    ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
+                                 verbose=verbose)
+    ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
+                                 variance="equal", verbose=verbose)
+    ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
+                                 verbose=verbose)
+    ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
+                                 method='MM', verbose=verbose)
+    tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=True,
+                                   verbose=verbose)
+    tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=True, verbose=verbose)
+    tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
 
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, robust_version=False, sec_data=True, verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='MM', sec_data=True, verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='MM', robust_version=False,
-    # sec_data=True, verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='MM', sec_data=False, verbose=True,
-    #                      inplate_data=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, paired=True, method='MM', robust_version=False,
-    #                      sec_data=False, verbose=True, inplate_data=True)
+    __SIZE__ = 96
 
-    # TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=True)
-    TCA.plate_tstat_score(plaque1, neg_control=neg, paired=False, variance='equal', sec_data=True, verbose=verbose)
-    TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
-    # TCA.plate_tstat_score(plaque1, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
+    gene = plaque.PlateMap.platemap.values.flatten().reshape(__SIZE__, 1)
+    final_array = np.append(gene, plaque.Data.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
 
-    # gene = platesetup.platemap.values.flatten().reshape(96, 1)
-    # stat = np.append(gene, test.flatten().reshape(96, 1), axis=1)
-    # stat = np.append(stat, ssmd.flatten().reshape(96, 1), axis=1)
-    # print(stat)
+    to_save = pd.DataFrame(final_array)
+    to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
 
-    # TCA.Graphics.plotDistribution('C5', plaque1, feature)
+    # plaque.save_raw_data("/home/arnaud/Desktop/plaque1_poc/")
+
+    # TCA.Graphics.plotDistribution('C5', plaque, feature)
     # TCA.boxplotByWell(rep1.RawData, feature)
-    # TCA.PlateHeatmap(plaque1.Data)
-    # TCA.SystematicError(plaque1.Data)
-    # TCA.SystematicError(plaque1.SECData)
+    # TCA.PlateHeatmap(plaque.Data)
+    # TCA.SystematicError(plaque.Data)
+    # TCA.SystematicError(plaque.SECData)
     # TCA.plotSurf3D_Plate(rep1.Data)
     # TCA.plotScreen(screen_test)
-    # TCA.plotSurf3D_Plate(rep2.Data)
+    # TCA.plotSurf3D_Plate(plaque.Data)
     # TCA.plotSurf3D_Plate(rep2.SECData)
-    # clustering = TCA.k_mean_clustering(plaque1)
+    # clustering = TCA.k_mean_clustering(plaque)
     # clustering.do_cluster()
-    print(plaque1)
+    # print(plaque)
 
-do_it(plate_nb="2", verbose=True)
+do_it(plate_nb="5", verbose=True)
 
 """
 time_start = time.time()

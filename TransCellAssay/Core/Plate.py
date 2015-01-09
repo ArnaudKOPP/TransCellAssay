@@ -453,13 +453,10 @@ class Plate(object):
         :param path: path where to save raw data
         """
         try:
-            if os.path.isdir(path):
-                for key, value in self.replicat.items():
-                    if not value.name:
-                        raise AttributeError("\033[0;31m[ERROR]\033[0m Replicat doesn't have name, picked them one !")
-                    value.save_raw_data(os.path.join(path, value.name))
-            else:
-                raise IOError("\033[0;31m[ERROR]\033[0m Directory don't exist")
+            if not os.path.isdir(path):
+                os.mkdir(path)
+            for key, value in self.replicat.items():
+                value.save_raw_data(path)
         except Exception as e:
             print(e)
 
