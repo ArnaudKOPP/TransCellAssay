@@ -83,6 +83,8 @@ class PlateMap(object):
             mat = self.platemap.as_matrix()  # # transform PS dataframe into numpy matrix
             size = mat.shape  # # get shape of matrix
             list_coord = []
+            # # TODO alternative (more fast)
+            # [x for x in zip(*np.where(mat == 'to_search'))]
             for r in range(size[0]):
                 for c in range(size[1]):
                     if to_search == mat[r][c]:
