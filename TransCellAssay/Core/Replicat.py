@@ -414,6 +414,17 @@ class Replicat(object):
         except Exception as e:
             print(e)
 
+    def save_memory(self):
+        """
+        Save memory by deleting Raw Data that use a lot of memory
+        """
+        try:
+            self.RawData = None
+            if DEBUG:
+                print('\033[0;32m[INFO]\033[0m Saving memory')
+        except Exception as e:
+            print(e)
+
     def __repr__(self):
         """
         Definition for the representation

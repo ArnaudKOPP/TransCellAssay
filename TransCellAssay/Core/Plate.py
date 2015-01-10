@@ -460,6 +460,16 @@ class Plate(object):
         except Exception as e:
             print(e)
 
+    def save_memory(self):
+        """
+        Save memory by deleting Raw Data
+        """
+        try:
+            for key, value in self.replicat.items():
+                value.save_memory()
+        except Exception as e:
+            print(e)
+
     @staticmethod
     def write_pickle(path):
         """
