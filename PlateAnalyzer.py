@@ -207,7 +207,7 @@ def plate_analyzis(plateid):
         for i in range(1, __NBREP__ + 1):
             plaque + TCA.Core.Replicat(name="rep" + str(i),
                                        data=os.path.join(__INPUT__, "toulouse pl " + str(plateid) + "." + str(i) +
-                                                         ".csv"), skip=to_skip_HMT[(plateid, i)], datatype='mean')
+                                                         ".csv"), skip=to_skip[(plateid, i)], datatype='mean')
         # # BEGIN ANALYZIS HERE
 
         __SIZE__ = 96
@@ -218,9 +218,9 @@ def plate_analyzis(plateid):
         analyse = TCA.plate_analysis(plaque, [__FEATURE__], __NEG__, __POS__, threshold=__THRESHOLD__)
         analyse.write_csv(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
 
-        TCA.feature_scaling(plaque, __FEATURE__, mean_scaling=True)
-        # plaque.normalization(__FEATURE__, method='Zscore', log=False, neg=plaque.PlateMap.get_well(__NEG__),
-        # pos=plaque.PlateMap.get_well(__POS__))
+        # TCA.feature_scaling(plaque, __FEATURE__, mean_scaling=True)
+        plaque.normalization(__FEATURE__, method='PercentOfControl', log=False, neg=plaque.PlateMap.get_well(__NEG__),
+                             pos=plaque.PlateMap.get_well(__POS__))
 
         plaque.compute_data_from_replicat(__FEATURE__)
 

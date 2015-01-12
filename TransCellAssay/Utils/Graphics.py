@@ -195,21 +195,41 @@ def plotScreen(Screen):
         print(e)
 
 
-def plotDistribution(Well, Plate, feature):
+def plotDistribution(wells, plate, feature, rep=None, pool=False):
+    """
+    Plot distribution of multiple well
+    :param wells: list of wells to plot distribution
+    :param plate: Plate with replicat
+    :param feature: which feature to plot
+    :param rep: if rep is provided, plot only distribution of selected wells for this one
+    :param pool: if pool is True, the selected wells are pooled accross replicat
+    """
     try:
         import matplotlib.pyplot as plt
         import pandas as pd
         import TransCellAssay.Core
 
         pd.options.display.mpl_style = 'default'
-        if isinstance(Plate, TCA.Core.Plate):
-            rep_series = dict()
-            for key, value in Plate.replicat.items():
-                rep_series[key] = pd.Series(value.RawData[feature][value.RawData['Well'] == Well])
-                rep_series[key].name = key
-            # # Plotting with pandas
-            for key, value in rep_series.items():
-                value.plot(kind="kde", legend=True)
+        if isinstance(plate, TCA.Core.Plate):
+            for Well in wells:
+                rep_series = dict()
+                if rep is not None:
+                    rep_series[rep] = pd.Series(plate[rep].RawData[feature][plate[rep].RawData['Well'] == Well])
+                    rep_series[rep].name = str(rep)+str(Well)
+                else:
+                    for key, value in plate.replicat.items():
+                        rep_series[key] = pd.Series(value.RawData[feature][value.RawData['Well'] == Well])
+                        rep_series[key].name = key+str(Well)
+                # # Plotting with pandas
+                if pool:
+                    pooled_data = pd.Series()
+                    for key, value in rep_series.items():
+                        pooled_data = pooled_data.append(value)
+                    pooled_data.name = str(Well)
+                    pooled_data.plot(kind='hist', alpha=0.5, legend=True, bins=1000)
+                else:
+                    for key, value in rep_series.items():
+                        value.plot(kind='hist', alpha=0.5, legend=True, bins=1000)
             plt.show(block=True)
     except Exception as e:
         print(e)

@@ -31,7 +31,7 @@ def do_it(plate_nb, verbose=False):
     plaque + rep1
     plaque + rep2
     plaque + rep3
-    feature = "ROI_B_Target_I_ObjectTotalInten"
+    feature = "ROI_A_Target_I_ObjectTotalInten"
     neg = "Neg"
     pos = "F1 ATPase A"
 
@@ -87,12 +87,13 @@ def do_it(plate_nb, verbose=False):
     final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
     final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
 
-    to_save = pd.DataFrame(final_array)
-    to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
+    # to_save = pd.DataFrame(final_array)
+    # to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
 
     # plaque.save_raw_data("/home/arnaud/Desktop/plaque1_poc/")
 
-    # TCA.Graphics.plotDistribution('C5', plaque, feature)
+    # TCA.Graphics.plotDistribution(('C1', 'D1'), plaque, feature, rep='rep2')
+    # TCA.Graphics.plotDistribution(('C1', 'D1'), plaque, feature, rep='rep1')
     # TCA.boxplotByWell(rep1.RawData, feature)
     # TCA.PlateHeatmap(plaque.Data)
     # TCA.SystematicError(plaque.Data)
@@ -105,7 +106,7 @@ def do_it(plate_nb, verbose=False):
     # clustering.do_cluster()
     # print(plaque)
 
-do_it(plate_nb="5", verbose=True)
+do_it(plate_nb="4", verbose=True)
 
 """
 time_start = time.time()
