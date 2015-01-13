@@ -127,7 +127,7 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
     :return:return numpy array with qc
     """
     try:
-        if replicat.skip_well is not None:
+        if len(replicat.skip_well) >= 1:
             valid_neg_well = [x for x in neg_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
             valid_pos_well = [x for x in pos_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
         else:

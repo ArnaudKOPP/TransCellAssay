@@ -297,7 +297,9 @@ class Replicat(object):
         try:
             if not self.isNormalized:
                 self.RawData = TCA.variability_normalization(self.RawData, feature=feature, method=method,
-                                                             log2_transf=log, neg_control=neg, pos_control=pos)
+                                                             log2_transf=log,
+                                                             neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
+                                                             pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
                 self.isNormalized = True
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
@@ -401,14 +403,14 @@ class Replicat(object):
                 os.mkdir(path)
             if name is None:
                 if self.name is not None:
-                    print(os.path.join(path, self.name)+".csv")
-                    self.RawData.to_csv(path=os.path.join(path, self.name)+".csv", index=False)
+                    print(os.path.join(path, self.name) + ".csv")
+                    self.RawData.to_csv(path=os.path.join(path, self.name) + ".csv", index=False)
                     if DEBUG:
                         print('\033[0;32m[INFO]\033[0m Writing File')
                 else:
                     raise Exception("\033[0;33m[WARNING]\033[0m Can't save Data, need name for replicat")
             else:
-                self.RawData.to_csv(path=os.path.join(path, name)+".csv", index=False)
+                self.RawData.to_csv(path=os.path.join(path, name) + ".csv", index=False)
                 if DEBUG:
                     print('\033[0;32m[INFO]\033[0m Writing File')
         except Exception as e:
