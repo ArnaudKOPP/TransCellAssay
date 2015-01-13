@@ -129,7 +129,7 @@ def _get_data_by_wells(dataframe, feature, wells):
         for i in wells:
             if data.empty:
                 data = dataframe[feature][dataframe['Well'] == i]
-            data.append(dataframe[feature][dataframe['Well'] == i])
+            data = data.append(dataframe[feature][dataframe['Well'] == i])
         return data
     except Exception as e:
         print(e)
