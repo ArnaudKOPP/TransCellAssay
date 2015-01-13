@@ -17,21 +17,21 @@ import TransCellAssay as TCA
 
 def do_it(plate_nb, verbose=False):
     plaque = TCA.Core.Plate(name='Plate' + plate_nb)
-    platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/Toulouse_12_2014/Pl1PP.csv")
+    platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/Toulouse_12_2014/Pl"+plate_nb+"PP.csv")
     plaque + platesetup
     rep1 = TCA.Core.Replicat(name="rep1",
                              data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".1.csv",
-                             skip=((3, 0), (4, 0), (5, 11)))
+                             skip=((2, 0), (3, 0), (4, 0), (5, 0)))
     rep2 = TCA.Core.Replicat(name="rep2",
                              data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".2.csv",
-                             skip=((6, 11)))
+                             skip=((3, 0), (1, 11)))
     rep3 = TCA.Core.Replicat(name="rep3",
                              data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".3.csv")
 
     plaque + rep1
     plaque + rep2
     plaque + rep3
-    feature = "ROI_A_Target_I_ObjectTotalInten"
+    feature = "ROI_B_Target_I_ObjectTotalInten"
     neg = "Neg"
     pos = "F1 ATPase A"
 
@@ -43,17 +43,30 @@ def do_it(plate_nb, verbose=False):
     # TCA.plate_analysis(plaque, [feature], neg, pos, threshold=50)
     # print(analyse)
 
-    plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg))
+    # plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
+    #                      pos=platesetup.get_well(pos))
     # TCA.feature_scaling(plaque, feature, mean_scaling=True)
 
     plaque.compute_data_from_replicat(feature)
 
-    TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
+    print(plaque['rep1'].Data)
+
+    plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
+                         pos=platesetup.get_well(pos))
+
+    plaque.compute_data_from_replicat(feature, forced_update=True)
+
+    print(plaque['rep1'].Data)
+
+    # TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
 
     # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
-    plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+    plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.05)
 
     plaque.compute_data_from_replicat(feature, use_sec_data=True)
+
+    print(plaque['rep1'].SECData)
+    print(plaque['rep1'].Data)
 
     # TCA.systematic_error_detection_test(plaque.SECData, alpha=0.1, verbose=True)
 
@@ -101,12 +114,12 @@ def do_it(plate_nb, verbose=False):
     # TCA.plotSurf3D_Plate(rep1.Data)
     # TCA.plotScreen(screen_test)
     # TCA.plotSurf3D_Plate(plaque.Data)
-    # TCA.plotSurf3D_Plate(rep2.SECData)
+    # TCA.plotSurf3D_Plate(plaque.SECData)
     # clustering = TCA.k_mean_clustering(plaque)
     # clustering.do_cluster()
     # print(plaque)
 
-do_it(plate_nb="4", verbose=True)
+do_it(plate_nb="3", verbose=False)
 
 """
 time_start = time.time()

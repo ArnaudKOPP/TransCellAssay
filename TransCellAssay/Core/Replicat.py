@@ -332,7 +332,7 @@ class Replicat(object):
                                  "already been removed")
             else:
                 if algorithm == 'Bscore':
-                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.Data, method=method,
+                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.Data.copy(), method=method,
                                                                    max_iterations=max_iterations,
                                                                    verbose=verbose)
                     if save:
@@ -340,7 +340,7 @@ class Replicat(object):
                         self.isSpatialNormalized = True
 
                 if algorithm == 'BZscore':
-                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.Data, method=method,
+                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.Data.copy(), method=method,
                                                                       max_iterations=max_iterations,
                                                                       verbose=verbose)
                     if save:
@@ -348,20 +348,20 @@ class Replicat(object):
                         self.isSpatialNormalized = True
 
                 if algorithm == 'PMP':
-                    corrected_data_array = TCA.partial_mean_polish(self.Data, max_iteration=max_iterations,
+                    corrected_data_array = TCA.partial_mean_polish(self.Data.copy(), max_iteration=max_iterations,
                                                                    verbose=verbose, alpha=alpha)
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'MEA':
-                    corrected_data_array = TCA.matrix_error_amendmend(self.Data, verbose=verbose, alpha=alpha)
+                    corrected_data_array = TCA.matrix_error_amendmend(self.Data.copy(), verbose=verbose, alpha=alpha)
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'DiffusionModel':
-                    corrected_data_array = TCA.diffusion_model(self.Data, max_iterations=max_iterations,
+                    corrected_data_array = TCA.diffusion_model(self.Data.copy(), max_iterations=max_iterations,
                                                                verbose=verbose)
                     if save:
                         self.SECData = corrected_data_array

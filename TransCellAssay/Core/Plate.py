@@ -335,10 +335,11 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def compute_data_from_replicat(self, feature, use_sec_data=False):
+    def compute_data_from_replicat(self, feature, use_sec_data=False, forced_update=False):
         """
         Compute the mean/median matrix data of all replicat
         If replicat data is SpatialNorm already, this function will fill spatDataMatrix
+        :param forced_update: Forced redetermination of replicat data, to use when you have determine matrix too soon
         :param use_sec_data: use or not sec data from replicat
         :param feature: which feature to have into sum up data
         """
@@ -348,7 +349,9 @@ class Plate(object):
 
             for key, replicat in self.replicat.items():
                 i += 1
-                if replicat.Data is None:
+                if self.Data is None:
+                    replicat.compute_data_for_feature(feature)
+                if forced_update:
                     replicat.compute_data_for_feature(feature)
 
                 if not use_sec_data:
@@ -400,7 +403,7 @@ class Plate(object):
                 for key, value in self.replicat.items():
                     value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
                                                       max_iterations=max_iterations, alpha=alpha)
-                return 0
+                return
 
             if self.Data is None:
                 raise ValueError(
@@ -410,14 +413,14 @@ class Plate(object):
                     "\033[0;31m[ERROR]\033[0m SystematicErrorCorrection -> Systematics error have already been removed")
             else:
                 if algorithm == 'Bscore':
-                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.Data, method=method,
+                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.Data.copy(), method=method,
                                                                    max_iterations=max_iterations,
                                                                    verbose=verbose)
                     if save:
                         self.SECData = resid
                         self.isSpatialNormalized = True
                 if algorithm == 'BZscore':
-                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.Data, method=method,
+                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.Data.copy(), method=method,
                                                                       max_iterations=max_iterations,
                                                                       verbose=verbose)
                     if save:
@@ -425,20 +428,20 @@ class Plate(object):
                         self.isSpatialNormalized = True
 
                 if algorithm == 'PMP':
-                    corrected_data_array = TCA.partial_mean_polish(self.Data, max_iteration=max_iterations, alpha=alpha,
+                    corrected_data_array = TCA.partial_mean_polish(self.Data.copy(), max_iteration=max_iterations, alpha=alpha,
                                                                    verbose=verbose)
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'MEA':
-                    corrected_data_array = TCA.matrix_error_amendmend(self.Data, verbose=verbose, alpha=alpha, )
+                    corrected_data_array = TCA.matrix_error_amendmend(self.Data.copy(), verbose=verbose, alpha=alpha, )
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'DiffusionModel':
-                    corrected_data_array = TCA.diffusion_model(self.Data, max_iterations=max_iterations,
+                    corrected_data_array = TCA.diffusion_model(self.Data.copy(), max_iterations=max_iterations,
                                                                verbose=verbose)
                     if save:
                         self.SECData = corrected_data_array
