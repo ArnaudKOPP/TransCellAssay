@@ -20,7 +20,7 @@ This package was developped and tested on python 3.4. It can replace CellHTS2 or
 * Pandas 
 * Numpy 
 * Scipy 
-* Matplotlib 
+* Matplotlib, seaborn
 * Scikit-learn 
 * requests, beautifulsoup4 for REST part
 * xlsxwriter

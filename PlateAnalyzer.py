@@ -203,30 +203,25 @@ def plate_analyzis(plateid):
                    (11, 2): ((5, 0), (0, 11)),
                    (11, 3): ((5, 0), (7, 0), (1, 11), (4, 11), (5, 11))}
 
-        # # test screen for replicat alone
-        to_skip_rep = {(1, 1): ((3, 0), (4, 0), (5, 11)),
-                       (2, 1): ((6, 11)),
-                       (3, 1): ()}
-
         # # CREATE PLATE OBJECT HERE
         plaque + TCA.Core.PlateMap(platemap=os.path.join(__INPUT__, "Pl" + str(plateid) + "PP.csv"))
         for i in range(1, __NBREP__ + 1):
             plaque + TCA.Core.Replicat(name="rep" + str(i),
                                        data=os.path.join(__INPUT__, "toulouse pl " + str(plateid) + "." + str(i) +
-                                                         ".csv"), skip=to_skip[(plateid, i)], datatype='mean')
+                                                         ".csv"), skip=to_skip_HMT[(plateid, i)], datatype='mean')
         # # BEGIN ANALYZIS HERE
 
         __SIZE__ = 96
 
-        # TCA.plate_quality_control(plaque, features=__FEATURE__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
-        # verbose=False, dirpath=output_data_plate_dir)
-
-        # analyse = TCA.plate_analysis(plaque, [__FEATURE__], __NEG__, __POS__, threshold=__THRESHOLD__)
-        # analyse.write_csv(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
+        analyse = TCA.plate_analysis(plaque, [__FEATURE__], __NEG__, __POS__, threshold=__THRESHOLD__)
+        analyse.write_csv(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
 
         # TCA.feature_scaling(plaque, __FEATURE__, mean_scaling=True)
         plaque.normalization(__FEATURE__, method='PercentOfControl', log=False, neg=plaque.PlateMap.get_well(__NEG__),
                              pos=plaque.PlateMap.get_well(__POS__))
+
+        TCA.plate_quality_control(plaque, features=__FEATURE__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
+                                  verbose=False, dirpath=output_data_plate_dir)
 
         plaque.compute_data_from_replicat(__FEATURE__)
 
@@ -261,19 +256,6 @@ def plate_analyzis(plateid):
         final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
         final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
         final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
-
-        # # For single Replicat workflow
-        # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, robust_version=True, sec_data=True,
-        #                              verbose=False)
-        #
-        # ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, robust_version=True, sec_data=True,
-        #                              method='MM', verbose=False)
-        #
-        # gene = plaque.PlateMap.platemap.values.flatten().reshape(__SIZE__, 1)
-        # final_array = np.append(gene, plaque.Data.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
-
 
         to_save = pd.DataFrame(final_array)
         to_save.to_csv(os.path.join(output_data_plate_dir, "ssmd_tstat.csv"), index=False, header=False)

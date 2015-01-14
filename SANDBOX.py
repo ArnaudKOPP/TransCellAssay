@@ -49,24 +49,17 @@ def do_it(plate_nb, verbose=False):
 
     plaque.compute_data_from_replicat(feature)
 
-    print(plaque['rep1'].Data)
-
     plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
                          pos=platesetup.get_well(pos))
 
     plaque.compute_data_from_replicat(feature, forced_update=True)
 
-    print(plaque['rep1'].Data)
-
-    # TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
+    TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
 
     # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
     plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.05)
 
     plaque.compute_data_from_replicat(feature, use_sec_data=True)
-
-    print(plaque['rep1'].SECData)
-    print(plaque['rep1'].Data)
 
     # TCA.systematic_error_detection_test(plaque.SECData, alpha=0.1, verbose=True)
 
@@ -74,31 +67,40 @@ def do_it(plate_nb, verbose=False):
 
     ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
                                  verbose=verbose)
+    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, verbose=verbose)
     ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
                                  variance="equal", verbose=verbose)
+    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, variance="equal",
+                         verbose=verbose)
     ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
                                  verbose=verbose)
+    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, verbose=verbose)
     ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
                                  method='MM', verbose=verbose)
+    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, method='MM',
+                         verbose=verbose)
     tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=True,
                                    verbose=verbose)
+    TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=False, verbose=verbose)
     tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=True, verbose=verbose)
+    TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=False, verbose=verbose)
     tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
+    TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=False, verbose=verbose)
 
     __SIZE__ = 96
 
-    gene = plaque.PlateMap.platemap.values.flatten().reshape(__SIZE__, 1)
-    final_array = np.append(gene, plaque.Data.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
+    # gene = plaque.PlateMap.platemap.values.flatten().reshape(__SIZE__, 1)
+    # final_array = np.append(gene, plaque.Data.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
 
     # to_save = pd.DataFrame(final_array)
     # to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
@@ -108,7 +110,8 @@ def do_it(plate_nb, verbose=False):
     # TCA.Graphics.plotDistribution(('C1', 'D1'), plaque, feature, rep='rep2')
     # TCA.Graphics.plotDistribution(('C1', 'D1'), plaque, feature, rep='rep1')
     # TCA.boxplotByWell(rep1.RawData, feature)
-    # TCA.PlateHeatmap(plaque.Data)
+    TCA.heatmap(plaque.Data)
+    TCA.Heatmap(plaque.Data)
     # TCA.SystematicError(plaque.Data)
     # TCA.SystematicError(plaque.SECData)
     # TCA.plotSurf3D_Plate(rep1.Data)
@@ -118,8 +121,9 @@ def do_it(plate_nb, verbose=False):
     # clustering = TCA.k_mean_clustering(plaque)
     # clustering.do_cluster()
     # print(plaque)
+    TCA.plate_heatmap(plaque)
 
-do_it(plate_nb="3", verbose=False)
+do_it(plate_nb="3", verbose=True)
 
 """
 time_start = time.time()

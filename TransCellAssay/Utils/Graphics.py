@@ -143,7 +143,6 @@ def plate_heatmap(plate, both=True):
                 ax.pcolor(value.SECData, cmap=new_map)
                 ax.set_title(str(plate.Name)+str(value.name))
             i += 1
-
         plt.show()
     except Exception as e:
         print(e)
