@@ -72,7 +72,22 @@ def plotSurf3D_Plate(array):
         print(e)
 
 
-def PlateHeatmap(array):
+def heatmap(array):
+    """
+    Output a heatmap with seaborn
+    :param array:
+    """
+    try:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        sns.set()
+        sns.heatmap(array)
+        plt.show()
+    except Exception as e:
+        print(e)
+
+
+def Heatmap(array):
     """
     Plot all value of plate (replicat here)
     :param array: numpy array
@@ -91,13 +106,45 @@ def PlateHeatmap(array):
         pylab.pcolor(array, cmap=new_map)
         pylab.colorbar()
         pylab.show()
-        '''
-        import matplotlib.pyplot
-        import seaborn as sns
-        sns.set()
-        sns.heatmap(array)
+    except Exception as e:
+        print(e)
+
+
+def plate_heatmap(plate, both=True):
+    """
+    Plate all heatmap for plate object
+    :param plate:
+    :return:
+    """
+    try:
+        import matplotlib
+        import pylab as plt
+        import numpy as np
+
+        a = len(plate.replicat)
+        if both is True:
+            b = 2
+        else:
+            b = 1
+        fig = plt.figure(figsize=(2.*a, 2.*b))
+
+        # Create new colormap, with white for zero
+        # (can also take RGB values, like (255,255,255):
+        colors = [('white')] + [(plt.cm.jet(i)) for i in range(1, 256)]
+        new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
+
+        i = 1
+        for key, value in plate.replicat.items():
+            ax = fig.add_subplot(a, b, i)
+            ax.pcolor(value.Data, cmap=new_map)
+            ax.set_title(str(plate.Name)+str(value.name))
+            if both:
+                ax = fig.add_subplot(a, b, i+a)
+                ax.pcolor(value.SECData, cmap=new_map)
+                ax.set_title(str(plate.Name)+str(value.name))
+            i += 1
+
         plt.show()
-        '''
     except Exception as e:
         print(e)
 
