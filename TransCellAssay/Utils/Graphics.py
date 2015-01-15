@@ -14,98 +14,80 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plotHist3D_Plate(array):
+def plot_plate_3d(array, surf=False):
     """
     Make a 3d histogramme plot of matrix representing plate, give an array(in matrix form) of value (whatever you want)
+    :param surf: surface or histogram
     :param array: numpy array
     :return:show 3d plot
     """
     try:
-        from mpl_toolkits.mplot3d import Axes3D
-        import matplotlib.pyplot as plt
-        import numpy as np
+        if surf:
+            from mpl_toolkits.mplot3d import Axes3D
+            from matplotlib import cm
+            import matplotlib.pyplot as plt
+            import numpy as np
 
-        data_array = np.array(array)
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        x_data, y_data = np.meshgrid(np.arange(data_array.shape[1]), np.arange(data_array.shape[0]))
-        #
-        # Flatten out the arrays so that they may be passed to "ax.bar3d".
-        # Basically, ax.bar3d expects three one-dimensional arrays:
-        # x_data, y_data, z_data. The following call boils down to picking
-        # one entry from each array and plotting a bar to from
-        # (x_data[i], y_data[i], 0) to (x_data[i], y_data[i], z_data[i]).
-        #
-        x_data = x_data.flatten()
-        y_data = y_data.flatten()
-        z_data = data_array.flatten()
-        ax.bar3d(x_data, y_data, np.zeros(len(z_data)), 1, 1, z_data)
-        plt.show()
+            fig = plt.figure()
+            x = np.arange(array.shape[1])
+            y = np.arange(array.shape[0])
+            x, y = np.meshgrid(x, y)
+            z = array
+            ax = fig.gca(projection='3d')
+            surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap='hot', linewidth=0, antialiased=False)
+            fig.colorbar(surf, shrink=0.5, aspect=5)
+            plt.show()
+        else:
+            from mpl_toolkits.mplot3d import Axes3D
+            import matplotlib.pyplot as plt
+            import numpy as np
+
+            data_array = np.array(array)
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            x_data, y_data = np.meshgrid(np.arange(data_array.shape[1]), np.arange(data_array.shape[0]))
+            #
+            # Flatten out the arrays so that they may be passed to "ax.bar3d".
+            # Basically, ax.bar3d expects three one-dimensional arrays:
+            # x_data, y_data, z_data. The following call boils down to picking
+            # one entry from each array and plotting a bar to from
+            # (x_data[i], y_data[i], 0) to (x_data[i], y_data[i], z_data[i]).
+            #
+            x_data = x_data.flatten()
+            y_data = y_data.flatten()
+            z_data = data_array.flatten()
+            ax.bar3d(x_data, y_data, np.zeros(len(z_data)), 1, 1, z_data)
+            plt.show()
     except Exception as e:
         print(e)
 
 
-def plotSurf3D_Plate(array):
-    """
-    Make a 3d surface plot  of matrix representing plate, give an array(in matrix form) of value (whatever you want)
-    :param array:
-    :return:
-    """
-    try:
-        from mpl_toolkits.mplot3d import Axes3D
-        from matplotlib import cm
-        import matplotlib.pyplot as plt
-        import numpy as np
-
-        fig = plt.figure()
-        X = np.arange(array.shape[1])
-        Y = np.arange(array.shape[0])
-        X, Y = np.meshgrid(X, Y)
-        Z = array
-        ax = fig.gca(projection='3d')
-        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='hot', linewidth=0, antialiased=False)
-        fig.colorbar(surf, shrink=0.5, aspect=5)
-
-        plt.show()
-
-    except Exception as e:
-        print(e)
-
-
-def heatmap(array):
+def heatmap(array, pretty=True):
     """
     Output a heatmap with seaborn
-    :param array:
+    :param pretty: use Seaborn or matplotlib
+    :param array: numpy array that represent data
     """
     try:
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-        sns.set()
-        sns.heatmap(array)
-        plt.show()
-    except Exception as e:
-        print(e)
+        if pretty:
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+            sns.set()
+            sns.heatmap(array)
+            plt.show()
+        else:
+            import matplotlib
+            import pylab
+            import numpy as np
 
+            # Create new colormap, with white for zero
+            # (can also take RGB values, like (255,255,255):
+            colors = [('white')] + [(pylab.cm.jet(i)) for i in range(1, 256)]
+            new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
 
-def Heatmap(array):
-    """
-    Plot all value of plate (replicat here)
-    :param array: numpy array
-    :return:
-    """
-    try:
-        import matplotlib
-        import pylab
-        import numpy as np
-
-        # Create new colormap, with white for zero
-        # (can also take RGB values, like (255,255,255):
-        colors = [('white')] + [(pylab.cm.jet(i)) for i in range(1, 256)]
-        new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
-
-        pylab.pcolor(array, cmap=new_map)
-        pylab.colorbar()
-        pylab.show()
+            pylab.pcolor(array, cmap=new_map)
+            pylab.colorbar()
+            pylab.show()
     except Exception as e:
         print(e)
 
@@ -113,8 +95,8 @@ def Heatmap(array):
 def plate_heatmap(plate, both=True):
     """
     Plate all heatmap for plate object
-    :param plate:
-    :return:
+    :param both: print data and SECdata
+    :param plate: plate object with correct data
     """
     try:
         import matplotlib
@@ -148,34 +130,33 @@ def plate_heatmap(plate, both=True):
         print(e)
 
 
-def SystematicError(array):
+def systematic_error(array):
     """
     plot systematic error in cols and rows axis
     :param array: take a numpy array in input
-    :return:
     """
     try:
         import matplotlib.pyplot as plt
         import numpy as np
 
-        rowMean = []
-        rowStd = []
-        colMean = []
-        colStd = []
+        rowmean = []
+        rowstd = []
+        colmean = []
+        colstd = []
         if isinstance(array, np.ndarray):
             for row in range(array.shape[0]):
-                rowMean.append(np.mean(array[row, :]))
-                rowStd.append(np.std(array[row, :]))
+                rowmean.append(np.mean(array[row, :]))
+                rowstd.append(np.std(array[row, :]))
             for col in range(array.shape[1]):
-                colMean.append(np.mean(array[:, col]))
-                colStd.append(np.std(array[:, col]))
+                colmean.append(np.mean(array[:, col]))
+                colstd.append(np.std(array[:, col]))
 
             fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(10, 5))
 
-            Row = np.arange(array.shape[0])
-            Col = np.arange(array.shape[1])
-            ax0.bar(Row, rowMean, color='r', yerr=rowStd)
-            ax1.bar(Col, colMean, color='r', yerr=colStd)
+            row = np.arange(array.shape[0])
+            col = np.arange(array.shape[1])
+            ax0.bar(row, rowmean, color='r', yerr=rowstd)
+            ax1.bar(col, colmean, color='r', yerr=colstd)
 
             ax0.set_ylabel('Mean')
             ax0.set_title('Mean by row')
@@ -189,12 +170,11 @@ def SystematicError(array):
         print(e)
 
 
-def boxplotByWell(dataframe, feature):
+def boxplot_by_wells(dataframe, feature):
     """
     plot the boxplot for each well
     :param dataframe:
     :param feature; whiche feature to display
-    :return:
     """
     try:
         import pandas as pd
@@ -210,28 +190,32 @@ def boxplotByWell(dataframe, feature):
         print(e)
 
 
-def plotScreen(Screen):
+def plot_screen(screen):
+    """
+
+    :param screen:
+    """
     try:
         import matplotlib.pyplot as plt
         import numpy as np
 
-        if isinstance(Screen, TCA.Core.Screen):
+        if isinstance(screen, TCA.Core.Screen):
             fig = plt.figure()
             ax = fig.add_subplot(111)
-            max = 0
-            for i in range(Screen.shape[0]):
-                for j in range(Screen.shape[1]):
+            mxm = 0
+            for i in range(screen.shape[0]):
+                for j in range(screen.shape[1]):
                     I = 0
                     platedata = list()
                     platenumber = list()
-                    for key, value in Screen.allPlate.items():
+                    for key, value in screen.allPlate.items():
                         for repkey, repvalue in value.replicat.items():
                             platedata.append(np.log2(repvalue.DataMedian[i][j]))
                             platenumber.append(I)
                             I += 1
                     ax.plot(platenumber, platedata, 'b.')
-                    max = I
-            ax.set_xlim([-1, max])
+                    mxm = I
+            ax.set_xlim([-1, mxm])
             ax.set_ylabel('Log Data')
             ax.set_xlabel('Plate/Replicat ID')
             plt.show()
@@ -241,7 +225,7 @@ def plotScreen(Screen):
         print(e)
 
 
-def plotDistribution(wells, plate, feature, rep=None, pool=False):
+def plot_distribution(wells, plate, feature, rep=None, pool=False):
     """
     Plot distribution of multiple well
     :param wells: list of wells to plot distribution
@@ -281,10 +265,10 @@ def plotDistribution(wells, plate, feature, rep=None, pool=False):
         print(e)
 
 
-def plot_3d_cloud_point(DataFrame, x=None, y=None, z=None):
+def plot_3d_cloud_point(dataframe, x=None, y=None, z=None):
     """
     Plot in 3d raw data with choosen features
-    :param DataFrame: dataframe without class label !!
+    :param dataframe: dataframe without class label !!
     :param x: x feature
     :param y: y feature
     :param z: z feature
@@ -292,7 +276,7 @@ def plot_3d_cloud_point(DataFrame, x=None, y=None, z=None):
     try:
         import pandas as pd
 
-        assert isinstance(DataFrame, pd.DataFrame)
+        assert isinstance(dataframe, pd.DataFrame)
 
         from matplotlib import pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
@@ -301,7 +285,7 @@ def plot_3d_cloud_point(DataFrame, x=None, y=None, z=None):
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
-        ax.plot(DataFrame[x], DataFrame[y], DataFrame[z], '.', markersize=4, color='blue', alpha=0.5, label='Raw Data')
+        ax.plot(dataframe[x], dataframe[y], dataframe[z], '.', markersize=4, color='blue', alpha=0.5, label='Raw Data')
 
         ax.set_xlabel(x)
         ax.set_ylabel(y)
@@ -314,10 +298,11 @@ def plot_3d_cloud_point(DataFrame, x=None, y=None, z=None):
         print(e)
 
 
-def plot_3d_per_well(DataFrame, x=None, y=None, z=None, single_cell=True):
+def plot_3d_per_well(dataframe, x=None, y=None, z=None, single_cell=True):
     """
     Plot in 3d raw data with choosen features and with different color by well
-    :param DataFrame: dataframe without class label !!
+    :param single_cell:
+    :param dataframe: dataframe without class label !!
     :param x: x feature
     :param y: y feature
     :param z: z feature
@@ -326,26 +311,26 @@ def plot_3d_per_well(DataFrame, x=None, y=None, z=None, single_cell=True):
         import pandas as pd
         import numpy as np
 
-        assert isinstance(DataFrame, pd.DataFrame)
+        assert isinstance(dataframe, pd.DataFrame)
 
         from matplotlib import pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
         from mpl_toolkits.mplot3d import proj3d
 
-        wells = DataFrame.Well.unique()
+        wells = dataframe.Well.unique()
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
         for well in wells:
             if not single_cell:
-                ax.plot(DataFrame[x][DataFrame['Well'] == well],
-                        DataFrame[y][DataFrame['Well'] == well],
-                        DataFrame[z][DataFrame['Well'] == well], '.', markersize=4, color='blue', alpha=0.5,
+                ax.plot(dataframe[x][dataframe['Well'] == well],
+                        dataframe[y][dataframe['Well'] == well],
+                        dataframe[z][dataframe['Well'] == well], '.', markersize=4, color='blue', alpha=0.5,
                         label='Raw Data')
             else:
-                ax.plot(np.median(DataFrame[x][DataFrame['Well'] == well]),
-                        np.median(DataFrame[y][DataFrame['Well'] == well]),
-                        np.median(DataFrame[z][DataFrame['Well'] == well]), '.', markersize=4, color='blue', alpha=0.5,
+                ax.plot(np.median(dataframe[x][dataframe['Well'] == well]),
+                        np.median(dataframe[y][dataframe['Well'] == well]),
+                        np.median(dataframe[z][dataframe['Well'] == well]), '.', markersize=4, color='blue', alpha=0.5,
                         label='Raw Data')
         ax.set_xlabel(x)
         ax.set_ylabel(y)
@@ -375,19 +360,18 @@ plt.show()
 '''
 
 
-def plot_raw_data(DataFrame):
+def plot_raw_data(dataframe):
     """
-    DataFrame must be clean of shit columns
-    :param DataFrame:
-    :return:
+    DataFrame must be clean of unwanted columns
+    :param dataframe:
     """
     try:
         import pandas as pd
         from matplotlib import pyplot as plt
 
-        assert isinstance(DataFrame, pd.DataFrame)
+        assert isinstance(dataframe, pd.DataFrame)
 
-        datagp = DataFrame.groupby("Well")
+        datagp = dataframe.groupby("Well")
         median = datagp.median()
         median.plot()
         plt.show()

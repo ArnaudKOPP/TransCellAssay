@@ -54,10 +54,10 @@ def do_it(plate_nb, verbose=False):
 
     plaque.compute_data_from_replicat(feature, forced_update=True)
 
-    TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
+    # TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, sedt=False, sec_data=False, verbose=True)
 
     # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
-    plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.05)
+    plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.1)
 
     plaque.compute_data_from_replicat(feature, use_sec_data=True)
 
@@ -65,27 +65,27 @@ def do_it(plate_nb, verbose=False):
 
     # TCA.rank_product(plaque, secdata=True, verbose=True)
 
-    ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
-                                 verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, verbose=verbose)
-    ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
-                                 variance="equal", verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, variance="equal",
-                         verbose=verbose)
-    ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
-                                 verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, verbose=verbose)
-    ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
-                                 method='MM', verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, method='MM',
-                         verbose=verbose)
-    tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=True,
-                                   verbose=verbose)
-    TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=False, verbose=verbose)
-    tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=True, verbose=verbose)
-    TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=False, verbose=verbose)
-    tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
-    TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=False, verbose=verbose)
+    # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
+    #                              verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, verbose=verbose)
+    # ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
+    #                              variance="equal", verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, variance="equal",
+    #                      verbose=verbose)
+    # ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
+    #                              verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, verbose=verbose)
+    # ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
+    #                              method='MM', verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, method='MM',
+    #                      verbose=verbose)
+    # tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=True,
+    #                                verbose=verbose)
+    # TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=False, verbose=verbose)
+    # tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=True, verbose=verbose)
+    # TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=False, verbose=verbose)
+    # tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
+    # TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=False, verbose=verbose)
 
     __SIZE__ = 96
 
@@ -107,21 +107,20 @@ def do_it(plate_nb, verbose=False):
 
     # plaque.save_raw_data("/home/arnaud/Desktop/plaque1_poc/")
 
-    # TCA.Graphics.plotDistribution(('C1', 'D1'), plaque, feature, rep='rep2')
-    # TCA.Graphics.plotDistribution(('C1', 'D1'), plaque, feature, rep='rep1')
-    # TCA.boxplotByWell(rep1.RawData, feature)
-    TCA.heatmap(plaque.Data)
-    TCA.Heatmap(plaque.Data)
-    # TCA.SystematicError(plaque.Data)
-    # TCA.SystematicError(plaque.SECData)
-    # TCA.plotSurf3D_Plate(rep1.Data)
-    # TCA.plotScreen(screen_test)
-    # TCA.plotSurf3D_Plate(plaque.Data)
-    # TCA.plotSurf3D_Plate(plaque.SECData)
+    # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep2')
+    # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep1')
+    # TCA.boxplot_by_wells(rep1.RawData, feature)
+    # TCA.heatmap(plaque.Data)
+    # TCA.heatmap(plaque.Data, pretty=False)
+    # TCA.systematic_error(plaque.Data)
+    # TCA.systematic_error(plaque.SECData)
+    TCA.plot_plate_3d(rep1.Data, surf=True)
+    # TCA.plot_plate_3d(plaque.Data, surf=True)
+    # TCA.plot_plate_3d(plaque.SECData, surf=True)
+    # TCA.plate_heatmap(plaque)
+    # TCA.plot_screen(screen_test)
     # clustering = TCA.k_mean_clustering(plaque)
     # clustering.do_cluster()
-    # print(plaque)
-    TCA.plate_heatmap(plaque)
 
 do_it(plate_nb="3", verbose=True)
 
