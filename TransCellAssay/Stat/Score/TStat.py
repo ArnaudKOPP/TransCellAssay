@@ -93,7 +93,8 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
                 raise Exception("Not Well for control")
 
             for key, value in plate.replicat.items():
-                if value.skip_well is not None:
+                # # remove skipped Wells
+                if len(value.skip_well) > 0:
                     valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
                 else:
                     valid_neg_position = neg_position
@@ -179,7 +180,8 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
 
             # search neg control value
             def _search_neg_data(replicat, neg_pos):
-                if value.skip_well is not None:
+                # # remove skipped Wells
+                if len(value.skip_well) > 0:
                     valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
                 else:
                     valid_neg_pos = neg_pos

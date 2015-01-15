@@ -114,7 +114,8 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
 
             # search neg control data
             for key, value in plate.replicat.items():
-                if value.skip_well is not None:
+                # # remove skipped Wells
+                if len(value.skip_well) > 0:
                     valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
                 else:
                     valid_neg_position = neg_position
@@ -206,7 +207,8 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
 
             # search neg control data
             for key, value in plate.replicat.items():
-                if value.skip_well is not None:
+                # # remove skipped Wells
+                if len(value.skip_well) > 0:
                     valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
                 else:
                     valid_neg_position = neg_position
@@ -295,7 +297,8 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
 
             # search neg control value
             def _search_neg_data(replicat, neg_pos):
-                if value.skip_well is not None:
+                # # remove skipped Wells
+                if len(value.skip_well) > 0:
                     valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
                 else:
                     valid_neg_pos = neg_pos
@@ -379,7 +382,8 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
 
             # search neg control value
             def _search_neg_data(replicat, neg_pos):
-                if value.skip_well is not None:
+                # # remove skipped Wells
+                if len(value.skip_well) > 0:
                     valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
                 else:
                     valid_neg_pos = neg_pos
@@ -460,7 +464,8 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             ssmd[ssmd == 0] = np.NaN
 
             neg_well = ps.get_coord(neg_control)
-            if plate.skip_well is not None:
+            # # remove skipped Wells
+            if len(plate.skip_well) > 0:
                 valid_neg_pos = [x for x in neg_well if (x not in plate.skip_well)]
             else:
                 valid_neg_pos = neg_well
@@ -534,7 +539,8 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             ssmdr[ssmdr == 0] = np.NaN
 
             neg_well = ps.get_coord(neg_control)
-            if plate.skip_well is not None:
+            # # remove skipped Wells
+            if len(plate.skip_well) > 0:
                 valid_neg_pos = [x for x in neg_well if (x not in plate.skip_well)]
             else:
                 valid_neg_pos = neg_well

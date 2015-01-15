@@ -367,7 +367,7 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None):
+    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None, skipping_wells=True):
         """
         Apply Well correction on all replicat data
         call function like from replicat object
@@ -376,10 +376,12 @@ class Plate(object):
         :param feature: feature to normalize
         :param method: which method to perform
         :param log:  Performed log2 Transformation
+        :param skipping_wells: skip defined wells, use it with poc and npi
         """
         try:
             for key, value in self.replicat.items():
-                value.normalization(feature=feature, method=method, log=log, neg=neg, pos=pos)
+                value.normalization(feature=feature, method=method, log=log, neg=neg, pos=pos,
+                                    skipping_wells=skipping_wells)
             self.isNormalized = True
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

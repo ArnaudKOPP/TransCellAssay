@@ -76,7 +76,7 @@ __status__ = "Production"
 
 
 def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=False, use_raw_data=True, dirpath=None,
-                          verbose=False):
+                          skipping_wells=True, verbose=False):
     """
     Compute quality control on plate for selected feature
     :param plate: Plate to compute quality object
@@ -87,6 +87,7 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
     :param sec_data: use sec data or not for sedt
     :param use_raw_data: use 1data/Well data
     :param dirpath: directory path for saving data
+    :param skipping_wells: skipped defined wells
     :param verbose: print or not quality data
     :return: return numpy array with qc
     """
@@ -102,7 +103,8 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
             for key, value in plate.replicat.items():
                 qc_data_array = qc_data_array.append(
                     replicat_quality_control(value, feature=features, neg_well=neg_well, pos_well=pos_well,
-                                             sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data, verbose=False))
+                                             sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data,
+                                             skipping_wells=skipping_wells,  verbose=False))
 
             if verbose:
                 print("\nQuality control for plate: ", plate.Name + "\n")
@@ -117,7 +119,7 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
 
 
 def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,
-                             verbose=False):
+                             skipping_wells=True, verbose=False):
     """
     Compute quality control on replicat for selected feature
     :param replicat: Replicat to compute qc
@@ -127,6 +129,7 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
     :param sedt: systematic error detection test
     :param sec_data: use sec data or not for sedt
     :param use_raw_data: use 1data/Well data
+    :param skipping_wells: skipped defined wells
     :param verbose: print or not quality data
     :return:return numpy array with qc
     """
@@ -134,18 +137,26 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
         if not isinstance(replicat, TCA.Core.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m Need A Replicat")
         else:
-            # # get valid Well
-            if len(replicat.skip_well) >= 1:
-                valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well if (TCA.get_opposite_well_format(x)
-                                                                                        not in replicat.skip_well)]
-                valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well if (TCA.get_opposite_well_format(x)
-                                                                                        not in replicat.skip_well)]
+            if not use_raw_data:
+                if replicat.Data is None:
+                    raise Exception("\033[0;31m[ERROR]\033[0m compute_data_from_replicat First")
+
+            if skipping_wells:
+                # # get valid Well
+                if len(replicat.skip_well) >= 1:
+                    valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well if (TCA.get_opposite_well_format(x)
+                                                                                            not in replicat.skip_well)]
+                    valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well if (TCA.get_opposite_well_format(x)
+                                                                                            not in replicat.skip_well)]
+                else:
+                    valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well]
+                    valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well]
             else:
                 valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well]
                 valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well]
 
             # # get Valid Data
-            if use_raw_data:
+            if not use_raw_data:
                 negdata = _get_data_control_array(replicat.Data, c_ref=valid_neg_well)
                 posdata = _get_data_control_array(replicat.Data, c_ref=valid_pos_well)
             else:
@@ -182,10 +193,7 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             qc_data_array['Pos SD'] = np.std(posdata)
             qc_data_array['AVR'] = _avr(negdata, posdata)
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
-            if replicat.RawData is not None:
-                qc_data_array['ZFactor'] = _zfactor(replicat.RawData, feature, negdata, posdata)
-            else:
-                qc_data_array['ZFactor'] = _zfactor(replicat.Data, feature, negdata, posdata)
+            qc_data_array['ZFactor'] = _zfactor(replicat.RawData, feature, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 
@@ -297,14 +305,8 @@ def _zfactor(data, feature, cneg, cpos):
     :return: zfactor value
     """
     try:
-        if isinstance(data, pd.DataFrame):
-            zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data[feature])) / (np.abs(np.mean(cpos) - np.mean(cneg))))
-            return zfactor
-        elif isinstance(data, np.ndarray):
-            zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data.flatten())) / (np.abs(np.mean(cpos) - np.mean(cneg))))
-            return zfactor
-        else:
-            raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
+        zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data[feature])) / (np.abs(np.mean(cpos) - np.mean(cneg))))
+        return zfactor
     except Exception as e:
         print(e)
 
