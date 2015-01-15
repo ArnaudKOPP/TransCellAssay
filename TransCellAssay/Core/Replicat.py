@@ -243,9 +243,7 @@ class Replicat(object):
         """
         try:
             if not self.isNormalized:
-                print('!!! \033[0;33m[WARNING]\033[0m   !!!')
-                print('     --> Data are not normalized for replicat : ', self.name)
-                print('')
+                print('\033[0;33m[WARNING]\033[0m Data are not normalized for replicat : ', self.name)
 
             grouped_data_by_well = self.RawData.groupby('Well')
             if self.DataType == 'median':
@@ -285,7 +283,7 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None):
+    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None, skipping_wells=True):
         """
         Performed normalization on data
         :param feature; which feature to normalize
@@ -293,13 +291,20 @@ class Replicat(object):
         :param log:  Performed log2 Transformation
         :param pos: postive control
         :param neg: negative control
+        :param skipping_wells: skip defined wells, use it with poc and npi
         """
         try:
             if not self.isNormalized:
-                self.RawData = TCA.variability_normalization(self.RawData, feature=feature, method=method,
-                                                             log2_transf=log,
-                                                             neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
-                                                             pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
+                if skipping_wells:
+                    self.RawData = TCA.variability_normalization(self.RawData, feature=feature, method=method,
+                                                                 log2_transf=log,
+                                                                 neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
+                                                                 pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
+                else:
+                    self.RawData = TCA.variability_normalization(self.RawData, feature=feature, method=method,
+                                                                 log2_transf=log,
+                                                                 neg_control=neg,
+                                                                 pos_control=pos)
                 self.isNormalized = True
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
@@ -316,6 +321,7 @@ class Replicat(object):
         mediocre performance of the t-test in this case). MEA was generally the best method for correcting
         systematic error within 96-well plates, whereas PMP performed better for 384 /1526 well plates.
 
+        :param alpha: alpha for some algorithme
         :param algorithm: Bscore, MEA, PMP or diffusion model technics, default = Bscore
         :param method: median or mean data
         :param verbose: Output in console

@@ -75,15 +75,17 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=False, dirpath=None, verbose=False):
+def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=False, use_raw_data=True, dirpath=None,
+                          verbose=False):
     """
     Compute quality control on plate for selected feature
     :param plate: Plate to compute quality object
     :param features: feature on which we performed quality control
-    :param cneg: negative control
-    :param cpos: positive control
+    :param cneg: negative control Name
+    :param cpos: positive control Name
     :param sedt: systematic error detection test
     :param sec_data: use sec data or not for sedt
+    :param use_raw_data: use 1data/Well data
     :param dirpath: directory path for saving data
     :param verbose: print or not quality data
     :return: return numpy array with qc
@@ -92,15 +94,15 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
         if not isinstance(plate, TCA.Core.Plate):
             raise TypeError("\033[0;31m[ERROR]\033[0m Need A Plate")
         else:
-            neg_well = plate.PlateMap.get_well(cneg)
-            pos_well = plate.PlateMap.get_well(cpos)
+            neg_well = plate.PlateMap.get_coord(cneg)
+            pos_well = plate.PlateMap.get_coord(cpos)
 
             qc_data_array = pd.DataFrame()
 
             for key, value in plate.replicat.items():
                 qc_data_array = qc_data_array.append(
                     replicat_quality_control(value, feature=features, neg_well=neg_well, pos_well=pos_well,
-                                             sedt=sedt, sec_data=sec_data, verbose=False))
+                                             sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data, verbose=False))
 
             if verbose:
                 print("\nQuality control for plate: ", plate.Name + "\n")
@@ -114,7 +116,8 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
         print(e)
 
 
-def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, sec_data=False, verbose=False):
+def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,
+                             verbose=False):
     """
     Compute quality control on replicat for selected feature
     :param replicat: Replicat to compute qc
@@ -123,31 +126,40 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
     :param pos_well: positive control well
     :param sedt: systematic error detection test
     :param sec_data: use sec data or not for sedt
+    :param use_raw_data: use 1data/Well data
     :param verbose: print or not quality data
     :return:return numpy array with qc
     """
     try:
-        if len(replicat.skip_well) >= 1:
-            valid_neg_well = [x for x in neg_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
-            valid_pos_well = [x for x in pos_well if (TCA.get_opposite_well_format(x) not in replicat.skip_well)]
-        else:
-            valid_neg_well = neg_well
-            valid_pos_well = pos_well
-
         if not isinstance(replicat, TCA.Core.Replicat):
             raise TypeError("\033[0;31m[ERROR]\033[0m Need A Replicat")
         else:
-            if replicat.RawData is not None:
-                # # Check if well exist in raw data for avoiding error
-                unique_well = replicat.RawData.Well.unique()
-                valid_pos_well = (i for i in valid_pos_well if i in unique_well)
-                valid_neg_well = (i for i in valid_neg_well if i in unique_well)
-
-                negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_neg_well)
-                posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_pos_well)
+            # # get valid Well
+            if len(replicat.skip_well) >= 1:
+                valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well if (TCA.get_opposite_well_format(x)
+                                                                                        not in replicat.skip_well)]
+                valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well if (TCA.get_opposite_well_format(x)
+                                                                                        not in replicat.skip_well)]
             else:
+                valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well]
+                valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well]
+
+            # # get Valid Data
+            if use_raw_data:
                 negdata = _get_data_control_array(replicat.Data, c_ref=valid_neg_well)
                 posdata = _get_data_control_array(replicat.Data, c_ref=valid_pos_well)
+            else:
+                if replicat.RawData is not None:
+                    # # Check if well exist in raw data for avoiding error
+                    unique_well = replicat.RawData.Well.unique()
+                    valid_pos_well = (i for i in valid_pos_well if i in unique_well)
+                    valid_neg_well = (i for i in valid_neg_well if i in unique_well)
+
+                    negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_neg_well)
+                    posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_pos_well)
+                else:
+                    negdata = _get_data_control_array(replicat.Data, c_ref=valid_neg_well)
+                    posdata = _get_data_control_array(replicat.Data, c_ref=valid_pos_well)
 
             qc_data_array = pd.DataFrame(
                 np.zeros(1, dtype=[('Replicat ID', str), ('Neg Mean', float), ('Neg SD', float),
