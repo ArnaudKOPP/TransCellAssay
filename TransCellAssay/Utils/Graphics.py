@@ -121,12 +121,12 @@ def plate_heatmap(plate, both=True):
         import pylab as plt
         import numpy as np
 
-        a = len(plate.replicat)
+        b = len(plate.replicat)
         if both is True:
-            b = 2
+            a = 2
         else:
-            b = 1
-        fig = plt.figure(figsize=(2.*a, 2.*b))
+            a = 1
+        fig = plt.figure(figsize=(2.*b, 2.*a))
 
         # Create new colormap, with white for zero
         # (can also take RGB values, like (255,255,255):
@@ -139,7 +139,7 @@ def plate_heatmap(plate, both=True):
             ax.pcolor(value.Data, cmap=new_map)
             ax.set_title(str(plate.Name)+str(value.name))
             if both:
-                ax = fig.add_subplot(a, b, i+a)
+                ax = fig.add_subplot(a, b, i+b)
                 ax.pcolor(value.SECData, cmap=new_map)
                 ax.set_title(str(plate.Name)+str(value.name))
             i += 1
