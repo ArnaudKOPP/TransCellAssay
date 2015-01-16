@@ -33,7 +33,7 @@ class Result(object):
         :return: none init only dataframe
         """
         if size is None:
-            size = 384
+            size = 96
         self.result_array = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', float),
                                                   ('SDCellsCount', float), ('PositiveCells', float),
                                                   ('SDPositiveCells', float),

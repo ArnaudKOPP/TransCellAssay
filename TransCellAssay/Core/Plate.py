@@ -32,7 +32,6 @@ class Plate(object):
     self.Neg = None  # Name of negative control
     self.Pos = None  # Name of positive control
     self.Tox = None  # Name of toxics control
-    self.Result = None  # store result into result object (it's a pandas dataframe)
     self.isNormalized = False  # Are replicat data normalized
     self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replicat )
     self.DataType = "median" # median or mean data, default is median
@@ -58,8 +57,6 @@ class Plate(object):
         self.Neg = None
         self.Pos = None
         self.Tox = None
-
-        self.Result = None
 
         self.isNormalized = False
         self.isSpatialNormalized = False
@@ -243,35 +240,25 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m ", e)
 
-    def get_all_raw_data_by_features(self, features, well_idx=False):
+    def get_raw_data(self, replicat=None, feature=None, well=None, well_idx=False):
         """
-        Return a dict with data of all dataframe, with feature specified
-        :param features: which feature to get
-        :param well_idx: add well position into data
-        :return: return a dict with all dataframe from replicat
-        """
-        data = {}
-        try:
-            for rep in self.replicat:
-                rep_tmp = self.replicat[rep]
-                tmp = rep_tmp.get_raw_data_by_feature(features, well_idx=well_idx)
-                data[rep_tmp.get_rep_name()] = tmp
-            return data
-        except Exception as e:
-            print('\033[0;31m[ERROR]\033[0m  Error in getAllDataFromReplicat ', e)
-
-    def get_all_raw_data(self):
-        """
-        return a dict which data of all dataframe without feature specified
-        :return: dict
+        Return a dict that contain raw data from all replica (or specified replicat), we can specified feature (list)
+        and if we want to have well id
+        :param replicat: replicat id
+        :param feature: feature list
+        :param well: defined or not which well you want, in list [] or simple string format
+        :param well_idx: true or false for keeping well id (A1..)
+        :return: dict with data
         """
         data = {}
         try:
-            for rep in self.replicat:
-                tmp = self.replicat[rep]
-                datatmp = tmp.get_raw_data()
-                data[tmp.get_rep_name()] = datatmp
-            return data
+            if replicat is not None:
+                for key, value in self.replicat.items():
+                    data[value.get_rep_name()] = value.get_raw_data(feature=feature, well=well, well_idx=well_idx)
+            else:
+                for rep in replicat:
+                    data[self.replicat[rep].get_rep_name()] = rep.get_raw_data(feature=feature, well=well,
+                                                                               well_idx=well_idx)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -293,27 +280,6 @@ class Plate(object):
         """
         try:
             return self.PlateMap
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
-    def add_result(self, result):
-        """
-        Set the result by giving a Result array
-        :param result: result object
-        """
-        try:
-            assert isinstance(result, TCA.Core.Result)
-            self.Result = result
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
-    def get_result(self):
-        """
-        Get the result array
-        :return: result object
-        """
-        try:
-            return self.Result
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

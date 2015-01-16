@@ -49,7 +49,6 @@ class SubPlate(Plate):
             self.Pos = parent_plate.Pos
             self.Tox = parent_plate.Tox
 
-            self.Result = parent_plate.Result
             self.isNormalized = parent_plate.isNormalized
             self.isSpatialNormalized = parent_plate.isSpatialNormalized
 
@@ -107,7 +106,6 @@ class SubPlate(Plate):
                 "\n SubPlate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateMap : \n" + repr(self.PlateMap) +
-                "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat) + "\n")
@@ -123,7 +121,6 @@ class SubPlate(Plate):
                 "\n SubPlate : " + repr(self.Name) +
                 "\n MetaInfo : \n" + repr(self.MetaInfo) +
                 "\n PlateMap : \n" + repr(self.PlateMap) +
-                "\n Array Result :\n" + repr(self.Result) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat) + "\n")

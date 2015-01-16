@@ -2,7 +2,7 @@
 """
 Librarie for easy play with HTS txt data file (HCS explorer output style)
 """
-
+from TransCellAssay.IO.FileFormat.InputFile import InputFile
 import pandas as pd
 
 __author__ = "Arnaud KOPP"
@@ -13,6 +13,23 @@ __version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
+
+
+class TXT(InputFile):
+    def load(self, fpath):
+        """
+        Load csv file
+        :param fpath:
+        """
+        try:
+            self.dataframe = pd.read_table(fpath)
+            print('\033[0;32m[INFO]\033[0m Reading %s File' % fpath)
+        except:
+            try:
+                self.dataframe = pd.read_table(fpath, decimal=",")
+                print('\033[0;32m[INFO]\033[0m Reading %s File' % fpath)
+            except Exception as e:
+                print('\033[0;31m[ERROR]\033[0m  Error in reading %s File' % fpath, e)
 
 
 class TXT_Reader():

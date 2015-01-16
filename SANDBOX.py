@@ -5,6 +5,7 @@ For testing module in actual dev
 """
 import pandas as pd
 import numpy as np
+import time
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -40,14 +41,17 @@ def do_it(plate_nb, verbose=False):
     rep2.DataType = "mean"
     rep3.DataType = "mean"
 
-    # TCA.plate_analysis(plaque, [feature], neg, pos, threshold=50)
-    # print(analyse)
+    time_start = time.time()
+    ana = TCA.plate_analysis(plaque, [feature], neg, pos)
+    print(ana)
+    time_stop = time.time()
+    print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
     plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
                          pos=platesetup.get_well(pos), skipping_wells=True)
     # TCA.feature_scaling(plaque, feature, mean_scaling=True)
 
-    # plaque.compute_data_from_replicat(feature)
+    plaque.compute_data_from_replicat(feature)
 
     # plaque.normalization(feature, method='Zscore', log=False, neg=platesetup.get_well(neg),
     #                      pos=platesetup.get_well(pos))
@@ -58,9 +62,9 @@ def do_it(plate_nb, verbose=False):
                               verbose=True)
 
     # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
-    # plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.1)
+    plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.1)
 
-    # plaque.compute_data_from_replicat(feature, use_sec_data=True)
+    plaque.compute_data_from_replicat(feature, use_sec_data=True)
 
     # TCA.systematic_error_detection_test(plaque.SECData, alpha=0.1, verbose=True)
 
@@ -123,7 +127,7 @@ def do_it(plate_nb, verbose=False):
     # clustering = TCA.k_mean_clustering(plaque)
     # clustering.do_cluster()
 
-do_it(plate_nb="3", verbose=True)
+# do_it(plate_nb="3", verbose=True)
 
 
 # import TransCellAssay.Stat.Omics.GO_enrichment as GO

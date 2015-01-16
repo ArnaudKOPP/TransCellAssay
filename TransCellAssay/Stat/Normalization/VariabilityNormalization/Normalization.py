@@ -61,8 +61,8 @@ def variability_normalization(data, feature, method=None, log2_transf=True, neg_
     :param feature: on which feature to normalize
     :param method: which method to apply
     :param log2_transf: apply log2 transformation
-    :param neg_control: list of well for negative control
-    :param pos_control: list of well for positive control
+    :param neg_control: list of well for negative control A1 A2 ...
+    :param pos_control: list of well for positive control A1 A2 ...
     :return: normalized data
     """
     try:

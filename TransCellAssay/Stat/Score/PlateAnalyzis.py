@@ -32,9 +32,9 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
     try:
         if isinstance(plate, TransCellAssay.Plate):
             platemap = plate.get_platemap()
-            size = platemap.get_platemape_shape()
+            size = platemap.get_shape()
             result = TransCellAssay.Result(size=(size[0] * size[1]))
-            x = platemap.get_map_as_dict()
+            x = platemap.as_dict()
             result.init_gene_well(x)
 
             neg_well = plate.PlateMap.get_well(neg)
@@ -67,7 +67,7 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
 
                 # # positive Cell
                 # # threshold value for control
-                data_control = v.get_raw_data_by_wells(neg_well, feature=feature)
+                data_control = v.get_raw_data(feature=feature, well=neg_well)
                 threshold_value = np.percentile(data_control, threshold)
                 # data from replicat
                 datagroupby = v.RawData.groupby('Well')

@@ -5,7 +5,7 @@ The replicat contains the raw data given in input by the csv, this data are stor
 
 Input format MUST BE like that :
 
-WELL   X    X     X     X
+Well   X    X     X     X
 A1
 A1
 A1
@@ -81,21 +81,11 @@ class Replicat(object):
                 print('\033[0;32m[INFO]\033[0m Reading %s File' % input_file)
         except:
             try:
-                self.RawData = pd.read_csv(input, decimal=",", sep=";")
+                self.RawData = pd.read_csv(input_file, decimal=",", sep=";")
                 if DEBUG:
                     print('\033[0;32m[INFO]\033[0m Reading %s File' % input_file)
             except Exception as e:
                 print('\033[0;31m[ERROR]\033[0m  Error in reading %s File' % input_file, e)
-
-    def get_raw_data(self):
-        """
-        Get all Data from dataframe
-        :return: return DataFrame with all data
-        """
-        try:
-            return self.RawData
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
 
     def get_feature_list(self):
         """
@@ -178,60 +168,43 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def get_raw_data_by_well(self, well, feature=None):
+    def get_raw_data(self, feature=None, well=None, well_idx=False):
         """
-        Get all data for well
-        :param well: get well position like A1
-        :param feature: can have data for specified feature
-        :return: dataframe with data for specified well
-        """
-        try:
-            if feature is None:
-                return self.RawData[self.RawData['Well'] == well]
-            else:
-                return self.RawData[feature][self.RawData['Well'] == well]
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
-    def get_raw_data_by_wells(self, wells, feature=None):
-        """
-        get all data for specified wellS
-        :param wells: list of wells
-        :param feature: can have data for specified feature or not
-        :return: return dataframe with data specified wells
-        """
-        try:
-            data = None
-            datagp = self.RawData.groupby("Well")
-            check_well = self.RawData.Well.unique()
-            gen = (i for i in wells if i in check_well)
-            for i in gen:
-                if feature is None:
-                    if data is None:
-                        data = datagp.get_group(i)
-                    data = data.append(datagp.get_group(i))
-                else:
-                    if data is None:
-                        data = datagp.get_group(i)[feature]
-                    data = data.append(datagp.get_group(i)[feature])
-            return data
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
-    def get_raw_data_by_feature(self, featlist, well_idx=False):
-        """
-        Return a data frame with Well col and features data col in list []
-        if no Well col is given, then auto add
-        :param featlist: give a list with feature in [] format
-        :param well_idx: if we want to have Well col in data
-        :return: output a dataframe with Well col and feature col
+        Get Raw data with specified param
+        :param feature: defined or not feature
+        :param well: defined or not which well you want, in list [] or simple string format
+        :param well_idx: add or not well id
+        :return: raw data in pandas dataframe
         """
         try:
             if well_idx:
-                featlist.insert(0, 'Well')
-                return self.RawData[featlist]
+                if not isinstance(feature, list):
+                    feature = [feature]
+                feature.insert(0, 'Well')
+            data = None
+            if well is not None:
+                if not isinstance(well, list):
+                    well = [well]
+                datagp = self.RawData.groupby("Well")
+
+            if feature is not None:
+                if well is not None:
+                    for i in well:
+                        if data is None:
+                            data = datagp.get_group(i)[feature]
+                        data = data.append(datagp.get_group(i)[feature])
+                    return data
+                else:
+                    return self.RawData[feature]
             else:
-                return self.RawData[featlist]
+                if well is not None:
+                    for i in well:
+                        if data is None:
+                            data = datagp.get_group(i)
+                        data = data.append(datagp.get_group(i))
+                    return data
+                else:
+                    return self.RawData
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

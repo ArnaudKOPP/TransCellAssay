@@ -14,6 +14,7 @@ E
 """
 
 import pandas as pd
+import numpy as np
 from TransCellAssay import Utils as Utils
 
 __author__ = "Arnaud KOPP"
@@ -63,7 +64,7 @@ class PlateMap(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def get_platemape_shape(self):
+    def get_shape(self):
         """
         get the shape of platemap, so we can determine number of well
         :return: shape of platemap
@@ -80,17 +81,9 @@ class PlateMap(object):
         :return: list of coord
         """
         try:
-            mat = self.platemap.as_matrix()  # # transform PS dataframe into numpy matrix
-            size = mat.shape  # # get shape of matrix
-            list_coord = []
-            # # TODO alternative (more fast)
-            # [x for x in zip(*np.where(mat == 'to_search'))]
-            for r in range(size[0]):
-                for c in range(size[1]):
-                    if to_search == mat[r][c]:
-                        list_coord.append((r, c))
-            if not list_coord:
-                raise AttributeError('\033[0;31m[ERROR]\033[0m  This gene don\'t exist: %s' % to_search)
+            list_coord = [x for x in zip(*np.where(self.platemap.values == to_search))]
+            if len(list_coord) < 1:
+                raise AttributeError('This gene don\'t exist: %s' % to_search)
             return list_coord
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -102,22 +95,14 @@ class PlateMap(object):
         :return: list of Well
         """
         try:
-            mat = self.platemap.as_matrix()  # # transform PS dataframe into numpy matrix
-            size = mat.shape  # # get shape of matrix
-            row = size[0]
-            col = size[1]
-            list_well = list()
-            for r in range(row):
-                for c in range(col):
-                    if mat[r][c] == to_search:
-                        list_well.append(Utils.get_opposite_well_format((r, c)))
-            if not list_well:
-                raise AttributeError('\033[0;31m[ERROR]\033[0m  This gene don\'t exist: %s' % to_search)
+            list_well = [Utils.get_opposite_well_format(x) for x in zip(*np.where(self.platemap.values == to_search))]
+            if len(list_well) < 1:
+                raise AttributeError('This gene don\'t exist: %s' % to_search)
             return list_well
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def get_map_as_dict(self):
+    def as_dict(self):
         """
         Return Platemap as a dict
         :return: dataframe
@@ -139,7 +124,7 @@ class PlateMap(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def get_map_as_matrix(self):
+    def as_matrix(self):
         """
         Return PS as numpy array
         :return: numpy array
