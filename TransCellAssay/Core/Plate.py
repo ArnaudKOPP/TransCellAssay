@@ -6,6 +6,7 @@ Plate is designed for manipulating one or more replicat
 import numpy as np
 import TransCellAssay as TCA
 import os
+import collections
 
 
 __author__ = "Arnaud KOPP"
@@ -40,11 +41,11 @@ class Plate(object):
     self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
-    def __init__(self, name=None, platemap=None, skip=None):
+    def __init__(self, name=None, platemap=None, skip=()):
         """
         Constructor
         """
-        self.replicat = {}
+        self.replicat = collections.OrderedDict()
         self.MetaInfo = {}
         self.Name = name
 

@@ -5,6 +5,7 @@ This class is a bit useless because of you have many plate  you will need a lot 
 """
 
 import TransCellAssay as TCA
+import collections
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -33,7 +34,7 @@ class Screen(object):
         self.Tox = None  # Toxicity reference for the screen
         self.shape = (8, 12) # Default shape of plate
         """
-        self.allPlate = {}
+        self.plate = collections.OrderedDict()
         self.Info = {}
         self.type = None
         self.Threshold = None
@@ -51,7 +52,7 @@ class Screen(object):
         """
         try:
             assert isinstance(plate, TCA.Core.Plate)
-            self.allPlate[plate.Name] = plate
+            self.plate[plate.Name] = plate
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -62,7 +63,7 @@ class Screen(object):
         :return: plate
         """
         try:
-            return self.allPlate[name]
+            return self.plate[name]
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -101,7 +102,7 @@ class Screen(object):
             if self.isNormalized:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
             else:
-                for key, value in self.allPlate.items():
+                for key, value in self.plate.items():
                     value.normalization(feature=feature, method=technics, log=log, neg=neg, pos=pos)
                 self.isNormalized = True
         except Exception as e:
@@ -130,7 +131,7 @@ class Screen(object):
                 if self.isSpatialNormalized:
                     raise Exception("\033[0;33m[WARNING]\033[0m Systematics error have already been removed")
                 else:
-                    for key, value in self.allPlate.items():
+                    for key, value in self.plate.items():
                         value.systematic_error_correction(algorithm=algorithm, method=method, apply_down=apply_down,
                                                           verbose=verbose, save=save, max_iterations=max_iterations)
                 self.isSpatialNormalized = True
@@ -143,7 +144,7 @@ class Screen(object):
         :return: int
         """
         try:
-            return len(self.allPlate)
+            return len(self.plate)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -153,7 +154,7 @@ class Screen(object):
         :param to_rm:
         """
         try:
-            del self.allPlate[to_rm]
+            del self.plate[to_rm]
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -167,9 +168,9 @@ class Screen(object):
             if isinstance(to_add, list):
                 for elem in to_add:
                     assert isinstance(elem, TCA.Plate)
-                    self.allPlate[elem.Name] = to_add
+                    self.plate[elem.Name] = to_add
             if isinstance(to_add, TCA.Core.Plate):
-                self.allPlate[to_add.Name] = to_add
+                self.plate[to_add.Name] = to_add
             else:
                 raise AttributeError
         except Exception as e:
@@ -182,7 +183,7 @@ class Screen(object):
         :return: return plate
         """
         try:
-            return self.allPlate[key]
+            return self.plate[key]
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -196,7 +197,7 @@ class Screen(object):
             if not isinstance(value, TCA.Plate):
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
             else:
-                self.allPlate[key] = value
+                self.plate[key] = value
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

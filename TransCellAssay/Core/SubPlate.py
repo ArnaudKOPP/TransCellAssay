@@ -5,6 +5,7 @@ of Plate
 """
 from TransCellAssay.Core import Plate
 from TransCellAssay.Core.SubReplicat import SubReplicat
+import collections
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -36,7 +37,7 @@ class SubPlate(Plate):
                 self.ParentPlate = parent_plate
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Plate for creating SubPlate")
-            self.replicat = {}
+            self.replicat = collections.OrderedDict()
             self._init_replicat(parent_plate, RB, RE, CB, CE)
             self.MetaInfo = parent_plate.MetaInfo
             self.Name = parent_plate.Name

@@ -15,10 +15,7 @@ __status__ = "Dev"
 
 class Well(object):
     """
-
-    :param name:
-    :param position:
-    :param refPlaque:
+    Class to be a representation of a Well with importante data for RNAi screens
     """
 
     def __init__(self, name, position, ref_plate):

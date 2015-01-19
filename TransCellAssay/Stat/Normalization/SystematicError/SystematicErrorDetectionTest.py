@@ -6,7 +6,7 @@ Search for systematic error in plate or replicat, use Welch T-Test
 
 import numpy as np
 from scipy import stats
-from TransCellAssay.Stat.Test.ttest import t_test
+from TransCellAssay.Utils.Stat import t_test
 
 
 __author__ = "Arnaud KOPP"

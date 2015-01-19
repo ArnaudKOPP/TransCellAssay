@@ -215,10 +215,10 @@ USAGE
                         for pos in range(len(data.Row)):
                             row = int(data.Row[pos]) + 1
                             try:
-                                col = int(data.Column[pos]) + 1
+                                col = int(data.Col[pos]) + 1
                             except:
                                 try:
-                                    col = int(data.Column[pos]) + 1
+                                    col = int(data.Col[pos]) + 1
                                 except Exception as e:
                                     print(e)
                             tmp = data.loc[[pos]]

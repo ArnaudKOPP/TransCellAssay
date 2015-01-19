@@ -6,3 +6,4 @@ from TransCellAssay.Stat.Normalization.SystematicError.DiffusionModel import dif
 from TransCellAssay.Stat.Normalization.SystematicError.BackgroundCorrection import *
 from TransCellAssay.Stat.Normalization.SystematicError.BackgroundSubstraction import *
 from TransCellAssay.Stat.Normalization.SystematicError.WellCorrection import *
+from TransCellAssay.Stat.Normalization.SystematicError.SystematicErrorDetectionTest import systematic_error_detection_test

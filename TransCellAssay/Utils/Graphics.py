@@ -208,7 +208,7 @@ def plot_screen(screen):
                     I = 0
                     platedata = list()
                     platenumber = list()
-                    for key, value in screen.allPlate.items():
+                    for key, value in screen.plate.items():
                         for repkey, repvalue in value.replicat.items():
                             platedata.append(np.log2(repvalue.DataMedian[i][j]))
                             platenumber.append(I)

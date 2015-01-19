@@ -12,7 +12,7 @@ http://en.wikipedia.org/wiki/Feature_scaling
 import numpy as np
 import pandas as pd
 import TransCellAssay as TCA
-from TransCellAssay.Utils.stat_misc import mad
+from TransCellAssay.Utils.Stat import mad
 
 
 __author__ = "Arnaud KOPP"

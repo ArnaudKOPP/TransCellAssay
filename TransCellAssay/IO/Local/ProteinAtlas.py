@@ -24,7 +24,7 @@ import zipfile
 import gzip
 import urllib.request
 import pandas as pd
-from TransCellAssay.Utils.utils import reporthook
+from TransCellAssay.Utils.Utils import reporthook
 
 
 class ProteinAtlas(object):

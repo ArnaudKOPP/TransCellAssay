@@ -16,7 +16,7 @@ import sqlite3
 import posixpath
 import textwrap
 import urllib.request
-from TransCellAssay.Utils.utils import reporthook
+from TransCellAssay.Utils.Utils import reporthook
 from collections import namedtuple
 from operator import itemgetter
 

@@ -41,11 +41,11 @@ def do_it(plate_nb, verbose=False):
     rep2.DataType = "mean"
     rep3.DataType = "mean"
 
-    time_start = time.time()
-    ana = TCA.plate_analysis(plaque, [feature], neg, pos)
-    print(ana)
-    time_stop = time.time()
-    print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
+    # time_start = time.time()
+    # ana = TCA.plate_analysis(plaque, [feature], neg, pos)
+    # print(ana)
+    # time_stop = time.time()
+    # print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
     plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
                          pos=platesetup.get_well(pos), skipping_wells=True)
@@ -65,6 +65,10 @@ def do_it(plate_nb, verbose=False):
     plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.1)
 
     plaque.compute_data_from_replicat(feature, use_sec_data=True)
+
+    TCA.independance(plaque, neg='Neg', feature=feature)
+
+    print(plaque)
 
     # TCA.systematic_error_detection_test(plaque.SECData, alpha=0.1, verbose=True)
 
@@ -127,7 +131,7 @@ def do_it(plate_nb, verbose=False):
     # clustering = TCA.k_mean_clustering(plaque)
     # clustering.do_cluster()
 
-# do_it(plate_nb="3", verbose=True)
+do_it(plate_nb="3", verbose=True)
 
 
 # import TransCellAssay.Stat.Omics.GO_enrichment as GO

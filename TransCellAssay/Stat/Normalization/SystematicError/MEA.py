@@ -8,7 +8,7 @@ the error estimates determinted in previous step.
 """
 
 import numpy as np
-from TransCellAssay.Stat.Test.ttest import ttest
+from TransCellAssay.Utils.Stat import ttest
 
 
 __author__ = "Arnaud KOPP"

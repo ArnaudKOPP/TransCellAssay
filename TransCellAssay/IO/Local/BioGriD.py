@@ -17,7 +17,7 @@ from io import StringIO
 from collections import namedtuple
 from operator import itemgetter
 import urllib.request
-from TransCellAssay.Utils.utils import reporthook
+from TransCellAssay.Utils.Utils import reporthook
 
 
 class BioGRID(object):

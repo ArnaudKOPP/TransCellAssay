@@ -230,7 +230,7 @@ class Replicat(object):
             else:
                 self.Data = np.zeros((16, 24))
             for key, elem in dict_mean.items():
-                pos = TCA.Utils.WellFormat.get_opposite_well_format(key)
+                pos = TCA.get_opposite_well_format(key)
                 self.Data[pos[0]][pos[1]] = elem
 
         except Exception as e:

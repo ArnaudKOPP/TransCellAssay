@@ -67,7 +67,7 @@ class InputFile(object):
         useless = [u'Barcode', u'Well', u'PlateID', u'UPD', u'TimePoint', u'TimeInterval', u'FieldID', u'CellID',
                    u'Left', u'Top', u'Height', u'Width', u'FieldIndex', u'CellNum', "FieldNumber", "CellNumber", "X",
                    "Y", "Z", "Width", "Height", "PixelSizeX", "PixelSizeY", "PixelSizeZ", 'Status', 'Zposition',
-                   'ValidObjectCount']
+                   'ValidObjectCount', 'PlateNumber']
         for col in useless:
             try:
                 self.dataframe = self.dataframe.drop(col, axis=1)

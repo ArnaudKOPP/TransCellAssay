@@ -51,7 +51,7 @@ class WellCorrection():
         try:
             if apply_on == "Plate":
                 # iterate on all plate
-                for key, value in self.screen.allPlate.items():
+                for key, value in self.screen.plate.items():
                     # check if plate object
                     if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
@@ -61,7 +61,7 @@ class WellCorrection():
             elif apply_on == "Replicat":
                 objectCnt = 0
                 # iterate on all plate
-                for key, value in self.screen.allPlate.items():
+                for key, value in self.screen.plate.items():
                     # check if plate object
                     if not isinstance(value, Core.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
