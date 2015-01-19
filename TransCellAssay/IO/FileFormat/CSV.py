@@ -45,7 +45,7 @@ class CSV_Reader():
     # columns that we can remove because useless
     # u'ImageLinkWellID'
     to_remove = [u'Well', u'PlateID', u'ImageLinkWellID', u'UPD', u'Barcode', u'TimePoint', u'TimeInterval'
-        , u'FieldID', u'CellID', u'Left', u'Top', u'Height', u'Width', u'FieldIndex', u'CellNum']
+                 , u'FieldID', u'CellID', u'Left', u'Top', u'Height', u'Width', u'FieldIndex', u'CellNum']
 
     def __init__(self, ):
         """

@@ -143,7 +143,7 @@ class Result(object):
     def __add__(self, to_add):
         """
         add result object to other one MERGING Function
-        :param to_add: other Résult object
+        :param to_add: other Result object
         :return:
         """
         try:

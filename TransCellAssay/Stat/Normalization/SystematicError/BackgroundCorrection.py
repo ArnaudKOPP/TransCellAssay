@@ -22,13 +22,11 @@ __status__ = "Production"
 
 
 class BackgroundCorrection():
-    def __init__(self, Screen):
-        if isinstance(Screen, Core.Screen):
-            self.screen = Screen
-            self.BackgroundModel = None
-            self.BackgroundModelMean = None
-        else:
-            raise TypeError("\033[0;31m[ERROR]\033[0m Provided Screen Object Object")
+    def __init__(self, *args):
+        self.BackgroundModel = None
+        self.BackgroundModelMean = None
+        raise NotImplementedError
+        # TODO
 
     def background_correction(self, apply="Plate", verbose=False):
         try:

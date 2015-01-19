@@ -24,6 +24,8 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
+# TODO make these two function take in input a plate and possibilities to choose between paired and unpaired reference
+
 
 def feature_scaling(plate, feature, mean_scaling=False):
     """
