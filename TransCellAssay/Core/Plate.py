@@ -397,14 +397,14 @@ class Plate(object):
                         self.isSpatialNormalized = True
 
                 if algorithm == 'PMP':
-                    corrected_data_array = TCA.partial_mean_polish(self.Data.copy(), max_iteration=max_iterations, alpha=alpha,
-                                                                   verbose=verbose)
+                    corrected_data_array = TCA.partial_mean_polish(self.Data.copy(), max_iteration=max_iterations,
+                                                                   alpha=alpha, verbose=verbose)
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'MEA':
-                    corrected_data_array = TCA.matrix_error_amendmend(self.Data.copy(), verbose=verbose, alpha=alpha, )
+                    corrected_data_array = TCA.matrix_error_amendmend(self.Data.copy(), verbose=verbose, alpha=alpha)
                     if save:
                         self.SECData = corrected_data_array
                         self.isSpatialNormalized = True

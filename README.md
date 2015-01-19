@@ -8,11 +8,11 @@ This package was developped and tested on python 3.4. It can replace CellHTS2 or
 ### What TCA do :
 
 * Quality Control for control, data consistency across replicat (check if data are missing)
-* Controls based and non-controls based normalization, logarithmic transformation
-* Systematic Error Detection Test (edge effect or something else)
+* Controls based and non-controls based normalization, logarithmic transformation, feature scaling
+* Systematic Error Detection Test
 * Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and basic background Correction/Well Correction
-* Scoring (SSMD, T-Statistics,...)
-* Basic Go enrichment with list of gene
+* Scoring (SSMD, T-Statistics, Rank product, single cell properties)
+* GO enrichment, pathways enrichment, PPI, KEGG, STRING, Panther, Biogrid, ... 
 
 ##Python Module Dependencies
 
@@ -46,10 +46,7 @@ This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons
 * Machine Learning like clustering or classification of hit
 * Bayesian Inference (FDR...)
 * PP-interaction
-* -Omics data interaction like RNA-seq from multiple cell lines
+* RNA-seq data from multiple cell lines
 * Dose Response Analysis
 * Phenotypic Response
-* KEGG, STRING, Panther, Biogrid, ... 
 * A lot more graphics (Screen hit map, ...)
-* Rejecting Plate by Z-score
-* Make a docker image for easy sharing !!
