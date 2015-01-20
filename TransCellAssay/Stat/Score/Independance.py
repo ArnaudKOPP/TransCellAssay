@@ -46,8 +46,7 @@ def independance(plate, neg, feature, equal_var=True):
                                              ('Two-tailed P-Value', float)])
 
         for key, value in plate.replicat.items():
-            neg_well = [x for x in plate.PlateMap.get_well(neg) if (TCA.get_opposite_well_format(x) not in
-                                                                    value.skip_well)]
+            neg_well = value.get_valid_well(neg)
             neg_data = value.get_raw_data(feature=feature, well=neg_well)
             cpt = 0
             for i in range(shape[0]):

@@ -231,12 +231,12 @@ class Replicat(object):
         try:
             if not self.isNormalized:
                 if skipping_wells:
-                    self.RawData.values = TCA.variability_normalization(self.RawData.values, feature=feature,
+                    self.RawData.values = TCA.rawdata_variability_normalization(self.RawData.values, feature=feature,
                                                                         method=method, log2_transf=log,
                                                                         neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
                                                                         pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
                 else:
-                    self.RawData.values = TCA.variability_normalization(self.RawData.values, feature=feature,
+                    self.RawData.values = TCA.rawdata_variability_normalization(self.RawData.values, feature=feature,
                                                                         method=method,
                                                                         log2_transf=log,
                                                                         neg_control=neg,

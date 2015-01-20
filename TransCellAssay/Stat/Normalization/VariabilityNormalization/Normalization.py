@@ -25,7 +25,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def feature_scaling(plate, feature, mean_scaling=False):
+def plate_feature_scaling(plate, feature, mean_scaling=False):
     """
     Feature Scaling to [0,1] or [0, mean of max] if mean_scaling is True
     :param plate: Plate object
@@ -57,7 +57,7 @@ def feature_scaling(plate, feature, mean_scaling=False):
         print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def variability_normalization(data, feature, method=None, log2_transf=True, neg_control=None, pos_control=None):
+def rawdata_variability_normalization(data, feature, method=None, log2_transf=True, neg_control=None, pos_control=None):
     """
     Take a dataframe from replicat object and apply desired strategy of variability normalization
     :param data: pd.dataframe to normalize

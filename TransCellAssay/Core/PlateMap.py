@@ -16,6 +16,7 @@ E
 import pandas as pd
 import numpy as np
 from TransCellAssay import Utils as Utils
+import collections
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -112,7 +113,7 @@ class PlateMap(object):
             size = mat.shape  # # get shape of matrix
             row = size[0]
             col = size[1]
-            map_as_dict = {}
+            map_as_dict = collections.OrderedDict()
             for r in range(row):
                 for c in range(col):
                     pos = (r, c)

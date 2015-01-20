@@ -4,7 +4,7 @@ Compute basics score for plate and store result into a Result object.
 Compute Cells Count, percent of positive Cells, viability and toxicity per Wells.
 """
 
-import TransCellAssay
+import TransCellAssay as TCA
 import numpy as np
 
 __author__ = "Arnaud KOPP"
@@ -30,10 +30,10 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
     :return: return result
     """
     try:
-        if isinstance(plate, TransCellAssay.Plate):
+        if isinstance(plate, TCA.Plate):
             platemap = plate.get_platemap()
             size = platemap.get_shape()
-            result = TransCellAssay.Result(size=(size[0] * size[1]))
+            result = TCA.Result(size=(size[0] * size[1]))
             x = platemap.as_dict()
             result.init_gene_well(x)
 

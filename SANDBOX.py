@@ -41,11 +41,11 @@ def do_it(plate_nb, verbose=False):
     rep2.DataType = "mean"
     rep3.DataType = "mean"
 
-    # time_start = time.time()
-    # ana = TCA.plate_analysis(plaque, [feature], neg, pos)
-    # print(ana)
-    # time_stop = time.time()
-    # print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
+    time_start = time.time()
+    ana = TCA.plate_analysis(plaque, [feature], neg, pos)
+    print(ana)
+    time_stop = time.time()
+    print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
     plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
                          pos=platesetup.get_well(pos), skipping_wells=True)
@@ -58,7 +58,7 @@ def do_it(plate_nb, verbose=False):
 
     # plaque.compute_data_from_replicat(feature, forced_update=True)
 
-    TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, use_raw_data=True, skipping_wells=True,
+    TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, use_raw_data=False, skipping_wells=True,
                               verbose=True)
 
     # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
