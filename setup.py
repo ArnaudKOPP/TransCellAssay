@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='TransCellAssay',
-    version='0.01',
+    version='1.0',
     packages=['Core', 'Utils', 'Stat', 'IO'],
     install_requires=['pandas', 'numpy', 'scipy', 'scikit-learn', 'matplotlib', 'seaborn', 'xlsxwriter',
                       'beautifulsoup4', 'requests'],  # if WSDL add -> 'suds-jurko'

@@ -1,9 +1,10 @@
 # coding=utf-8
 """
-Librarie for easy play with HTS txt data file (HCS explorer output style)
+Librarie for easy play with HTS csv data file (HCS explorer output style)
 """
-from TransCellAssay.IO.FileFormat.InputFile import InputFile
+
 import pandas as pd
+from TransCellAssay.IO.Input.InputFile import InputFile
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -15,34 +16,36 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class TXT(InputFile):
+class CSV(InputFile):
+    """
+    Class specifique for csv file
+    """
     def load(self, fpath):
         """
         Load csv file
         :param fpath:
         """
         try:
-            self.dataframe = pd.read_table(fpath)
+            self.dataframe = pd.read_csv(fpath)
             print('\033[0;32m[INFO]\033[0m Reading %s File' % fpath)
         except:
             try:
-                self.dataframe = pd.read_table(fpath, decimal=",")
+                self.dataframe = pd.read_csv(fpath, decimal=",", sep=";")
                 print('\033[0;32m[INFO]\033[0m Reading %s File' % fpath)
             except Exception as e:
                 print('\033[0;31m[ERROR]\033[0m  Error in reading %s File' % fpath, e)
 
 
-class TXT_Reader():
+class CSV_Reader():
     """
     classdocs
-    Class for reading data txt file, cleaning them, and rewrite them.
+    Class for reading data CSV file, cleaning them, and rewrite them.
     """
 
-
     # columns that we can remove because useless
-    to_remove = [u'Barcode', u'Well', u'PlateID', u'UPD', u'TimePoint', u'TimeInterval',
-                 u'FieldID', u'CellID', u'Left', u'Top', u'Height', u'Width',
-                 u'FieldIndex', u'CellNum']
+    # u'ImageLinkWellID'
+    to_remove = [u'Well', u'PlateID', u'ImageLinkWellID', u'UPD', u'Barcode', u'TimePoint', u'TimeInterval'
+                 , u'FieldID', u'CellID', u'Left', u'Top', u'Height', u'Width', u'FieldIndex', u'CellNum']
 
     def __init__(self, ):
         """
@@ -52,7 +55,7 @@ class TXT_Reader():
 
     # # format string to float
     def format(x):
-        return float(x)
+        return (float(x))
 
     def read_data(self, input):
         """
@@ -60,18 +63,27 @@ class TXT_Reader():
         """
         print(" -> Start processing")
         try:
-            # # read txt file
-            self.data = pd.read_table(input, sep=",")
-            # # remove first row because useless --
-            self.data = self.data.ix[1:]
-            ## remove useless features
-            self.data = self.data.drop(self.to_remove, axis=1)
-            ## remove row with NaN(empty)
-            self.data = self.data.dropna(axis=0)
+            # # read csv file
+            try:
+                self.data = pd.read_csv(input)
+            except:
+                try:
+                    self.data = pd.read_csv(input, decimal=",", sep=";")
+                except Exception as e:
+                    print(e)
+                    print("Error in reading %s File" % input)
+            try:
+                # # remove useless features
+                self.data = self.data.drop(self.to_remove, axis=1)
+                ## remove row with NaN(empty)
+                self.data = self.data.dropna(axis=0)
+            except Exception as e:
+                print(e)
 
-            self.data[['Row', 'Col']] = self.data[['Row', 'Col']].astype(int)
+            self.data[['Row', 'Column']] = self.data[['Row', 'Column']].astype(int)
 
-            ## rename row from number to name **pretty ugly**
+
+            # # rename row from number to name **pretty ugly**
             self.data = self.data.replace({'Row': {0: 'A'}})
             self.data = self.data.replace({'Row': {1: 'B'}})
             self.data = self.data.replace({'Row': {2: 'C'}})
@@ -91,13 +103,10 @@ class TXT_Reader():
             ## insert Well columns
             self.data.insert(0, "Well", 0)
             ## put Well value from row and col columns
-            self.data['Well'] = self.data.apply(lambda x: '%s%.3g' % (x['Row'], x['Col'] + 1), axis=1)
-            remove = [u'Row', u'Col']
-            self.data = self.data.drop(remove, axis=1)
+            self.data['Well'] = self.data.apply(lambda x: '%s%.3g' % (x['Row'], x['Column'] + 1), axis=1)
+            remove = [u'Row', u'Column']
+            # self.data = self.data.drop(remove, axis=1)
             col = self.data.columns
-
-            for feat in col[1:]:
-                self.data[feat] = self.data[feat].astype(float)
 
             ## change , to . in float
             for feat in col[1:]:

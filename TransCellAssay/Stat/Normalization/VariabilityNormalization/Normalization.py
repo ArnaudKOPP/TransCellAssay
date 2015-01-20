@@ -69,7 +69,11 @@ def rawdata_variability_normalization(data, feature, method=None, log2_transf=Tr
     :return: normalized data
     """
     try:
-        if isinstance(data, pd.DataFrame):
+        if isinstance(data, TCA.Plate):
+            raise NotImplementedError
+        elif isinstance(data, TCA.Replicat):
+            raise NotImplementedError
+        elif isinstance(data, pd.DataFrame):
             # apply log2 transformation on data
             if log2_transf:
                 data.loc[:] = data[data[feature] > 0]

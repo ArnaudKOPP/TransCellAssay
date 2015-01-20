@@ -11,7 +11,7 @@ import os.path
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 import time
-from TransCellAssay.IO.FileFormat import CSV_Reader, Excel_Reader, TXT_Reader
+from TransCellAssay.IO.Input import CSV_Reader, Excel_Reader, TXT_Reader
 
 
 __author__ = "Arnaud KOPP"
