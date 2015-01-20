@@ -24,8 +24,6 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
-# TODO make these two function take in input a plate and possibilities to choose between paired and unpaired reference
-
 
 def feature_scaling(plate, feature, mean_scaling=False):
     """
@@ -34,26 +32,29 @@ def feature_scaling(plate, feature, mean_scaling=False):
     :param feature: Which feature to scale
     :param mean_scaling: if True, the max is the mean of max accross all replicat (instead of 1)
     """
-    if isinstance(plate, TCA.Plate):
-        min_lst = []
-        max_lst = []
+    try:
+        if isinstance(plate, TCA.Plate):
+            min_lst = []
+            max_lst = []
 
-        # search min and max accross all replicat
-        for key, value in plate.replicat.items():
-            min_lst.append(np.min(value.RawData[feature]))
-            max_lst.append(np.max(value.RawData[feature]))
+            # search min and max accross all replicat
+            for key, value in plate.replicat.items():
+                min_lst.append(np.min(value.RawData.values[feature]))
+                max_lst.append(np.max(value.RawData.values[feature]))
 
-        # apply feature scaling accross all replicat
-        for key, value in plate.replicat.items():
-            value.RawData.loc[:, feature] = (
-                (value.RawData.loc[:, feature] - min(min_lst)) / (max(max_lst) - min(min_lst)))
-            if mean_scaling:
-                value.RawData.loc[:, feature] *= (sum(max_lst) / len(max_lst))
-            value.isNormalized = True
+            # apply feature scaling accross all replicat
+            for key, value in plate.replicat.items():
+                value.RawData.loc[:, feature] = (
+                    (value.RawData.values.loc[:, feature] - min(min_lst)) / (max(max_lst) - min(min_lst)))
+                if mean_scaling:
+                    value.RawData.values.loc[:, feature] *= (sum(max_lst) / len(max_lst))
+                value.isNormalized = True
 
-        plate.isNormalized = True
-    else:
-        raise TypeError
+            plate.isNormalized = True
+        else:
+            raise TypeError('Take a plate object in input')
+    except Exception as e:
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
 def variability_normalization(data, feature, method=None, log2_transf=True, neg_control=None, pos_control=None):
@@ -115,9 +116,9 @@ def variability_normalization(data, feature, method=None, log2_transf=True, neg_
             # return transformed data
             return data
         else:
-            raise TypeError
+            raise TypeError('Take a Raw Data in input')
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
 def _get_data_by_wells(dataframe, feature, wells):
@@ -134,4 +135,4 @@ def _get_data_by_wells(dataframe, feature, wells):
             data = data.append(dataframe[feature][dataframe['Well'] == i])
         return data
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)

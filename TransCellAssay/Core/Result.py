@@ -158,7 +158,7 @@ class Result(object):
         :return:
         """
         try:
-            return "Result object: " + repr(pd.DataFrame(self.result_array))
+            return "Result of single Cell properties: \n" + repr(pd.DataFrame(self.result_array))
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -168,6 +168,6 @@ class Result(object):
         :return:
         """
         try:
-            return "Result Array: \n " + repr(pd.DataFrame(self.result_array))
+            return self.__repr__()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

@@ -59,6 +59,6 @@ class Well(object):
 
     def __str__(self):
         try:
-            return 0
+            return self.__repr__()
         except Exception as e:
             print(e)

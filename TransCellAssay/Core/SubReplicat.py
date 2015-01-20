@@ -112,8 +112,6 @@ class SubReplicat(Replicat):
         Definition for the print
         """
         try:
-            return ("\n SubReplicat : " + repr(self.name) +
-                    "\n Normalized Data : " + repr(self.isNormalized) +
-                    "\n Spatial Normalized : " + repr(self.isSpatialNormalized) + "\n")
+            return self.__repr__()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

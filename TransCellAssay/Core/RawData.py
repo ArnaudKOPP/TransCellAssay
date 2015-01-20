@@ -34,12 +34,12 @@ class RawData(object):
 
     def __init__(self, path_or_file):
         if isinstance(path_or_file, str):
+            self._CACHING_gbdata = None
+            self._CACHING_gbdata_key = None
             try:
                 self.values = pd.read_csv(path_or_file)
-                self._gbdata = None
-                self._gbdata_key = None
                 print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
-            except:
+            except Exception:
                 try:
                     self.values = pd.read_csv(path_or_file, decimal=",", sep=";")
                     print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
@@ -100,6 +100,16 @@ class RawData(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def get_unique_well(self):
+        """
+        return all unique wells
+        :return:
+        """
+        try:
+            return self.values.Well.unique()
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
     def df_to_array(self, feat):
         """
 
@@ -148,13 +158,17 @@ class RawData(object):
         :return:
         """
         try:
-            if self._gbdata is not None:
-                if key is self._gbdata_key:
-                    return self._gbdata
+            if self._CACHING_gbdata is not None:
+                if key is self._CACHING_gbdata_key:
+                    return self._CACHING_gbdata
                 else:
-                    return self.values.groupby(key)
+                    self._CACHING_gbdata = self.values.groupby(key)
+                    self._CACHING_gbdata_key = key
+                    return self._CACHING_gbdata
             else:
-                return self.values.groupby(key)
+                self._CACHING_gbdata = self.values.groupby(key)
+                self._CACHING_gbdata_key = key
+                return self._CACHING_gbdata
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -174,7 +188,20 @@ class RawData(object):
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Can't save Data, need name for replicat")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def save_memory(self, only_caching=True):
+        """
+        Remove some data for saving memory
+        :param only_caching: remove only cache
+        """
+        try:
+            self._CACHING_gbdata = None
+            self._CACHING_gbdata_key = None
+            if not only_caching:
+                self.values = None
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __repr__(self):
         try:
@@ -184,6 +211,6 @@ class RawData(object):
 
     def __str__(self):
         try:
-            return "\n Raw Data head : \n" + repr(self.values.head())
+            return self.__repr__()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

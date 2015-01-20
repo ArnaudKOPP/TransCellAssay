@@ -167,7 +167,6 @@ class PlateMap(object):
         :return:
         """
         try:
-
-            return "PlateMap: \n" + repr(self.platemap) + "\n"
+            return self.__repr__()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

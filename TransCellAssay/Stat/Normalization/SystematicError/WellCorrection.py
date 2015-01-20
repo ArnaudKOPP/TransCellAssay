@@ -44,7 +44,6 @@ class WellCorrection():
         raise NotImplementedError
         # TODO
 
-
     def well_correction(self, approx="lst", apply_on='replicat', verbose=False):
         try:
             self._apply_approx()

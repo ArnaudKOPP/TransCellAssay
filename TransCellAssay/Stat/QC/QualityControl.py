@@ -142,33 +142,27 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
                     raise Exception("\033[0;31m[ERROR]\033[0m compute_data_from_replicat First")
 
             if skipping_wells:
-                # # get valid Well
-                if len(replicat.skip_well) >= 1:
-                    valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well if (TCA.get_opposite_well_format(x)
-                                                                                            not in replicat.skip_well)]
-                    valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well if (TCA.get_opposite_well_format(x)
-                                                                                            not in replicat.skip_well)]
-                else:
-                    valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well]
-                    valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well]
+                valid_neg_well = replicat.get_valid_well(neg_well)
+                valid_pos_well = replicat.get_valid_well(pos_well)
             else:
                 valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well]
                 valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well]
 
-            # # get Valid Data
+            # # get Data
             if not use_raw_data:
-                negdata = _get_data_control_array(replicat.Data, c_ref=valid_neg_well)
-                posdata = _get_data_control_array(replicat.Data, c_ref=valid_pos_well)
+                if replicat.Data is not None:
+                    negdata = _get_data_control_array(replicat.Data, c_ref=valid_neg_well)
+                    posdata = _get_data_control_array(replicat.Data, c_ref=valid_pos_well)
+                else:
+                    print('\033[0;33m[WARNING]\033[0m 1data/well not available, using instead Raw Data')
+                    negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_neg_well)
+                    posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_pos_well)
             else:
                 if replicat.RawData is not None:
-                    # # Check if well exist in raw data for avoiding error
-                    unique_well = replicat.RawData.Well.unique()
-                    valid_pos_well = (i for i in valid_pos_well if i in unique_well)
-                    valid_neg_well = (i for i in valid_neg_well if i in unique_well)
-
                     negdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_neg_well)
                     posdata = _get_data_control(replicat.RawData, feature=feature, c_ref=valid_pos_well)
                 else:
+                    print('\033[0;33m[WARNING]\033[0m Raw Data not available, using instead 1data/well ')
                     negdata = _get_data_control_array(replicat.Data, c_ref=valid_neg_well)
                     posdata = _get_data_control_array(replicat.Data, c_ref=valid_pos_well)
 
@@ -193,7 +187,7 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             qc_data_array['Pos SD'] = np.std(posdata)
             qc_data_array['AVR'] = _avr(negdata, posdata)
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
-            qc_data_array['ZFactor'] = _zfactor(replicat.RawData, feature, negdata, posdata)
+            qc_data_array['ZFactor'] = _zfactor(replicat.RawData.values, feature, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 
@@ -218,8 +212,9 @@ def _get_data_control_array(array, c_ref):
         else:
             data = list()
             for i in c_ref:
-                pos = TCA.get_opposite_well_format(i)
-                data.append(array[pos[0]][pos[1]])
+                if isinstance(i, str):
+                    i = TCA.get_opposite_well_format(i)
+                data.append(array[i[0]][i[1]])
             return data
     except Exception as e:
         print(e)
@@ -234,15 +229,16 @@ def _get_data_control(data, feature, c_ref):
     :return: 1D array with data from desired Wells
     """
     try:
-        if not isinstance(data, pd.DataFrame):
+        if not isinstance(data, TCA.RawData):
             raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
         else:
             datax = pd.DataFrame()
-            datagp = data.groupby('Well')
             for i in c_ref:
+                if isinstance(i, tuple):
+                    i = TCA.get_opposite_well_format(i)
                 if datax.empty:
-                    datax = datagp.get_group(i)[feature]
-                datax = datax.append(datagp.get_group(i)[feature])
+                    datax = data.get_raw_data(feature=feature, well=i, well_idx=False)
+                datax = data.get_raw_data(feature=feature, well=i, well_idx=False)
             return datax
     except Exception as e:
         print(e)

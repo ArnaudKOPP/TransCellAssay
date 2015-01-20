@@ -194,7 +194,7 @@ class Plate(object):
             all_lists = []
             name = []
             for key, value in self.replicat.items():
-                all_lists.append(list(value.RawData.Well.unique()))
+                all_lists.append(list(value.RawData.get_unique_well()))
                 name.append(key)
 
             for A, B in zip(all_lists, name):
@@ -293,7 +293,7 @@ class Plate(object):
             df = None
             for key, rep in self.replicat.items():
                 assert isinstance(rep, TCA.Replicat)
-                tmp = rep.RawData.groupby("Well")
+                tmp = rep.RawData.get_groupby_data()
                 if df is None:
                     df = tmp.median()
                 else:
@@ -432,13 +432,14 @@ class Plate(object):
         except Exception as e:
             print(e)
 
-    def save_memory(self):
+    def save_memory(self, only_cache=True):
         """
         Save memory by deleting Raw Data
+        :param only_cache: Remove only cache
         """
         try:
             for key, value in self.replicat.items():
-                value.save_memory()
+                value.save_memory(only_cache=only_cache)
         except Exception as e:
             print(e)
 
@@ -549,12 +550,6 @@ class Plate(object):
         Definition for the print
         """
         try:
-            return (
-                "\n Plate : " + repr(self.Name) +
-                "\n MetaInfo : \n" + repr(self.MetaInfo) +
-                "\n PlateMap : \n" + repr(self.PlateMap) +
-                "\n Data normalized ? " + repr(self.isNormalized) +
-                "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
-                "\n Replicat List : \n" + repr(self.replicat))
+            return self.__repr__()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

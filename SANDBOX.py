@@ -56,9 +56,9 @@ def do_it(plate_nb, verbose=False):
     # plaque.normalization(feature, method='Zscore', log=False, neg=platesetup.get_well(neg),
     #                      pos=platesetup.get_well(pos))
 
-    plaque.compute_data_from_replicat(feature, forced_update=True)
+    # plaque.compute_data_from_replicat(feature, forced_update=True)
 
-    TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, use_raw_data=False, skipping_wells=True,
+    TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, use_raw_data=True, skipping_wells=True,
                               verbose=True)
 
     # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
@@ -66,9 +66,7 @@ def do_it(plate_nb, verbose=False):
 
     plaque.compute_data_from_replicat(feature, use_sec_data=True)
 
-    TCA.independance(plaque, neg='Neg', feature=feature)
-
-    print(plaque)
+    # TCA.independance(plaque, neg='Neg', feature=feature)
 
     # TCA.systematic_error_detection_test(plaque.SECData, alpha=0.1, verbose=True)
 

@@ -118,12 +118,6 @@ class SubPlate(Plate):
         Definition for the print
         """
         try:
-            return (
-                "\n SubPlate : " + repr(self.Name) +
-                "\n MetaInfo : \n" + repr(self.MetaInfo) +
-                "\n PlateMap : \n" + repr(self.PlateMap) +
-                "\n Data normalized ? " + repr(self.isNormalized) +
-                "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
-                "\n Replicat List : \n" + repr(self.replicat) + "\n")
+            return self.__repr__()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

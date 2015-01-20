@@ -1,24 +1,10 @@
 # coding=utf-8
 """
-Replicat implement the notion of technical replicat for one plate
-The replicat contains the raw data given in input by the csv, this data are stored into a pandas DataFrame.
-
-Input format MUST BE like that :
-
-Well   X    X     X     X
-A1
-A1
-A1
-...
-B2
-B2
-
+Replicat implement the notion of technical replicat for plate
 """
 
-import pandas as pd
 import numpy as np
 import TransCellAssay as TCA
-import os
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -76,16 +62,9 @@ class Replicat(object):
         :param input_file: csv file
         """
         try:
-            self.RawData = pd.read_csv(input_file)
-            if DEBUG:
-                print('\033[0;32m[INFO]\033[0m Reading %s File' % input_file)
-        except:
-            try:
-                self.RawData = pd.read_csv(input_file, decimal=",", sep=";")
-                if DEBUG:
-                    print('\033[0;32m[INFO]\033[0m Reading %s File' % input_file)
-            except Exception as e:
-                print('\033[0;31m[ERROR]\033[0m  Error in reading %s File' % input_file, e)
+            self.RawData = TCA.RawData(input_file)
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def get_feature_list(self):
         """
@@ -93,7 +72,7 @@ class Replicat(object):
         :return: list of feature/component
         """
         try:
-            return self.RawData.columns.tolist()
+            return self.RawData.get_feature_list
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -168,6 +147,27 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def get_valid_well(self, to_check):
+        """
+        :type to_check: list to check if all well are not to skip
+        """
+        try:
+            if len(self.skip_well) < 1:
+                return to_check
+            if len(to_check) > 0:
+                # type check
+                elem = to_check[0]
+                if isinstance(elem, tuple):
+                    tmp = [x for x in to_check if x not in self.skip_well]
+                    return tmp
+                if isinstance(elem, str):
+                    tmp = [x for x in to_check if TCA.get_opposite_well_format(x) not in self.skip_well]
+                    return tmp
+            else:
+                raise ValueError('Empty List')
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
     def get_raw_data(self, feature=None, well=None, well_idx=False):
         """
         Get Raw data with specified param
@@ -177,34 +177,7 @@ class Replicat(object):
         :return: raw data in pandas dataframe
         """
         try:
-            if well_idx:
-                if not isinstance(feature, list):
-                    feature = [feature]
-                feature.insert(0, 'Well')
-            data = None
-            if well is not None:
-                if not isinstance(well, list):
-                    well = [well]
-                datagp = self.RawData.groupby("Well")
-
-            if feature is not None:
-                if well is not None:
-                    for i in well:
-                        if data is None:
-                            data = datagp.get_group(i)[feature]
-                        data = data.append(datagp.get_group(i)[feature])
-                    return data
-                else:
-                    return self.RawData[feature]
-            else:
-                if well is not None:
-                    for i in well:
-                        if data is None:
-                            data = datagp.get_group(i)
-                        data = data.append(datagp.get_group(i))
-                    return data
-                else:
-                    return self.RawData
+            return self.RawData.get_raw_data(feature=feature, well=well, well_idx=well_idx)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -218,21 +191,10 @@ class Replicat(object):
             if not self.isNormalized:
                 print('\033[0;33m[WARNING]\033[0m Data are not normalized for replicat : ', self.name)
 
-            grouped_data_by_well = self.RawData.groupby('Well')
             if self.DataType == 'median':
-                tmp = grouped_data_by_well.median()
+                self.Data = self.RawData.compute_matrix(feature=feature, type_mean=self.DataType)
             else:
-                tmp = grouped_data_by_well.mean()
-            feature = tmp[feature]
-            dict_mean = feature.to_dict()  # # dict : key = pos and item are mean
-            if not len(dict_mean) > 96:
-                self.Data = np.zeros((8, 12))
-            else:
-                self.Data = np.zeros((16, 24))
-            for key, elem in dict_mean.items():
-                pos = TCA.get_opposite_well_format(key)
-                self.Data[pos[0]][pos[1]] = elem
-
+                self.Data = self.RawData.compute_matrix(feature=feature, type_mean=self.DataType)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -269,15 +231,16 @@ class Replicat(object):
         try:
             if not self.isNormalized:
                 if skipping_wells:
-                    self.RawData = TCA.variability_normalization(self.RawData, feature=feature, method=method,
-                                                                 log2_transf=log,
-                                                                 neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
-                                                                 pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
+                    self.RawData.values = TCA.variability_normalization(self.RawData.values, feature=feature,
+                                                                        method=method, log2_transf=log,
+                                                                        neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
+                                                                        pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
                 else:
-                    self.RawData = TCA.variability_normalization(self.RawData, feature=feature, method=method,
-                                                                 log2_transf=log,
-                                                                 neg_control=neg,
-                                                                 pos_control=pos)
+                    self.RawData.values = TCA.variability_normalization(self.RawData.values, feature=feature,
+                                                                        method=method,
+                                                                        log2_transf=log,
+                                                                        neg_control=neg,
+                                                                        pos_control=pos)
                 self.isNormalized = True
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
@@ -377,34 +340,19 @@ class Replicat(object):
         :param name: Give name to file
         :param path: Where to write .csv file
         """
-        try:
-            if not os.path.isdir(path):
-                os.mkdir(path)
-            if name is None:
-                if self.name is not None:
-                    print(os.path.join(path, self.name) + ".csv")
-                    self.RawData.to_csv(path=os.path.join(path, self.name) + ".csv", index=False)
-                    if DEBUG:
-                        print('\033[0;32m[INFO]\033[0m Writing File')
-                else:
-                    raise Exception("\033[0;33m[WARNING]\033[0m Can't save Data, need name for replicat")
-            else:
-                self.RawData.to_csv(path=os.path.join(path, name) + ".csv", index=False)
-                if DEBUG:
-                    print('\033[0;32m[INFO]\033[0m Writing File')
-        except Exception as e:
-            print(e)
+        self.RawData.save_raw_data(path=path, name=name)
 
-    def save_memory(self):
+    def save_memory(self, only_cache=True):
         """
         Save memory by deleting Raw Data that use a lot of memory
+        :param only_cache: Remove only cache or all
         """
         try:
-            self.RawData = None
+            self.RawData.save_memory(only_cache=only_cache)
             if DEBUG:
                 print('\033[0;32m[INFO]\033[0m Saving memory')
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def __repr__(self):
         """
@@ -412,7 +360,7 @@ class Replicat(object):
         """
         try:
             return ("\n Replicat : " + repr(self.name) +
-                    "\n Raw Data head : \n" + repr(self.RawData.head()) +
+                    repr(self.RawData) +
                     "\n Data normalized ? : " + repr(self.isNormalized) +
                     "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:
@@ -423,9 +371,6 @@ class Replicat(object):
         Definition for the print
         """
         try:
-            return ("\n Replicat : " + repr(self.name) +
-                    "\n Raw Data head : \n" + repr(self.RawData.head()) +
-                    "\n Data normalized ? : " + repr(self.isNormalized) +
-                    "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
+            return self.__repr__()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

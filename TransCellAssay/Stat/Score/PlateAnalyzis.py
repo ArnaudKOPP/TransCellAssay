@@ -50,8 +50,8 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
             # # iterate over replicat
             for k, v in plate.replicat.items():
                 # # cell count
-                datagp = v.RawData.groupby("Well")
-                cellcount = datagp.Well.count().to_dict()
+                datagb = v.RawData.get_groupby_data()
+                cellcount = datagb.Well.count().to_dict()
                 for key in cellcount.keys():
                     try:
                         cell_count_tmp.setdefault(key, []).append(cellcount[key])
@@ -59,22 +59,21 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
                         pass
 
                 # # variability
-                well_list = v.RawData.Well.unique()
+                well_list = v.RawData.get_unique_well()
                 # iterate on well
                 for well in well_list:
-                    mean.setdefault(well, []).append(np.mean(datagp.get_group(well)[feature]))
-                    median.setdefault(well, []).append(np.median(datagp.get_group(well)[feature]))
+                    mean.setdefault(well, []).append(np.mean(datagb.get_group(well)[feature]))
+                    median.setdefault(well, []).append(np.median(datagb.get_group(well)[feature]))
 
                 # # positive Cell
                 # # threshold value for control
                 data_control = v.get_raw_data(feature=feature, well=neg_well)
                 threshold_value = np.percentile(data_control, threshold)
                 # data from replicat
-                datagroupby = v.RawData.groupby('Well')
 
                 # iterate on well
-                for well in v.RawData.Well.unique():
-                    xdata = datagroupby.get_group(well)[feature]
+                for well in well_list:
+                    xdata = datagb.get_group(well)[feature]
                     len_total = len(xdata)
                     len_thres = len(np.extract(xdata > threshold_value, xdata))
                     # # include in dict key is the position and value is a %
