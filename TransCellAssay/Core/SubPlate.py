@@ -39,29 +39,29 @@ class SubPlate(Plate):
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Plate for creating SubPlate")
             self.replicat = collections.OrderedDict()
             self._init_replicat(parent_plate, RB, RE, CB, CE)
-            self.MetaInfo = parent_plate.MetaInfo
-            self.Name = parent_plate.Name
+            self._meta_info = parent_plate._meta_info
+            self.name = parent_plate.name
 
-            self.PlateMap = parent_plate.PlateMap.platemap.iloc[RB - 1: RE - 1, CB - 1: CE - 1]
-            self.Threshold = parent_plate.Threshold
-            self.ControlPos = None
+            self.platemap = parent_plate.platemap.platemap.iloc[RB - 1: RE - 1, CB - 1: CE - 1]
+            self.threshold = parent_plate.threshold
+            self._control_position = None
 
-            self.Neg = parent_plate.Neg
-            self.Pos = parent_plate.Pos
-            self.Tox = parent_plate.Tox
+            self._neg = parent_plate._neg
+            self._pos = parent_plate._pos
+            self._tox = parent_plate._tox
 
             self.isNormalized = parent_plate.isNormalized
             self.isSpatialNormalized = parent_plate.isSpatialNormalized
 
-            self.DataType = parent_plate.DataType
-            if parent_plate.Data is None:
-                self.Data = None
+            self.datatype = parent_plate.datatype
+            if parent_plate.array is None:
+                self.array = None
             else:
-                self.Data = parent_plate.Data[RB - 1: RE - 1, CB - 1: CE - 1]
-            if parent_plate.SECData is None:
-                self.SECData = None
+                self.array = parent_plate.array[RB - 1: RE - 1, CB - 1: CE - 1]
+            if parent_plate.sec_array is None:
+                self.sec_array = None
             else:
-                self.SECData = parent_plate.SECData[RB - 1: RE - 1, CB - 1: CE - 1]
+                self.sec_array = parent_plate.sec_array[RB - 1: RE - 1, CB - 1: CE - 1]
 
             self.RB = RB
             self.RE = RE
@@ -104,9 +104,8 @@ class SubPlate(Plate):
         """
         try:
             return (
-                "\n SubPlate : " + repr(self.Name) +
-                "\n MetaInfo : \n" + repr(self.MetaInfo) +
-                "\n PlateMap : \n" + repr(self.PlateMap) +
+                "\n SubPlate : " + repr(self.name) +
+                "\n PlateMap : \n" + repr(self.platemap) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat) + "\n")

@@ -31,12 +31,12 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
     """
     try:
         if isinstance(plate, TCA.Plate):
-            rk_pdt = plate.PlateMap.platemap.values.flatten().reshape(size, 1)
+            rk_pdt = plate.platemap.platemap.values.flatten().reshape(size, 1)
             for key, value in plate.replicat.items():
                 if secdata:
-                    rank = _get_data_rank(value.SECData, method=rank_method)
+                    rank = _get_data_rank(value.sec_array, method=rank_method)
                 else:
-                    rank = _get_data_rank(value.Data, method=rank_method)
+                    rank = _get_data_rank(value.array, method=rank_method)
                 rk_pdt = np.append(rk_pdt, rank.flatten().reshape(size, 1), axis=1)
 
             if mean_method is 'mean':

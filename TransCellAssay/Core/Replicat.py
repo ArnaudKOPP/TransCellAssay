@@ -36,12 +36,12 @@ class Replicat(object):
         """
         Constructor
         """
-        self.RawData = None
+        self.rawdata = None
         self.isNormalized = False
         self.isSpatialNormalized = False
-        self.DataType = datatype
-        self.Data = None
-        self.SECData = None
+        self.datatype = datatype
+        self.array = None
+        self.sec_array = None
 
         if data is not None:
             if not single:
@@ -62,7 +62,7 @@ class Replicat(object):
         :param input_file: csv file
         """
         try:
-            self.RawData = TCA.RawData(input_file)
+            self.rawdata = TCA.RawData(input_file)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -72,7 +72,7 @@ class Replicat(object):
         :return: list of feature/component
         """
         try:
-            return self.RawData.get_feature_list
+            return self.rawdata.get_feature_list
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -85,13 +85,13 @@ class Replicat(object):
         """
         try:
             if isinstance(array, np.ndarray):
-                self.Data = array
+                self.array = array
                 if array_type == 'median':
                     print("\033[0;33m[WARNING]\033[0m Manual overide")
-                    self.DataType = array_type
+                    self.datatype = array_type
                 elif array_type == 'mean':
                     print("\033[0;33m[WARNING]\033[0m Manual overide")
-                    self.DataType = array_type
+                    self.datatype = array_type
                 else:
                     raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided data type")
             else:
@@ -177,7 +177,7 @@ class Replicat(object):
         :return: raw data in pandas dataframe
         """
         try:
-            return self.RawData.get_raw_data(feature=feature, well=well, well_idx=well_idx)
+            return self.rawdata.get_raw_data(feature=feature, well=well, well_idx=well_idx)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -191,10 +191,10 @@ class Replicat(object):
             if not self.isNormalized:
                 print('\033[0;33m[WARNING]\033[0m Data are not normalized for replicat : ', self.name)
 
-            if self.DataType == 'median':
-                self.Data = self.RawData.compute_matrix(feature=feature, type_mean=self.DataType)
+            if self.datatype == 'median':
+                self.array = self.rawdata.compute_matrix(feature=feature, type_mean=self.datatype)
             else:
-                self.Data = self.RawData.compute_matrix(feature=feature, type_mean=self.DataType)
+                self.array = self.rawdata.compute_matrix(feature=feature, type_mean=self.datatype)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -207,13 +207,13 @@ class Replicat(object):
         """
         try:
             if sec:
-                if self.SECData is None:
+                if self.sec_array is None:
                     raise ValueError('\033[0;31m[ERROR]\033[0m  Launch Systematic Error Correction before')
                 else:
-                    return self.SECData
-            elif self.Data is None:
+                    return self.sec_array
+            elif self.array is None:
                 self.compute_data_for_feature(feature)
-            return self.Data
+            return self.array
 
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -231,16 +231,16 @@ class Replicat(object):
         try:
             if not self.isNormalized:
                 if skipping_wells:
-                    self.RawData.values = TCA.rawdata_variability_normalization(self.RawData.values, feature=feature,
-                                                                        method=method, log2_transf=log,
-                                                                        neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
-                                                                        pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
+                    self.rawdata.values = TCA.rawdata_variability_normalization(self.rawdata.values, feature=feature,
+                                                                                method=method, log2_transf=log,
+                                                                                neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
+                                                                                pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
                 else:
-                    self.RawData.values = TCA.rawdata_variability_normalization(self.RawData.values, feature=feature,
-                                                                        method=method,
-                                                                        log2_transf=log,
-                                                                        neg_control=neg,
-                                                                        pos_control=pos)
+                    self.rawdata.values = TCA.rawdata_variability_normalization(self.rawdata.values, feature=feature,
+                                                                                method=method,
+                                                                                log2_transf=log,
+                                                                                neg_control=neg,
+                                                                                pos_control=pos)
                 self.isNormalized = True
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
@@ -266,7 +266,7 @@ class Replicat(object):
         """
 
         try:
-            if self.Data is None:
+            if self.array is None:
                 raise ValueError("\033[0;31m[ERROR]\033[0m Compute Median of replicat first by using "
                                  "computeDataFromReplicat")
             elif self.isSpatialNormalized is True:
@@ -274,39 +274,39 @@ class Replicat(object):
                                  "already been removed")
             else:
                 if algorithm == 'Bscore':
-                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.Data.copy(), method=method,
+                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                    max_iterations=max_iterations,
                                                                    verbose=verbose)
                     if save:
-                        self.SECData = resid
+                        self.sec_array = resid
                         self.isSpatialNormalized = True
 
                 if algorithm == 'BZscore':
-                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.Data.copy(), method=method,
+                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
                                                                       max_iterations=max_iterations,
                                                                       verbose=verbose)
                     if save:
-                        self.SECData = resid
+                        self.sec_array = resid
                         self.isSpatialNormalized = True
 
                 if algorithm == 'PMP':
-                    corrected_data_array = TCA.partial_mean_polish(self.Data.copy(), max_iteration=max_iterations,
+                    corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
                                                                    verbose=verbose, alpha=alpha)
                     if save:
-                        self.SECData = corrected_data_array
+                        self.sec_array = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'MEA':
-                    corrected_data_array = TCA.matrix_error_amendmend(self.Data.copy(), verbose=verbose, alpha=alpha)
+                    corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha)
                     if save:
-                        self.SECData = corrected_data_array
+                        self.sec_array = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'DiffusionModel':
-                    corrected_data_array = TCA.diffusion_model(self.Data.copy(), max_iterations=max_iterations,
+                    corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
                                                                verbose=verbose)
                     if save:
-                        self.SECData = corrected_data_array
+                        self.sec_array = corrected_data_array
                         self.isSpatialNormalized = True
 
         except Exception as e:
@@ -340,7 +340,7 @@ class Replicat(object):
         :param name: Give name to file
         :param path: Where to write .csv file
         """
-        self.RawData.save_raw_data(path=path, name=name)
+        self.rawdata.save_raw_data(path=path, name=name)
 
     def save_memory(self, only_cache=True):
         """
@@ -348,7 +348,7 @@ class Replicat(object):
         :param only_cache: Remove only cache or all
         """
         try:
-            self.RawData.save_memory(only_cache=only_cache)
+            self.rawdata.save_memory(only_cache=only_cache)
             if DEBUG:
                 print('\033[0;32m[INFO]\033[0m Saving memory')
         except Exception as e:
@@ -360,7 +360,7 @@ class Replicat(object):
         """
         try:
             return ("\n Replicat : " + repr(self.name) +
-                    repr(self.RawData) +
+                    repr(self.rawdata) +
                     "\n Data normalized ? : " + repr(self.isNormalized) +
                     "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
         except Exception as e:

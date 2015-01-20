@@ -7,8 +7,7 @@ We substract then the calculated background to value from plate or replicat.
 """
 
 import numpy as np
-
-from TransCellAssay import Core
+import TransCellAssay as TCA
 
 
 __author__ = "Arnaud KOPP"
@@ -22,13 +21,37 @@ __status__ = "Production"
 
 
 class BackgroundCorrection():
+    """
+
+    :param args:
+    :raise NotImplementedError:
+    """
+
     def __init__(self, *args):
         self.BackgroundModel = None
         self.BackgroundModelMean = None
-        raise NotImplementedError
-        # TODO
+        try:
+            self.screen = []
+            for arg in args:
+                if isinstance(arg, TCA.Plate):
+                    self.screen.append(arg)
+                elif isinstance(arg, list):
+                    for elem in arg:
+                        if isinstance(elem, TCA.Plate):
+                            self.screen.append(elem)
+                        else:
+                            raise TypeError('Accept only list of Plate element')
+                else:
+                    raise TypeError('Accept only plate or list of plate')
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def background_correction(self, apply="Plate", verbose=False):
+        """
+
+        :param apply:
+        :param verbose:
+        """
         try:
             self.background_evaluation(apply_on=apply, verbose=verbose)
             self.background_surface_analysis()
@@ -36,35 +59,42 @@ class BackgroundCorrection():
         except Exception as e:
             print(e)
 
-    def background_evaluation(self, apply_on, verbose, control_well=None):
+    def background_evaluation(self, apply_on='Plate', verbose=False, control_well=None):
+        """
+
+        :param apply_on:
+        :param verbose:
+        :param control_well:
+        :raise AttributeError:
+        """
         try:
             if apply_on == "Plate":
                 # iterate on all plate
-                for key, value in self.screen.plate.items():
+                for plate in self.screen:
                     # check if plate object
-                    if not isinstance(value, Core.Plate):
+                    if not isinstance(plate, TCA.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         if self.BackgroundModel is None:
-                            self.BackgroundModel = np.zeros(value.Data.shape)
-                        self.BackgroundModel += value.Data
+                            self.BackgroundModel = np.zeros(plate.array.shape)
+                        self.BackgroundModel += plate.array
                 self.BackgroundModel *= 1 / len(self.screen)
             elif apply_on == "Replicat":
                 object_cnt = 0
                 # iterate on all plate
-                for key, value in self.screen.plate.items():
+                for plate in self.screen:
                     # check if plate object
-                    if not isinstance(value, Core.Plate):
+                    if not isinstance(plate, TCA.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
-                        for repName, repValue in value.replicat.items():
-                            if not isinstance(repValue, Core.Replicat):
+                        for repName, repValue in plate.replicat.items():
+                            if not isinstance(repValue, TCA.Replicat):
                                 raise TypeError
                             else:
                                 if self.BackgroundModelMean is None:
-                                    self.BackgroundModelMean = np.zeros(repValue.Data.shape)
-                                self.BackgroundModel += repValue.Data
+                                    self.BackgroundModelMean = np.zeros(repValue.array.shape)
+                                self.BackgroundModel += repValue.array
                                 object_cnt += 1
                 self.BackgroundModel *= 1 / object_cnt
             else:
@@ -79,36 +109,47 @@ class BackgroundCorrection():
             print(e)
 
     def background_surface_analysis(self, plot=False):
+        """
+
+        :param plot:
+        :return:
+        """
         try:
             return 0
         except Exception as e:
             print(e)
 
     def apply_background_elimination(self, apply_on, control_well=None):
+        """
+
+        :param apply_on:
+        :param control_well:
+        :raise AttributeError:
+        """
         try:
             if apply_on == "Plate":
                 # iterate on all plate
-                for key, value in self.screen.plate.items():
+                for plate in self.screen:
                     # check if plate object
-                    if not isinstance(value, Core.Plate):
+                    if not isinstance(plate, TCA.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
-                        value.SECData -= self.BackgroundModel
-                        value.isSpatialNormalized = True
+                        plate.sec_array -= self.BackgroundModel
+                        plate.isSpatialNormalized = True
             elif apply_on == "Replicat":
                 # iterate on all plate
-                for key, value in self.screen.plate.items():
+                for plate in self.screen:
                     # check if plate object
-                    if not isinstance(value, Core.Plate):
+                    if not isinstance(plate, TCA.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
-                        for repName, repValue in value.replicat.items():
-                            if not isinstance(repValue, Core.Replicat):
+                        for repName, repValue in plate.replicat.items():
+                            if not isinstance(repValue, TCA.Replicat):
                                 raise TypeError
                             else:
-                                value.SECData -= self.BackgroundModel
-                                value.isSpatialNormalized = True
+                                repValue.sec_array -= self.BackgroundModel
+                                repValue.isSpatialNormalized = True
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
         except Exception as e:

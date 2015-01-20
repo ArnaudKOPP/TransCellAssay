@@ -46,25 +46,25 @@ class Plate(object):
         Constructor
         """
         self.replicat = collections.OrderedDict()
-        self.MetaInfo = {}
-        self.Name = name
+        self._meta_info = {}
+        self.name = name
 
-        self.PlateMap = TCA.Core.PlateMap()
+        self.platemap = TCA.Core.PlateMap()
         if platemap is not None:
-            self.PlateMap = platemap
-        self.Threshold = None
-        self.ControlPos = ((0, 11), (0, 23))
+            self.platemap = platemap
+        self.threshold = None
+        self._control_position = ((0, 11), (0, 23))
 
-        self.Neg = None
-        self.Pos = None
-        self.Tox = None
+        self._neg = None
+        self._pos = None
+        self._tox = None
 
         self.isNormalized = False
         self.isSpatialNormalized = False
 
-        self.DataType = "median"
-        self.Data = None
-        self.SECData = None
+        self.datatype = "median"
+        self.array = None
+        self.sec_array = None
 
         self.skip_well = skip
 
@@ -74,7 +74,7 @@ class Plate(object):
         :return: print some output
         """
         try:
-            for keys, values in self.MetaInfo.items():
+            for keys, values in self._meta_info.items():
                 print(keys, values)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -85,7 +85,7 @@ class Plate(object):
         :param name:
         """
         try:
-            self.Name = name
+            self.name = name
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -95,7 +95,7 @@ class Plate(object):
         :return: Name of plate
         """
         try:
-            return self.Name
+            return self.name
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -109,11 +109,11 @@ class Plate(object):
         try:
             if isinstance(array, np.ndarray):
                 print()
-                self.Data = array
+                self.array = array
                 if array_type == 'median':
-                    self.DataType = array_type
+                    self.datatype = array_type
                 elif array_type == 'mean':
-                    self.DataType = array_type
+                    self.datatype = array_type
                 else:
                     raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided data type")
             else:
@@ -194,7 +194,7 @@ class Plate(object):
             all_lists = []
             name = []
             for key, value in self.replicat.items():
-                all_lists.append(list(value.RawData.get_unique_well()))
+                all_lists.append(list(value.rawdata.get_unique_well()))
                 name.append(key)
 
             for A, B in zip(all_lists, name):
@@ -226,7 +226,7 @@ class Plate(object):
         :param value: text for info
         """
         try:
-            self.MetaInfo.pop(key, value)
+            self._meta_info.pop(key, value)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -237,7 +237,7 @@ class Plate(object):
         :return: info value from key
         """
         try:
-            return self.MetaInfo[key]
+            return self._meta_info[key]
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m ", e)
 
@@ -270,7 +270,7 @@ class Plate(object):
         """
         try:
             assert isinstance(platemap, TCA.Core.PlateMap)
-            self.PlateMap = platemap
+            self.platemap = platemap
         except Exception as e:
             print(e)
 
@@ -280,7 +280,7 @@ class Plate(object):
         :return: platemap
         """
         try:
-            return self.PlateMap
+            return self.platemap
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -293,7 +293,7 @@ class Plate(object):
             df = None
             for key, rep in self.replicat.items():
                 assert isinstance(rep, TCA.Replicat)
-                tmp = rep.RawData.get_groupby_data()
+                tmp = rep.rawdata.get_groupby_data()
                 if df is None:
                     df = tmp.median()
                 else:
@@ -311,25 +311,25 @@ class Plate(object):
         :param feature: which feature to have into sum up data
         """
         try:
-            tmp_array = np.zeros(self.PlateMap.platemap.shape)
+            tmp_array = np.zeros(self.platemap.platemap.shape)
             i = 0
 
             for key, replicat in self.replicat.items():
                 i += 1
-                if self.Data is None:
+                if self.array is None:
                     replicat.compute_data_for_feature(feature)
                 if forced_update:
                     replicat.compute_data_for_feature(feature)
 
                 if not use_sec_data:
-                    tmp_array = tmp_array + replicat.Data
+                    tmp_array = tmp_array + replicat.array
                 else:
-                    tmp_array = tmp_array + replicat.SECData
+                    tmp_array = tmp_array + replicat.sec_array
 
             if not use_sec_data:
-                self.Data = tmp_array / i
+                self.array = tmp_array / i
             else:
-                self.SECData = tmp_array / i
+                self.sec_array = tmp_array / i
                 self.isSpatialNormalized = True
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -374,7 +374,7 @@ class Plate(object):
                                                       max_iterations=max_iterations, alpha=alpha)
                 return
 
-            if self.Data is None:
+            if self.array is None:
                 raise ValueError(
                     "\033[0;31m[ERROR]\033[0m Compute Median of replicat first by using computeDataFromReplicat")
             elif self.isSpatialNormalized is True:
@@ -382,38 +382,38 @@ class Plate(object):
                     "\033[0;31m[ERROR]\033[0m SystematicErrorCorrection -> Systematics error have already been removed")
             else:
                 if algorithm == 'Bscore':
-                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.Data.copy(), method=method,
+                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                    max_iterations=max_iterations,
                                                                    verbose=verbose)
                     if save:
-                        self.SECData = resid
+                        self.sec_array = resid
                         self.isSpatialNormalized = True
                 if algorithm == 'BZscore':
-                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.Data.copy(), method=method,
+                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
                                                                       max_iterations=max_iterations,
                                                                       verbose=verbose)
                     if save:
-                        self.SECData = resid
+                        self.sec_array = resid
                         self.isSpatialNormalized = True
 
                 if algorithm == 'PMP':
-                    corrected_data_array = TCA.partial_mean_polish(self.Data.copy(), max_iteration=max_iterations,
+                    corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
                                                                    alpha=alpha, verbose=verbose)
                     if save:
-                        self.SECData = corrected_data_array
+                        self.sec_array = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'MEA':
-                    corrected_data_array = TCA.matrix_error_amendmend(self.Data.copy(), verbose=verbose, alpha=alpha)
+                    corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha)
                     if save:
-                        self.SECData = corrected_data_array
+                        self.sec_array = corrected_data_array
                         self.isSpatialNormalized = True
 
                 if algorithm == 'DiffusionModel':
-                    corrected_data_array = TCA.diffusion_model(self.Data.copy(), max_iterations=max_iterations,
+                    corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
                                                                verbose=verbose)
                     if save:
-                        self.SECData = corrected_data_array
+                        self.sec_array = corrected_data_array
                         self.isSpatialNormalized = True
 
         except Exception as e:
@@ -485,7 +485,7 @@ class Plate(object):
                 name = to_add.name
                 self.replicat[name] = to_add
             elif isinstance(to_add, TCA.Core.PlateMap):
-                self.PlateMap = to_add
+                self.platemap = to_add
             elif isinstance(to_add, list):
                 for elem in to_add:
                     assert isinstance(elem, TCA.Core.Replicat)
@@ -536,9 +536,8 @@ class Plate(object):
         """
         try:
             return (
-                "\n Plate : " + repr(self.Name) +
-                "\n MetaInfo : \n" + repr(self.MetaInfo) +
-                "\n PlateMap : \n" + repr(self.PlateMap) +
+                "\n Plate : " + repr(self.name) +
+                "\n PlateMap : \n" + repr(self.platemap) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
                 "\n Replicat List : \n" + repr(self.replicat))

@@ -3,7 +3,7 @@
 This Python packages is for analysis of Transfected Cell Assay in High Throughput Screening environment.   
 Data input is designed to be Single Cell data but 1data/well will work also.
 This package has been designed with the aim to facilitate the development of data analysis pipeline, so programming skills are needed for the moment. 
-This package was developped and tested on python 3.4. It can replace CellHTS2 or similar software
+It was developped and tested on python 3.4 platform and will replace CellHTS2 or similar software for our analysis.
 
 ### What TCA do :
 
@@ -41,7 +41,7 @@ This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons
 © 2014-2015 KOPP Arnaud All Rights Reserved
 
 
-##Principale Idea to implement
+##Further developpment
 
 * Machine Learning like clustering or classification of hit
 * Bayesian Inference (FDR...)

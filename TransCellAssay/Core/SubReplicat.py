@@ -38,21 +38,21 @@ class SubReplicat(Replicat):
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Replicat for creating SubReplicat")
 
-            self.RawData = parent_replicat.RawData
+            self.rawdata = parent_replicat.rawdata
             self.name = parent_replicat.name
 
             self.isNormalized = parent_replicat.isNormalized
             self.isSpatialNormalized = parent_replicat.isSpatialNormalized
 
-            self.DataType = parent_replicat.DataType
-            if parent_replicat.Data is None:
-                self.Data = None
+            self.datatype = parent_replicat.datatype
+            if parent_replicat.array is None:
+                self.array = None
             else:
-                self.Data = parent_replicat.Data[RB - 1: RE - 1, CB - 1: CE - 1]
-            if parent_replicat.SECData is None:
-                self.SECData = None
+                self.array = parent_replicat.array[RB - 1: RE - 1, CB - 1: CE - 1]
+            if parent_replicat.sec_array is None:
+                self.sec_array = None
             else:
-                self.SECData = parent_replicat.SECData[RB - 1: RE - 1, CB - 1: CE - 1]
+                self.sec_array = parent_replicat.sec_array[RB - 1: RE - 1, CB - 1: CE - 1]
 
             self.RB = RB
             self.RE = RE
@@ -75,7 +75,7 @@ class SubReplicat(Replicat):
                 print('     --> Data are not normalized for replicat : ', self.name)
                 print('')
 
-            grouped_data_by_well = self.RawData.groupby('Well')
+            grouped_data_by_well = self.rawdata.groupby('Well')
 
             if data_type == "median":
                 tmp = grouped_data_by_well.mean()
@@ -91,7 +91,7 @@ class SubReplicat(Replicat):
                 pos = get_opposite_well_format(key)
                 data[pos[0]][pos[1]] = elem
 
-            self.Data = data[self.RB - 1: self.RE - 1, self.CB - 1: self.CE - 1]
+            self.array = data[self.RB - 1: self.RE - 1, self.CB - 1: self.CE - 1]
 
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

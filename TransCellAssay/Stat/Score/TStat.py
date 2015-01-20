@@ -80,7 +80,7 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
         if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, Core.Plate):
-            ttest_score = np.zeros(plate.PlateMap.platemap.shape)
+            ttest_score = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
             ttest_score[ttest_score == 0] = np.NaN
@@ -88,7 +88,7 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
             nb_rep = len(plate.replicat)
 
             neg_value = []
-            neg_position = plate.PlateMap.get_coord(neg_control)
+            neg_position = plate.platemap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
 
@@ -101,9 +101,9 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
                 for neg in valid_neg_position:
                     try:
                         if sec_data:
-                            neg_value.append(value.SECData[neg[0]][neg[1]])
+                            neg_value.append(value.sec_array[neg[0]][neg[1]])
                         else:
-                            neg_value.append(value.Data[neg[0]][neg[1]])
+                            neg_value.append(value.array[neg[0]][neg[1]])
                     except Exception:
                         raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
             nb_neg_wells = len(neg_value)
@@ -119,9 +119,9 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
                             continue
                         try:
                             if sec_data:
-                                well_value.append(value.SECData[i][j])
+                                well_value.append(value.sec_array[i][j])
                             else:
-                                well_value.append(value.Data[i][j])
+                                well_value.append(value.array[i][j])
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                     mean_rep = np.nanmean(well_value)
@@ -144,7 +144,7 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
             if verbose:
                 print("Unpaired t-test :")
                 print("Systematic Error Corrected Data : ", sec_data)
-                print("Data type : ", plate.DataType)
+                print("Data type : ", plate.datatype)
                 print("variance parameter : ", variance)
                 print("t-test score :")
                 print(ttest_score)
@@ -169,12 +169,12 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
         if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, Core.Plate):
-            ttest_score = np.zeros(plate.PlateMap.platemap.shape)
+            ttest_score = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
             ttest_score[ttest_score == 0] = np.NaN
 
-            neg_position = plate.PlateMap.get_coord(neg_control)
+            neg_position = plate.platemap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
 
@@ -189,9 +189,9 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                 for neg_i in valid_neg_pos:
                     try:
                         if sec_data:
-                            well_value = replicat.SECData[neg_i[0]][neg_i[1]]
+                            well_value = replicat.sec_array[neg_i[0]][neg_i[1]]
                         else:
-                            well_value = replicat.Data[neg_i[0]][neg_i[1]]
+                            well_value = replicat.array[neg_i[0]][neg_i[1]]
                         neg_value.append(well_value)
                     except Exception:
                         raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
@@ -206,9 +206,9 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                         neg_median = _search_neg_data(value, neg_position)
                         try:
                             if sec_data:
-                                well_value.append(value.SECData[i][j] - neg_median)
+                                well_value.append(value.sec_array[i][j] - neg_median)
                             else:
-                                well_value.append(value.Data[i][j] - neg_median)
+                                well_value.append(value.array[i][j] - neg_median)
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                     ttest_score[i][j] = np.nanmean(well_value) / (
@@ -220,7 +220,7 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
             if verbose:
                 print("Paired t-test :")
                 print("Systematic Error Corrected Data : ", sec_data)
-                print("Data type : ", plate.DataType)
+                print("Data type : ", plate.datatype)
                 print("t-test score :")
                 print(ttest_score)
                 print("")

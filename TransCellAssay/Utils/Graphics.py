@@ -118,12 +118,12 @@ def plate_heatmap(plate, both=True):
         i = 1
         for key, value in plate.replicat.items():
             ax = fig.add_subplot(a, b, i)
-            ax.pcolor(value.Data, cmap=new_map)
-            ax.set_title(str(plate.Name)+str(value.name))
+            ax.pcolor(value.array, cmap=new_map)
+            ax.set_title(str(plate.name)+str(value.name))
             if both:
                 ax = fig.add_subplot(a, b, i+b)
-                ax.pcolor(value.SECData, cmap=new_map)
-                ax.set_title(str(plate.Name)+str(value.name))
+                ax.pcolor(value.sec_array, cmap=new_map)
+                ax.set_title(str(plate.name)+str(value.name))
             i += 1
         plt.show()
     except Exception as e:
@@ -190,37 +190,47 @@ def boxplot_by_wells(dataframe, feature):
         print(e)
 
 
-def plot_screen(screen):
+def plot_multiple_plate(*args):
     """
-
-    :param screen:
+    :param args:
     """
+    # TODO
     try:
         import matplotlib.pyplot as plt
         import numpy as np
 
-        if isinstance(screen, TCA.Core.Screen):
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            mxm = 0
-            for i in range(screen.shape[0]):
-                for j in range(screen.shape[1]):
-                    I = 0
-                    platedata = list()
-                    platenumber = list()
-                    for key, value in screen.plate.items():
-                        for repkey, repvalue in value.replicat.items():
-                            platedata.append(np.log2(repvalue.DataMedian[i][j]))
-                            platenumber.append(I)
-                            I += 1
-                    ax.plot(platenumber, platedata, 'b.')
-                    mxm = I
-            ax.set_xlim([-1, mxm])
-            ax.set_ylabel('Log Data')
-            ax.set_xlabel('Plate/Replicat ID')
-            plt.show()
-        else:
-            raise TypeError("\033[0;31m[ERROR]\033[0m Must Provided a Screen")
+        screen = []
+        for arg in args:
+            if isinstance(arg, TCA.Plate):
+                screen.append(arg)
+            elif isinstance(arg, list):
+                for elem in arg:
+                    if isinstance(elem, TCA.Plate):
+                        screen.append(elem)
+                    else:
+                        raise TypeError('Accept only list of Plate element')
+            else:
+                raise TypeError('Accept only plate or list of plate')
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        mxm = 0
+        for i in range(screen.shape[0]):
+            for j in range(screen.shape[1]):
+                I = 0
+                platedata = list()
+                platenumber = list()
+                for key, value in screen.plate.items():
+                    for repkey, repvalue in value.replicat.items():
+                        platedata.append(np.log2(repvalue.DataMedian[i][j]))
+                        platenumber.append(I)
+                        I += 1
+                ax.plot(platenumber, platedata, 'b.')
+                mxm = I
+        ax.set_xlim([-1, mxm])
+        ax.set_ylabel('Log Data')
+        ax.set_xlabel('Plate/Replicat ID')
+        plt.show()
     except Exception as e:
         print(e)
 
@@ -244,11 +254,11 @@ def plot_distribution(wells, plate, feature, rep=None, pool=False):
             for Well in wells:
                 rep_series = dict()
                 if rep is not None:
-                    rep_series[rep] = pd.Series(plate[rep].RawData[feature][plate[rep].RawData['Well'] == Well])
+                    rep_series[rep] = pd.Series(plate[rep].get_raw_data(feature=feature, well=Well))
                     rep_series[rep].name = str(rep)+str(Well)
                 else:
                     for key, value in plate.replicat.items():
-                        rep_series[key] = pd.Series(value.RawData[feature][value.RawData['Well'] == Well])
+                        rep_series[key] = pd.Series(value.get_raw_data(feature=feature, well=Well))
                         rep_series[key].name = key+str(Well)
                 # # Plotting with pandas
                 if pool:

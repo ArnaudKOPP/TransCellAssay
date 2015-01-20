@@ -18,11 +18,20 @@ import TransCellAssay as TCA
 
 
 class k_mean_clustering():
+    """
+
+    :param Plate:
+    """
+
     def __init__(self, Plate):
         assert isinstance(Plate, TCA.Plate)
         self.rawData = Plate.compute_all_features_from_replicat()
 
     def do_cluster(self, n_cluster=10):
+        """
+
+        :param n_cluster:
+        """
         from sklearn.cluster import KMeans
 
         kmeans = KMeans(n_cluster, random_state=8)

@@ -20,12 +20,12 @@ class Well(object):
 
     def __init__(self, name, position, ref_plate):
         try:
-            self.Name = name
-            self.Position = position
-            self.RefPlaque = ref_plate
-            self.Id = None
-            self.IdType = None
-            self.TargetSequence = None
+            self.name = name
+            self.position = position
+            self.ref_plate = ref_plate
+            self.id = None
+            self.id_type = None
+            self.target_sequence = None
         except Exception as e:
             print(e)
 
@@ -36,8 +36,8 @@ class Well(object):
         :param identifier_type:
         """
         try:
-            self.Id = identifier
-            self.IdType = identifier_type
+            self.id = identifier
+            self.id_type = identifier_type
         except Exception as e:
             print(e)
 
@@ -47,7 +47,7 @@ class Well(object):
         :param tgt_seq:
         """
         try:
-            self.TargetSequence = tgt_seq
+            self.target_sequence = tgt_seq
         except Exception as e:
             print(e)
 

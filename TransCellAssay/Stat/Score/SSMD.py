@@ -100,7 +100,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
         if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            ssmd = np.zeros(plate.PlateMap.platemap.shape)
+            ssmd = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
             ssmd[ssmd == 0] = np.NaN
@@ -108,7 +108,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
             nb_rep = len(plate.replicat)
             rep_value = []
             neg_value = []
-            neg_position = plate.PlateMap.get_coord(neg_control)
+            neg_position = plate.platemap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
 
@@ -122,9 +122,9 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
                 for neg in valid_neg_position:
                     try:
                         if sec_data:
-                            neg_value.append(value.SECData[neg[0]][neg[1]])
+                            neg_value.append(value.sec_array[neg[0]][neg[1]])
                         else:
-                            neg_value.append(value.Data[neg[0]][neg[1]])
+                            neg_value.append(value.array[neg[0]][neg[1]])
                     except Exception:
                         raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
             nb_neg_wells = len(neg_value)
@@ -142,9 +142,9 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
                             continue
                         try:
                             if sec_data:
-                                well_value = value.SECData[i][j]
+                                well_value = value.sec_array[i][j]
                             else:
-                                well_value = value.Data[i][j]
+                                well_value = value.array[i][j]
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         rep_value.append(well_value)
@@ -166,7 +166,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
             if verbose:
                 print("Unpaired SSMD :")
                 print("Systematic Error Corrected Data : ", sec_data)
-                print("Data type : ", plate.DataType)
+                print("Data type : ", plate.datatype)
                 print("variance parameter : ", variance)
                 print("SSMD score :")
                 print(ssmd)
@@ -193,7 +193,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
         if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            ssmd = np.zeros(plate.PlateMap.platemap.shape)
+            ssmd = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
             ssmd[ssmd == 0] = np.NaN
@@ -201,7 +201,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
             nb_rep = len(plate.replicat)
             rep_value = []
             neg_value = []
-            neg_position = plate.PlateMap.get_coord(neg_control)
+            neg_position = plate.platemap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
 
@@ -215,9 +215,9 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
                 for neg in valid_neg_position:
                     try:
                         if sec_data:
-                            neg_value.append(value.SECData[neg[0]][neg[1]])
+                            neg_value.append(value.sec_array[neg[0]][neg[1]])
                         else:
-                            neg_value.append(value.Data[neg[0]][neg[1]])
+                            neg_value.append(value.array[neg[0]][neg[1]])
                     except Exception:
                         raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
             nb_neg_wells = len(neg_value)
@@ -235,9 +235,9 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
                             continue
                         try:
                             if sec_data:
-                                well_value = value.SECData[i][j]
+                                well_value = value.sec_array[i][j]
                             else:
-                                well_value = value.Data[i][j]
+                                well_value = value.array[i][j]
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                         rep_value.append(well_value)
@@ -259,7 +259,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
             if verbose:
                 print("Unpaired SSMDr :")
                 print("Systematic Error Corrected Data : ", sec_data)
-                print("Data type : ", plate.DataType)
+                print("Data type : ", plate.datatype)
                 print("variance parameter : ", variance)
                 print("SSMD score :")
                 print(ssmd)
@@ -286,12 +286,12 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
         if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            ssmd = np.zeros(plate.PlateMap.platemap.shape)
+            ssmd = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
             ssmd[ssmd == 0] = np.NaN
 
-            neg_position = plate.PlateMap.get_coord(neg_control)
+            neg_position = plate.platemap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
 
@@ -306,9 +306,9 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                 for neg_i in valid_neg_pos:
                     try:
                         if sec_data:
-                            well_value = replicat.SECData[neg_i[0]][neg_i[1]]
+                            well_value = replicat.sec_array[neg_i[0]][neg_i[1]]
                         else:
-                            well_value = replicat.Data[neg_i[0]][neg_i[1]]
+                            well_value = replicat.array[neg_i[0]][neg_i[1]]
                         neg_value.append(well_value)
                     except Exception:
                         raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
@@ -326,9 +326,9 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                                 continue
                             neg_median = _search_neg_data(value, neg_position)
                             if sec_data:
-                                well_value.append(value.SECData[i][j] - neg_median)
+                                well_value.append(value.sec_array[i][j] - neg_median)
                             else:
-                                well_value.append(value.Data[i][j] - neg_median)
+                                well_value.append(value.array[i][j] - neg_median)
                         if method == 'UMVUE':
                             ssmd[i][j] = x * (np.nanmean(well_value) / np.nanstd(well_value))
                         elif method == 'MM':
@@ -342,7 +342,7 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                 if verbose:
                     print("Paired SSMD :")
                     print("Systematic Error Corrected Data : ", sec_data)
-                    print("Data type : ", plate.DataType)
+                    print("Data type : ", plate.datatype)
                     print("method parameter : ", method)
                     print("SSMD score :")
                     print(ssmd)
@@ -371,12 +371,12 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
         if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            ssmdr = np.zeros(plate.PlateMap.platemap.shape)
+            ssmdr = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
             ssmdr[ssmdr == 0] = np.NaN
 
-            neg_position = plate.PlateMap.get_coord(neg_control)
+            neg_position = plate.platemap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
 
@@ -391,9 +391,9 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                 for neg_i in valid_neg_pos:
                     try:
                         if sec_data:
-                            well_value = replicat.SECData[neg_i[0]][neg_i[1]]
+                            well_value = replicat.sec_array[neg_i[0]][neg_i[1]]
                         else:
-                            well_value = replicat.Data[neg_i[0]][neg_i[1]]
+                            well_value = replicat.array[neg_i[0]][neg_i[1]]
                         neg_value.append(well_value)
                     except Exception:
                         raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
@@ -411,9 +411,9 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                                 continue
                             neg_median = _search_neg_data(value, neg_position)
                             if sec_data:
-                                well_value.append(value.SECData[i][j] - neg_median)
+                                well_value.append(value.sec_array[i][j] - neg_median)
                             else:
-                                well_value.append(value.Data[i][j] - neg_median)
+                                well_value.append(value.array[i][j] - neg_median)
                         if method == 'UMVUE':
                             ssmdr[i][j] = x * (np.nanmedian(well_value) / mad(well_value))
                         elif method == 'MM':
@@ -427,7 +427,7 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                 if verbose:
                     print("Paired SSMDr :")
                     print("Systematic Error Corrected Data : ", sec_data)
-                    print("Data type : ", plate.DataType)
+                    print("Data type : ", plate.datatype)
                     print("method parameter : ", method)
                     print("SSMDr score :")
                     print(ssmdr)
@@ -457,7 +457,7 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
         if neg_control is None:
             raise AttributeError('Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            ps = plate.PlateMap
+            ps = plate.platemap
             ssmd = np.zeros(ps.platemap.shape)
 
             # # replace 0 with NaN
@@ -475,9 +475,9 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             data = None
             try:
                 if sec_data:
-                    data = plate.SECData
+                    data = plate.sec_array
                 else:
-                    data = plate.Data
+                    data = plate.array
             except Exception as e:
                 print(e)
             if data is None:
@@ -504,7 +504,7 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             if verbose:
                 print('SSMD without replicat, or inplate data from plate')
                 print("Systematic Error Corrected Data : ", sec_data)
-                print("Data type : ", plate.DataType)
+                print("Data type : ", plate.datatype)
                 print("method parameter : ", method)
                 print("SSMD score :")
                 print(ssmd)
@@ -532,7 +532,7 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
         if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
         if isinstance(plate, TCA.Core.Plate):
-            ps = plate.PlateMap
+            ps = plate.platemap
             ssmdr = np.zeros(ps.platemap.shape)
 
             # # replace 0 with NaN
@@ -550,9 +550,9 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             data = None
             try:
                 if sec_data:
-                    data = plate.SECData
+                    data = plate.sec_array
                 else:
-                    data = plate.Data
+                    data = plate.array
             except Exception as e:
                 print(e)
             if data is None:
@@ -579,7 +579,7 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             if verbose:
                 print('SSMDr without replicat')
                 print("Systematic Error Corrected Data : ", sec_data)
-                print("Data type : ", plate.DataType)
+                print("Data type : ", plate.datatype)
                 print("method parameter : ", method)
                 print("SSMD score :")
                 print(ssmdr)

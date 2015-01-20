@@ -39,15 +39,15 @@ def plate_feature_scaling(plate, feature, mean_scaling=False):
 
             # search min and max accross all replicat
             for key, value in plate.replicat.items():
-                min_lst.append(np.min(value.RawData.values[feature]))
-                max_lst.append(np.max(value.RawData.values[feature]))
+                min_lst.append(np.min(value.rawdata.values[feature]))
+                max_lst.append(np.max(value.rawdata.values[feature]))
 
             # apply feature scaling accross all replicat
             for key, value in plate.replicat.items():
-                value.RawData.loc[:, feature] = (
-                    (value.RawData.values.loc[:, feature] - min(min_lst)) / (max(max_lst) - min(min_lst)))
+                value.rawdata.loc[:, feature] = (
+                    (value.rawdata.values.loc[:, feature] - min(min_lst)) / (max(max_lst) - min(min_lst)))
                 if mean_scaling:
-                    value.RawData.values.loc[:, feature] *= (sum(max_lst) / len(max_lst))
+                    value.rawdata.values.loc[:, feature] *= (sum(max_lst) / len(max_lst))
                 value.isNormalized = True
 
             plate.isNormalized = True

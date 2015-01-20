@@ -17,28 +17,32 @@ import TransCellAssay as TCA
 
 
 class LDA():
-    def __init__(self, OBJECT, target):
+    """
+
+    :param OBJECT:
+    :param target:
+    """
+
+    def __init__(self, obj_input, target):
         """
         Init LDA
-        :param OBJECT: can be replicat, plate or screen
+        :param obj_input: can be replicat, plate or screen
         :param target: target of LDA in Well format (A1)
         :return:
         """
         try:
-            if isinstance(OBJECT, TCA.Replicat):
+            if isinstance(obj_input, TCA.Replicat):
                 print("Process LDA on Replicat")
-                self.rawdata = OBJECT.RawData
-            if isinstance(OBJECT, TCA.Plate):
+                self.rawdata = obj_input.rawdata
+            if isinstance(obj_input, TCA.Plate):
                 print("Process LDA on Plate")
-            if isinstance(OBJECT, TCA.Screen):
-                print("Process LDA on Screen")
         except Exception as e:
             print(e)
 
     def _replicat_LDA(self, replicat, n_component=3):
         try:
             assert isinstance(replicat, TCA.Replicat)
-            raw_data = replicat.RawData
+            raw_data = replicat.rawdata
             data = self._clear_dataframe(raw_data)
 
             ## DO LDA
@@ -58,13 +62,14 @@ class LDA():
         except Exception as e:
             print(e)
 
-    def _screen_LDA(self, screen):
-        try:
-            assert isinstance(screen, TCA.Screen)
-        except Exception as e:
-            print(e)
-
     def _clear_dataframe(self, dataframe, target, to_remove=None):
+        """
+
+        :param dataframe:
+        :param target:
+        :param to_remove:
+        :return:
+        """
         try:
             # remove class label (Well columns)
             dataframe = dataframe.drop("Well", 1)
@@ -76,6 +81,11 @@ class LDA():
             print(e)
 
     def _mean_vector(self, dataframe):
+        """
+
+        :param dataframe:
+        :return:
+        """
         try:
             assert isinstance(dataframe, pd.DataFrame)
             median = dataframe.median(axis=0)

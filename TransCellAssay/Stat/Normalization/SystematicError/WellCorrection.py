@@ -20,7 +20,7 @@ to zero
 """
 
 import numpy as np
-from TransCellAssay import Core
+import TransCellAssay as TCA
 
 
 __author__ = "Arnaud KOPP"
@@ -37,76 +37,112 @@ class WellCorrection():
     """
 
     :param args:
-    :raise NotImplementedError:
     """
 
     def __init__(self, *args):
-        raise NotImplementedError
-        # TODO
+        try:
+            self.screen = []
+            for arg in args:
+                if isinstance(arg, TCA.Plate):
+                    self.screen.append(arg)
+                elif isinstance(arg, list):
+                    for elem in arg:
+                        if isinstance(elem, TCA.Plate):
+                            self.screen.append(elem)
+                        else:
+                            raise TypeError('Accept only list of Plate element')
+                else:
+                    raise TypeError('Accept only plate or list of plate')
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def well_correction(self, approx="lst", apply_on='replicat', verbose=False):
+        """
+
+        :param approx:
+        :param apply_on:
+        :param verbose:
+        """
         try:
             self._apply_approx()
             self._apply_zscore()
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def _apply_approx(self, approx="lst", apply_on='replicat', verbose=False):
+        """
+
+        :param approx:
+        :param apply_on:
+        :param verbose:
+        :return:
+        """
         try:
             if apply_on == "Plate":
                 # iterate on all plate
-                for key, value in self.screen.plate.items():
+                for plate in self.screen:
                     # check if plate object
-                    if not isinstance(value, Core.Plate):
+                    if not isinstance(plate, TCA.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         return 0
 
             elif apply_on == "Replicat":
-                objectCnt = 0
                 # iterate on all plate
-                for key, value in self.screen.plate.items():
+                for plate in self.screen:
                     # check if plate object
-                    if not isinstance(value, Core.Plate):
+                    if not isinstance(plate, TCA.Plate):
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
-                        for repName, repValue in value.replicat.items():
-                            if not isinstance(repValue, Core.Replicat):
+                        for repName, repValue in plate.replicat.items():
+                            if not isinstance(repValue, TCA.Replicat):
                                 raise TypeError
                             else:
                                 return 0
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def _apply_zscore(self, data):
+        """
+
+        :param data:
+        :return:
+        """
         try:
             datax = (data - np.mean(data)) / np.std(data)
             return datax
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def _compute_approximation(self, data_y, approx="lst", verbose=False):
+        """
+
+        :param data_y:
+        :param approx:
+        :param verbose:
+        :return:
+        """
         try:
             if approx == "lst":
                 n = len(data_y)
                 data_x = np.arange(n)
-                B = np.array(data_y)
-                A = np.array(([[data_x[j], 1] for j in range(n)]))
-                X = np.linalg.lstsq(A, B)[0]
+                b = np.array(data_y)
+                a = np.array(([[data_x[j], 1] for j in range(n)]))
+                x = np.linalg.lstsq(a, b)[0]
                 if verbose:
-                    a = X[0]
-                    b = X[1]
+                    a = x[0]
+                    b = x[1]
                     print("Line is: y=", a, "x+", b)
-                return X
+                return x
             if approx == "pol":
-                from numpy import polynomial as P
+                from numpy import polynomial
 
                 n = len(data_y)
                 data_x = np.arange(n)
-                c, stats = P.polyfit(data_x, data_y, 5, full=True)
+                c, stats = polynomial.polyfit(data_x, data_y, 5, full=True)
                 if verbose:
                     print(c, stats)
                 return c, stats
@@ -122,4 +158,4 @@ class WellCorrection():
                 ys = s(xs)
                 return ys
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)

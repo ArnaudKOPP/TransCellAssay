@@ -4,7 +4,7 @@ Substract a determined background of the screen/plate/replicat
 Analogous to BackgroundCorrection but here it's a determined background that we provided
 """
 
-from TransCellAssay import Core
+import TransCellAssay as TCA
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -17,22 +17,47 @@ __status__ = "Production"
 
 
 class BackgroundSubstraction():
+    """
+
+    :param background:
+    """
+
     def __init__(self, background):
         try:
             self.background = background
+            self.screen = []
         except Exception as e:
             print(e)
 
     def background_substraction(self, *args):
-        raise NotImplementedError
-        # TODO
+        """
 
-    def _process(self, screen):
+        :param args:
+        """
+        try:
+            for arg in args:
+                if isinstance(arg, TCA.Plate):
+                    self.screen.append(arg)
+                elif isinstance(arg, list):
+                    for elem in arg:
+                        if isinstance(elem, TCA.Plate):
+                            self.screen.append(elem)
+                        else:
+                            raise TypeError('Accept only list of Plate element')
+                else:
+                    raise TypeError('Accept only plate or list of plate')
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def _process(self):
+        """
+
+        """
         try:
             # iterate on all plate
-            for key, value in screen.allPlate.items():
+            for plate in self.screen:
                 # iterate on all replicat in the plate
-                for repName, repValue in value.replicat.items():
+                for repName, repValue in plate.replicat.items():
                     repValue.SECData = repValue.Data - self.background
                     repValue.isSpatialNormalized = True
         except Exception as e:

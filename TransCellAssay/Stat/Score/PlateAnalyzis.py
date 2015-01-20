@@ -16,8 +16,6 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
-# TODO improve performance !! ~ 2.5s to performe this on plate with 3 replicats
-
 
 def plate_analysis(plate, feature, neg, pos, threshold=50):
     """
@@ -37,8 +35,8 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
             x = platemap.as_dict()
             result.init_gene_well(x)
 
-            neg_well = plate.PlateMap.get_well(neg)
-            pos_well = plate.PlateMap.get_well(pos)
+            neg_well = plate.platemap.get_well(neg)
+            pos_well = plate.platemap.get_well(pos)
 
             cell_count_tmp = {}
             mean = {}
@@ -50,7 +48,7 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
             # # iterate over replicat
             for k, v in plate.replicat.items():
                 # # cell count
-                datagb = v.RawData.get_groupby_data()
+                datagb = v.rawdata.get_groupby_data()
                 cellcount = datagb.Well.count().to_dict()
                 for key in cellcount.keys():
                     try:
@@ -59,7 +57,7 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
                         pass
 
                 # # variability
-                well_list = v.RawData.get_unique_well()
+                well_list = v.rawdata.get_unique_well()
                 # iterate on well
                 for well in well_list:
                     mean.setdefault(well, []).append(np.mean(datagb.get_group(well)[feature]))

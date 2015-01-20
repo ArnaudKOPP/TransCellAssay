@@ -18,28 +18,32 @@ import TransCellAssay as TCA
 
 
 class PCA():
-    def __init__(self, OBJECT, target):
+    """
+
+    :param OBJECT:
+    :param target:
+    """
+
+    def __init__(self, obj_input, target):
         """
         Init PCA
-        :param OBJECT: can be replicat, plate or screen
+        :param obj_input: can be replicat, plate or screen
         :param target: target of PCA in Well format (A1)
         :return:
         """
         try:
-            if isinstance(OBJECT, TCA.Replicat):
+            if isinstance(obj_input, TCA.Replicat):
                 print("Process PCA on Replicat")
-                self.rawdata = OBJECT.RawData
-            if isinstance(OBJECT, TCA.Plate):
+                self.rawdata = obj_input.rawdata
+            if isinstance(obj_input, TCA.Plate):
                 print("Process PCA on Plate")
-            if isinstance(OBJECT, TCA.Screen):
-                print("Process PCA on Screen")
         except Exception as e:
             print(e)
 
     def _replicat_pca(self, replicat, n_component=3):
         try:
             assert isinstance(replicat, TCA.Replicat)
-            raw_data = replicat.RawData
+            raw_data = replicat.rawdata
             data = self._clear_dataframe(raw_data)
 
             ## DO PCA
@@ -66,7 +70,6 @@ class PCA():
                 print('Eigenvalue {} from covariance matrix: {}'.format(i + 1, eig_val_cov[i]))
                 print(40 * '-')
 
-
         except Exception as e:
             print(e)
 
@@ -76,13 +79,14 @@ class PCA():
         except Exception as e:
             print(e)
 
-    def _screen_pca(self, screen):
-        try:
-            assert isinstance(screen, TCA.Screen)
-        except Exception as e:
-            print(e)
-
     def _clear_dataframe(self, dataframe, target, to_remove=None):
+        """
+
+        :param dataframe:
+        :param target:
+        :param to_remove:
+        :return:
+        """
         try:
             # remove class label (Well columns)
             dataframe = dataframe.drop("Well", 1)
@@ -94,6 +98,11 @@ class PCA():
             print(e)
 
     def _mean_vector(self, dataframe):
+        """
+
+        :param dataframe:
+        :return:
+        """
         try:
             assert isinstance(dataframe, pd.DataFrame)
             median = dataframe.median(axis=0)
@@ -132,10 +141,11 @@ class PCA():
             print(e)
 
 
-def plot_3d_cloud_point_pca(DataFrame, eig_vec, x=None, y=None, z=None):
+def plot_3d_cloud_point_pca(df, eig_vec, x=None, y=None, z=None):
     """
     Plot in 3d raw data with choosen features
-    :param DataFrame: dataframe without class label !!
+    :param eig_vec:
+    :param df: dataframe without class label !!
     :param x: x feature
     :param y: y feature
     :param z: z feature
@@ -144,7 +154,7 @@ def plot_3d_cloud_point_pca(DataFrame, eig_vec, x=None, y=None, z=None):
         import pandas as pd
         import numpy as np
 
-        assert isinstance(DataFrame, pd.DataFrame)
+        assert isinstance(df, pd.DataFrame)
 
         from matplotlib import pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
@@ -153,6 +163,15 @@ def plot_3d_cloud_point_pca(DataFrame, eig_vec, x=None, y=None, z=None):
         from matplotlib import pyplot as plt
 
         class Arrow3D(FancyArrowPatch):
+            """
+
+            :param xs:
+            :param ys:
+            :param zs:
+            :param args:
+            :param kwargs:
+            """
+
             def __init__(self, xs, ys, zs, *args, **kwargs):
                 FancyArrowPatch.__init__(self, (0, 0), (0, 0), *args, **kwargs)
                 self._verts3d = xs, ys, zs
@@ -163,14 +182,13 @@ def plot_3d_cloud_point_pca(DataFrame, eig_vec, x=None, y=None, z=None):
                 self.set_positions((xs[0], ys[0]), (xs[1], ys[1]))
                 FancyArrowPatch.draw(self, renderer)
 
-
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
-        ax.plot(DataFrame[x], DataFrame[y], DataFrame[z], '.', markersize=4, color='blue', alpha=0.5, label='Raw Data')
-        mean_x = np.mean(DataFrame[x])
-        mean_y = np.mean(DataFrame[y])
-        mean_z = np.mean(DataFrame[z])
+        ax.plot(df[x], df[y], df[z], '.', markersize=4, color='blue', alpha=0.5, label='Raw Data')
+        mean_x = np.mean(df[x])
+        mean_y = np.mean(df[y])
+        mean_z = np.mean(df[z])
         ax.plot([mean_x], [mean_y], [mean_z], 'o', markersize=10, color='red', alpha=0.5)
         for v in eig_vec.T:
             a = Arrow3D([mean_x, v[0]], [mean_y, v[1]], [mean_z, v[2]], mutation_scale=20, lw=3, arrowstyle="-|>",

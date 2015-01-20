@@ -37,9 +37,9 @@ def do_it(plate_nb, verbose=False):
     pos = "F1 ATPase A"
 
     plaque.check_data_consistency()
-    rep1.DataType = "mean"
-    rep2.DataType = "mean"
-    rep3.DataType = "mean"
+    rep1.datatype = "mean"
+    rep2.datatype = "mean"
+    rep3.datatype = "mean"
 
     time_start = time.time()
     ana = TCA.plate_analysis(plaque, [feature], neg, pos)
@@ -116,16 +116,15 @@ def do_it(plate_nb, verbose=False):
 
     # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep2')
     # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep1')
-    # TCA.boxplot_by_wells(rep1.RawData, feature)
-    # TCA.heatmap(plaque.Data)
-    # TCA.heatmap(plaque.Data, pretty=False)
-    # TCA.systematic_error(plaque.Data)
-    # TCA.systematic_error(plaque.SECData)
-    # TCA.plot_plate_3d(rep1.Data, surf=True)
-    # TCA.plot_plate_3d(plaque.Data, surf=True)
-    # TCA.plot_plate_3d(plaque.SECData, surf=True)
+    # TCA.boxplot_by_wells(rep1.rawdata.values, feature)
+    # TCA.heatmap(plaque.array)
+    # TCA.heatmap(plaque.array, pretty=False)
+    # TCA.systematic_error(plaque.array)
+    # TCA.systematic_error(plaque.sec_array)
+    # TCA.plot_plate_3d(rep1.array, surf=True)
+    # TCA.plot_plate_3d(plaque.array, surf=True)
+    # TCA.plot_plate_3d(plaque.sec_array, surf=True)
     # TCA.plate_heatmap(plaque)
-    # TCA.plot_screen(screen_test)
     # clustering = TCA.k_mean_clustering(plaque)
     # clustering.do_cluster()
 

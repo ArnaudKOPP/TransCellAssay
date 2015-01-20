@@ -17,7 +17,11 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class sigmoidfitting():
+class sigmoid_fitting():
+    """
+    class for Dose Response analysis
+    """
+
     def __init__(self):
         try:
             self.input = None

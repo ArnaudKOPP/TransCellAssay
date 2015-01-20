@@ -34,14 +34,14 @@ class Result(object):
         """
         if size is None:
             size = 96
-        self.result_array = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', float),
+        self.values = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', float),
                                                   ('SDCellsCount', float), ('PositiveCells', float),
                                                   ('SDPositiveCells', float),
                                                   ('Mean', float), ('Std', float), ('Median', float), ('Stdm', float),
                                                   ('Viability', float), ('Toxicity', float)])
 
-        self.GenePos = {}  # # To save GeneName (key)and  Gene position (value)
-        self.GenePosI = {}  # # To save Well (key) and Gene position (value)
+        self._genename_genepos = {}  # # To save GeneName (key)and  Gene position (value)
+        self._genepos_genename = {}  # # To save Well (key) and Gene position (value)
 
     def get_result_array(self):
         """
@@ -49,7 +49,7 @@ class Result(object):
         :return: array
         """
         try:
-            return self.result_array
+            return self.values
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -62,10 +62,10 @@ class Result(object):
         try:
             i = 0
             for k, v in gene_list.items():
-                self.result_array['GeneName'][i] = v
-                self.result_array['Well'][i] = k
-                self.GenePos.setdefault(v, []).append(i)  # # make this form because Gene can be in multiple Well
-                self.GenePosI[k] = i
+                self.values['GeneName'][i] = v
+                self.values['Well'][i] = k
+                self._genename_genepos.setdefault(v, []).append(i)  # # make this form because Gene can be in multiple Well
+                self._genepos_genename[k] = i
                 i += 1
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -80,11 +80,11 @@ class Result(object):
         :return:
         """
         try:
-            if len(self.GenePos[gene]) > 1:  # # loop in case geneName is in multiple Well
-                for i in (self.GenePos[gene]):
-                    self.result_array[feature][i] = value
+            if len(self._genename_genepos[gene]) > 1:  # # loop in case geneName is in multiple Well
+                for i in (self._genename_genepos[gene]):
+                    self.values[feature][i] = value
             else:
-                self.result_array[feature][self.GenePos[gene]] = value
+                self.values[feature][self._genename_genepos[gene]] = value
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -102,13 +102,13 @@ class Result(object):
                 if by == 'GeneName':
                     print(" !! \033[0;33m[WARNING]\033[0m  !! add_data with by=GeneName is not fully stable in case "
                           "of empty Well \n Prefer by=Pos")
-                    if len(self.GenePos[item]) > 1:
-                        for i in (self.GenePos[item]):
-                            self.result_array[feature][i] = value
+                    if len(self._genename_genepos[item]) > 1:
+                        for i in (self._genename_genepos[item]):
+                            self.values[feature][i] = value
                     else:
-                        self.result_array[feature][self.GenePos[item]] = value
+                        self.values[feature][self._genename_genepos[item]] = value
                 elif by == 'Pos':
-                    self.result_array[feature][self.GenePosI[item]] = value
+                    self.values[feature][self._genepos_genename[item]] = value
                 else:
                     print("\033[0;31m[ERROR]\033[0m")
         except Exception as e:
@@ -121,7 +121,7 @@ class Result(object):
         :return: return numpy array
         """
         try:
-            return self.result_array[col]
+            return self.values[col]
         except ValueError:
             print('\033[0;31m[ERROR]\033[0m  No Valid Column Name')
 
@@ -132,11 +132,11 @@ class Result(object):
         :return:
         """
         try:
-            tmp = pd.DataFrame(self.result_array)
+            tmp = pd.DataFrame(self.values)
             tmp.to_csv(file_path, index=False)
         except:
             try:
-                np.savetxt(file_path, self.result_array, delimiter=';')
+                np.savetxt(file_path, self.values, delimiter=';')
             except Exception as e:
                 print('\033[0;31m[ERROR]\033[0m  Error in saving results data', e)
 
@@ -148,7 +148,7 @@ class Result(object):
         """
         try:
             if isinstance(to_add, np.ndarray):
-                self.result_array = np.append(self.result_array, to_add, axis=0)
+                self.values = np.append(self.values, to_add, axis=0)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -158,7 +158,7 @@ class Result(object):
         :return:
         """
         try:
-            return "Result of single Cell properties: \n" + repr(pd.DataFrame(self.result_array))
+            return "Result of single Cell properties: \n" + repr(pd.DataFrame(self.values))
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

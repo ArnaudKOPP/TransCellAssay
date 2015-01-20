@@ -152,12 +152,12 @@ def plate_analyzis(plateid):
         created = mp.Process()
         current = mp.current_process()
         print('created:', created.name, created._identity, 'running on :', current.name, current._identity,
-              "for analyzis of ", plaque.Name)
+              "for analyzis of ", plaque.name)
 
         print(__INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __THRESHOLD__, __FEATURE__, __NEG__, __POS__, __TOX__,
               __VERBOSE__, __PROCESS__)
 
-        output_data_plate_dir = os.path.join(__OUTPUT__, plaque.Name)
+        output_data_plate_dir = os.path.join(__OUTPUT__, plaque.name)
         if not os.path.exists(output_data_plate_dir):
             os.makedirs(output_data_plate_dir)
 
@@ -225,8 +225,8 @@ def plate_analyzis(plateid):
         # analyse.write_csv(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
 
         # TCA.feature_scaling(plaque, __FEATURE__, mean_scaling=True)
-        plaque.normalization(__FEATURE__, method='PercentOfControl', log=False, neg=plaque.PlateMap.get_well(__NEG__),
-                             pos=plaque.PlateMap.get_well(__POS__))
+        plaque.normalization(__FEATURE__, method='PercentOfControl', log=False, neg=plaque.platemap.get_well(__NEG__),
+                             pos=plaque.platemap.get_well(__POS__))
 
         plaque.compute_data_from_replicat(__FEATURE__)
         for key, value in plaque.replicat.items():
@@ -257,8 +257,8 @@ def plate_analyzis(plateid):
         tstat2 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, sec_data=True, verbose=False)
         tstat3 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=True, sec_data=True, verbose=False)
 
-        gene = plaque.PlateMap.platemap.values.flatten().reshape(__SIZE__, 1)
-        final_array = np.append(gene, plaque.Data.flatten().reshape(__SIZE__, 1), axis=1)
+        gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
+        final_array = np.append(gene, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
         final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(__SIZE__, 1), axis=1)
         final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(__SIZE__, 1), axis=1)
         final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(__SIZE__, 1), axis=1)

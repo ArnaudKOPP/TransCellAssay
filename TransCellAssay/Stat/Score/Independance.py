@@ -40,7 +40,7 @@ def independance(plate, neg, feature, equal_var=True):
             if len(plate.replicat) > 1:
                 raise NotImplementedError('Implemented only for one replicat for the moment')
 
-        shape = plate.PlateMap.platemap.get_shape()
+        shape = plate.platemap.platemap.get_shape()
         size = shape[0] * shape[1]
         result_array = np.zeros(size, dtype=[('GeneName', object), ('T-Statistic', float),
                                              ('Two-tailed P-Value', float)])
@@ -53,7 +53,7 @@ def independance(plate, neg, feature, equal_var=True):
                 for j in range(shape[1]):
                     test = value.get_raw_data(feature=feature, well=TCA.get_opposite_well_format((i, j)))
                     res = stats.ttest_ind(neg_data, test, equal_var=equal_var)
-                    result_array['GeneName'][cpt] = plate.PlateMap.values[i][j]
+                    result_array['GeneName'][cpt] = plate.platemap.values[i][j]
                     result_array['T-Statistic'][cpt] = res[0]
                     result_array['Two-Tailed P-Value'][cpt] = res[1]
                 cpt += 1
