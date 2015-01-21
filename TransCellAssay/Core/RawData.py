@@ -133,11 +133,11 @@ class RawData(object):
         :return:
         """
         try:
-            grouped_data_by_well = self.get_groupby_data()
+            gbdata = self.get_groupby_data()
             if type_mean is 'median':
-                tmp = grouped_data_by_well.median()
+                tmp = gbdata.median()
             elif type_mean is 'mean':
-                tmp = grouped_data_by_well.mean()
+                tmp = gbdata.mean()
             feature = tmp[feature]
             dict_mean = feature.to_dict()  # # dict : key = pos and item are mean
             if not len(dict_mean) > 96:
@@ -183,14 +183,16 @@ class RawData(object):
         try:
             if not os.path.isdir(path):
                 os.mkdir(path)
-            if name is None:
-                print(os.path.join(path, name) + ".csv")
-                self.values.to_csv(path=os.path.join(path, name) + ".csv", index=False)
-                print('\033[0;32m[INFO]\033[0m Writing File')
+            if name is not None:
+                self._write_raw_data(os.path.join(path, name)+'.csv')
             else:
-                raise Exception("\033[0;33m[WARNING]\033[0m Can't save Data, need name for replicat")
+                raise Exception("Writing Raw data problem")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
+
+    def _write_raw_data(self, filepath):
+        self.values.to_csv(path=os.path.join(filepath) + ".csv", index=False)
+        print('\033[0;32m[INFO]\033[0m Writing File : {}'.format(filepath))
 
     def save_memory(self, only_caching=True):
         """

@@ -24,6 +24,8 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
+# TODO make feature as a list or single feature
+
 
 def plate_feature_scaling(plate, feature, mean_scaling=False):
     """

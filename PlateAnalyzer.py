@@ -222,7 +222,7 @@ def plate_analyzis(plateid):
         __SIZE__ = 96
 
         # analyse = TCA.plate_analysis(plaque, [__FEATURE__], __NEG__, __POS__, threshold=__THRESHOLD__)
-        # analyse.write_csv(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
+        # analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
 
         # TCA.feature_scaling(plaque, __FEATURE__, mean_scaling=True)
         plaque.normalization(__FEATURE__, method='PercentOfControl', log=False, neg=plaque.platemap.get_well(__NEG__),

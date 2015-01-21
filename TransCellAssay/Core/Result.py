@@ -125,20 +125,26 @@ class Result(object):
         except ValueError:
             print('\033[0;31m[ERROR]\033[0m  No Valid Column Name')
 
-    def write_csv(self, file_path):
+    def write(self, file_path, frmt='csv'):
         """
         Save Result Array into csv
         :param file_path:
-        :return:
+        :param frmt: csv or xlsx format to save
         """
         try:
             tmp = pd.DataFrame(self.values)
-            tmp.to_csv(file_path, index=False)
+            if frmt is 'csv':
+                tmp.to_csv(file_path, index=False)
+            elif frmt is 'xlsx':
+                tmp.to_excel(file_path, sheet_name='Single Cell properties result', index=False, header=True)
         except:
             try:
-                np.savetxt(file_path, self.values, delimiter=';')
+                if frmt is 'csv':
+                    np.savetxt(file_path, self.values, delimiter=';')
+                else:
+                    raise IOError("Can't save data in xlsx format")
             except Exception as e:
-                print('\033[0;31m[ERROR]\033[0m  Error in saving results data', e)
+                print('\033[0;31m[ERROR]\033[0m  Error in saving results data :', e)
 
     def __add__(self, to_add):
         """

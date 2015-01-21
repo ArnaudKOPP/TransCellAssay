@@ -40,6 +40,7 @@ class Replicat(object):
         self.isNormalized = False
         self.isSpatialNormalized = False
         self.datatype = datatype
+        self._array_feat = None
         self.array = None
         self.sec_array = None
 
@@ -193,8 +194,10 @@ class Replicat(object):
 
             if self.datatype == 'median':
                 self.array = self.rawdata.compute_matrix(feature=feature, type_mean=self.datatype)
+                self._array_feat = feature
             else:
                 self.array = self.rawdata.compute_matrix(feature=feature, type_mean=self.datatype)
+                self._array_feat = feature
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -211,10 +214,13 @@ class Replicat(object):
                     raise ValueError('\033[0;31m[ERROR]\033[0m  Launch Systematic Error Correction before')
                 else:
                     return self.sec_array
-            elif self.array is None:
+            if self.array is None:
                 self.compute_data_for_feature(feature)
-            return self.array
-
+            if feature is self._array_feat:
+                return self.array
+            else:
+                self.compute_data_for_feature(feature)
+                return self.array
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
