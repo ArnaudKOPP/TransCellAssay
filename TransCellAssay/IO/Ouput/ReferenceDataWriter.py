@@ -54,6 +54,8 @@ class ReferenceDataWriter(object):
                 else:
                     raise TypeError('Take plate in input')
 
+            plt_col_idx = [str(x)+str(y)+str(z) for x in ['rep1', 'rep2', 'rep3'] for y in features for z in ['Mean', 'Std', 'Sem']]
+
             for feature in features:
                 print('\033[0;32m[INFO]\033[0m Computation for feature :', feature)
                 plt_name_index = []
