@@ -68,7 +68,7 @@ def do_it(plate_nb, verbose=False):
     # TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, use_raw_data=False, skipping_wells=True,
     #                           verbose=True)
 
-    TCA.ReferenceDataWriter(plaque, plaque, plaque, plaque, plaque, plaque, plaque, plaque, filepath='/home/arnaud/Desktop/test.xlsx', ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'], verbose=True, features=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
+    TCA.ReferenceDataWriter(plaque, plaque, plaque, plaque, plaque, plaque, plaque, plaque, filepath='/home/arnaud/Desktop/test.xlsx', ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'], features=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
 
     # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
     # plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.1)

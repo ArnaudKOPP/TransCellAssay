@@ -25,7 +25,7 @@ class ReferenceDataWriter(object):
     Class for writing data of reference from plate into file
     """
 
-    def __init__(self, *args, filepath=None, ref=None, verbose=None, features=None):
+    def __init__(self, *args, filepath=None, ref=None, features=None):
         try:
             if filepath is None:
                 print('\033[0;33m[WARNING]\033[0m file path not provided')
@@ -33,11 +33,11 @@ class ReferenceDataWriter(object):
             else:
                 self._writer = pd.ExcelWriter(filepath)
                 print('\033[0;32m[INFO]\033[0m Writing xlsx :', filepath)
-            self._save_reference(args, ref=ref, verb=verbose, features=features)
+            self._save_reference(args, ref=ref, features=features)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def _save_reference(self, args, features, ref=None, verb=False):
+    def _save_reference(self, args, features, ref=None):
         try:
             plt_list = []
 
@@ -60,7 +60,7 @@ class ReferenceDataWriter(object):
                 df = pd.DataFrame()
                 i = 1
                 for plate in plt_list:
-                    df = df.append(pd.DataFrame(self._get_plate_reference_data(plate, refs=ref, feat=feature, verb=verb)), ignore_index=True)
+                    df = df.append(pd.DataFrame(self._get_plate_reference_data(plate, refs=ref, feat=feature)))
                     plt_name_index.append(plate.name+str(i))
                     i += 1
                 df = df.set_index([plt_name_index])
@@ -68,9 +68,9 @@ class ReferenceDataWriter(object):
                     df.to_excel(self._writer, sheet_name=feature)
 
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m _save_reference", e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
-    def _get_plate_reference_data(self, plate, refs, feat, verb=False):
+    def _get_plate_reference_data(self, plate, refs, feat):
         try:
             well_ref = collections.OrderedDict()
             # # search all position for desired reference
@@ -89,24 +89,25 @@ class ReferenceDataWriter(object):
             return plate_ref_data.reshape((1, -1))
 
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m _get_plate_reference_data", e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def _get_replicat_reference_data(self, replicat, refs, feat):
         try:
             ref_data = None
             # # we have a dict with key is ref name and value is well position
             for key, value in refs.items():
-                tmp = self._ref_data_array([replicat.get_data_array(feature=feat)[x[0]][x[1]] for x in replicat.get_valid_well(value)], key)
+                tmp = self._ref_data_array([replicat.get_data_array(feature=feat)[x[0]][x[1]] for x in
+                                            replicat.get_valid_well(value)])
                 if ref_data is not None:
                     ref_data = np.append(ref_data, tmp, axis=1)
                 else:
                     ref_data = tmp
             return ref_data
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m _get_replicat_reference_data", e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     @staticmethod
-    def _ref_data_array(data, refname):
+    def _ref_data_array(data):
         try:
             arr = np.zeros(3)
             arr[0] = np.mean(data)
@@ -114,4 +115,4 @@ class ReferenceDataWriter(object):
             arr[2] = stats.sem(data)
             return arr
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m _ref_data_array", e)
+            print("\033[0;31m[ERROR]\033[0m", e)
