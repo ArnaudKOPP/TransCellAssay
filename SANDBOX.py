@@ -15,6 +15,34 @@ np.set_printoptions(suppress=True)
 
 import TransCellAssay as TCA
 
+platemap = TCA.PlateMap(platemap="/home/arnaud/Desktop/HDV_plaque_Z/Pl1PP.csv")
+
+plaque1 = TCA.Plate('plaque1')
+plaque1 + platemap
+plaque2 = TCA.Plate('plaque2')
+plaque2 + platemap
+
+plaque1 + TCA.Replicat(name='rep1', data='/home/arnaud/Desktop/HDV_plaque_Z/150121 Eloi1.csv', datatype='mean')
+plaque2 + TCA.Replicat(name='rep1', data='/home/arnaud/Desktop/HDV_plaque_Z/150121 Eloi2.csv', datatype='mean')
+
+print(platemap)
+
+feature = 'AvgIntenCh2'
+neg = 'Neg 1'
+pos = 'SiNTCP'
+
+plaque1.compute_data_from_replicat(feature)
+plaque2.compute_data_from_replicat(feature)
+
+# TCA.plate_quality_control(plaque2, features=feature, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+# TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+
+ana1 = TCA.plate_analysis(plaque1, [feature], neg, pos, threshold=400, percent=False)
+ana2 = TCA.plate_analysis(plaque2, [feature], neg, pos, threshold=400, percent=False)
+
+ana1.write("/home/arnaud/Desktop/HDV_plaque_Z/plaque1_basic_result.csv")
+ana2.write("/home/arnaud/Desktop/HDV_plaque_Z/plaque2_basic_result.csv")
+
 
 def do_it(plate_nb, verbose=False):
     plaque = TCA.Core.Plate(name='Plate' + plate_nb)
@@ -47,8 +75,8 @@ def do_it(plate_nb, verbose=False):
     # time_stop = time.time()
     # print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
-    plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
-                         pos=platesetup.get_well(pos), skipping_wells=True)
+    # plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
+    #                      pos=platesetup.get_well(pos), skipping_wells=True)
 
     # time_start = time.time()
     # ana = TCA.plate_analysis(plaque, [feature], neg, pos)
@@ -126,8 +154,13 @@ def do_it(plate_nb, verbose=False):
     # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep2')
     # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep1')
     # TCA.boxplot_by_wells(rep1.rawdata.values, feature)
-    # TCA.heatmap(plaque.array)
-    # TCA.heatmap(plaque.array, pretty=False)
+    # TCA.heatmap(rep1.array)
+    # print(rep2.array)
+    # TCA.heatmap(rep1.array)
+    # TCA.heatmap(rep2.array, pretty=False)
+    # TCA.heatmap(rep3.array, pretty=False)
+    # TCA.plate_heatmap(plaque, both=False)
+    TCA.heatmap_map_p(plaque, plaque, plaque, plaque)
     # TCA.systematic_error(plaque.array)
     # TCA.systematic_error(plaque.sec_array)
     # TCA.plot_plate_3d(rep1.array, surf=True)
@@ -136,11 +169,10 @@ def do_it(plate_nb, verbose=False):
     # TCA.plate_heatmap(plaque, both=False)
     # TCA.plot_multiple_plate(plaque, plaque)
     # TCA.plot_raw_data(rep1.rawdata)
-    # TCA.heatmap_map(plaque, plaque, plaque, plaque)
     # clustering = TCA.k_mean_clustering(plaque)
     # clustering.do_cluster()
 
-do_it(plate_nb="1", verbose=True)
+# do_it(plate_nb="1", verbose=True)
 
 
 # import TransCellAssay.Stat.Omics.GO_enrichment as GO

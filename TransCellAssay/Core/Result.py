@@ -35,10 +35,10 @@ class Result(object):
         if size is None:
             size = 96
         self.values = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', float),
-                                                  ('SDCellsCount', float), ('PositiveCells', float),
-                                                  ('SDPositiveCells', float),
-                                                  ('Mean', float), ('Std', float), ('Median', float), ('Stdm', float),
-                                                  ('Viability', float), ('Toxicity', float)])
+                                            ('SDCellsCount', float), ('PositiveCells', float),
+                                            ('SDPositiveCells', float), ('Mean', float), ('Std', float),
+                                            ('Median', float), ('Stdm', float), ('Viability', float),
+                                            ('Toxicity', float)])
 
         self._genename_genepos = {}  # # To save GeneName (key)and  Gene position (value)
         self._genepos_genename = {}  # # To save Well (key) and Gene position (value)
@@ -64,7 +64,7 @@ class Result(object):
             for k, v in gene_list.items():
                 self.values['GeneName'][i] = v
                 self.values['Well'][i] = k
-                self._genename_genepos.setdefault(v, []).append(i)  # # make this form because Gene can be in multiple Well
+                self._genename_genepos.setdefault(v, []).append(i)  # # make this because Gene can be in multiple Well
                 self._genepos_genename[k] = i
                 i += 1
         except Exception as e:
@@ -132,19 +132,21 @@ class Result(object):
         :param frmt: csv or xlsx format to save
         """
         try:
-            tmp = pd.DataFrame(self.values)
+            # TODO bug here
+            df = pd.DataFrame(self.values)
             if frmt is 'csv':
-                tmp.to_csv(file_path, index=False)
+                df.to_csv(file_path, index=False)
             elif frmt is 'xlsx':
-                tmp.to_excel(file_path, sheet_name='Single Cell properties result', index=False, header=True)
+                df.to_excel(file_path, sheet_name='Single Cell properties result', index=False, header=True)
+            print('\033[0;32m[INFO]\033[0m writing :' % file_path)
         except:
             try:
                 if frmt is 'csv':
-                    np.savetxt(file_path, self.values, delimiter=';')
+                    np.savetxt(fname=file_path, X=self.values, delimiter=';')
                 else:
                     raise IOError("Can't save data in xlsx format")
             except Exception as e:
-                print('\033[0;31m[ERROR]\033[0m  Error in saving results data :', e)
+                print('\033[0;31m[ERROR]\033[0m Error in saving results data :', e)
 
     def __add__(self, to_add):
         """
