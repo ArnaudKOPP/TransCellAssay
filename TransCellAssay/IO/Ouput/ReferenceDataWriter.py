@@ -54,7 +54,8 @@ class ReferenceDataWriter(object):
                 else:
                     raise TypeError('Take plate in input')
 
-            plt_col_idx = [str(x)+str(y)+str(z) for x in ['rep1', 'rep2', 'rep3'] for y in features for z in ['Mean', 'Std', 'Sem']]
+            # # assume that every plate have the same replica number
+            plt_col_idx = [str(x)+str(y)+str(z) for x in [t for t in plt_list[0].replicat.keys()] for y in ref for z in ['Mean', 'Std', 'Sem']]
 
             for feature in features:
                 print('\033[0;32m[INFO]\033[0m Computation for feature :', feature)
@@ -66,6 +67,7 @@ class ReferenceDataWriter(object):
                     plt_name_index.append(plate.name+str(i))
                     i += 1
                 df = df.set_index([plt_name_index])
+                df.columns = plt_col_idx
                 if self._writer is not None:
                     df.to_excel(self._writer, sheet_name=feature)
 
