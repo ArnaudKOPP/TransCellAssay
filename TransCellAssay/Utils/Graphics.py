@@ -130,6 +130,57 @@ def plate_heatmap(plate, both=True):
         print(e)
 
 
+def heatmap_map(*args, usesec=False):
+    """
+    plot heatmap of all replicat array from given plate
+    :param args: plate object or list of plate
+    :param usesec: use sec data or not
+    """
+    try:
+        import matplotlib
+        import pylab as plt
+        import numpy as np
+
+        screen = []
+        for arg in args:
+            if isinstance(arg, TCA.Plate):
+                screen.append(arg)
+            elif isinstance(arg, list):
+                for elem in arg:
+                    if isinstance(elem, TCA.Plate):
+                        screen.append(elem)
+                    else:
+                        raise TypeError('Accept only list of Plate element')
+            else:
+                raise TypeError('Accept only plate or list of plate')
+
+        # Create new colormap, with white for zero
+        # (can also take RGB values, like (255,255,255):
+        colors = [('white')] + [(plt.cm.jet(i)) for i in range(1, 256)]
+        new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
+
+        n = np.sum([len(x.replicat) for x in screen])
+        a = np.floor(n**0.5).astype(int)
+        b = np.ceil(1.*n/a).astype(int)
+        fig = plt.figure(figsize=(2.*b, 2.*a))
+        i = 1
+
+        for plate in screen:
+            for key, value in plate.replicat.items():
+                ax = fig.add_subplot(a, b, i)
+                if not usesec:
+                    ax.pcolor(value.array, cmap=new_map)
+                else:
+                    ax.pcolor(value.sec_array, cmap=new_map)
+                ax.set_title(str(plate.name)+' '+str(value.name))
+                i += 1
+        fig.set_tight_layout(True)
+
+        plt.show()
+    except Exception as e:
+        print(e)
+
+
 def systematic_error(array):
     """
     plot systematic error in cols and rows axis
@@ -192,9 +243,9 @@ def boxplot_by_wells(dataframe, feature):
 
 def plot_multiple_plate(*args):
     """
+    Plot from all replicat from given plate, the array value
     :param args:
     """
-    # TODO
     try:
         import matplotlib.pyplot as plt
         import numpy as np
@@ -214,21 +265,18 @@ def plot_multiple_plate(*args):
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        mxm = 0
-        for i in range(screen.shape[0]):
-            for j in range(screen.shape[1]):
-                I = 0
-                platedata = list()
-                platenumber = list()
-                for key, value in screen.plate.items():
-                    for repkey, repvalue in value.replicat.items():
-                        platedata.append(np.log2(repvalue.DataMedian[i][j]))
-                        platenumber.append(I)
-                        I += 1
-                ax.plot(platenumber, platedata, 'b.')
-                mxm = I
-        ax.set_xlim([-1, mxm])
-        ax.set_ylabel('Log Data')
+        platedata = list()
+        platenumber = list()
+        I = 0
+        for plate in screen:
+            assert isinstance(plate, TCA.Plate)
+            for key, value in plate.replicat.items():
+                platedata.append(value.array.flatten())
+                platenumber.append(I)
+                I += 1
+        ax.plot(platenumber, platedata, 'b.')
+        ax.set_xlim([-0.5, I-0.5])
+        ax.set_ylabel('Data')
         ax.set_xlabel('Plate/Replicat ID')
         plt.show()
     except Exception as e:
@@ -379,9 +427,9 @@ def plot_raw_data(dataframe):
         import pandas as pd
         from matplotlib import pyplot as plt
 
-        assert isinstance(dataframe, pd.DataFrame)
+        assert isinstance(dataframe, TCA.RawData)
 
-        datagp = dataframe.groupby("Well")
+        datagp = dataframe.get_groupby_data()
         median = datagp.median()
         median.plot()
         plt.show()

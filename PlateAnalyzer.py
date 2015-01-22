@@ -226,56 +226,56 @@ def plate_analyzis(plateid):
 
         # TCA.feature_scaling(plaque, __FEATURE__, mean_scaling=True)
         plaque.normalization(__FEATURE__, method='PercentOfControl', log=False, neg=plaque.platemap.get_well(__NEG__),
-                             pos=plaque.platemap.get_well(__POS__))
+                             pos=plaque.platemap.get_well(__POS__), skipping_wells=True)
 
         plaque.compute_data_from_replicat(__FEATURE__)
-        for key, value in plaque.replicat.items():
-            np.savetxt(fname=os.path.join(output_data_plate_dir, str(value.name)) + ".csv", X=value.Data, delimiter=",",
-                       fmt='%1.4f')
+        # for key, value in plaque.replicat.items():
+        #     np.savetxt(fname=os.path.join(output_data_plate_dir, str(value.name)) + ".csv", X=value.Data, delimiter=",",
+        #                fmt='%1.4f')
 
         TCA.plate_quality_control(plaque, features=__FEATURE__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
-        verbose=False, dirpath=output_data_plate_dir)
+                                  skipping_wells=True, use_raw_data=False, verbose=False, dirpath=output_data_plate_dir)
 
-        plaque.compute_data_from_replicat(__FEATURE__)
+        # plaque.compute_data_from_replicat(__FEATURE__)
 
         # plaque.check_data_consistency()
 
-        plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False)
+        # plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False)
 
-        plaque.compute_data_from_replicat(__FEATURE__, use_sec_data=True)
+        # plaque.compute_data_from_replicat(__FEATURE__, use_sec_data=True)
         # # For multiple Replicat Workflow
-        ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
-                                     verbose=False)
-        ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
-                                     variance="equal", verbose=False)
-        ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=True, sec_data=True,
-                                     verbose=False)
-        ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=True, sec_data=True,
-                                     method='MM', verbose=False)
-        tstat1 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, variance='equal', sec_data=True,
-                                       verbose=False)
-        tstat2 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, sec_data=True, verbose=False)
-        tstat3 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=True, sec_data=True, verbose=False)
+        # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
+        #                              verbose=False)
+        # ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
+        #                              variance="equal", verbose=False)
+        # ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=True, sec_data=True,
+        #                              verbose=False)
+        # ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=True, sec_data=True,
+        #                              method='MM', verbose=False)
+        # tstat1 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, variance='equal', sec_data=True,
+        #                                verbose=False)
+        # tstat2 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, sec_data=True, verbose=False)
+        # tstat3 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=True, sec_data=True, verbose=False)
 
-        gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-        final_array = np.append(gene, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
+        # gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
+        # final_array = np.append(gene, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
+        # final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
 
-        to_save = pd.DataFrame(final_array)
-        to_save.to_csv(os.path.join(output_data_plate_dir, "ssmd_tstat.csv"), index=False, header=False)
-
-        rank = TCA.rank_product(plaque, secdata=True)
-        to_save = pd.DataFrame(rank)
-        to_save.to_csv(os.path.join(output_data_plate_dir, "rank_product.csv"), index=False, header=False)
+        # to_save = pd.DataFrame(final_array)
+        # to_save.to_csv(os.path.join(output_data_plate_dir, "ssmd_tstat.csv"), index=False, header=False)
+        #
+        # rank = TCA.rank_product(plaque, secdata=True)
+        # to_save = pd.DataFrame(rank)
+        # to_save.to_csv(os.path.join(output_data_plate_dir, "rank_product.csv"), index=False, header=False)
 
         # # CLEAR PLATE OBJECT FOR MEMORY SAVING AND AVOID CRAPPY EFFECT
         plaque = None
