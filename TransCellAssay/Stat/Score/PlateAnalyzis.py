@@ -17,7 +17,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_analysis(plate, feature, neg, pos, threshold=50):
+def plate_analysis(plate, feature, neg, pos, threshold=50, percent=True):
     """
     Do a plate analysis
     :param plate: plate
@@ -25,6 +25,7 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
     :param neg: negative control
     :param pos: positive control
     :param threshold: threshold for defining % of positive cell in negative ref
+    :param percent: use percent for threshold, if false, it will be a real value
     :return: return result
     """
     try:
@@ -65,8 +66,11 @@ def plate_analysis(plate, feature, neg, pos, threshold=50):
 
                 # # positive Cell
                 # # threshold value for control
-                data_control = v.get_raw_data(feature=feature, well=neg_well)
-                threshold_value = np.percentile(data_control, threshold)
+                if percent:
+                    data_control = v.get_raw_data(feature=feature, well=neg_well)
+                    threshold_value = np.percentile(data_control, threshold)
+                else:
+                    threshold_value = threshold
                 # data from replicat
 
                 # iterate on well
