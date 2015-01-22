@@ -62,33 +62,25 @@ def plot_plate_3d(array, surf=False):
         print(e)
 
 
-def heatmap(array, pretty=True):
+def heatmap(array):
     """
     Output a heatmap with seaborn
-    :param pretty: use Seaborn or matplotlib
     :param array: numpy array that represent data
     """
     try:
-        if pretty:
-            import matplotlib.pyplot as plt
-            import seaborn as sns
-            sns.set()
-            sns.heatmap(array)
-            plt.show()
-        else:
-            import matplotlib
-            import pylab
-            import numpy as np
-            import string
+        import matplotlib
+        import pylab
+        import numpy as np
+        import string
 
-            fig, ax = matplotlib.pyplot.subplots()
-            pylab.pcolor(array, cmap=matplotlib.pyplot.cm.Reds, edgecolors='k')
-            pylab.colorbar()
+        fig, ax = matplotlib.pyplot.subplots()
+        pylab.pcolor(array, cmap=matplotlib.pyplot.cm.Reds, edgecolors='k')
+        pylab.colorbar()
 
-            # # tab like display
-            ax.invert_yaxis()
+        # # tab like display
+        ax.invert_yaxis()
 
-            pylab.show()
+        pylab.show()
     except Exception as e:
         print(e)
 
@@ -171,6 +163,103 @@ def heatmap_map(*args, usesec=False):
                     ax.pcolor(value.sec_array, cmap=plt.cm.Reds, edgecolors='k')
                     # # tab like display
                     ax.invert_yaxis()
+                ax.set_title(str(plate.name)+' '+str(value.name))
+                i += 1
+        fig.set_tight_layout(True)
+
+        plt.show()
+    except Exception as e:
+        print(e)
+
+
+def heatmap_p(array):
+    """
+    Output a heatmap with seaborn
+    :param array: numpy array that represent data
+    """
+    try:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        sns.set()
+        sns.heatmap(array)
+        plt.show()
+    except Exception as e:
+        print(e)
+
+
+def plate_heatmap_p(plate, both=True):
+    """
+    Plate all heatmap for plate object
+    :param both: print data and SECdata
+    :param plate: plate object with correct data
+    """
+    try:
+        import matplotlib
+        import pylab as plt
+        import numpy as np
+        import seaborn as sns
+
+        b = len(plate.replicat)
+        if both is True:
+            a = 2
+        else:
+            a = 1
+        fig = plt.figure(figsize=(2.*b, 2.*a))
+
+        i = 1
+        for key, value in plate.replicat.items():
+            ax = fig.add_subplot(a, b, i)
+            sns.set()
+            sns.heatmap(value.array)
+            if both:
+                sns.set()
+                sns.heatmap(value.sec_array)
+            i += 1
+        plt.show()
+    except Exception as e:
+        print(e)
+
+
+def heatmap_map_p(*args, usesec=False):
+    """
+    plot heatmap of all replicat array from given plate
+    :param args: plate object or list of plate
+    :param usesec: use sec data or not
+    """
+    try:
+        import matplotlib
+        import pylab as plt
+        import numpy as np
+        import seaborn as sns
+
+        screen = []
+        for arg in args:
+            if isinstance(arg, TCA.Plate):
+                screen.append(arg)
+            elif isinstance(arg, list):
+                for elem in arg:
+                    if isinstance(elem, TCA.Plate):
+                        screen.append(elem)
+                    else:
+                        raise TypeError('Accept only list of Plate element')
+            else:
+                raise TypeError('Accept only plate or list of plate')
+
+        n = np.sum([len(x.replicat) for x in screen])
+        a = np.floor(n**0.5).astype(int)
+        b = np.ceil(1.*n/a).astype(int)
+        fig = plt.figure(figsize=(2.*b, 2.*a))
+        i = 1
+
+        for plate in screen:
+            for key, value in plate.replicat.items():
+                ax = fig.add_subplot(a, b, i)
+                if not usesec:
+                    sns.set()
+                    sns.heatmap(value.array)
+                else:
+                    sns.set()
+                    sns.heatmap(value.sec_array)
                 ax.set_title(str(plate.name)+' '+str(value.name))
                 i += 1
         fig.set_tight_layout(True)
