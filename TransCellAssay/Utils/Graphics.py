@@ -79,14 +79,15 @@ def heatmap(array, pretty=True):
             import matplotlib
             import pylab
             import numpy as np
+            import string
 
-            # Create new colormap, with white for zero
-            # (can also take RGB values, like (255,255,255):
-            colors = [('white')] + [(pylab.cm.jet(i)) for i in range(1, 256)]
-            new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
-
-            pylab.pcolor(array, cmap=new_map)
+            fig, ax = matplotlib.pyplot.subplots()
+            pylab.pcolor(array, cmap=matplotlib.pyplot.cm.Reds, edgecolors='k')
             pylab.colorbar()
+
+            # # tab like display
+            ax.invert_yaxis()
+
             pylab.show()
     except Exception as e:
         print(e)
@@ -110,20 +111,19 @@ def plate_heatmap(plate, both=True):
             a = 1
         fig = plt.figure(figsize=(2.*b, 2.*a))
 
-        # Create new colormap, with white for zero
-        # (can also take RGB values, like (255,255,255):
-        colors = [('white')] + [(plt.cm.jet(i)) for i in range(1, 256)]
-        new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
-
         i = 1
         for key, value in plate.replicat.items():
             ax = fig.add_subplot(a, b, i)
-            ax.pcolor(value.array, cmap=new_map)
+            ax.pcolor(value.array, cmap=plt.cm.Reds, edgecolors='k')
             ax.set_title(str(plate.name)+str(value.name))
+            # # tab like display
+            ax.invert_yaxis()
             if both:
                 ax = fig.add_subplot(a, b, i+b)
-                ax.pcolor(value.sec_array, cmap=new_map)
+                ax.pcolor(value.sec_array, cmap=plt.cm.Reds, edgecolors='k')
                 ax.set_title(str(plate.name)+str(value.name))
+                # # tab like display
+                ax.invert_yaxis()
             i += 1
         plt.show()
     except Exception as e:
@@ -154,11 +154,6 @@ def heatmap_map(*args, usesec=False):
             else:
                 raise TypeError('Accept only plate or list of plate')
 
-        # Create new colormap, with white for zero
-        # (can also take RGB values, like (255,255,255):
-        colors = [('white')] + [(plt.cm.jet(i)) for i in range(1, 256)]
-        new_map = matplotlib.colors.LinearSegmentedColormap.from_list('new_map', colors, N=256)
-
         n = np.sum([len(x.replicat) for x in screen])
         a = np.floor(n**0.5).astype(int)
         b = np.ceil(1.*n/a).astype(int)
@@ -169,9 +164,13 @@ def heatmap_map(*args, usesec=False):
             for key, value in plate.replicat.items():
                 ax = fig.add_subplot(a, b, i)
                 if not usesec:
-                    ax.pcolor(value.array, cmap=new_map)
+                    ax.pcolor(value.array, cmap=plt.cm.Reds, edgecolors='k')
+                    # # tab like display
+                    ax.invert_yaxis()
                 else:
-                    ax.pcolor(value.sec_array, cmap=new_map)
+                    ax.pcolor(value.sec_array, cmap=plt.cm.Reds, edgecolors='k')
+                    # # tab like display
+                    ax.invert_yaxis()
                 ax.set_title(str(plate.name)+' '+str(value.name))
                 i += 1
         fig.set_tight_layout(True)
