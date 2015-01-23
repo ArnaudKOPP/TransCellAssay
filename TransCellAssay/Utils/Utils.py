@@ -59,3 +59,19 @@ def get_opposite_well_format(to_change):
             raise ValueError
     except Exception as e:
         print(e)
+
+
+def get_masked_array(data_arr, plate_array, to_keep):
+    """
+    Return an array with data to keep and set to 0 other
+    :param data_arr: array data with value
+    :param plate_array: numpy array from platesetup
+    :param to_keep: gene name to keep
+    :return: numpy array with data keeped and 0 to other
+    """
+    data = data_arr.copy()
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            if not plate_array[i][j] == to_keep:
+                data[i][j] = 0
+    return data
