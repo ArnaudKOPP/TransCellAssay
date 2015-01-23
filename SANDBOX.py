@@ -31,17 +31,39 @@ feature = 'AvgIntenCh2'
 neg = 'Neg 1'
 pos = 'SiNTCP'
 
+plaque1.normalization(feature=feature, method='Zscore')
+plaque2.normalization(feature=feature, method='Zscore')
+
+# TCA.plate_feature_scaling(plaque2, feature, mean_scaling=True)
+
 plaque1.compute_data_from_replicat(feature)
 plaque2.compute_data_from_replicat(feature)
 
-# TCA.plate_quality_control(plaque2, features=feature, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
-# TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+TCA.heatmap_p(plaque2.array)
 
-ana1 = TCA.plate_analysis(plaque1, [feature], neg, pos, threshold=400, percent=False)
-ana2 = TCA.plate_analysis(plaque2, [feature], neg, pos, threshold=400, percent=False)
+TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+TCA.plate_quality_control(plaque2, features=feature, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
 
-ana1.write("/home/arnaud/Desktop/HDV_plaque_Z/plaque1_basic_result.csv")
-ana2.write("/home/arnaud/Desktop/HDV_plaque_Z/plaque2_basic_result.csv")
+# test1_neg = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=neg)
+# test2_neg = TCA.get_masked_array(plaque2.array, platemap.platemap.values, to_keep=neg)
+#
+# test1_pos = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=pos)
+# test2_pos = TCA.get_masked_array(plaque2.array, platemap.platemap.values, to_keep=pos)
+
+# plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+# plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+
+# plaque1.compute_data_from_replicat(feature, use_sec_data=True)
+# plaque2.compute_data_from_replicat(feature, use_sec_data=True)
+
+# TCA.heatmap_map(plaque1, plaque2)
+
+# TCA.plate_heatmap_p(plaque1, both=True)
+# TCA.plate_heatmap_p(plaque2, both=True)
+# TCA.plot_plate_3d(test1_neg)
+# TCA.plot_plate_3d(test2_neg)
+# TCA.plot_plate_3d(test1_pos)
+# TCA.plot_plate_3d(test2_pos)
 
 
 def do_it(plate_nb, verbose=False):
@@ -84,14 +106,12 @@ def do_it(plate_nb, verbose=False):
     # time_stop = time.time()
     # print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
-    # TCA.feature_scaling(plaque, feature, mean_scaling=True)
+    # TCA.plate_feature_scaling(plaque, feature, mean_scaling=True)
+
+    plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
+                         pos=platesetup.get_well(pos))
 
     plaque.compute_data_from_replicat(feature)
-
-    # plaque.normalization(feature, method='Zscore', log=False, neg=platesetup.get_well(neg),
-    #                      pos=platesetup.get_well(pos))
-
-    # plaque.compute_data_from_replicat(feature, forced_update=True)
 
     TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, use_raw_data=False, skipping_wells=True,
                               verbose=True)
@@ -153,14 +173,14 @@ def do_it(plate_nb, verbose=False):
 
     # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep2')
     # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep1')
-    # TCA.boxplot_by_wells(rep1.rawdata.values, feature)
+    # TCA.boxplot_by_wells(rep1.rawdata.df, feature)
     # TCA.heatmap(rep1.array)
     # print(rep2.array)
     # TCA.heatmap(rep1.array)
     # TCA.heatmap(rep2.array, pretty=False)
     # TCA.heatmap(rep3.array, pretty=False)
     # TCA.plate_heatmap(plaque, both=False)
-    TCA.heatmap_map_p(plaque, plaque, plaque, plaque)
+    # TCA.heatmap_map_p(plaque, plaque, plaque, plaque)
     # TCA.systematic_error(plaque.array)
     # TCA.systematic_error(plaque.sec_array)
     # TCA.plot_plate_3d(rep1.array, surf=True)

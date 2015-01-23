@@ -214,6 +214,7 @@ def plate_heatmap_p(plate, both=True):
             sns.set()
             sns.heatmap(value.array)
             if both:
+                ax = fig.add_subplot(a, b, i+b)
                 sns.set()
                 sns.heatmap(value.sec_array)
             i += 1

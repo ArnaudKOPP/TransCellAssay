@@ -24,8 +24,6 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
-# TODO make feature as a list or single feature
-
 
 def plate_feature_scaling(plate, feature, mean_scaling=False):
     """
@@ -41,15 +39,12 @@ def plate_feature_scaling(plate, feature, mean_scaling=False):
 
             # search min and max accross all replicat
             for key, value in plate.replicat.items():
-                min_lst.append(np.min(value.rawdata.values[feature]))
-                max_lst.append(np.max(value.rawdata.values[feature]))
+                min_lst.append(np.min(value.rawdata.df[feature]))
+                max_lst.append(np.max(value.rawdata.df[feature]))
 
             # apply feature scaling accross all replicat
             for key, value in plate.replicat.items():
-                value.rawdata.loc[:, feature] = (
-                    (value.rawdata.values.loc[:, feature] - min(min_lst)) / (max(max_lst) - min(min_lst)))
-                if mean_scaling:
-                    value.rawdata.values.loc[:, feature] *= (sum(max_lst) / len(max_lst))
+                value.rawdata.df = _df_scaling(value.rawdata.df, min_lst, max_lst, feature, mean_scaling)
                 value.isNormalized = True
 
             plate.isNormalized = True
@@ -59,10 +54,17 @@ def plate_feature_scaling(plate, feature, mean_scaling=False):
         print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def rawdata_variability_normalization(data, feature, method=None, log2_transf=True, neg_control=None, pos_control=None):
+def _df_scaling(df, min_val, max_val, feature, mean=False):
+        df.loc[:, feature] = (df.loc[:, feature] - min(min_val)) / (max(max_val) - min(min_val))
+        if mean:
+            df.loc[:, feature] *= (sum(max_val) / len(max_val))
+        return df
+
+
+def rawdata_variability_normalization(obj, feature, method=None, log2_transf=True, neg_control=None, pos_control=None):
     """
     Take a dataframe from replicat object and apply desired strategy of variability normalization
-    :param data: pd.dataframe to normalize
+    :param obj: pd.dataframe to normalize
     :param feature: on which feature to normalize
     :param method: which method to apply
     :param log2_transf: apply log2 transformation
@@ -71,60 +73,94 @@ def rawdata_variability_normalization(data, feature, method=None, log2_transf=Tr
     :return: normalized data
     """
     try:
-        if isinstance(data, TCA.Plate):
-            raise NotImplementedError
-        elif isinstance(data, TCA.Replicat):
-            raise NotImplementedError
-        elif isinstance(data, pd.DataFrame):
-            # apply log2 transformation on data
-            if log2_transf:
-                data.loc[:] = data[data[feature] > 0]
-                data.loc[:, feature] = np.log2(data[feature])
-            # apply a z-score transformation on data
-            if method == 'Zscore':
-                data.loc[:, feature] = (data.loc[:, feature] - np.mean(data[feature])) / np.std(data[feature])
-            # apply a Robust z-score transformation on data
-            elif method == 'RobustZscore':
-                data.loc[:, feature] = (data.loc[:, feature] - np.median(data[feature])) / mad(data[feature])
-            # apply a percent of control transformation on data
-            elif method == 'PercentOfSample':
-                data.loc[:, feature] = (data.loc[:, feature] / np.mean(data[feature])) * 100
-            elif method == 'RobustPercentOfSample':
-                data.loc[:, feature] = (data.loc[:, feature] / np.median(data[feature])) * 100
-            elif method == 'PercentOfControl':
-                if neg_control is None:
-                    if pos_control is None:
-                        raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative or Positive control")
-                    else:
-                        # Using positive control
-                        pos_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
-                        data.loc[:, feature] = (data.loc[:, feature] / np.mean(pos_data)) * 100
-                else:
-                    # Using negative control
-                    neg_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
-                    data.loc[:, feature] = (data.loc[:, feature] / np.mean(neg_data)) * 100
-            # apply a normalized percent inhibition transformation on data
-            elif method == 'NormalizedPercentInhibition':
-                if neg_control is None:
-                    if pos_control is None:
-                        raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative and Positive control")
-                    raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative Control")
-                neg_data = _get_data_by_wells(data, feature=feature, wells=neg_control)
-                pos_data = _get_data_by_wells(data, feature=feature, wells=pos_control)
-                data.loc[:, feature] = ((np.mean(pos_data) - data[feature]) /
-                                        (np.mean(pos_data) - np.mean(neg_data))) * 100
-            else:
-                print("\033[0;33m[WARNING]\033[0m  No method selected for Variability Normalization, choose :\n-Zscore "
-                      "\n-RobustZscore \n-PercentOfControl \n-PercentOfSample \n-RobustPercentOfSample \n"
-                      "-NormalizedPercentInhibition")
-                return data
-
-            # return transformed data
-            return data
+        if isinstance(obj, TCA.Plate):
+            for key, value in obj.replicat.items():
+                value.rawdata.df = _df_norm(value.rawdata.df, feature, method, log2_transf, neg_control, pos_control)
+        elif isinstance(obj, TCA.Replicat):
+            obj.rawdata.df = _df_norm(obj.rawdata.df, feature, method, log2_transf, neg_control, pos_control)
+        elif isinstance(obj, TCA.RawData):
+            obj.df = _df_norm(obj.df, feature, method, log2_transf, neg_control, pos_control)
+            return obj
         else:
-            raise TypeError('Take a Raw Data in input')
+            raise TypeError("Don't take this object, only plate, replica or raw data")
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
+
+
+def _df_norm(df, feature, method=None, log2_transf=True, neg_control=None, pos_control=None):
+    if log2_transf:
+        df = _log2_transformation(df, feature)
+    if method == 'Zscore':
+        df = _zscore_(df, feature)
+    elif method == 'RobustZscore':
+        df = _robustzscore(df, feature)
+    elif method == 'PercentOfSample':
+        df = _percentofsample(df, feature)
+    elif method == 'RobustPercentOfSample':
+        df = _robustpercentofsample(df, feature)
+    elif method == 'PercentOfControl':
+        df = _percentofcontrol(df, feature, neg_control, pos_control)
+    elif method == 'NormalizedPercentInhibition':
+        df = _normalizedpercentinhibition(df, feature, neg_control, pos_control)
+    else:
+        print("\033[0;33m[WARNING]\033[0m  No method selected for Variability Normalization, choose :\n-Zscore "
+              "\n-RobustZscore \n-PercentOfControl \n-PercentOfSample \n-RobustPercentOfSample \n"
+              "-NormalizedPercentInhibition")
+        return df
+        # return transformed data
+    return df
+
+
+def _log2_transformation(df, feature):
+    df.loc[:] = df[df[feature] > 0]
+    df.loc[:, feature] = np.log2(df[feature])
+    return df
+
+
+def _zscore_(df, feature):
+    df.loc[:, feature] = (df.loc[:, feature] - np.mean(df[feature])) / np.std(df[feature])
+    return df
+
+
+def _robustzscore(df, feature):
+    df.loc[:, feature] = (df.loc[:, feature] - np.median(df[feature])) / mad(df[feature])
+    return df
+
+
+def _percentofsample(df, feature):
+    df.loc[:, feature] = (df.loc[:, feature] / np.mean(df[feature])) * 100
+    return df
+
+
+def _robustpercentofsample(df, feature):
+    df.loc[:, feature] = (df.loc[:, feature] / np.median(df[feature])) * 100
+    return df
+
+
+def _percentofcontrol(df, feature, neg=None, pos=None):
+    if neg is None:
+        if pos is None:
+            raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative or Positive control")
+        else:
+            # Using positive control
+            pos_data = _get_data_by_wells(df, feature=feature, wells=neg)
+            df.loc[:, feature] = (df.loc[:, feature] / np.mean(pos_data)) * 100
+    else:
+        # Using negative control
+        neg_data = _get_data_by_wells(df, feature=feature, wells=neg)
+        df.loc[:, feature] = (df.loc[:, feature] / np.mean(neg_data)) * 100
+    return df
+
+
+def _normalizedpercentinhibition(df, feature, neg=None, pos=None):
+    if neg is None:
+        if pos is None:
+            raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative and Positive control")
+        raise AttributeError("\033[0;31m[ERROR]\033[0m Need Negative Control")
+    neg_data = _get_data_by_wells(df, feature=feature, wells=neg)
+    pos_data = _get_data_by_wells(df, feature=feature, wells=pos)
+    df.loc[:, feature] = ((np.mean(pos_data) - df[feature]) / (np.mean(pos_data) - np.mean(neg_data))) * 100
+    return df
 
 
 def _get_data_by_wells(dataframe, feature, wells):

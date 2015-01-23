@@ -187,7 +187,7 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             qc_data_array['Pos SD'] = np.std(posdata)
             qc_data_array['AVR'] = _avr(negdata, posdata)
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
-            qc_data_array['ZFactor'] = _zfactor(replicat.rawdata.values, feature, negdata, posdata)
+            qc_data_array['ZFactor'] = _zfactor(replicat.rawdata.df, feature, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 

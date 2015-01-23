@@ -37,11 +37,11 @@ class RawData(object):
             self._CACHING_gbdata = None
             self._CACHING_gbdata_key = None
             try:
-                self.values = pd.read_csv(path_or_file)
+                self.df = pd.read_csv(path_or_file)
                 print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
             except Exception:
                 try:
-                    self.values = pd.read_csv(path_or_file, decimal=",", sep=";")
+                    self.df = pd.read_csv(path_or_file, decimal=",", sep=";")
                     print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
                 except Exception as e:
                     print('\033[0;31m[ERROR]\033[0m  Error in reading %s File : ' % path_or_file, e)
@@ -56,7 +56,7 @@ class RawData(object):
         :return: list of feature/component
         """
         try:
-            return self.values.columns.tolist()
+            return self.df.columns.tolist()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -87,7 +87,7 @@ class RawData(object):
                         data = data.append(datagp.get_group(i)[feature])
                     return data
                 else:
-                    return self.values[feature]
+                    return self.df[feature]
             else:
                 if well is not None:
                     for i in well:
@@ -96,7 +96,7 @@ class RawData(object):
                         data = data.append(datagp.get_group(i))
                     return data
                 else:
-                    return self.values
+                    return self.df
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -106,28 +106,31 @@ class RawData(object):
         :return:
         """
         try:
-            return self.values.Well.unique()
+            return self.df.Well.unique()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
     def df_to_array(self, feat):
         """
-
+        To use only with 1data/well Raw data !!
         :param feat:
         :return:
         """
-        size = len(self.values)
-        if size == 96:
+        print("\033[0;33m[INFO/WARNING]\033[0m Only to use with 1Data/Well Raw data")
+        size = len(self.df)
+        if size <= 96:
             array = np.zeros((8, 12))
-        else:
+        elif size <= 384:
             array = np.zeros((16, 24))
+        elif size > 384:
+            raise NotImplementedError('MAX 384 Well plate are not implemented')
         for i in range(size):
-            array[self.values['Row'][i]][self.values['Column'][i]] = self.values[feat][i]
+            array[self.df['Row'][i]][self.df['Column'][i]] = self.df[feat][i]
         return array
 
     def compute_matrix(self, feature, type_mean='mean'):
         """
-
+        Compute mean or median for each well in matrix format
         :param feature:
         :param type_mean:
         :return:
@@ -139,12 +142,14 @@ class RawData(object):
             elif type_mean is 'mean':
                 tmp = gbdata.mean()
             feature = tmp[feature]
-            dict_mean = feature.to_dict()  # # dict : key = pos and item are mean
-            if not len(dict_mean) > 96:
+            dict_pos_mean = feature.to_dict()  # # dict : key = pos and item are mean
+            if len(dict_pos_mean) <= 96:
                 data = np.zeros((8, 12))
-            else:
+            elif len(dict_pos_mean) <= 384:
                 data = np.zeros((16, 24))
-            for key, elem in dict_mean.items():
+            elif len(dict_pos_mean) > 384:
+                raise NotImplementedError('MAX 384 Well plate are not implemented')
+            for key, elem in dict_pos_mean.items():
                 pos = TCA.get_opposite_well_format(key)
                 data[pos[0]][pos[1]] = elem
             return data
@@ -171,7 +176,7 @@ class RawData(object):
             print("\033[0;31m[ERROR]\033[0m", e)
 
     def _new_caching(self, key):
-        self._CACHING_gbdata = self.values.groupby(key)
+        self._CACHING_gbdata = self.df.groupby(key)
         self._CACHING_gbdata_key = key
 
     def save_raw_data(self, path, name=None):
@@ -191,7 +196,7 @@ class RawData(object):
             print("\033[0;31m[ERROR]\033[0m", e)
 
     def _write_raw_data(self, filepath):
-        self.values.to_csv(path=os.path.join(filepath) + ".csv", index=False)
+        self.df.to_csv(path=os.path.join(filepath) + ".csv", index=False)
         print('\033[0;32m[INFO]\033[0m Writing File : {}'.format(filepath))
 
     def save_memory(self, only_caching=True):
@@ -203,13 +208,13 @@ class RawData(object):
             self._CACHING_gbdata = None
             self._CACHING_gbdata_key = None
             if not only_caching:
-                self.values = None
+                self.df = None
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
     def __repr__(self):
         try:
-            return "\n Raw Data head : \n" + repr(self.values.head())
+            return "\n Raw Data head : \n" + repr(self.df.head())
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

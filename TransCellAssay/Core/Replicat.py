@@ -224,7 +224,7 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None, skipping_wells=True):
+    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """
         Performed normalization on data
         :param feature; which feature to normalize
@@ -237,16 +237,16 @@ class Replicat(object):
         try:
             if not self.isNormalized:
                 if skipping_wells:
-                    self.rawdata.values = TCA.rawdata_variability_normalization(self.rawdata.values, feature=feature,
-                                                                                method=method, log2_transf=log,
-                                                                                neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
-                                                                                pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
+                    self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, feature=feature,
+                                                                         method=method, log2_transf=log,
+                                                                         neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
+                                                                         pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
                 else:
-                    self.rawdata.values = TCA.rawdata_variability_normalization(self.rawdata.values, feature=feature,
-                                                                                method=method,
-                                                                                log2_transf=log,
-                                                                                neg_control=neg,
-                                                                                pos_control=pos)
+                    self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, feature=feature,
+                                                                         method=method,
+                                                                         log2_transf=log,
+                                                                         neg_control=neg,
+                                                                         pos_control=pos)
                 self.isNormalized = True
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
@@ -256,7 +256,6 @@ class Replicat(object):
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=False,
                                     max_iterations=100, alpha=0.05):
         """
-
         Apply a spatial normalization for remove edge effect
         The Bscore method showed a more stable behavior than MEA and PMP only when the number of rows and columns
         affected by the systematics error, hit percentage and systematic error variance were high (mainly du to a

@@ -334,7 +334,7 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None, skipping_wells=True):
+    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """
         Apply Well correction on all replicat data
         call function like from replicat object
