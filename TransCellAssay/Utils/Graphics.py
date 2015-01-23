@@ -34,8 +34,9 @@ def plot_plate_3d(array, surf=False):
             x, y = np.meshgrid(x, y)
             z = array
             ax = fig.gca(projection='3d')
-            surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap='hot', linewidth=0, antialiased=False)
+            surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.cm.Reds, linewidth=0, antialiased=True)
             fig.colorbar(surf, shrink=0.5, aspect=5)
+            ax.invert_yaxis()
             plt.show()
         else:
             from mpl_toolkits.mplot3d import Axes3D
@@ -56,7 +57,8 @@ def plot_plate_3d(array, surf=False):
             x_data = x_data.flatten()
             y_data = y_data.flatten()
             z_data = data_array.flatten()
-            ax.bar3d(x_data, y_data, np.zeros(len(z_data)), 1, 1, z_data)
+            ax.bar3d(x_data, y_data, np.zeros(len(z_data)), 1, 1, z_data, color='b', alpha=0.5)
+            ax.invert_yaxis()
             plt.show()
     except Exception as e:
         print(e)
