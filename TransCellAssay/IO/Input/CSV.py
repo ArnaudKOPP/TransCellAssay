@@ -20,6 +20,10 @@ class CSV(InputFile):
     """
     Class specifique for csv file
     """
+
+    def __init__(self):
+        super(CSV, self).__init__()
+
     def load(self, fpath):
         """
         Load csv file

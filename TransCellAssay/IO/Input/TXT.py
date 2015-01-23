@@ -16,6 +16,12 @@ __status__ = "Production"
 
 
 class TXT(InputFile):
+    """
+    Class for load TXT file (similar to csv)
+    """
+    def __init__(self):
+        super(TXT, self).__init__()
+
     def load(self, fpath):
         """
         Load csv file

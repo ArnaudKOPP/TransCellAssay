@@ -20,6 +20,8 @@ class EXCEL(InputFile):
     """
     Class for load excel file
     """
+    def __init__(self):
+        super(EXCEL, self).__init__()
 
     def load(self, fpath):
         # # obtention des noms de chaque sheet du excel

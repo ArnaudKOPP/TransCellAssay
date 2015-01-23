@@ -24,9 +24,7 @@ class InputFile(object):
     InputFile is scaffold for CSV, Excel and txt data
     """
 
-    def __init__(self, path=None):
-        self.path = path
-        self.dataframe = pd.DataFrame()
+    def __init__(self):
         self.is1Datawell = False
 
     def load(self, fpath):
@@ -48,7 +46,7 @@ class InputFile(object):
             self.dataframe.insert(0, "Well", 0)
             # # put Well value from row and col columns
             self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x['Row'], x['Column'] + 1), axis=1)
-            remove = [u'Row', u'Column']
+            remove = ['Row', 'Column']
             self.dataframe = self.dataframe.drop(remove, axis=1)
         except Exception as e:
             print(e)
@@ -63,8 +61,9 @@ class InputFile(object):
         """
         Remove useless col
         """
+        col_in_df = self.dataframe.columns
         # columns that we can remove because useless
-        useless = [u'Barcode', u'Well', u'PlateID', u'UPD', u'TimePoint', u'TimeInterval', u'FieldID', u'CellID',
+        useless = [u'Barcode', u'PlateID', u'UPD', u'TimePoint', u'TimeInterval', u'FieldID', u'CellID',
                    u'Left', u'Top', u'Height', u'Width', u'FieldIndex', u'CellNum', "FieldNumber", "CellNumber", "X",
                    "Y", "Z", "Width", "Height", "PixelSizeX", "PixelSizeY", "PixelSizeZ", 'Status', 'Zposition',
                    'ValidObjectCount', 'PlateNumber']
@@ -72,7 +71,8 @@ class InputFile(object):
             try:
                 self.dataframe = self.dataframe.drop(col, axis=1)
             except:
-                print("\033[0;33m[INFO/WARNING]\033[0m Column {} don't exist or impossible to remove".format(col))
+                if col in col_in_df:
+                    print("\033[0;33m[INFO/WARNING]\033[0m Column {} impossible to remove".format(col))
 
     def remove_nan(self):
         """
