@@ -132,17 +132,16 @@ class Result(object):
         :param frmt: csv or xlsx format to save
         """
         try:
-            # TODO bug here
-            df = pd.DataFrame(self.values)
             if frmt is 'csv':
-                df.to_csv(file_path, index=False)
+                pd.DataFrame(self.values).to_csv(file_path, index=False, header=True)
             elif frmt is 'xlsx':
-                df.to_excel(file_path, sheet_name='Single Cell properties result', index=False, header=True)
-            print('\033[0;32m[INFO]\033[0m writing :' % file_path)
+                pd.DataFrame(self.values).to_excel(file_path, sheet_name='Single Cell properties result', index=False, header=True)
+            print('\033[0;32m[INFO]\033[0m writing : {}'.format(file_path))
         except:
             try:
                 if frmt is 'csv':
                     np.savetxt(fname=file_path, X=self.values, delimiter=';')
+                    print('\033[0;32m[INFO]\033[0m writing : {}'.format(file_path))
                 else:
                     raise IOError("Can't save data in xlsx format")
             except Exception as e:
