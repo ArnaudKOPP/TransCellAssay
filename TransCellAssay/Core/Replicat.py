@@ -27,7 +27,7 @@ class Replicat(object):
     self.isNormalized = False  # are the data normalized
     self.isSpatialNormalized = False  # systematics error removed or not
     self.DataType = "median" # median or mean of data
-    self.Data = None  # matrix that contain mean of interested features to analyze
+    self.Data = None  # matrix that contain mean of interested channels to analyze
     self.SpatNormData = None  # matrix that contain data corrected
     self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
@@ -40,7 +40,7 @@ class Replicat(object):
         self.isNormalized = False
         self.isSpatialNormalized = False
         self.datatype = datatype
-        self._array_feat = None
+        self._array_channel = None
         self.array = None
         self.sec_array = None
 
@@ -67,13 +67,13 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def get_feature_list(self):
+    def get_channel_list(self):
         """
-        Get all features/component in list
-        :return: list of feature/component
+        Get all channels/component in list
+        :return: list of channel/component
         """
         try:
-            return self.rawdata.get_feature_list
+            return self.rawdata.get_channel_list
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -169,23 +169,23 @@ class Replicat(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def get_raw_data(self, feature=None, well=None, well_idx=False):
+    def get_raw_data(self, channel=None, well=None, well_idx=False):
         """
         Get Raw data with specified param
-        :param feature: defined or not feature
+        :param channel: defined or not channel
         :param well: defined or not which well you want, in list [] or simple string format
         :param well_idx: add or not well id
         :return: raw data in pandas dataframe
         """
         try:
-            return self.rawdata.get_raw_data(feature=feature, well=well, well_idx=well_idx)
+            return self.rawdata.get_raw_data(channel=channel, well=well, well_idx=well_idx)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def compute_data_for_feature(self, feature):
+    def compute_data_for_channel(self, channel):
         """
         Compute data in matrix form, get mean or median for well and save them in replicat object
-        :param feature: which feature to keep in matrix
+        :param channel: which channel to keep in matrix
         :return:
         """
         try:
@@ -193,18 +193,18 @@ class Replicat(object):
                 print('\033[0;33m[WARNING]\033[0m Data are not normalized for replicat : ', self.name)
 
             if self.datatype == 'median':
-                self.array = self.rawdata.compute_matrix(feature=feature, type_mean=self.datatype)
-                self._array_feat = feature
+                self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
+                self._array_channel = channel
             else:
-                self.array = self.rawdata.compute_matrix(feature=feature, type_mean=self.datatype)
-                self._array_feat = feature
+                self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
+                self._array_channel = channel
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def get_data_array(self, feature, sec=False):
+    def get_data_array(self, channel, sec=False):
         """
         Return data in matrix form, get mean or median for well
-        :param feature: which feature to keep in matrix
+        :param channel: which channel to keep in matrix
         :param sec: want Systematic Error Corrected data ? default=False
         :return: compute data in matrix form
         """
@@ -215,19 +215,19 @@ class Replicat(object):
                 else:
                     return self.sec_array
             if self.array is None:
-                self.compute_data_for_feature(feature)
-            if feature is self._array_feat:
+                self.compute_data_for_channel(channel)
+            if channel is self._array_channel:
                 return self.array
             else:
-                self.compute_data_for_feature(feature)
+                self.compute_data_for_channel(channel)
                 return self.array
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
+    def normalization(self, channel, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """
         Performed normalization on data
-        :param feature; which feature to normalize
+        :param channel; which channel to normalize
         :param method: Performed X Transformation
         :param log:  Performed log2 Transformation
         :param pos: postive control
@@ -237,12 +237,12 @@ class Replicat(object):
         try:
             if not self.isNormalized:
                 if skipping_wells:
-                    self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, feature=feature,
+                    self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=channel,
                                                                          method=method, log2_transf=log,
                                                                          neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
                                                                          pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
                 else:
-                    self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, feature=feature,
+                    self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=channel,
                                                                          method=method,
                                                                          log2_transf=log,
                                                                          neg_control=neg,

@@ -312,11 +312,11 @@ def systematic_error(array):
         print(e)
 
 
-def boxplot_by_wells(dataframe, feature):
+def boxplot_by_wells(dataframe, channel):
     """
     plot the boxplot for each well
     :param dataframe:
-    :param feature; whiche feature to display
+    :param channel; whiche channel to display
     """
     try:
         import pandas as pd
@@ -324,7 +324,7 @@ def boxplot_by_wells(dataframe, feature):
 
         pd.options.display.mpl_style = 'default'
         if isinstance(dataframe, pd.DataFrame):
-            bp = dataframe.boxplot(column=feature, by='Well')
+            bp = dataframe.boxplot(column=channel, by='Well')
             plt.show(block=True)
         else:
             raise TypeError
@@ -374,12 +374,12 @@ def plot_multiple_plate(*args):
         print(e)
 
 
-def plot_distribution(wells, plate, feature, rep=None, pool=False):
+def plot_distribution(wells, plate, channel, rep=None, pool=False):
     """
     Plot distribution of multiple well
     :param wells: list of wells to plot distribution
     :param plate: Plate with replicat
-    :param feature: which feature to plot
+    :param channel: which channel to plot
     :param rep: if rep is provided, plot only distribution of selected wells for this one
     :param pool: if pool is True, the selected wells are pooled accross replicat
     """
@@ -393,11 +393,11 @@ def plot_distribution(wells, plate, feature, rep=None, pool=False):
             for Well in wells:
                 rep_series = dict()
                 if rep is not None:
-                    rep_series[rep] = pd.Series(plate[rep].get_raw_data(feature=feature, well=Well))
+                    rep_series[rep] = pd.Series(plate[rep].get_raw_data(channel=channel, well=Well))
                     rep_series[rep].name = str(rep)+str(Well)
                 else:
                     for key, value in plate.replicat.items():
-                        rep_series[key] = pd.Series(value.get_raw_data(feature=feature, well=Well))
+                        rep_series[key] = pd.Series(value.get_raw_data(channel=channel, well=Well))
                         rep_series[key].name = key+str(Well)
                 # # Plotting with pandas
                 if pool:
@@ -416,11 +416,11 @@ def plot_distribution(wells, plate, feature, rep=None, pool=False):
 
 def plot_3d_cloud_point(dataframe, x=None, y=None, z=None):
     """
-    Plot in 3d raw data with choosen features
+    Plot in 3d raw data with choosen channels
     :param dataframe: dataframe without class label !!
-    :param x: x feature
-    :param y: y feature
-    :param z: z feature
+    :param x: x channel
+    :param y: y channel
+    :param z: z channel
     """
     try:
         import pandas as pd
@@ -449,12 +449,12 @@ def plot_3d_cloud_point(dataframe, x=None, y=None, z=None):
 
 def plot_3d_per_well(dataframe, x=None, y=None, z=None, single_cell=True):
     """
-    Plot in 3d raw data with choosen features and with different color by well
+    Plot in 3d raw data with choosen channels and with different color by well
     :param single_cell:
     :param dataframe: dataframe without class label !!
-    :param x: x feature
-    :param y: y feature
-    :param z: z feature
+    :param x: x channel
+    :param y: y channel
+    :param z: z channel
     """
     try:
         import pandas as pd

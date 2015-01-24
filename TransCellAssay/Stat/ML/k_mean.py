@@ -25,7 +25,7 @@ class k_mean_clustering():
 
     def __init__(self, Plate):
         assert isinstance(Plate, TCA.Plate)
-        self.rawData = Plate.compute_all_features_from_replicat()
+        self.rawData = Plate.compute_all_channels_from_replicat()
 
     def do_cluster(self, n_cluster=10):
         """

@@ -143,12 +143,12 @@ class PCA():
 
 def plot_3d_cloud_point_pca(df, eig_vec, x=None, y=None, z=None):
     """
-    Plot in 3d raw data with choosen features
+    Plot in 3d raw data with choosen channels
     :param eig_vec:
     :param df: dataframe without class label !!
-    :param x: x feature
-    :param y: y feature
-    :param z: z feature
+    :param x: x channel
+    :param y: y channel
+    :param z: z channel
     """
     try:
         import pandas as pd

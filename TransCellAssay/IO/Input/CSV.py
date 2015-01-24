@@ -63,7 +63,7 @@ class CSV_Reader():
 
     def read_data(self, input):
         """
-        Read csv data file, remove predifined useless features, remove empty row, make good well format.
+        Read csv data file, remove predifined useless channels, remove empty row, make good well format.
         """
         print(" -> Start processing")
         try:
@@ -77,7 +77,7 @@ class CSV_Reader():
                     print(e)
                     print("Error in reading %s File" % input)
             try:
-                # # remove useless features
+                # # remove useless channels
                 self.data = self.data.drop(self.to_remove, axis=1)
                 ## remove row with NaN(empty)
                 self.data = self.data.dropna(axis=0)
@@ -113,10 +113,10 @@ class CSV_Reader():
             col = self.data.columns
 
             ## change , to . in float
-            for feat in col[1:]:
-                self.data[feat].apply(format)
-                if self.data[feat].dtypes == 'object':
-                    self.data[feat] = self.data[feat].str.replace(",", ".")
+            for chan in col[1:]:
+                self.data[chan].apply(format)
+                if self.data[chan].dtypes == 'object':
+                    self.data[chan] = self.data[chan].str.replace(",", ".")
         except Exception as e:
             print(e)
         print(" -> DONE")

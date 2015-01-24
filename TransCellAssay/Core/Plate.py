@@ -36,7 +36,7 @@ class Plate(object):
     self.isNormalized = False  # Are replicat data normalized
     self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replicat )
     self.DataType = "median" # median or mean data, default is median
-    self.Data = None  # matrix that contain data from replicat of interested features to analyze
+    self.Data = None  # matrix that contain data from replicat of interested channel to analyze
     self.SECData = None  # matrix that contain data corrected or from replicat data
     self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
@@ -241,12 +241,12 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m ", e)
 
-    def get_raw_data(self, replicat=None, feature=None, well=None, well_idx=False):
+    def get_raw_data(self, replicat=None, channel=None, well=None, well_idx=False):
         """
-        Return a dict that contain raw data from all replica (or specified replicat), we can specified feature (list)
+        Return a dict that contain raw data from all replica (or specified replicat), we can specified channel (list)
         and if we want to have well id
         :param replicat: replicat id
-        :param feature: feature list
+        :param channel: channel list
         :param well: defined or not which well you want, in list [] or simple string format
         :param well_idx: true or false for keeping well id (A1..)
         :return: dict with data
@@ -255,10 +255,10 @@ class Plate(object):
         try:
             if replicat is not None:
                 for key, value in self.replicat.items():
-                    data[value.get_rep_name()] = value.get_raw_data(feature=feature, well=well, well_idx=well_idx)
+                    data[value.get_rep_name()] = value.get_raw_data(channel=channel, well=well, well_idx=well_idx)
             else:
                 for rep in replicat:
-                    data[self.replicat[rep].get_rep_name()] = rep.get_raw_data(feature=feature, well=well,
+                    data[self.replicat[rep].get_rep_name()] = rep.get_raw_data(channel=channel, well=well,
                                                                                well_idx=well_idx)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -284,7 +284,7 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def compute_all_features_from_replicat(self):
+    def compute_all_channels_from_replicat(self):
         """
         compute all component mean from all replicat for each well
         :return: dataframe
@@ -302,13 +302,13 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def compute_data_from_replicat(self, feature, use_sec_data=False, forced_update=False):
+    def compute_data_from_replicat(self, channel, use_sec_data=False, forced_update=False):
         """
         Compute the mean/median matrix data of all replicat
         If replicat data is SpatialNorm already, this function will fill spatDataMatrix
         :param forced_update: Forced redetermination of replicat data, to use when you have determine matrix too soon
         :param use_sec_data: use or not sec data from replicat
-        :param feature: which feature to have into sum up data
+        :param channel: which channel to have into sum up data
         """
         try:
             tmp_array = np.zeros(self.platemap.platemap.shape)
@@ -317,9 +317,9 @@ class Plate(object):
             for key, replicat in self.replicat.items():
                 i += 1
                 if self.array is None:
-                    replicat.compute_data_for_feature(feature)
+                    replicat.compute_data_for_channel(channel)
                 if forced_update:
-                    replicat.compute_data_for_feature(feature)
+                    replicat.compute_data_for_channel(channel)
 
                 if not use_sec_data:
                     tmp_array = tmp_array + replicat.array
@@ -334,20 +334,20 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def normalization(self, feature, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
+    def normalization(self, channel, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """
         Apply Well correction on all replicat data
         call function like from replicat object
         :param pos: positive control
         :param neg: negative control
-        :param feature: feature to normalize
+        :param channel: channel to normalize
         :param method: which method to perform
         :param log:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
         """
         try:
             for key, value in self.replicat.items():
-                value.normalization(feature=feature, method=method, log=log, neg=neg, pos=pos,
+                value.normalization(channel=channel, method=method, log=log, neg=neg, pos=pos,
                                     skipping_wells=skipping_wells)
             self.isNormalized = True
         except Exception as e:

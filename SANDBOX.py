@@ -27,22 +27,22 @@ plaque2 + TCA.Replicat(name='rep1', data='/home/arnaud/Desktop/HDV_plaque_Z/1501
 
 print(platemap)
 
-feature = 'AvgIntenCh2'
+channel = 'AvgIntenCh2'
 neg = 'Neg 1'
 pos = 'SiNTCP'
 
-plaque1.normalization(feature=feature, method='Zscore')
-plaque2.normalization(feature=feature, method='Zscore')
+plaque1.normalization(channel=channel, method='Zscore')
+plaque2.normalization(channel=channel, method='Zscore')
 
-# TCA.plate_feature_scaling(plaque2, feature, mean_scaling=True)
+# TCA.plate_channel_scaling(plaque2, channel, mean_scaling=True)
 
-plaque1.compute_data_from_replicat(feature)
-plaque2.compute_data_from_replicat(feature)
+plaque1.compute_data_from_replicat(channel)
+plaque2.compute_data_from_replicat(channel)
 
 TCA.heatmap_p(plaque2.array)
 
-TCA.plate_quality_control(plaque1, features=feature, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
-TCA.plate_quality_control(plaque2, features=feature, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+TCA.plate_quality_control(plaque1, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+TCA.plate_quality_control(plaque2, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
 
 # test1_neg = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=neg)
 # test2_neg = TCA.get_masked_array(plaque2.array, platemap.platemap.values, to_keep=neg)
@@ -53,8 +53,8 @@ TCA.plate_quality_control(plaque2, features=feature, cneg=neg, cpos=pos, use_raw
 # plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 # plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 
-# plaque1.compute_data_from_replicat(feature, use_sec_data=True)
-# plaque2.compute_data_from_replicat(feature, use_sec_data=True)
+# plaque1.compute_data_from_replicat(channel, use_sec_data=True)
+# plaque2.compute_data_from_replicat(channel, use_sec_data=True)
 
 # TCA.heatmap_map(plaque1, plaque2)
 
@@ -82,7 +82,7 @@ def do_it(plate_nb, verbose=False):
     plaque + rep1
     plaque + rep2
     plaque + rep3
-    feature = "ROI_B_Target_I_ObjectTotalInten"
+    channel = "ROI_B_Target_I_ObjectTotalInten"
     neg = "Neg"
     pos = "F1 ATPase A"
 
@@ -92,38 +92,38 @@ def do_it(plate_nb, verbose=False):
     rep3.datatype = "mean"
 
     # time_start = time.time()
-    # ana = TCA.plate_analysis(plaque, [feature], neg, pos)
+    # ana = TCA.plate_analysis(plaque, [channel], neg, pos)
     # print(ana)
     # time_stop = time.time()
     # print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
-    # plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
+    # plaque.normalization(channel, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
     #                      pos=platesetup.get_well(pos), skipping_wells=True)
 
     # time_start = time.time()
-    # ana = TCA.plate_analysis(plaque, [feature], neg, pos)
+    # ana = TCA.plate_analysis(plaque, [channel], neg, pos)
     # print(ana)
     # time_stop = time.time()
     # print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
-    # TCA.plate_feature_scaling(plaque, feature, mean_scaling=True)
+    # TCA.plate_channel_scaling(plaque, channel, mean_scaling=True)
 
-    plaque.normalization(feature, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
+    plaque.normalization(channel, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
                          pos=platesetup.get_well(pos))
 
-    plaque.compute_data_from_replicat(feature)
+    plaque.compute_data_from_replicat(channel)
 
-    TCA.plate_quality_control(plaque, features=feature, cneg=neg, cpos=pos, use_raw_data=False, skipping_wells=True,
+    TCA.plate_quality_control(plaque, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, skipping_wells=True,
                               verbose=True)
 
-    # TCA.ReferenceDataWriter(plaque, plaque, plaque, plaque, plaque, plaque, plaque, plaque, filepath='/home/arnaud/Desktop/test.xlsx', ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'], features=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
+    # TCA.ReferenceDataWriter(plaque, plaque, plaque, plaque, plaque, plaque, plaque, plaque, filepath='/home/arnaud/Desktop/test.xlsx', ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'], channels=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
 
     # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
     # plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.1)
 
-    # plaque.compute_data_from_replicat(feature, use_sec_data=True)
+    # plaque.compute_data_from_replicat(channel, use_sec_data=True)
 
-    # TCA.independance(plaque, neg='Neg', feature=feature)
+    # TCA.independance(plaque, neg='Neg', channel=channel)
 
     # TCA.systematic_error_detection_test(plaque.SECData, alpha=0.1, verbose=True)
 
@@ -171,9 +171,9 @@ def do_it(plate_nb, verbose=False):
 
     # plaque.save_raw_data("/home/arnaud/Desktop/plaque1_poc/")
 
-    # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep2')
-    # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, feature, rep='rep1')
-    # TCA.boxplot_by_wells(rep1.rawdata.df, feature)
+    # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, channel, rep='rep2')
+    # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, channel, rep='rep1')
+    # TCA.boxplot_by_wells(rep1.rawdata.df, channel)
     # TCA.heatmap(rep1.array)
     # print(rep2.array)
     # TCA.heatmap(rep1.array)

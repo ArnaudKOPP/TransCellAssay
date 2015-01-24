@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 """
-Python File Parser for HTS data file (csv)(only data by Well) and output only features data in plate format.
+Python File Parser for HTS data file (csv)(only data by Well) and output only channels data in plate format.
 give a directory that contains multiple subdirectory that contain Legend.xml, Well.csv and Plate.csv
 """
 
@@ -192,23 +192,23 @@ USAGE
 
                 skip = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column']
 
-                # # get all feature (columns)
+                # # get all channel (columns)
                 all_col = data.columns
 
                 # # create new excel file and worksheet
                 workbook = xlsxwriter.Workbook(output + barcode + '-save.xlsx')
                 i = 0
                 list_sheets = ["%s" % x for x in (all_col - skip)]
-                # # put on feature per sheet
-                for feat in all_col:
-                    if feat in skip:
+                # # put on channel per sheet
+                for chan in all_col:
+                    if chan in skip:
                         continue
 
-                    if data[feat].dtypes == 'object':
-                        data[feat] = data[feat].str.replace(",", ".")
-                    data[feat].apply(format)
+                    if data[chan].dtypes == 'object':
+                        data[chan] = data[chan].str.replace(",", ".")
+                    data[chan].apply(format)
                     data = data.fillna(0)
-                    list_sheets[i] = workbook.add_worksheet(str(feat))
+                    list_sheets[i] = workbook.add_worksheet(str(chan))
                     list_sheets[i] = init_plate(list_sheets[i], size)
                     # # put value in cell
                     for pos in range(len(data.Row)):
@@ -221,7 +221,7 @@ USAGE
                             except Exception as e:
                                 print(e)
                         tmp = data.loc[[pos]]
-                        val = float(tmp[str(feat)])
+                        val = float(tmp[str(chan)])
                         list_sheets[i].write_number(row, col, val)
                     i += 1
                 workbook.close()

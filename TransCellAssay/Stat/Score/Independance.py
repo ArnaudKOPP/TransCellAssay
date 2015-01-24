@@ -24,12 +24,12 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 
-def independance(plate, neg, feature, equal_var=True):
+def independance(plate, neg, channel, equal_var=True):
     """
     Perform t-test againt neg reference for all well of plate/replica, work only for plate with one replicat
     :param plate: Plate object
     :param neg: negtive reference
-    :param feature: on which feature to test
+    :param channel: on which channel to test
     :param equal_var: equal variance or not
     :return: numpy array with result
     """
@@ -47,11 +47,11 @@ def independance(plate, neg, feature, equal_var=True):
 
         for key, value in plate.replicat.items():
             neg_well = value.get_valid_well(neg)
-            neg_data = value.get_raw_data(feature=feature, well=neg_well)
+            neg_data = value.get_raw_data(channel=channel, well=neg_well)
             cpt = 0
             for i in range(shape[0]):
                 for j in range(shape[1]):
-                    test = value.get_raw_data(feature=feature, well=TCA.get_opposite_well_format((i, j)))
+                    test = value.get_raw_data(channel=channel, well=TCA.get_opposite_well_format((i, j)))
                     res = stats.ttest_ind(neg_data, test, equal_var=equal_var)
                     result_array['GeneName'][cpt] = plate.platemap.values[i][j]
                     result_array['T-Statistic'][cpt] = res[0]

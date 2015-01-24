@@ -17,11 +17,11 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_analysis(plate, feature, neg, pos, threshold=50, percent=True):
+def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
     """
     Do a plate analysis
     :param plate: plate
-    :param feature: reference feature
+    :param channel: reference channel
     :param neg: negative control
     :param pos: positive control
     :param threshold: threshold for defining % of positive cell in negative ref
@@ -62,13 +62,13 @@ def plate_analysis(plate, feature, neg, pos, threshold=50, percent=True):
                 well_list = v.rawdata.get_unique_well()
                 # iterate on well
                 for well in well_list:
-                    mean.setdefault(well, []).append(np.mean(datagb.get_group(well)[feature]))
-                    median.setdefault(well, []).append(np.median(datagb.get_group(well)[feature]))
+                    mean.setdefault(well, []).append(np.mean(datagb.get_group(well)[channel]))
+                    median.setdefault(well, []).append(np.median(datagb.get_group(well)[channel]))
 
                 # # positive Cell
                 # # threshold value for control
                 if percent:
-                    data_control = v.get_raw_data(feature=feature, well=neg_well)
+                    data_control = v.get_raw_data(channel=channel, well=neg_well)
                     threshold_value = np.percentile(data_control, threshold)
                 else:
                     threshold_value = threshold
@@ -76,7 +76,7 @@ def plate_analysis(plate, feature, neg, pos, threshold=50, percent=True):
 
                 # iterate on well
                 for well in well_list:
-                    xdata = datagb.get_group(well)[feature]
+                    xdata = datagb.get_group(well)[channel]
                     len_total = len(xdata)
                     len_thres = len(np.extract(xdata > threshold_value, xdata))
                     # # include in dict key is the position and value is a %

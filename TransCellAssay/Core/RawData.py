@@ -37,11 +37,11 @@ class RawData(object):
             self._CACHING_gbdata = None
             self._CACHING_gbdata_key = None
             try:
-                self.df = pd.read_csv(path_or_file)
+                self.df = pd.read_csv(path_or_file, engine='c')
                 print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
             except Exception:
                 try:
-                    self.df = pd.read_csv(path_or_file, decimal=",", sep=";")
+                    self.df = pd.read_csv(path_or_file, decimal=",", sep=";", engine='c')
                     print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
                 except Exception as e:
                     print('\033[0;31m[ERROR]\033[0m  Error in reading %s File : ' % path_or_file, e)
@@ -50,44 +50,44 @@ class RawData(object):
         else:
             print("\033[0;31m[ERROR]\033[0m")
 
-    def get_feature_list(self):
+    def get_channel_list(self):
         """
-        Get all features/component in list
-        :return: list of feature/component
+        Get all channels/component in list
+        :return: list of channel/component
         """
         try:
             return self.df.columns.tolist()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def get_raw_data(self, feature=None, well=None, well_idx=False):
+    def get_raw_data(self, channel=None, well=None, well_idx=False):
         """
         Get Raw data with specified param
-        :param feature: defined or not feature
+        :param channel: defined or not channel
         :param well: defined or not which well you want, in list [] or simple string format
         :param well_idx: add or not well id
         :return: raw data in pandas dataframe
         """
         try:
             if well_idx:
-                if not isinstance(feature, list):
-                    feature = [feature]
-                feature.insert(0, 'Well')
+                if not isinstance(channel, list):
+                    channel = [channel]
+                channel.insert(0, 'Well')
             data = None
             if well is not None:
                 if not isinstance(well, list):
                     well = [well]
                 datagp = self.get_groupby_data()
 
-            if feature is not None:
+            if channel is not None:
                 if well is not None:
                     for i in well:
                         if data is None:
-                            data = datagp.get_group(i)[feature]
-                        data = data.append(datagp.get_group(i)[feature])
+                            data = datagp.get_group(i)[channel]
+                        data = data.append(datagp.get_group(i)[channel])
                     return data
                 else:
-                    return self.df[feature]
+                    return self.df[channel]
             else:
                 if well is not None:
                     for i in well:
@@ -110,10 +110,10 @@ class RawData(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def df_to_array(self, feat):
+    def df_to_array(self, chan):
         """
         To use only with 1data/well Raw data !!
-        :param feat:
+        :param chan:
         :return:
         """
         print("\033[0;33m[INFO/WARNING]\033[0m Only to use with 1Data/Well Raw data")
@@ -125,13 +125,13 @@ class RawData(object):
         elif size > 384:
             raise NotImplementedError('MAX 384 Well plate are not implemented')
         for i in range(size):
-            array[self.df['Row'][i]][self.df['Column'][i]] = self.df[feat][i]
+            array[self.df['Row'][i]][self.df['Column'][i]] = self.df[chan][i]
         return array
 
-    def compute_matrix(self, feature, type_mean='mean'):
+    def compute_matrix(self, channel, type_mean='mean'):
         """
         Compute mean or median for each well in matrix format
-        :param feature:
+        :param channel:
         :param type_mean:
         :return:
         """
@@ -141,8 +141,8 @@ class RawData(object):
                 tmp = gbdata.median()
             elif type_mean is 'mean':
                 tmp = gbdata.mean()
-            feature = tmp[feature]
-            dict_pos_mean = feature.to_dict()  # # dict : key = pos and item are mean
+            channel = tmp[channel]
+            dict_pos_mean = channel.to_dict()  # # dict : key = pos and item are mean
             if len(dict_pos_mean) <= 96:
                 data = np.zeros((8, 12))
             elif len(dict_pos_mean) <= 384:

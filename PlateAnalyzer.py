@@ -70,8 +70,8 @@ def main(argv=None):
                             help="Number of Plate")
         parser.add_argument("-r", "--nbrep", dest="nbrep", default=3, type=int, action="store",
                             help="Number of replicat per plate (default: %(default)s)")
-        parser.add_argument("-f", "--feat", dest="feat", action="store", type=str, required=True,
-                            help="Feature to analyze in simple mode")
+        parser.add_argument("-f", "--chan", dest="chan", action="store", type=str, required=True,
+                            help="channel to analyze in simple mode")
         parser.add_argument("-s", "--thres", dest="thres", default=50, type=int, action="store",
                             help="Threshold for determining positive cells (default: %(default)s)")
         parser.add_argument("-n", "--neg", dest="neg", action="store", type=str, required=True,
@@ -86,12 +86,12 @@ def main(argv=None):
                             help="Number of process to use (default: %(default)s)")
 
         input_args = parser.parse_args()
-        global __INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __THRESHOLD__, __FEATURE__, __NEG__, __POS__, __TOX__, __VERBOSE__, __PROCESS__
+        global __INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __THRESHOLD__, __CHANNEL__, __NEG__, __POS__, __TOX__, __VERBOSE__, __PROCESS__
         __INPUT__ = input_args.input
         __NBPLATE__ = input_args.nbplate
         __NBREP__ = input_args.nbrep
         __THRESHOLD__ = input_args.thres
-        __FEATURE__ = input_args.feat
+        __CHANNEL__ = input_args.chan
         __NEG__ = input_args.neg
         __POS__ = input_args.pos
         __VERBOSE__ = input_args.verbose
@@ -120,7 +120,7 @@ def main(argv=None):
         file.write("OUTPUT : " + str(__OUTPUT__) + "\n")
         file.write("NBPLATE : " + str(__NBPLATE__) + "\n")
         file.write("NBREP : " + str(__NBREP__) + "\n")
-        file.write("FEATURE : " + str(__FEATURE__) + "\n")
+        file.write("CHANNEL : " + str(__CHANNEL__) + "\n")
         file.write("THRESHOLD : " + str(__THRESHOLD__) + "\n")
         file.write("NEG : " + str(__NEG__) + "\n")
         file.write("POS : " + str(__POS__) + "\n")
@@ -154,7 +154,7 @@ def plate_analyzis(plateid):
         print('created:', created.name, created._identity, 'running on :', current.name, current._identity,
               "for analyzis of ", plaque.name)
 
-        print(__INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __THRESHOLD__, __FEATURE__, __NEG__, __POS__, __TOX__,
+        print(__INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __THRESHOLD__, __CHANNEL__, __NEG__, __POS__, __TOX__,
               __VERBOSE__, __PROCESS__)
 
         output_data_plate_dir = os.path.join(__OUTPUT__, plaque.name)
@@ -208,7 +208,7 @@ def plate_analyzis(plateid):
         for i in range(1, __NBREP__ + 1):
             """
             data = pd.read_csv(os.path.join(__INPUT__, "toulouse pl " + str(plateid) + "." + str(i) + ".csv"))
-            array = df_to_array(data, __FEATURE__)
+            array = df_to_array(data, __CHANNEL__)
             # np.savetxt(fname=os.path.join(output_data_plate_dir, "rep" + str(i)) + ".csv", X=array, delimiter=",",
             # fmt='%1.4f')
             # plaque + TCA.Core.Replicat(name="rep" + str(i), data=array, single=False, skip=to_skip_HMT[(plateid, i)])
@@ -221,28 +221,28 @@ def plate_analyzis(plateid):
 
         __SIZE__ = 96
 
-        # analyse = TCA.plate_analysis(plaque, [__FEATURE__], __NEG__, __POS__, threshold=__THRESHOLD__)
+        # analyse = TCA.plate_analysis(plaque, [__CHANNEL__], __NEG__, __POS__, threshold=__THRESHOLD__)
         # analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
 
-        # TCA.feature_scaling(plaque, __FEATURE__, mean_scaling=True)
-        plaque.normalization(__FEATURE__, method='PercentOfControl', log=False, neg=plaque.platemap.get_well(__NEG__),
+        # TCA.feature_scaling(plaque, __CHANNEL__, mean_scaling=True)
+        plaque.normalization(__CHANNEL__, method='PercentOfControl', log=False, neg=plaque.platemap.get_well(__NEG__),
                              pos=plaque.platemap.get_well(__POS__), skipping_wells=True)
 
-        plaque.compute_data_from_replicat(__FEATURE__)
+        plaque.compute_data_from_replicat(__CHANNEL__)
         # for key, value in plaque.replicat.items():
         #     np.savetxt(fname=os.path.join(output_data_plate_dir, str(value.name)) + ".csv", X=value.Data, delimiter=",",
         #                fmt='%1.4f')
 
-        TCA.plate_quality_control(plaque, features=__FEATURE__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
+        TCA.plate_quality_control(plaque, channel=__CHANNEL__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
                                   skipping_wells=True, use_raw_data=False, verbose=False, dirpath=output_data_plate_dir)
 
-        # plaque.compute_data_from_replicat(__FEATURE__)
+        # plaque.compute_data_from_replicat(__CHANNEL__)
 
         # plaque.check_data_consistency()
 
         # plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False)
 
-        # plaque.compute_data_from_replicat(__FEATURE__, use_sec_data=True)
+        # plaque.compute_data_from_replicat(__CHANNEL__, use_sec_data=True)
         # # For multiple Replicat Workflow
         # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
         #                              verbose=False)

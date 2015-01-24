@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 Python File Parser for cleaning HTS data file (csv (HCS explorer) or excel (InCELL 1000))
-Prod release with minimal features and error printing
+Prod release with minimal channels and error printing
 """
 
 import sys

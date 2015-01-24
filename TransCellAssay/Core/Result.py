@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Result is created for store result like score and hit resulting of SSMD or other technics in a tabe-like (numpy array),
-feature are column and GeneName/Well are stored at the first col, each row represent a gene/well
+channel are column and GeneName/Well are stored at the first col, each row represent a gene/well
 We can save the tabe in csv by using pandas Dataframe.
 
 This class store data with dict in input, where key are well and item are data.
@@ -70,30 +70,30 @@ class Result(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def add_value(self, gene, feature, value):
+    def add_value(self, gene, channel, value):
         """
-        Insert Value at Gene row and Feature Col
+        Insert Value at Gene row and channel Col
         If GeneName is contain in multiple Well, it will be
         :param gene:
-        :param feature:
+        :param channel:
         :param value:
         :return:
         """
         try:
             if len(self._genename_genepos[gene]) > 1:  # # loop in case geneName is in multiple Well
                 for i in (self._genename_genepos[gene]):
-                    self.values[feature][i] = value
+                    self.values[channel][i] = value
             else:
-                self.values[feature][self._genename_genepos[gene]] = value
+                self.values[channel][self._genename_genepos[gene]] = value
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def add_data(self, datadict, feature, by='Pos'):
+    def add_data(self, datadict, channel, by='Pos'):
         """
         Insert Value from a dict where key = GeneName/pos and Value are value to insert
         Prefer by = pos in case of empty well
         :param datadict: dict that contain value to insert with key are GeneName or Pos/Well
-        :param feature:
+        :param channel:
         :param by: insert by GeneName or Well
         :return:
         """
@@ -104,11 +104,11 @@ class Result(object):
                           "of empty Well \n Prefer by=Pos")
                     if len(self._genename_genepos[item]) > 1:
                         for i in (self._genename_genepos[item]):
-                            self.values[feature][i] = value
+                            self.values[channel][i] = value
                     else:
-                        self.values[feature][self._genename_genepos[item]] = value
+                        self.values[channel][self._genename_genepos[item]] = value
                 elif by == 'Pos':
-                    self.values[feature][self._genepos_genename[item]] = value
+                    self.values[channel][self._genepos_genename[item]] = value
                 else:
                     print("\033[0;31m[ERROR]\033[0m")
         except Exception as e:
@@ -116,7 +116,7 @@ class Result(object):
 
     def get_result_column(self, col):
         """
-        Get col/feature from result array
+        Get col/channel from result array
         :param col:
         :return: return numpy array
         """

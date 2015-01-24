@@ -91,10 +91,10 @@ class InputFile(object):
             return float(x)
 
         # # change , to . in float
-        for feat in self.get_col():
-            self.dataframe[feat].apply(str_to_flt)
-            if self.dataframe[feat].dtypes == 'object':
-                self.dataframe[feat] = self.dataframe[feat].str.replace(",", ".")
+        for chan in self.get_col():
+            self.dataframe[chan].apply(str_to_flt)
+            if self.dataframe[chan].dtypes == 'object':
+                self.dataframe[chan] = self.dataframe[chan].str.replace(",", ".")
 
     def write_raw_data(self, path, name, frmt='csv'):
         """
@@ -113,10 +113,10 @@ class InputFile(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def df_to_array(self, feature, size=None):
+    def df_to_array(self, channel, size=None):
         """
         Change shape in list from 1Data/well to numpy matrix
-        :param feature: whiche feature to have in matrix format
+        :param channel: whiche channel to have in matrix format
         :param size: size/len of data 96 , 384 or 1526
         :return: numpy array
         """
@@ -132,7 +132,7 @@ class InputFile(object):
                     else:
                         raise NotImplementedError('1526 not yet implemented')
                     for i in range(size):
-                        array[self.dataframe['Row'][i]][self.dataframe['Column'][i]] = self.dataframe[feature][i]
+                        array[self.dataframe['Row'][i]][self.dataframe['Column'][i]] = self.dataframe[channel][i]
                     return array
                 else:
                     raise Exception('Empty raw data')

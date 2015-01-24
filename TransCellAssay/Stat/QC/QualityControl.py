@@ -75,12 +75,12 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=False, use_raw_data=True, dirpath=None,
+def plate_quality_control(plate, channels, cneg, cpos, sedt=False, sec_data=False, use_raw_data=True, dirpath=None,
                           skipping_wells=True, verbose=False):
     """
-    Compute quality control on plate for selected feature
+    Compute quality control on plate for selected channel
     :param plate: Plate to compute quality object
-    :param features: feature on which we performed quality control
+    :param channels: channel on which we performed quality control
     :param cneg: negative control Name
     :param cpos: positive control Name
     :param sedt: systematic error detection test
@@ -102,7 +102,7 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
 
             for key, value in plate.replicat.items():
                 qc_data_array = qc_data_array.append(
-                    replicat_quality_control(value, feature=features, neg_well=neg_well, pos_well=pos_well,
+                    replicat_quality_control(value, channel=channels, neg_well=neg_well, pos_well=pos_well,
                                              sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data,
                                              skipping_wells=skipping_wells,  verbose=False))
 
@@ -118,12 +118,12 @@ def plate_quality_control(plate, features, cneg, cpos, sedt=False, sec_data=Fals
         print(e)
 
 
-def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,
+def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,
                              skipping_wells=True, verbose=False):
     """
-    Compute quality control on replicat for selected feature
+    Compute quality control on replicat for selected channel
     :param replicat: Replicat to compute qc
-    :param feature: feature on which we performed quality control
+    :param channel: channel on which we performed quality control
     :param neg_well: negative control well
     :param pos_well: positive control well
     :param sedt: systematic error detection test
@@ -155,12 +155,12 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
                     posdata = _get_data_control_array(replicat.array, c_ref=valid_pos_well)
                 else:
                     print('\033[0;33m[WARNING]\033[0m 1data/well not available, using instead Raw Data')
-                    negdata = _get_data_control(replicat.rawdata, feature=feature, c_ref=valid_neg_well)
-                    posdata = _get_data_control(replicat.rawdata, feature=feature, c_ref=valid_pos_well)
+                    negdata = _get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
+                    posdata = _get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
             else:
                 if replicat.rawdata is not None:
-                    negdata = _get_data_control(replicat.rawdata, feature=feature, c_ref=valid_neg_well)
-                    posdata = _get_data_control(replicat.rawdata, feature=feature, c_ref=valid_pos_well)
+                    negdata = _get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
+                    posdata = _get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
                 else:
                     print('\033[0;33m[WARNING]\033[0m Raw Data not available, using instead 1data/well ')
                     negdata = _get_data_control_array(replicat.array, c_ref=valid_neg_well)
@@ -187,7 +187,7 @@ def replicat_quality_control(replicat, feature, neg_well, pos_well, sedt=False, 
             qc_data_array['Pos SD'] = np.std(posdata)
             qc_data_array['AVR'] = _avr(negdata, posdata)
             qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
-            qc_data_array['ZFactor'] = _zfactor(replicat.rawdata.df, feature, negdata, posdata)
+            qc_data_array['ZFactor'] = _zfactor(replicat.rawdata.df, channel, negdata, posdata)
             qc_data_array['SSMD'] = _ssmd(negdata, posdata)
             qc_data_array['CVD'] = _cvd(negdata, posdata)
 
@@ -220,11 +220,11 @@ def _get_data_control_array(array, c_ref):
         print(e)
 
 
-def _get_data_control(data, feature, c_ref):
+def _get_data_control(data, channel, c_ref):
     """
     Grab the data of the desired well
     :param data: data frame
-    :param feature: a feature that we want to analyze
+    :param channel: a channel that we want to analyze
     :param c_ref: a control ref list that we want to search, list of well in this format : A1
     :return: 1D array with data from desired Wells
     """
@@ -237,8 +237,8 @@ def _get_data_control(data, feature, c_ref):
                 if isinstance(i, tuple):
                     i = TCA.get_opposite_well_format(i)
                 if datax.empty:
-                    datax = data.get_raw_data(feature=feature, well=i, well_idx=False)
-                datax = data.get_raw_data(feature=feature, well=i, well_idx=False)
+                    datax = data.get_raw_data(channel=channel, well=i, well_idx=False)
+                datax = data.get_raw_data(channel=channel, well=i, well_idx=False)
             return datax
     except Exception as e:
         print(e)
@@ -282,7 +282,7 @@ def _zfactor_prime(cneg, cpos):
         print(e)
 
 
-def _zfactor(data, feature, cneg, cpos):
+def _zfactor(data, channel, cneg, cpos):
     """
     This is the modified version of the Z’-factor, where the mean and std of the
     negative control are substituted with the ones for the test samples. Although Z-factor
@@ -295,13 +295,13 @@ def _zfactor(data, feature, cneg, cpos):
     in the decision process, especially for cell-based assays with inherently high signal
     variability.
     :param data: all data from replicat
-    :param feature: feature to take data
+    :param channel: channel to take data
     :param cneg: negative control data
     :param cpos: positive control data
     :return: zfactor value
     """
     try:
-        zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data[feature])) / (np.abs(np.mean(cpos) - np.mean(cneg))))
+        zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data[channel])) / (np.abs(np.mean(cpos) - np.mean(cneg))))
         return zfactor
     except Exception as e:
         print(e)

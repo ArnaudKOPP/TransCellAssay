@@ -62,11 +62,11 @@ class SubReplicat(Replicat):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def compute_data_for_feature(self, feature, data_type="median"):
+    def compute_data_for_channel(self, channel, data_type="median"):
         """
         Compute data in matrix form, get mean or median for well and save them in replicat object
         :param data_type: median or mean data
-        :param feature: which feature to keep in matrix
+        :param channel: which channel to keep in matrix
         :return:
         """
         try:
@@ -81,8 +81,8 @@ class SubReplicat(Replicat):
                 tmp = grouped_data_by_well.mean()
             else:
                 tmp = grouped_data_by_well.median()
-            feature = tmp[feature]
-            dict_mean = feature.to_dict()  # # dict : key = pos and item are mean
+            channel = tmp[channel]
+            dict_mean = channel.to_dict()  # # dict : key = pos and item are mean
             if not len(dict_mean) > 96:
                 data = np.zeros((8, 12))
             else:
