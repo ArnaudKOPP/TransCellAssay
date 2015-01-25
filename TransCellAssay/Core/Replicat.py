@@ -248,6 +248,7 @@ class Replicat(object):
                                                                          neg_control=neg,
                                                                          pos_control=pos)
                 self.isNormalized = True
+                self.compute_data_for_channel(channel)
             else:
                 raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
         except Exception as e:

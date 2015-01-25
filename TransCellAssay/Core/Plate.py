@@ -350,6 +350,7 @@ class Plate(object):
                 value.normalization(channel=channel, method=method, log=log, neg=neg, pos=pos,
                                     skipping_wells=skipping_wells)
             self.isNormalized = True
+            self.compute_data_from_replicat(channel, forced_update=True)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -372,6 +373,7 @@ class Plate(object):
                 for key, value in self.replicat.items():
                     value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
                                                       max_iterations=max_iterations, alpha=alpha)
+                    self.compute_data_from_replicat(channel=None, use_sec_data=True)
                 return
 
             if self.array is None:
