@@ -14,6 +14,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
+import json
 
 
 class Encode(REST):
@@ -33,3 +34,43 @@ class Encode(REST):
         # GET the object
         response = self.http_get(url, headers=self.HEADERS)
         return response
+
+    def biosample(self, accession_number):
+        """
+        Get biosample with accession number like ENCBS000AAA
+        :param accession_number:
+        :return: json object
+        """
+        url = "biosample/"+accession_number+"/?frame=object"
+        response = self.http_get(url, headers=self.HEADERS)
+        return response
+
+    def response_keys(self, response, first_level=True):
+        """
+        Get all keys from response
+        :param response: reponse object from request
+        :param first_level: only first level or with sublevel
+        :return: list of keys
+        """
+        if first_level:
+            keys = response.keys()
+        else:
+            keys = [key for key, value in response.iteritems()]
+        return keys
+
+    def show_response(self, response):
+        """
+        Print the response in pretty format
+        :param response:
+        :return:
+        """
+        print(json.dumps(response, indent=4, separators=(',', ': ')))
+
+    _valid_search_type = ['file', 'replicate', 'biosample']
+
+    def search(self, searchterm=None, limit=False, format='json', full=False, embedded=False, data_type=None, md5=None, fastq_file=False, experiment_id=None, dataset=None):
+        url = "search/"
+        search = "?searchTerm="+str(searchterm)
+        fastq = "&file_format=fastq"
+        experiment = "&experiment=/experiments/"+experiment_id+"/"
+        data_set = "&dataset==/experiments/"+dataset+"/"
