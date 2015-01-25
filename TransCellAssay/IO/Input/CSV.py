@@ -30,11 +30,11 @@ class CSV(InputFile):
         :param fpath:
         """
         try:
-            self.dataframe = pd.read_csv(fpath)
+            self.dataframe = pd.read_csv(fpath, engine='c')
             print('\033[0;32m[INFO]\033[0m Reading %s File' % fpath)
         except:
             try:
-                self.dataframe = pd.read_csv(fpath, decimal=",", sep=";")
+                self.dataframe = pd.read_csv(fpath, decimal=",", sep=";", engine='c')
                 print('\033[0;32m[INFO]\033[0m Reading %s File' % fpath)
             except Exception as e:
                 print('\033[0;31m[ERROR]\033[0m  Error in reading %s File' % fpath, e)
