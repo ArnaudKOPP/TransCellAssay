@@ -137,7 +137,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
 
             return result
         else:
-            raise TypeError("\033[0;31m[ERROR]\033[0m Input Plate Object")
+            raise TypeError("Input Plate Object")
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -162,7 +162,6 @@ class Result(object):
                                             ('Median', float), ('Stdm', float), ('Viability', float),
                                             ('Toxicity', float)])
 
-        self._genename_genepos = {}  # # To save GeneName (key)and  Gene position (value)
         self._genepos_genename = {}  # # To save Well (key) and Gene position (value)
 
     def get_values(self):
@@ -186,7 +185,6 @@ class Result(object):
             for k, v in gene_list.items():
                 self.values['GeneName'][i] = v
                 self.values['Well'][i] = k
-                self._genename_genepos.setdefault(v, []).append(i)  # # make this because Gene can be in multiple Well
                 self._genepos_genename[k] = i
                 i += 1
         except Exception as e:
