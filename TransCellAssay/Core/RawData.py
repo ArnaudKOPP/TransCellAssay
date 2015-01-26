@@ -34,8 +34,8 @@ class RawData(object):
 
     def __init__(self, path_or_file):
         if isinstance(path_or_file, str):
-            self._CACHING_gbdata = None
-            self._CACHING_gbdata_key = None
+            self.__CACHING_gbdata = None
+            self.__CACHING_gbdata_key = None
             try:
                 self.df = pd.read_csv(path_or_file, engine='c')
                 print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
@@ -163,21 +163,21 @@ class RawData(object):
         :return:
         """
         try:
-            if self._CACHING_gbdata is not None:
-                if key is self._CACHING_gbdata_key:
-                    return self._CACHING_gbdata
+            if self.__CACHING_gbdata is not None:
+                if key is self.__CACHING_gbdata_key:
+                    return self.__CACHING_gbdata
                 else:
                     self._new_caching(key)
-                    return self._CACHING_gbdata
+                    return self.__CACHING_gbdata
             else:
                 self._new_caching(key)
-                return self._CACHING_gbdata
+                return self.__CACHING_gbdata
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
     def _new_caching(self, key):
-        self._CACHING_gbdata = self.df.groupby(key)
-        self._CACHING_gbdata_key = key
+        self.__CACHING_gbdata = self.df.groupby(key)
+        self.__CACHING_gbdata_key = key
 
     def save_raw_data(self, path, name=None):
         """
@@ -205,8 +205,8 @@ class RawData(object):
         :param only_caching: remove only cache
         """
         try:
-            self._CACHING_gbdata = None
-            self._CACHING_gbdata_key = None
+            self.__CACHING_gbdata = None
+            self.__CACHING_gbdata_key = None
             if not only_caching:
                 self.df = None
         except Exception as e:

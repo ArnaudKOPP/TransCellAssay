@@ -16,7 +16,7 @@ may be greater than the cutoff value.
 """
 
 import numpy as np
-from TransCellAssay import Core
+import TransCellAssay as TCA
 
 
 __author__ = "Arnaud KOPP"
@@ -43,10 +43,10 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
     :return: score data
     """
     try:
-        if isinstance(plate, Core.Plate):
+        if isinstance(plate, TCA.Plate):
             # if no neg was provided raise AttributeError
             if neg_control is None:
-                raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
+                raise AttributeError('Must provided negative control')
             if len(plate) > 1:
                 if paired:
                     score = _paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose)
@@ -54,12 +54,12 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
                     score = _unpaired_tstat_score(plate, neg_control, variance=variance, sec_data=sec_data,
                                                   verbose=verbose)
             else:
-                raise ValueError("\033[0;31m[ERROR]\033[0m  T-Test need at least two replicat")
+                raise ValueError("T-Test need at least two replicat")
             return score
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
 def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
@@ -78,8 +78,8 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
     """
     try:
         if neg_control is None:
-            raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, Core.Plate):
+            raise AttributeError('Must provided negative control')
+        if isinstance(plate, TCA.Plate):
             ttest_score = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
@@ -105,7 +105,7 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
                         else:
                             neg_value.append(value.array[neg[0]][neg[1]])
                     except Exception:
-                        raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                        raise Exception("Your desired datatype are not available")
             nb_neg_wells = len(neg_value)
             mean_neg = np.nanmean(neg_value)
             var_neg = np.nanvar(neg_value)
@@ -123,7 +123,7 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
                             else:
                                 well_value.append(value.array[i][j])
                         except Exception:
-                            raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                            raise Exception("Your desired datatype are not available")
                     mean_rep = np.nanmean(well_value)
                     var_rep = np.nanvar(well_value)
 
@@ -136,7 +136,7 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
                             (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * (
                             (1 / nb_rep) * (1 / nb_neg_wells)))
                     else:
-                        raise AttributeError('\033[0;31m[ERROR]\033[0m  variance attribut must be unequal or equal.')
+                        raise AttributeError('Variance attribut must be unequal or equal.')
 
             # # replace NaN with 0
             ttest_score = np.nan_to_num(ttest_score)
@@ -151,9 +151,9 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
                 print("")
             return ttest_score
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
 def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
@@ -167,8 +167,8 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
     """
     try:
         if neg_control is None:
-            raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, Core.Plate):
+            raise AttributeError('Must provided negative control')
+        if isinstance(plate, TCA.Plate):
             ttest_score = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
@@ -194,7 +194,7 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                             well_value = replicat.array[neg_i[0]][neg_i[1]]
                         neg_value.append(well_value)
                     except Exception:
-                        raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                        raise Exception("Your desired datatype are not available")
                 return np.nanmedian(neg_value)
 
             for i in range(ttest_score.shape[0]):
@@ -210,7 +210,7 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                             else:
                                 well_value.append(value.array[i][j] - neg_median)
                         except Exception:
-                            raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                            raise Exception("Your desired datatype are not available")
                     ttest_score[i][j] = np.nanmean(well_value) / (
                         np.nanstd(well_value) / np.sqrt(len(plate.replica)))
 
@@ -226,6 +226,6 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                 print("")
             return ttest_score
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)

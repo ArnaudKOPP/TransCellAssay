@@ -29,8 +29,8 @@ class Replica(object):
     self.datatype = "median" # median or mean of data
     self.array = None  # matrix that contain mean of interested channels to analyze
     self._array_channel = None, which channel is stored in data
-    self.SpatNormData = None  # matrix that contain data corrected
-    self.sec_array = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
+    self.sec_array = None  # matrix that contain data corrected
+    self.skip_well = () # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
     def __init__(self, name=None, data=None, single=True, skip=(), datatype='median'):
@@ -95,9 +95,9 @@ class Replica(object):
                     print("\033[0;33m[WARNING]\033[0m Manual overide")
                     self.datatype = array_type
                 else:
-                    raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided data type")
+                    raise AttributeError("Must provided data type")
             else:
-                raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided numpy ndarray")
+                raise AttributeError("Must provided numpy ndarray")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -216,7 +216,7 @@ class Replica(object):
         try:
             if sec:
                 if self.sec_array is None:
-                    raise ValueError('\033[0;31m[ERROR]\033[0m  Launch Systematic Error Correction before')
+                    raise ValueError('Launch Systematic Error Correction before')
                 else:
                     return self.sec_array
             if self.array is None:
@@ -317,15 +317,19 @@ class Replica(object):
         :param save: save the result into self.SECData, default = False
         :param max_iterations: maximum iterations loop, default = 100
         """
-
         try:
+            __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
+
+            if algorithm not in __valid_sec_algo:
+                raise ValueError('Algorithm is not good choose : {}'.format(__valid_sec_algo))
+
             if self.array is None:
-                raise ValueError("\033[0;31m[ERROR]\033[0m Compute Median of replicat first by using "
-                                 "computeDataFromReplicat")
+                raise ValueError("Use first : compute_data_for_channel")
 
             else:
                 if self.isSpatialNormalized:
                     print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
+                print('\033[0;32m[INFO]\033[0m SEC processing : {} -> replica {}'.format(algorithm, self.name))
                 if algorithm == 'Bscore':
                     ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                    max_iterations=max_iterations,

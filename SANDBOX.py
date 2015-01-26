@@ -15,71 +15,77 @@ np.set_printoptions(suppress=True)
 
 import TransCellAssay as TCA
 
-platemap = TCA.PlateMap(platemap="/home/arnaud/Desktop/HDV_plaque_Z/Pl1PP.csv")
 
-plaque1 = TCA.Plate('plaque1')
-plaque1 + platemap
-plaque2 = TCA.Plate('plaque2')
-plaque2 + platemap
+def do_384():
+    platemap = TCA.PlateMap(platemap="/home/arnaud/Desktop/HDV_plaque_Z/Pl1PP.csv")
 
-plaque1 + TCA.Replica(name='rep1', data='/home/arnaud/Desktop/HDV_plaque_Z/150121 Eloi1.csv', datatype='mean')
-plaque2 + TCA.Replica(name='rep1', data='/home/arnaud/Desktop/HDV_plaque_Z/150121 Eloi2.csv', datatype='mean')
+    plaque1 = TCA.Plate('plaque1')
+    plaque1 + platemap
+    plaque2 = TCA.Plate('plaque2')
+    plaque2 + platemap
 
-print(platemap)
+    plaque1 + TCA.Replica(name='rep1', data='/home/arnaud/Desktop/HDV_plaque_Z/150121 Eloi1.csv', datatype='mean')
+    plaque2 + TCA.Replica(name='rep1', data='/home/arnaud/Desktop/HDV_plaque_Z/150121 Eloi2.csv', datatype='mean')
 
-channel = 'AvgIntenCh2'
-neg = 'Neg 1'
-pos = 'SiNTCP'
+    print(platemap)
 
-time_start = time.time()
-# ana = TCA.plate_analysis(plaque1, [channel], neg, pos, threshold=400, percent=False)
-ana = TCA.plate_analysis(plaque1, [channel], neg, pos)
-print(ana)
-time_stop = time.time()
-print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
+    channel = 'AvgIntenCh2'
+    neg = 'Neg 1'
+    pos = 'SiNTCP'
 
-# plaque1.normalization(channel=channel, method='Zscore')
-# plaque2.normalization(channel=channel, method='Zscore')
+    # time_start = time.time()
+    # ana = TCA.plate_analysis(plaque1, [channel], neg, pos, threshold=400, percent=False)
+    # # ana = TCA.plate_analysis(plaque1, [channel], neg, pos)
+    # print(ana)
+    # time_stop = time.time()
+    # print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
-# TCA.plate_channel_scaling(plaque2, channel, mean_scaling=True)
+    plaque1.normalization(channel=channel, method='PercentOfControl', neg=platemap.get_well(neg),
+                          pos=platemap.get_well(pos))
+    plaque2.normalization(channel=channel, method='PercentOfControl', neg=platemap.get_well(neg),
+                          pos=platemap.get_well(pos))
 
-# plaque1.compute_data_from_replicat(channel)
-# plaque2.compute_data_from_replicat(channel)
+    # TCA.plate_channel_scaling(plaque2, channel, mean_scaling=True)
 
-# TCA.heatmap_map_p(plaque1, plaque2)
+    # plaque1.compute_data_from_replicat(channel)
+    # plaque2.compute_data_from_replicat(channel)
 
-# TCA.plate_quality_control(plaque1, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
-# TCA.plate_quality_control(plaque2, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+    # TCA.heatmap_map_p(plaque1, plaque2)
 
-# test1_neg = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=neg)
-# test2_neg = TCA.get_masked_array(plaque2.array, platemap.platemap.values, to_keep=neg)
-#
-# test1_pos = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=pos)
-# test2_pos = TCA.get_masked_array(plaque2.array, platemap.platemap.values, to_keep=pos)
+    TCA.plate_quality_control(plaque1, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+    TCA.plate_quality_control(plaque2, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
 
-# plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
-# plaque2.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
+    # # Keep only neg or pos in 3D plot
+    # test1_neg = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=neg)
+    # test2_neg = TCA.get_masked_array(plaque2.array, platemap.platemap.values, to_keep=neg)
+    # test1_pos = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=pos)
+    # test2_pos = TCA.get_masked_array(plaque2.array, platemap.platemap.values, to_keep=pos)
+    # TCA.plot_plate_3d(test1_neg)
+    # TCA.plot_plate_3d(test2_neg)
+    # TCA.plot_plate_3d(test1_pos)
+    # TCA.plot_plate_3d(test2_pos)
 
-# plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
-# plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+    # plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
+    # plaque2.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
 
-# print(plaque1.sec_array)
-# print(plaque2.sec_array)
+    plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+    plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 
-# TCA.plate_heatmap_p(plaque1)
-# TCA.plate_heatmap_p(plaque2)
+    # TCA.plot_plate_3d(plaque1.sec_array)
+    # TCA.plot_plate_3d(plaque2.sec_array)
+    # TCA.plate_heatmap_p(plaque1)
+    # TCA.plate_heatmap_p(plaque2)
+    # TCA.heatmap_map_p(plaque1, plaque2, usesec=True)
+    # TCA.plate_heatmap_p(plaque1, both=True)
+    # TCA.plate_heatmap_p(plaque2, both=True)
 
-# plaque1.compute_data_from_replicat(channel, use_sec_data=True)
-# plaque2.compute_data_from_replicat(channel, use_sec_data=True)
+    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
+    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)
+    TCA.plate_ssmd_score(plaque2, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
+    TCA.plate_ssmd_score(plaque2, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)
 
-# TCA.heatmap_map(plaque1, plaque2)
 
-# TCA.plate_heatmap_p(plaque1, both=True)
-# TCA.plate_heatmap_p(plaque2, both=True)
-# TCA.plot_plate_3d(test1_neg)
-# TCA.plot_plate_3d(test2_neg)
-# TCA.plot_plate_3d(test1_pos)
-# TCA.plot_plate_3d(test2_pos)
+do_384()
 
 
 def do_it(plate_nb, verbose=False):
@@ -107,11 +113,11 @@ def do_it(plate_nb, verbose=False):
     rep2.datatype = "mean"
     rep3.datatype = "mean"
 
-    # time_start = time.time()
-    # ana = TCA.plate_analysis(plaque, [channel], neg, pos)
-    # print(ana)
-    # time_stop = time.time()
-    # print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
+    time_start = time.time()
+    ana = TCA.plate_analysis(plaque, [channel], neg, pos)
+    print(ana)
+    time_stop = time.time()
+    print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
     # plaque.normalization(channel, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
     #                      pos=platesetup.get_well(pos), skipping_wells=True)
@@ -132,15 +138,10 @@ def do_it(plate_nb, verbose=False):
 
     # TCA.ReferenceDataWriter(plaque, plaque, plaque, plaque, plaque, plaque, plaque, plaque, filepath='/home/arnaud/Desktop/test.xlsx', ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'], channels=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
 
-    # TCA.systematic_error_detection_test(plaque.Data, alpha=0.1, verbose=True)
+    # TCA.systematic_error_detection_test(plaque.array, alpha=0.1, verbose=True)
     plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=True, alpha=0.1)
 
-    # plaque.compute_data_from_replicat(channel, use_sec_data=True)
-
     # TCA.independance(plaque, neg='Neg', channel=channel)
-
-    # TCA.systematic_error_detection_test(plaque.SECData, alpha=0.1, verbose=True)
-
     # TCA.rank_product(plaque, secdata=True, verbose=True)
 
     ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
@@ -206,7 +207,7 @@ def do_it(plate_nb, verbose=False):
     # clustering = TCA.k_mean_clustering(plaque)
     # clustering.do_cluster()
 
-# do_it(plate_nb="1", verbose=True)
+# do_it(plate_nb="1", verbose=False)
 
 
 # import TransCellAssay.Stat.Omics.GO_enrichment as GO
@@ -415,4 +416,6 @@ def rest():
     # print(r.species_list())
     # print(r.SBML_exporter(109581))
 
-rest()
+# rest()
+
+print('End of Sandbox')

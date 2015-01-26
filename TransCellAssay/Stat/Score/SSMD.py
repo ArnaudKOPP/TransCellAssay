@@ -54,10 +54,10 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
     :return: Corrected data
     """
     try:
-        if isinstance(plate, TCA.Core.Plate):
+        if isinstance(plate, TCA.Plate):
             # if no neg was provided raise AttributeError
             if neg_control is None:
-                raise AttributeError('Must provided negative control')
+                raise ValueError('Must provided negative control')
             if len(plate) > 1 and not inplate_data:
                 print('\033[0;32m[INFO]\033[0m SSMD optimize for plate with replicat')
                 if not paired:
@@ -80,7 +80,7 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
                     score = _ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
             return score
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
         print(e)
 
@@ -98,8 +98,8 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
     try:
         # if no neg was provided raise AttributeError
         if neg_control is None:
-            raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, TCA.Core.Plate):
+            raise AttributeError('Must provided negative control')
+        if isinstance(plate, TCA.Plate):
             ssmd = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
@@ -126,7 +126,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
                         else:
                             neg_value.append(value.array[neg[0]][neg[1]])
                     except Exception:
-                        raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                        raise Exception("Your desired datatype are not available")
             nb_neg_wells = len(neg_value)
             mean_neg = np.nanmean(neg_value)
             var_neg = np.nanvar(neg_value)
@@ -146,7 +146,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
                             else:
                                 well_value = value.array[i][j]
                         except Exception:
-                            raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                            raise Exception("Your desired datatype are not available")
                         rep_value.append(well_value)
                     mean_rep = np.nanmean(rep_value)
                     var_rep = np.nanvar(rep_value)
@@ -158,7 +158,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
                         ssmd[i][j] = (mean_rep - mean_neg) / np.sqrt(
                             (2 / k) * ((nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg))
                     else:
-                        raise AttributeError('\033[0;31m[ERROR]\033[0m  variance attribut must be unequal or equal.')
+                        raise AttributeError('Variance attribut must be unequal or equal.')
 
             # # replace NaN with 0
             ssmd = np.nan_to_num(ssmd)
@@ -173,9 +173,9 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
                 print("")
             return ssmd
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        print('\033[0;31m[ERROR]\033[0m', e)
 
 
 def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
@@ -191,8 +191,8 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
     try:
         # if no neg was provided raise AttributeError
         if neg_control is None:
-            raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, TCA.Core.Plate):
+            raise AttributeError('Must provided negative control')
+        if isinstance(plate, TCA.Plate):
             ssmd = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
@@ -219,7 +219,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
                         else:
                             neg_value.append(value.array[neg[0]][neg[1]])
                     except Exception:
-                        raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                        raise Exception("Your desired datatype are not available")
             nb_neg_wells = len(neg_value)
             median_neg = np.nanmedian(neg_value)
             var_neg = np.nanvar(neg_value)
@@ -239,7 +239,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
                             else:
                                 well_value = value.array[i][j]
                         except Exception:
-                            raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                            raise Exception("Your desired datatype are not available")
                         rep_value.append(well_value)
                     median_rep = np.nanmedian(rep_value)
                     var_rep = np.nanvar(rep_value)
@@ -251,7 +251,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
                         ssmd[i][j] = (median_rep - median_neg) / np.sqrt(
                             (2 / k) * ((nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg))
                     else:
-                        raise AttributeError('\033[0;31m[ERROR]\033[0m  variance attribut must be unequal or equal.')
+                        raise AttributeError('Variance attribut must be unequal or equal.')
 
             # # replace NaN with 0
             ssmd = np.nan_to_num(ssmd)
@@ -266,9 +266,9 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
                 print("")
             return ssmd
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        print('\033[0;31m[ERROR]\033[0m', e)
 
 
 def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
@@ -285,7 +285,7 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
         # if no neg was provided raise AttributeError
         if neg_control is None:
             raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, TCA.Core.Plate):
+        if isinstance(plate, TCA.Plate):
             ssmd = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
@@ -311,7 +311,7 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                             well_value = replicat.array[neg_i[0]][neg_i[1]]
                         neg_value.append(well_value)
                     except Exception:
-                        raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                        raise Exception("Your desired datatype are not available")
                 return np.nanmedian(neg_value)
 
             x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
@@ -334,7 +334,7 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                         elif method == 'MM':
                             ssmd[i][j] = np.nanmean(well_value) / np.nanstd(well_value)
                         else:
-                            raise AttributeError('\033[0;31m[ERROR]\033[0m  Method must me UMVUE or MM')
+                            raise AttributeError('Method must me UMVUE or MM')
 
                 # # replace NaN with 0
                 ssmd = np.nan_to_num(ssmd)
@@ -351,9 +351,9 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                 print(e)
             return ssmd
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        print('\033[0;31m[ERROR]\033[0m', e)
 
 
 def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
@@ -369,8 +369,8 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
     try:
         # if no neg was provided raise AttributeError
         if neg_control is None:
-            raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, TCA.Core.Plate):
+            raise AttributeError('Must provided negative control')
+        if isinstance(plate, TCA.Plate):
             ssmdr = np.zeros(plate.platemap.platemap.shape)
 
             # # replace 0 with NaN
@@ -396,7 +396,7 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                             well_value = replicat.array[neg_i[0]][neg_i[1]]
                         neg_value.append(well_value)
                     except Exception:
-                        raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                        raise Exception("Your desired datatype are not available")
                 return np.nanmedian(neg_value)
 
             x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
@@ -419,7 +419,7 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                         elif method == 'MM':
                             ssmdr[i][j] = np.nanmedian(well_value) / mad(well_value)
                         else:
-                            raise AttributeError('\033[0;31m[ERROR]\033[0m  Method must me UMVUE or MM')
+                            raise AttributeError('Method must me UMVUE or MM')
 
                 # # replace NaN with 0
                 ssmdr = np.nan_to_num(ssmdr)
@@ -436,9 +436,9 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                 print(e)
             return ssmdr
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        print('\033[0;31m[ERROR]\033[0m', e)
 
 
 def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
@@ -456,7 +456,7 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
         # if no neg was provided raise AttributeError
         if neg_control is None:
             raise AttributeError('Must provided negative control')
-        if isinstance(plate, TCA.Core.Plate):
+        if isinstance(plate, TCA.Plate):
             ps = plate.platemap
             ssmd = np.zeros(ps.platemap.shape)
 
@@ -481,13 +481,13 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             except Exception as e:
                 print(e)
             if data is None:
-                raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                raise Exception("Your desired datatype are not available")
             # grab all neg data
             for neg_pos in valid_neg_pos:
                 neg_data.append(data[neg_pos[0]][neg_pos[1]])
             # check if len is sufficient
             if len(neg_data) < 2:
-                raise ValueError('\033[0;31m[ERROR]\033[0m  Insuficient negative data')
+                raise ValueError('Insuficient negative data')
 
             if method == 'MM':
                 ssmd = (data - np.nanmean(neg_data)) / (np.sqrt(2) * np.nanstd(neg_data))
@@ -496,7 +496,7 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
                     ((len(neg_data) - 1) / 2) / scipy.special.gamma((len(neg_data) - 2) / 2))) ** 2
                 ssmd = (data - np.nanmean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.nanstd(neg_data))
             else:
-                raise AttributeError('\033[0;31m[ERROR]\033[0m  Method must be MM or UMVUE')
+                raise AttributeError('Method must be MM or UMVUE')
 
             # # replace NaN with 0
             ssmd = np.nan_to_num(ssmd)
@@ -511,9 +511,9 @@ def _ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
                 print("")
             return ssmd
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        print('\033[0;31m[ERROR]\033[0m', e)
 
 
 def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
@@ -530,8 +530,8 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
     try:
         # if no neg was provided raise AttributeError
         if neg_control is None:
-            raise AttributeError('\033[0;31m[ERROR]\033[0m  Must provided negative control')
-        if isinstance(plate, TCA.Core.Plate):
+            raise AttributeError('Must provided negative control')
+        if isinstance(plate, TCA.Plate):
             ps = plate.platemap
             ssmdr = np.zeros(ps.platemap.shape)
 
@@ -556,7 +556,7 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
             except Exception as e:
                 print(e)
             if data is None:
-                raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
+                raise Exception("Your desired datatype are not available")
             # grab all neg data
             for neg_pos in valid_neg_pos:
                 neg_data.append(data[neg_pos[0]][neg_pos[1]])
@@ -571,7 +571,7 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
                     ((len(neg_data) - 1) / 2) / scipy.special.gamma((len(neg_data) - 2) / 2))) ** 2
                 ssmdr = (data - np.nanmedian(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * mad(neg_data))
             else:
-                raise AttributeError('\033[0;31m[ERROR]\033[0m  Method must be MM or UMVUE')
+                raise AttributeError('=Method must be MM or UMVUE')
 
             # # replace NaN with 0
             ssmdr = np.nan_to_num(ssmdr)
@@ -586,6 +586,6 @@ def _ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
                 print("")
             return ssmdr
         else:
-            raise TypeError
+            raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        print('\033[0;31m[ERROR]\033[0m', e)

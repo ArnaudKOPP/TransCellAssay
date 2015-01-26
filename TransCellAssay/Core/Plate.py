@@ -108,16 +108,15 @@ class Plate(object):
         """
         try:
             if isinstance(array, np.ndarray):
-                print()
                 self.array = array
                 if array_type == 'median':
                     self.datatype = array_type
                 elif array_type == 'mean':
                     self.datatype = array_type
                 else:
-                    raise AttributeError("\033[0;31m[ERROR]\033[0m Must provided data type")
+                    raise AttributeError("Must provided data type")
             else:
-                raise AttributeError("\033[0;31m[ERROR]\033[0m Must provied numpy ndarray")
+                raise AttributeError("Must provied numpy ndarray")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -259,7 +258,7 @@ class Plate(object):
             else:
                 for rep in replicat:
                     data[self.replica[rep].get_rep_name()] = rep.get_raw_data(channel=channel, well=well,
-                                                                               well_idx=well_idx)
+                                                                              well_idx=well_idx)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -390,19 +389,24 @@ class Plate(object):
         :param alpha: alpha for TTest
         """
         try:
+            __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
+
+            if algorithm not in __valid_sec_algo:
+                raise ValueError('Algorithm is not good choose : {}'.format(__valid_sec_algo))
+
             if apply_down:
                 for key, value in self.replica.items():
                     value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
                                                       max_iterations=max_iterations, alpha=alpha)
-                    self.compute_data_from_replicat(channel=None, use_sec_data=True)
+                self.compute_data_from_replicat(channel=None, use_sec_data=True)
                 return
 
             if self.array is None:
-                raise ValueError(
-                    "\033[0;31m[ERROR]\033[0m Compute Median of replicat first by using computeDataFromReplicat")
+                raise ValueError("Use first : compute_data_from_replicat")
             else:
                 if self.isSpatialNormalized:
                     print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
+                print('\033[0;32m[INFO]\033[0m Systematic Error processing : {}'.format(algorithm))
                 if algorithm == 'Bscore':
                     ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                    max_iterations=max_iterations,
@@ -487,29 +491,29 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def __sub__(self, to_rm):
+    def __sub__(self, id_rep):
         """
         Remove replicat from plate, use - operator
-        :param to_rm:
+        :param id_rep: replica id to remove from plate
         """
         try:
-            del self.replica[to_rm]
+            del self.replica[id_rep]
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def __add__(self, to_add):
+    def __add__(self, id_rep):
         """
         Add replicat to plate, use + operator
-        :param to_add:
+        :param id_rep: replica id that is added
         """
         try:
-            if isinstance(to_add, TCA.Core.Replica):
-                name = to_add.name
-                self.replica[name] = to_add
-            elif isinstance(to_add, TCA.Core.PlateMap):
-                self.platemap = to_add
-            elif isinstance(to_add, list):
-                for elem in to_add:
+            if isinstance(id_rep, TCA.Core.Replica):
+                name = id_rep.name
+                self.replica[name] = id_rep
+            elif isinstance(id_rep, TCA.Core.PlateMap):
+                self.platemap = id_rep
+            elif isinstance(id_rep, list):
+                for elem in id_rep:
                     assert isinstance(elem, TCA.Core.Replica)
                     self.replica[elem.name] = elem
             else:
