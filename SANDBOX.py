@@ -31,8 +31,15 @@ channel = 'AvgIntenCh2'
 neg = 'Neg 1'
 pos = 'SiNTCP'
 
-plaque1.normalization(channel=channel, method='Zscore')
-plaque2.normalization(channel=channel, method='Zscore')
+time_start = time.time()
+# ana = TCA.plate_analysis(plaque1, [channel], neg, pos, threshold=400, percent=False)
+ana = TCA.plate_analysis(plaque1, [channel], neg, pos)
+print(ana)
+time_stop = time.time()
+print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
+
+# plaque1.normalization(channel=channel, method='Zscore')
+# plaque2.normalization(channel=channel, method='Zscore')
 
 # TCA.plate_channel_scaling(plaque2, channel, mean_scaling=True)
 
@@ -41,8 +48,8 @@ plaque2.normalization(channel=channel, method='Zscore')
 
 # TCA.heatmap_map_p(plaque1, plaque2)
 
-TCA.plate_quality_control(plaque1, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
-TCA.plate_quality_control(plaque2, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+# TCA.plate_quality_control(plaque1, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+# TCA.plate_quality_control(plaque2, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
 
 # test1_neg = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=neg)
 # test2_neg = TCA.get_masked_array(plaque2.array, platemap.platemap.values, to_keep=neg)
@@ -50,17 +57,17 @@ TCA.plate_quality_control(plaque2, channels=channel, cneg=neg, cpos=pos, use_raw
 # test1_pos = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=pos)
 # test2_pos = TCA.get_masked_array(plaque2.array, platemap.platemap.values, to_keep=pos)
 
-plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
-plaque2.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
+# plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
+# plaque2.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
 
-plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
-plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+# plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+# plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 
-print(plaque1.sec_array)
-print(plaque2.sec_array)
+# print(plaque1.sec_array)
+# print(plaque2.sec_array)
 
-TCA.plate_heatmap_p(plaque1)
-TCA.plate_heatmap_p(plaque2)
+# TCA.plate_heatmap_p(plaque1)
+# TCA.plate_heatmap_p(plaque2)
 
 # plaque1.compute_data_from_replicat(channel, use_sec_data=True)
 # plaque2.compute_data_from_replicat(channel, use_sec_data=True)

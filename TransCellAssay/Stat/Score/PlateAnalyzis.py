@@ -6,6 +6,7 @@ Compute Cells Count, percent of positive Cells, viability and toxicity per Wells
 
 import TransCellAssay as TCA
 import numpy as np
+import pandas as pd
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -33,9 +34,9 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             print('\033[0;32m[INFO]\033[0m Computing plate analysis : {}'.format(plate.name))
             platemap = plate.get_platemap()
             size = platemap.get_shape()
-            result = TCA.Result(size=(size[0] * size[1]))
+            result = Result(size=(size[0] * size[1]))
             x = platemap.as_dict()
-            result.init_gene_well(x)
+            result._init_gene_well(x)
 
             neg_well = plate.platemap.get_well(neg)
             pos_well = plate.platemap.get_well(pos)
@@ -48,37 +49,33 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             dict_percent_sd_cell = {}
 
             # # iterate over replicat
-            for k, v in plate.replica.items():
+            for k, replica in plate.replica.items():
                 # # cell count
-                datagb = v.rawdata.get_groupby_data()
+                datagb = replica.rawdata.get_groupby_data()
                 cellcount = datagb.Well.count().to_dict()
-                for key in cellcount.keys():
+                for key, value in cellcount.items():
                     try:
-                        cell_count_tmp.setdefault(key, []).append(cellcount[key])
+                        cell_count_tmp.setdefault(key, []).append(value)
                     except KeyError:
                         pass
-
-                # # variability
-                well_list = v.rawdata.get_unique_well()
-                # iterate on well
-                for well in well_list:
-                    mean.setdefault(well, []).append(np.mean(datagb.get_group(well)[channel]))
-                    median.setdefault(well, []).append(np.median(datagb.get_group(well)[channel]))
 
                 # # positive Cell
                 # # threshold value for control
                 if percent:
-                    data_control = v.get_raw_data(channel=channel, well=neg_well)
+                    data_control = replica.get_raw_data(channel=channel, well=neg_well)
                     threshold_value = np.percentile(data_control, threshold)
                 else:
                     threshold_value = threshold
-                # data from replicat
 
+                # # variability
+                well_list = replica.rawdata.get_unique_well()
                 # iterate on well
                 for well in well_list:
                     xdata = datagb.get_group(well)[channel]
-                    len_total = len(xdata)
-                    len_thres = len(np.extract(xdata > threshold_value, xdata))
+                    mean.setdefault(well, []).append(np.mean(xdata.values))
+                    median.setdefault(well, []).append(np.median(xdata.values))
+                    len_total = len(xdata.values)
+                    len_thres = len(np.extract(xdata.values > threshold_value, xdata.values))
                     # # include in dict key is the position and value is a %
                     dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
 
@@ -89,8 +86,8 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             meancountlist = [(i, sum(v) / len(v)) for i, v in cell_count_tmp.items()]
             meancount = dict(meancountlist)  # # convert to dict
 
-            result.add_data(meancount, 'CellsCount')
-            result.add_data(sdvalue, 'SDCellsCount')
+            result._add_data(meancount, 'CellsCount')
+            result._add_data(sdvalue, 'SDCellsCount')
 
             # # toxicity index
             max_cell = max(meancount.values())
@@ -107,8 +104,8 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
                 viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
                     np.mean(neg_val) - np.mean(pos_val))
 
-            result.add_data(txidx, 'Toxicity')
-            result.add_data(viability, 'Viability')
+            result._add_data(txidx, 'Toxicity')
+            result._add_data(viability, 'Viability')
 
             # # variability
             std = [(i, np.std(v)) for i, v in mean.items()]
@@ -121,10 +118,10 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             mean = dict(mean)
             median = dict(median)
 
-            result.add_data(mean, 'Mean')
-            result.add_data(median, 'Median')
-            result.add_data(std, 'Std')
-            result.add_data(stdm, 'Stdm')
+            result._add_data(mean, 'Mean')
+            result._add_data(median, 'Median')
+            result._add_data(std, 'Std')
+            result._add_data(stdm, 'Stdm')
 
             # # positive cell
             # determine the mean of replicat
@@ -135,11 +132,118 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             for key, value in dict_percent_cell_tmp.items():
                 dict_percent_sd_cell[key] = np.std(value)
 
-            result.add_data(dict_percent_cell, 'PositiveCells')
-            result.add_data(dict_percent_sd_cell, 'SDPositiveCells')
+            result._add_data(dict_percent_cell, 'PositiveCells')
+            result._add_data(dict_percent_sd_cell, 'SDPositiveCells')
 
             return result
         else:
             raise TypeError("\033[0;31m[ERROR]\033[0m Input Plate Object")
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
+
+
+class Result(object):
+    """
+    Class Result is especialy created for plateAnalyzis.
+    This class store data with dict in input, where key are well and item are data.
+    """
+
+    def __init__(self, size=None):
+        """
+        Constructor
+        if size is not given, init by 386 plate size, defined size if 96 or 1526 plate well
+        :return: none init only dataframe
+        """
+        if size is None:
+            size = 96
+        self.values = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', float),
+                                            ('SDCellsCount', float), ('PositiveCells', float),
+                                            ('SDPositiveCells', float), ('Mean', float), ('Std', float),
+                                            ('Median', float), ('Stdm', float), ('Viability', float),
+                                            ('Toxicity', float)])
+
+        self._genename_genepos = {}  # # To save GeneName (key)and  Gene position (value)
+        self._genepos_genename = {}  # # To save Well (key) and Gene position (value)
+
+    def get_values(self):
+        """
+        return value in pandas dataframe
+        :return: array
+        """
+        try:
+            return pd.DataFrame(self.values)
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def _init_gene_well(self, gene_list):
+        """
+        Add gene and well into the record Array in the first/second column
+        :param gene_list: Dict with key are Well and Value are geneName
+        :return:
+        """
+        try:
+            i = 0
+            for k, v in gene_list.items():
+                self.values['GeneName'][i] = v
+                self.values['Well'][i] = k
+                self._genename_genepos.setdefault(v, []).append(i)  # # make this because Gene can be in multiple Well
+                self._genepos_genename[k] = i
+                i += 1
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def _add_data(self, datadict, col):
+        """
+        Insert Value from a dict where key = GeneName/pos and Value are value to insert
+        Prefer by = pos in case of empty well
+        :param datadict: dict that contain value to insert with key are GeneName or Pos/Well
+        :param col: colname to insert data
+        """
+        try:
+            for item, value in datadict.items():
+                self.values[col][self._genepos_genename[item]] = value
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def write(self, file_path, frmt='csv'):
+        """
+        Save Result Array into csv
+        :param file_path:
+        :param frmt: csv or xlsx format to save
+        """
+        try:
+            if frmt is 'csv':
+                pd.DataFrame(self.values).to_csv(file_path, index=False, header=True)
+            elif frmt is 'xlsx':
+                pd.DataFrame(self.values).to_excel(file_path, sheet_name='Single Cell properties result', index=False,
+                                                   header=True)
+            print('\033[0;32m[INFO]\033[0m writing : {}'.format(file_path))
+        except:
+            try:
+                if frmt is 'csv':
+                    np.savetxt(fname=file_path, X=self.values, delimiter=';')
+                    print('\033[0;32m[INFO]\033[0m writing : {}'.format(file_path))
+                else:
+                    raise IOError("Can't save data in xlsx format")
+            except Exception as e:
+                print('\033[0;31m[ERROR]\033[0m Error in saving results data :', e)
+
+    def __repr__(self):
+        """
+        Definition for the representation
+        :return:
+        """
+        try:
+            return "Result of single Cell properties: \n" + repr(pd.DataFrame(self.values))
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
+    def __str__(self):
+        """
+        Definition for the print
+        :return:
+        """
+        try:
+            return self.__repr__()
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
