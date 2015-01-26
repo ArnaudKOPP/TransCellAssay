@@ -263,6 +263,44 @@ class Replica(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def normalization_channels(self, channels, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
+        """
+        Apply a normalization method to multiple
+        :param pos: positive control
+        :param neg: negative control
+        :param channels: channel to normalize
+        :param method: which method to perform
+        :param log:  Performed log2 Transformation
+        :param skipping_wells: skip defined wells, use it with poc and npi
+        """
+        try:
+            if isinstance(channels, str):
+                # with single channel normalization
+                self.normalization(channel=channels, method=method, log=log, neg=neg, pos=pos,
+                                   skipping_wells=skipping_wells)
+            elif isinstance(channels, list):
+                for chan in channels:
+                    if skipping_wells:
+                        self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=chan,
+                                                                             method=method, log2_transf=log,
+                                                                             neg_control=[x for x in neg if (
+                                                                                 TCA.get_opposite_well_format(
+                                                                                     x) not in self.skip_well)],
+                                                                             pos_control=[x for x in pos if (
+                                                                                 TCA.get_opposite_well_format(
+                                                                                     x) not in self.skip_well)])
+                    else:
+                        self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=chan,
+                                                                             method=method,
+                                                                             log2_transf=log,
+                                                                             neg_control=neg,
+                                                                             pos_control=pos)
+                    self.isNormalized = True
+                print("\033[0;33m[WARNING]\033[0m Choose your channels that you want to work with plate.compute_data_"
+                      "from_replicat or replica.compute_data_for_channel")
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
+
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=False,
                                     max_iterations=100, alpha=0.05):
         """
@@ -284,10 +322,10 @@ class Replica(object):
             if self.array is None:
                 raise ValueError("\033[0;31m[ERROR]\033[0m Compute Median of replicat first by using "
                                  "computeDataFromReplicat")
-            elif self.isSpatialNormalized is True:
-                raise ValueError("\033[0;31m[ERROR]\033[0m systematic_error_correction -> Systematics error have "
-                                 "already been removed")
+
             else:
+                if self.isSpatialNormalized:
+                    print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
                 if algorithm == 'Bscore':
                     ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                    max_iterations=max_iterations,

@@ -98,7 +98,7 @@ def plate_heatmap(plate, both=True):
         import pylab as plt
         import numpy as np
 
-        b = len(plate.replicat)
+        b = len(plate.replica)
         if both is True:
             a = 2
         else:
@@ -106,7 +106,7 @@ def plate_heatmap(plate, both=True):
         fig = plt.figure(figsize=(2.*b, 2.*a))
 
         i = 1
-        for key, value in plate.replicat.items():
+        for key, value in plate.replica.items():
             ax = fig.add_subplot(a, b, i)
             ax.pcolor(value.array, cmap=plt.cm.Reds, edgecolors='k')
             ax.set_title(str(plate.name)+str(value.name))
@@ -126,7 +126,7 @@ def plate_heatmap(plate, both=True):
 
 def heatmap_map(*args, usesec=False):
     """
-    plot heatmap of all replicat array from given plate
+    plot heatmap of all replica array from given plate
     :param args: plate object or list of plate
     :param usesec: use sec data or not
     """
@@ -148,14 +148,14 @@ def heatmap_map(*args, usesec=False):
             else:
                 raise TypeError('Accept only plate or list of plate')
 
-        n = np.sum([len(x.replicat) for x in screen])
+        n = np.sum([len(x.replica) for x in screen])
         a = np.floor(n**0.5).astype(int)
         b = np.ceil(1.*n/a).astype(int)
         fig = plt.figure(figsize=(2.*b, 2.*a))
         i = 1
 
         for plate in screen:
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 ax = fig.add_subplot(a, b, i)
                 if not usesec:
                     ax.pcolor(value.array, cmap=plt.cm.Reds, edgecolors='k')
@@ -201,7 +201,7 @@ def plate_heatmap_p(plate, both=True):
         import numpy as np
         import seaborn as sns
 
-        b = len(plate.replicat)
+        b = len(plate.replica)
         if both is True:
             a = 2
         else:
@@ -209,7 +209,7 @@ def plate_heatmap_p(plate, both=True):
         fig = plt.figure(figsize=(2.*b, 2.*a))
 
         i = 1
-        for key, value in plate.replicat.items():
+        for key, value in plate.replica.items():
             ax = fig.add_subplot(a, b, i)
             sns.set()
             sns.heatmap(value.array)
@@ -225,7 +225,7 @@ def plate_heatmap_p(plate, both=True):
 
 def heatmap_map_p(*args, usesec=False):
     """
-    plot heatmap of all replicat array from given plate
+    plot heatmap of all replica array from given plate
     :param args: plate object or list of plate
     :param usesec: use sec data or not
     """
@@ -248,14 +248,14 @@ def heatmap_map_p(*args, usesec=False):
             else:
                 raise TypeError('Accept only plate or list of plate')
 
-        n = np.sum([len(x.replicat) for x in screen])
+        n = np.sum([len(x.replica) for x in screen])
         a = np.floor(n**0.5).astype(int)
         b = np.ceil(1.*n/a).astype(int)
         fig = plt.figure(figsize=(2.*b, 2.*a))
         i = 1
 
         for plate in screen:
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 ax = fig.add_subplot(a, b, i)
                 if not usesec:
                     sns.set()
@@ -334,7 +334,7 @@ def boxplot_by_wells(dataframe, channel):
 
 def plot_multiple_plate(*args):
     """
-    Plot from all replicat from given plate, the array value
+    Plot from all replica from given plate, the array value
     :param args:
     """
     try:
@@ -378,10 +378,10 @@ def plot_distribution(wells, plate, channel, rep=None, pool=False):
     """
     Plot distribution of multiple well
     :param wells: list of wells to plot distribution
-    :param plate: Plate with replicat
+    :param plate: Plate with replica
     :param channel: which channel to plot
     :param rep: if rep is provided, plot only distribution of selected wells for this one
-    :param pool: if pool is True, the selected wells are pooled accross replicat
+    :param pool: if pool is True, the selected wells are pooled accross replica
     """
     try:
         import matplotlib.pyplot as plt

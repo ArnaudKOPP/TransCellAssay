@@ -354,6 +354,27 @@ class Plate(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
+    def normalization_channels(self, channels, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
+        """
+        Apply multi channels normalization
+        :param pos: positive control
+        :param neg: negative control
+        :param channels: channel to normalize
+        :param method: which method to perform
+        :param log:  Performed log2 Transformation
+        :param skipping_wells: skip defined wells, use it with poc and npi
+        """
+        if isinstance(channels, list):
+            try:
+                for key, value in self.replica.items():
+                    value.normalization_channels(channels=channels, method=method, log=log, neg=neg, pos=pos,
+                                                 skipping_wells=skipping_wells)
+                self.isNormalized = True
+            except Exception as e:
+                print("\033[0;31m[ERROR]\033[0m", e)
+        else:
+            self.normalization(channels, method, log, neg, pos, skipping_wells)
+
     def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=False, verbose=False,
                                     save=False, max_iterations=100, alpha=0.05):
         """
@@ -379,10 +400,9 @@ class Plate(object):
             if self.array is None:
                 raise ValueError(
                     "\033[0;31m[ERROR]\033[0m Compute Median of replicat first by using computeDataFromReplicat")
-            elif self.isSpatialNormalized is True:
-                raise ValueError(
-                    "\033[0;31m[ERROR]\033[0m SystematicErrorCorrection -> Systematics error have already been removed")
             else:
+                if self.isSpatialNormalized:
+                    print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
                 if algorithm == 'Bscore':
                     ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                    max_iterations=max_iterations,

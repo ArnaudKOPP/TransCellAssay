@@ -53,6 +53,9 @@ TCA.plate_quality_control(plaque2, channels=channel, cneg=neg, cpos=pos, use_raw
 plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
 plaque2.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
 
+plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+
 print(plaque1.sec_array)
 print(plaque2.sec_array)
 
@@ -77,13 +80,13 @@ def do_it(plate_nb, verbose=False):
     platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/Toulouse_12_2014/Pl"+plate_nb+"PP.csv")
     plaque + platesetup
     rep1 = TCA.Core.Replica(name="rep1",
-                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".1.csv",
-                             skip=((2, 0), (3, 0), (4, 0), (5, 0)))
+                            data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".1.csv",
+                            skip=((2, 0), (3, 0), (4, 0), (5, 0)))
     rep2 = TCA.Core.Replica(name="rep2",
-                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".2.csv",
-                             skip=((3, 0), (1, 11)))
+                            data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".2.csv",
+                            skip=((3, 0), (1, 11)))
     rep3 = TCA.Core.Replica(name="rep3",
-                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".3.csv")
+                            data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".3.csv")
 
     plaque + rep1
     plaque + rep2
