@@ -361,7 +361,7 @@ def plot_multiple_plate(*args):
         I = 0
         for plate in screen:
             assert isinstance(plate, TCA.Plate)
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 platedata.append(value.array.flatten())
                 platenumber.append(I)
                 I += 1
@@ -396,7 +396,7 @@ def plot_distribution(wells, plate, channel, rep=None, pool=False):
                     rep_series[rep] = pd.Series(plate[rep].get_raw_data(channel=channel, well=Well))
                     rep_series[rep].name = str(rep)+str(Well)
                 else:
-                    for key, value in plate.replicat.items():
+                    for key, value in plate.replica.items():
                         rep_series[key] = pd.Series(value.get_raw_data(channel=channel, well=Well))
                         rep_series[key].name = key+str(Well)
                 # # Plotting with pandas

@@ -85,14 +85,14 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
             # # replace 0 with NaN
             ttest_score[ttest_score == 0] = np.NaN
 
-            nb_rep = len(plate.replicat)
+            nb_rep = len(plate.replica)
 
             neg_value = []
             neg_position = plate.platemap.get_coord(neg_control)
             if not neg_position:
                 raise Exception("Not Well for control")
 
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 # # remove skipped Wells
                 if len(value.skip_well) > 0:
                     valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
@@ -114,7 +114,7 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
             for i in range(ttest_score.shape[0]):
                 for j in range(ttest_score.shape[1]):
                     well_value = []
-                    for key, value in plate.replicat.items():
+                    for key, value in plate.replica.items():
                         if (i, j) in value.skip_well:
                             continue
                         try:
@@ -200,7 +200,7 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
             for i in range(ttest_score.shape[0]):
                 for j in range(ttest_score.shape[1]):
                     well_value = []
-                    for key, value in plate.replicat.items():
+                    for key, value in plate.replica.items():
                         if (i, j) in value.skip_well:
                             continue
                         neg_median = _search_neg_data(value, neg_position)
@@ -212,7 +212,7 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                         except Exception:
                             raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                     ttest_score[i][j] = np.nanmean(well_value) / (
-                        np.nanstd(well_value) / np.sqrt(len(plate.replicat)))
+                        np.nanstd(well_value) / np.sqrt(len(plate.replica)))
 
             # # replace NaN with 0
             ttest_score = np.nan_to_num(ttest_score)

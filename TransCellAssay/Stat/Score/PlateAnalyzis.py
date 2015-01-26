@@ -48,7 +48,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             dict_percent_sd_cell = {}
 
             # # iterate over replicat
-            for k, v in plate.replicat.items():
+            for k, v in plate.replica.items():
                 # # cell count
                 datagb = v.rawdata.get_groupby_data()
                 cellcount = datagb.Well.count().to_dict()

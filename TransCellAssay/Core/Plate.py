@@ -24,20 +24,20 @@ class Plate(object):
     classdocs
     Class for manipuling plate and their replicat :
 
-    self.replicat = {}  # Dict that contain all replicat, key are name and value are replicat object
-    self.MetaInfo = {}  # Store some stuff
-    self.Name = None  # Name of Plate
-    self.PlateMap = ScreenPlateReplicatPS.PlateMap()  # Plate Setup object
-    self.Threshold = None  # Threeshold for considering Cell as positive
-    self.ControlPos = ((0, 11), (0, 23))  # column where control is positionned in plate (default pos)
-    self.Neg = None  # Name of negative control
-    self.Pos = None  # Name of positive control
-    self.Tox = None  # Name of toxics control
+    self.replica = {}  # Dict that contain all replicat, key are name and value are replicat object
+    self.name = None  # Name of Plate
+    self.platemap = ScreenPlateReplicatPS.PlateMap()  # Plate Setup object
+    self.threshold = None  # Threeshold for considering Cell as positive
+    self._control_position = ((0, 11), (0, 23))  # column where control is positionned in plate (default pos)
+    self._neg = None  # Name of negative control
+    self._pos = None  # Name of positive control
+    self._tox = None  # Name of toxics control
     self.isNormalized = False  # Are replicat data normalized
     self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replicat )
-    self.DataType = "median" # median or mean data, default is median
-    self.Data = None  # matrix that contain data from replicat of interested channel to analyze
-    self.SECData = None  # matrix that contain data corrected or from replicat data
+    self.datatype = "median" # median or mean data, default is median
+    self.array = None  # matrix that contain data from replicat of interested channel to analyze
+    self._array_channel = None, which channel is stored in data
+    self.sec_array = None  # matrix that contain data corrected or from replicat data
     self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
@@ -45,7 +45,7 @@ class Plate(object):
         """
         Constructor
         """
-        self.replicat = collections.OrderedDict()
+        self.replica = collections.OrderedDict()
         self._meta_info = {}
         self.name = name
 
@@ -127,9 +127,9 @@ class Plate(object):
         :param replicat: Give a replicat object
         """
         try:
-            assert isinstance(replicat, TCA.Core.Replicat)
+            assert isinstance(replicat, TCA.Core.Replica)
             name = replicat.name
-            self.replicat[name] = replicat
+            self.replica[name] = replicat
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -140,7 +140,7 @@ class Plate(object):
         :return: Replicat object
         """
         try:
-            return self.replicat[name]
+            return self.replica[name]
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -150,7 +150,7 @@ class Plate(object):
         :return: dict of replicat
         """
         try:
-            return self.replicat
+            return self.replica
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -193,7 +193,7 @@ class Plate(object):
             # Collect the input lists for use with chain below
             all_lists = []
             name = []
-            for key, value in self.replicat.items():
+            for key, value in self.replica.items():
                 all_lists.append(list(value.rawdata.get_unique_well()))
                 name.append(key)
 
@@ -209,7 +209,7 @@ class Plate(object):
                     print("Missing Well in Raw Data replicat ", B, " : ", sorted(uniques))
                     print("Missing Value can insert ERROR in further Analyzis")
                     if remove:
-                        del self.replicat[B]
+                        del self.replica[B]
                         print(B, "Will be removed ---->")
                     else:
                         print("----> Can be removed with appropriate parameters : remove True or False")
@@ -254,11 +254,11 @@ class Plate(object):
         data = {}
         try:
             if replicat is not None:
-                for key, value in self.replicat.items():
+                for key, value in self.replica.items():
                     data[value.get_rep_name()] = value.get_raw_data(channel=channel, well=well, well_idx=well_idx)
             else:
                 for rep in replicat:
-                    data[self.replicat[rep].get_rep_name()] = rep.get_raw_data(channel=channel, well=well,
+                    data[self.replica[rep].get_rep_name()] = rep.get_raw_data(channel=channel, well=well,
                                                                                well_idx=well_idx)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -291,14 +291,14 @@ class Plate(object):
         """
         try:
             df = None
-            for key, rep in self.replicat.items():
-                assert isinstance(rep, TCA.Replicat)
+            for key, rep in self.replica.items():
+                assert isinstance(rep, TCA.Replica)
                 tmp = rep.rawdata.get_groupby_data()
                 if df is None:
                     df = tmp.median()
                 else:
                     df += tmp.median()
-            return df / len(self.replicat)
+            return df / len(self.replica)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -314,7 +314,7 @@ class Plate(object):
             tmp_array = np.zeros(self.platemap.platemap.shape)
             i = 0
 
-            for key, replicat in self.replicat.items():
+            for key, replicat in self.replica.items():
                 i += 1
                 if self.array is None:
                     replicat.compute_data_for_channel(channel)
@@ -346,7 +346,7 @@ class Plate(object):
         :param skipping_wells: skip defined wells, use it with poc and npi
         """
         try:
-            for key, value in self.replicat.items():
+            for key, value in self.replica.items():
                 value.normalization(channel=channel, method=method, log=log, neg=neg, pos=pos,
                                     skipping_wells=skipping_wells)
             self.isNormalized = True
@@ -370,7 +370,7 @@ class Plate(object):
         """
         try:
             if apply_down:
-                for key, value in self.replicat.items():
+                for key, value in self.replica.items():
                     value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
                                                       max_iterations=max_iterations, alpha=alpha)
                     self.compute_data_from_replicat(channel=None, use_sec_data=True)
@@ -429,7 +429,7 @@ class Plate(object):
         try:
             if not os.path.isdir(path):
                 os.mkdir(path)
-            for key, value in self.replicat.items():
+            for key, value in self.replica.items():
                 value.save_raw_data(path)
         except Exception as e:
             print(e)
@@ -440,7 +440,7 @@ class Plate(object):
         :param only_cache: Remove only cache
         """
         try:
-            for key, value in self.replicat.items():
+            for key, value in self.replica.items():
                 value.save_memory(only_cache=only_cache)
         except Exception as e:
             print(e)
@@ -473,7 +473,7 @@ class Plate(object):
         :param to_rm:
         """
         try:
-            del self.replicat[to_rm]
+            del self.replica[to_rm]
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -483,15 +483,15 @@ class Plate(object):
         :param to_add:
         """
         try:
-            if isinstance(to_add, TCA.Core.Replicat):
+            if isinstance(to_add, TCA.Core.Replica):
                 name = to_add.name
-                self.replicat[name] = to_add
+                self.replica[name] = to_add
             elif isinstance(to_add, TCA.Core.PlateMap):
                 self.platemap = to_add
             elif isinstance(to_add, list):
                 for elem in to_add:
-                    assert isinstance(elem, TCA.Core.Replicat)
-                    self.replicat[elem.name] = elem
+                    assert isinstance(elem, TCA.Core.Replica)
+                    self.replica[elem.name] = elem
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
         except Exception as e:
@@ -504,7 +504,7 @@ class Plate(object):
         :return: return replicat
         """
         try:
-            return self.replicat[key]
+            return self.replica[key]
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -515,10 +515,10 @@ class Plate(object):
         :param value: replicat object
         """
         try:
-            if not isinstance(value, TCA.Replicat):
+            if not isinstance(value, TCA.Replica):
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
             else:
-                self.replicat[key] = value
+                self.replica[key] = value
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -528,7 +528,7 @@ class Plate(object):
         :return: number of replicat
         """
         try:
-            return len(self.replicat)
+            return len(self.replica)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -542,7 +542,7 @@ class Plate(object):
                 "\n PlateMap : \n" + repr(self.platemap) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
-                "\n Replicat List : \n" + repr(self.replicat))
+                "\n Replicat List : \n" + repr(self.replica))
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

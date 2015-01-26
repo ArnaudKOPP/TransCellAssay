@@ -37,7 +37,7 @@ def independance(plate, neg, channel, equal_var=True):
         if not isinstance(plate, TCA.Plate):
             raise TypeError('Need a Plate Object')
         else:
-            if len(plate.replicat) > 1:
+            if len(plate.replica) > 1:
                 raise NotImplementedError('Implemented only for one replicat for the moment')
 
         shape = plate.platemap.platemap.get_shape()
@@ -45,7 +45,7 @@ def independance(plate, neg, channel, equal_var=True):
         result_array = np.zeros(size, dtype=[('GeneName', object), ('T-Statistic', float),
                                              ('Two-tailed P-Value', float)])
 
-        for key, value in plate.replicat.items():
+        for key, value in plate.replica.items():
             neg_well = value.get_valid_well(neg)
             neg_data = value.get_raw_data(channel=channel, well=neg_well)
             cpt = 0

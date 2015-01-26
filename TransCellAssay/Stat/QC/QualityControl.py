@@ -100,7 +100,7 @@ def plate_quality_control(plate, channels, cneg, cpos, sedt=False, sec_data=Fals
 
             qc_data_array = pd.DataFrame()
 
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 qc_data_array = qc_data_array.append(
                     replicat_quality_control(value, channel=channels, neg_well=neg_well, pos_well=pos_well,
                                              sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data,
@@ -134,7 +134,7 @@ def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, 
     :return:return numpy array with qc
     """
     try:
-        if not isinstance(replicat, TCA.Core.Replicat):
+        if not isinstance(replicat, TCA.Core.Replica):
             raise TypeError("\033[0;31m[ERROR]\033[0m Need A Replicat")
         else:
             if not use_raw_data:

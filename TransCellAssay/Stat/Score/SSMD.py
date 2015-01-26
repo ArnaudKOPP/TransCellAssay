@@ -105,7 +105,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
             # # replace 0 with NaN
             ssmd[ssmd == 0] = np.NaN
 
-            nb_rep = len(plate.replicat)
+            nb_rep = len(plate.replica)
             rep_value = []
             neg_value = []
             neg_position = plate.platemap.get_coord(neg_control)
@@ -113,7 +113,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
                 raise Exception("Not Well for control")
 
             # search neg control data
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 # # remove skipped Wells
                 if len(value.skip_well) > 0:
                     valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
@@ -137,7 +137,7 @@ def _unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbos
             for i in range(ssmd.shape[0]):
                 for j in range(ssmd.shape[1]):
                     well_value = 0
-                    for key, value in plate.replicat.items():
+                    for key, value in plate.replica.items():
                         if (i, j) in value.skip_well:
                             continue
                         try:
@@ -198,7 +198,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
             # # replace 0 with NaN
             ssmd[ssmd == 0] = np.NaN
 
-            nb_rep = len(plate.replicat)
+            nb_rep = len(plate.replica)
             rep_value = []
             neg_value = []
             neg_position = plate.platemap.get_coord(neg_control)
@@ -206,7 +206,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
                 raise Exception("Not Well for control")
 
             # search neg control data
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 # # remove skipped Wells
                 if len(value.skip_well) > 0:
                     valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
@@ -230,7 +230,7 @@ def _unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verbo
             for i in range(ssmd.shape[0]):
                 for j in range(ssmd.shape[1]):
                     well_value = 0
-                    for key, value in plate.replicat.items():
+                    for key, value in plate.replica.items():
                         if (i, j) in value.skip_well:
                             continue
                         try:
@@ -314,14 +314,14 @@ def _paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fals
                         raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                 return np.nanmedian(neg_value)
 
-            x = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
-                (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1))
+            x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
+                (len(plate.replica) - 2) / 2)) * np.sqrt(2 / (len(plate.replica) - 1))
 
             try:
                 for i in range(ssmd.shape[0]):
                     for j in range(ssmd.shape[1]):
                         well_value = []
-                        for key, value in plate.replicat.items():
+                        for key, value in plate.replica.items():
                             if (i, j) in value.skip_well:
                                 continue
                             neg_median = _search_neg_data(value, neg_position)
@@ -399,14 +399,14 @@ def _paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                         raise Exception("\033[0;31m[ERROR]\033[0m  Your desired datatype are not available")
                 return np.nanmedian(neg_value)
 
-            x = (scipy.special.gamma((len(plate.replicat) - 1) / 2) / scipy.special.gamma(
-                (len(plate.replicat) - 2) / 2)) * np.sqrt(2 / (len(plate.replicat) - 1))
+            x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
+                (len(plate.replica) - 2) / 2)) * np.sqrt(2 / (len(plate.replica) - 1))
 
             try:
                 for i in range(ssmdr.shape[0]):
                     for j in range(ssmdr.shape[1]):
                         well_value = []
-                        for key, value in plate.replicat.items():
+                        for key, value in plate.replica.items():
                             if (i, j) in value.skip_well:
                                 continue
                             neg_median = _search_neg_data(value, neg_position)

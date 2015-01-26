@@ -31,7 +31,7 @@ class LDA():
         :return:
         """
         try:
-            if isinstance(obj_input, TCA.Replicat):
+            if isinstance(obj_input, TCA.Replica):
                 print("Process LDA on Replicat")
                 self.rawdata = obj_input.rawdata
             if isinstance(obj_input, TCA.Plate):
@@ -41,7 +41,7 @@ class LDA():
 
     def _replicat_LDA(self, replicat, n_component=3):
         try:
-            assert isinstance(replicat, TCA.Replicat)
+            assert isinstance(replicat, TCA.Replica)
             raw_data = replicat.rawdata
             data = self._clear_dataframe(raw_data)
 

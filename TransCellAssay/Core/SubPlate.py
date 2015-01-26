@@ -4,7 +4,7 @@ Class for manipulating sub Plate object, sub Plate can serve in case that plate 
 of Plate
 """
 from TransCellAssay.Core import Plate
-from TransCellAssay.Core.SubReplicat import SubReplicat
+from TransCellAssay.Core.SubReplica import SubReplica
 import collections
 
 __author__ = "Arnaud KOPP"
@@ -37,7 +37,7 @@ class SubPlate(Plate):
                 self.ParentPlate = parent_plate
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Plate for creating SubPlate")
-            self.replicat = collections.OrderedDict()
+            self.replica = collections.OrderedDict()
             self._init_replicat(parent_plate, RB, RE, CB, CE)
             self._meta_info = parent_plate._meta_info
             self.name = parent_plate.name
@@ -82,7 +82,7 @@ class SubPlate(Plate):
         """
         try:
             for key, value in plate.replicat.items():
-                self.replicat[value.name] = SubReplicat(value, RB, RE, CB, CE)
+                self.replica[value.name] = SubReplica(value, RB, RE, CB, CE)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -92,9 +92,9 @@ class SubPlate(Plate):
         :param replicat:
         """
         try:
-            assert isinstance(replicat, SubReplicat)
+            assert isinstance(replicat, SubReplica)
             name = replicat.name
-            self.replicat[name] = replicat
+            self.replica[name] = replicat
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -108,7 +108,7 @@ class SubPlate(Plate):
                 "\n PlateMap : \n" + repr(self.platemap) +
                 "\n Data normalized ? " + repr(self.isNormalized) +
                 "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
-                "\n Replicat List : \n" + repr(self.replicat) + "\n")
+                "\n Replicat List : \n" + repr(self.replica) + "\n")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

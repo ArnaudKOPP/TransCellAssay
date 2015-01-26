@@ -18,18 +18,19 @@ __status__ = "Production"
 DEBUG = 1
 
 
-class Replicat(object):
+class Replica(object):
     """
     classdocs
     Class for manipuling replicat of plate
-    self.Dataframe = pd.DataFrame()  # data frame that contains data
-    self.info = ""  # Name of replicat
+    self.rawdata = rawdata  # data frame that contains data
+    self.name = ""  # Name of replicat
     self.isNormalized = False  # are the data normalized
     self.isSpatialNormalized = False  # systematics error removed or not
-    self.DataType = "median" # median or mean of data
-    self.Data = None  # matrix that contain mean of interested channels to analyze
+    self.datatype = "median" # median or mean of data
+    self.array = None  # matrix that contain mean of interested channels to analyze
+    self._array_channel = None, which channel is stored in data
     self.SpatNormData = None  # matrix that contain data corrected
-    self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
+    self.sec_array = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
     def __init__(self, name=None, data=None, single=True, skip=(), datatype='median'):
@@ -189,6 +190,10 @@ class Replicat(object):
         :return:
         """
         try:
+            if self.array is not None:
+                if self._array_channel is not channel:
+                    print('\033[0;33m[WARNING]\033[0m Overwriting previous channel data from {} to {}'.format(
+                        self._array_channel, channel))
             if not self.isNormalized:
                 print('\033[0;33m[WARNING]\033[0m Data are not normalized for replicat : ', self.name)
 
@@ -239,8 +244,12 @@ class Replicat(object):
                 if skipping_wells:
                     self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=channel,
                                                                          method=method, log2_transf=log,
-                                                                         neg_control=[x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)],
-                                                                         pos_control=[x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)])
+                                                                         neg_control=[x for x in neg if (
+                                                                             TCA.get_opposite_well_format(
+                                                                                 x) not in self.skip_well)],
+                                                                         pos_control=[x for x in pos if (
+                                                                             TCA.get_opposite_well_format(
+                                                                                 x) not in self.skip_well)])
                 else:
                     self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=channel,
                                                                          method=method,

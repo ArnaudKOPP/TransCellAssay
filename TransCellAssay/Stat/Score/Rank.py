@@ -32,7 +32,7 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
     try:
         if isinstance(plate, TCA.Plate):
             rk_pdt = plate.platemap.platemap.values.flatten().reshape(size, 1)
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 if secdata:
                     rank = _get_data_rank(value.sec_array, method=rank_method)
                 else:

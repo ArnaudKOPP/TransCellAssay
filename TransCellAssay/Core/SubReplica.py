@@ -3,7 +3,7 @@
 Class for manipulating Subreplicat
 """
 
-from TransCellAssay.Core.Replicat import Replicat
+from TransCellAssay.Core.Replica import Replica
 from TransCellAssay.Utils import get_opposite_well_format
 import numpy as np
 
@@ -17,7 +17,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class SubReplicat(Replicat):
+class SubReplica(Replica):
     """
     class for creating sub replicat from previous replicat
     """
@@ -32,8 +32,8 @@ class SubReplicat(Replicat):
         :param CE: Col End
         """
         try:
-            if isinstance(parent_replicat, Replicat):
-                Replicat.__init__(self)
+            if isinstance(parent_replicat, Replica):
+                Replica.__init__(self)
                 self.ParentReplicat = parent_replicat
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Replicat for creating SubReplicat")

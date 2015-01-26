@@ -38,12 +38,12 @@ def plate_feature_scaling(plate, channel, mean_scaling=False):
             max_lst = []
 
             # search min and max accross all replicat
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 min_lst.append(np.min(value.rawdata.df[channel]))
                 max_lst.append(np.max(value.rawdata.df[channel]))
 
             # apply channel scaling accross all replicat
-            for key, value in plate.replicat.items():
+            for key, value in plate.replica.items():
                 value.rawdata.df = _df_scaling(value.rawdata.df, min_lst, max_lst, channel, mean_scaling)
                 value.isNormalized = True
 
@@ -74,9 +74,9 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
     """
     try:
         if isinstance(obj, TCA.Plate):
-            for key, value in obj.replicat.items():
+            for key, value in obj.replica.items():
                 value.rawdata.df = _df_norm(value.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
-        elif isinstance(obj, TCA.Replicat):
+        elif isinstance(obj, TCA.Replica):
             obj.rawdata.df = _df_norm(obj.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
         elif isinstance(obj, TCA.RawData):
             obj.df = _df_norm(obj.df, channel, method, log2_transf, neg_control, pos_control)

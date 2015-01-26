@@ -88,8 +88,8 @@ class BackgroundCorrection():
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
-                        for repName, repValue in plate.replicat.items():
-                            if not isinstance(repValue, TCA.Replicat):
+                        for repName, repValue in plate.replica.items():
+                            if not isinstance(repValue, TCA.Replica):
                                 raise TypeError
                             else:
                                 if self.BackgroundModelMean is None:
@@ -144,8 +144,8 @@ class BackgroundCorrection():
                         raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
                     else:
                         # iterate on all replicat in the plate
-                        for repName, repValue in plate.replicat.items():
-                            if not isinstance(repValue, TCA.Replicat):
+                        for repName, repValue in plate.replica.items():
+                            if not isinstance(repValue, TCA.Replica):
                                 raise TypeError
                             else:
                                 repValue.sec_array -= self.BackgroundModel

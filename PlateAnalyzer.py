@@ -214,7 +214,7 @@ def plate_analyzis(plateid):
             # plaque + TCA.Core.Replicat(name="rep" + str(i), data=array, single=False, skip=to_skip_HMT[(plateid, i)])
             plaque + TCA.Core.Replicat(name="rep" + str(i), data=array, single=False)
             """
-            plaque + TCA.Core.Replicat(name="rep" + str(i),
+            plaque + TCA.Core.Replica(name="rep" + str(i),
                                        data=os.path.join(__INPUT__, "toulouse pl " + str(plateid) + "." + str(i) +
                                                          ".csv"), skip=to_skip[(plateid, i)], datatype='mean')
         # # BEGIN ANALYZIS HERE
