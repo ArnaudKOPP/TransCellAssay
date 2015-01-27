@@ -85,23 +85,23 @@ class Replica(object):
         :param array: numpy array with good shape
         :param array_type: median or mean data
         """
+        __valide_datatype = ['median', 'mean']
         try:
             if isinstance(array, np.ndarray):
+                if array_type not in __valide_datatype:
+                    raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
+                print("\033[0;33m[WARNING]\033[0m Manual overide")
                 self.array = array
                 if array_type == 'median':
-                    print("\033[0;33m[WARNING]\033[0m Manual overide")
-                    self.datatype = array_type
-                elif array_type == 'mean':
-                    print("\033[0;33m[WARNING]\033[0m Manual overide")
                     self.datatype = array_type
                 else:
-                    raise AttributeError("Must provided data type")
+                    self.datatype = array_type
             else:
                 raise AttributeError("Must provided numpy ndarray")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def set_rep_name(self, info):
+    def set_name(self, info):
         """
         set name for the replicat
         :param info: info on replicat
@@ -112,7 +112,7 @@ class Replica(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def get_rep_name(self):
+    def get_name(self):
         """
         return name from replicat
         :return: info

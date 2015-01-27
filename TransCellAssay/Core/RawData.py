@@ -46,7 +46,10 @@ class RawData(object):
                 except Exception as e:
                     raise IOError('Error in reading {} File : '.format(path_or_file), e)
         elif isinstance(path_or_file, TCA.InputFile):
-            raise NotImplementedError
+            if path_or_file.dataframe is not None:
+                self.df = path_or_file.dataframe
+            else:
+                raise ValueError('Empty Input File')
         else:
             print("\033[0;31m[ERROR]\033[0m")
 

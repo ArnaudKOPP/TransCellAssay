@@ -40,9 +40,9 @@ def do_384():
     # time_stop = time.time()
     # print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
 
-    plaque1.normalization(channel=channel, method='PercentOfControl', neg=platemap.get_well(neg),
+    plaque1.normalization(channel=channel, method='Zscore', neg=platemap.get_well(neg),
                           pos=platemap.get_well(pos))
-    plaque2.normalization(channel=channel, method='PercentOfControl', neg=platemap.get_well(neg),
+    plaque2.normalization(channel=channel, method='Zscore', neg=platemap.get_well(neg),
                           pos=platemap.get_well(pos))
 
     # TCA.plate_channel_scaling(plaque2, channel, mean_scaling=True)

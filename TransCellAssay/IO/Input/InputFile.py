@@ -25,6 +25,7 @@ class InputFile(object):
     """
 
     def __init__(self):
+        self.dataframe = None
         self.is1Datawell = False
 
     def load(self, fpath):

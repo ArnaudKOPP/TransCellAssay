@@ -106,15 +106,16 @@ class Plate(object):
         :param array: numpy array with good shape
         :param array_type: median or mean data
         """
+        __valide_datatype = ['median', 'mean']
         try:
             if isinstance(array, np.ndarray):
+                if array_type not in __valide_datatype:
+                    raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
                 self.array = array
                 if array_type == 'median':
                     self.datatype = array_type
-                elif array_type == 'mean':
-                    self.datatype = array_type
                 else:
-                    raise AttributeError("Must provided data type")
+                    self.datatype = array_type
             else:
                 raise AttributeError("Must provied numpy ndarray")
         except Exception as e:
