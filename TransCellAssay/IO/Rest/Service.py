@@ -154,7 +154,6 @@ class REST(Service):
         super(REST, self).__init__(name, url, verbose=verbose)
         print("Initialising %s service (REST)" % self.name)
         self._session = None
-        self.FAST_SAVE = True
         self.last_response = None
 
     def _get_session(self):
@@ -210,6 +209,7 @@ class REST(Service):
             if DEBUG:
                 print("Running sync call for a list")
             return [self.get_one(key, frmt, params=params, **kargs) for key in query]
+            # return self.get_sync(query, frmt)
         if DEBUG:
             print("Running http_get (single call mode)")
         return self.get_one(query, frmt, params=params, **kargs)
@@ -241,6 +241,9 @@ class REST(Service):
                 print("\033[0;33m[WARNING]\033[0m Requests Status is not OK : {0} : {1}".format(res.status_code,
                                                                                                 self.response_codes[
                                                                                                     res.status_code]))
+            # For avoid too many requests
+            import time
+            time.sleep(1/self.request_per_sec)
 
             self.last_response = res
             res = self._interpret_returned_request(res, frmt)
@@ -304,6 +307,19 @@ class REST(Service):
                                                                       platform.python_version(), platform.system(),
                                                                       urllib_agent)
         return user_agent
+
+    def get_headers(self, content='default'):
+        """
+        :param str content: ste to default that is application/x-www-form-urlencoded
+        so that it has the same behaviour as urllib2 (Sept 2014)
+        """
+        headers = {}
+        headers['User-Agent'] = self.getUserAgent()
+        headers['Accept'] = self.content_types[content]
+        headers['Content-Type'] = self.content_types[content]
+        #"application/json;odata=verbose" required in reactome
+        #headers['Content-Type'] = "application/json;odata=verbose" required in reactome
+        return headers
 
     def debug_last_response(self):
         print(self.last_response.content)
