@@ -75,12 +75,12 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_quality_control(plate, channels, cneg, cpos, sedt=False, sec_data=False, use_raw_data=True, dirpath=None,
+def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False, use_raw_data=True, dirpath=None,
                           skipping_wells=True, verbose=False):
     """
     Compute quality control on plate for selected channel
     :param plate: Plate to compute quality object
-    :param channels: channel on which we performed quality control
+    :param channel: channel on which we performed quality control
     :param cneg: negative control Name
     :param cpos: positive control Name
     :param sedt: systematic error detection test
@@ -102,7 +102,7 @@ def plate_quality_control(plate, channels, cneg, cpos, sedt=False, sec_data=Fals
 
             for key, value in plate.replica.items():
                 qc_data_array = qc_data_array.append(
-                    replicat_quality_control(value, channel=channels, neg_well=neg_well, pos_well=pos_well,
+                    replicat_quality_control(value, channel=channel, neg_well=neg_well, pos_well=pos_well,
                                              sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data,
                                              skipping_wells=skipping_wells,  verbose=False))
 

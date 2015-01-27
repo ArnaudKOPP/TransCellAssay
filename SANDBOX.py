@@ -52,8 +52,8 @@ def do_384():
 
     # TCA.heatmap_map_p(plaque1, plaque2)
 
-    TCA.plate_quality_control(plaque1, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
-    TCA.plate_quality_control(plaque2, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+    TCA.plate_quality_control(plaque1, channel=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+    TCA.plate_quality_control(plaque2, channel=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
 
     # # Keep only neg or pos in 3D plot
     # test1_neg = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=neg)
