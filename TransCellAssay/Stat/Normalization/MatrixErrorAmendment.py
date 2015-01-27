@@ -116,6 +116,6 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
                 print("")
             return input_array
         else:
-            raise TypeError
+            raise TypeError('Expected the argument to be a numpy.ndarray.')
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)

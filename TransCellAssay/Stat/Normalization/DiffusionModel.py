@@ -59,7 +59,7 @@ def diffusion_model(array, max_iterations=100, verbose=False):
     return corrected_table
 
 
-class DiffusionModel():
+class DiffusionModel(object):
     """
     Class that represent the Diffusion Model
 
@@ -118,10 +118,10 @@ class DiffusionModel():
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def diffusion_laplacian_function(self, input, output, width, height):
+    def diffusion_laplacian_function(self, input_arr, output, width, height):
         """
 
-        :param input:
+        :param input_arr:
         :param output:
         :param width:
         :param height:
@@ -131,8 +131,9 @@ class DiffusionModel():
             for i in range(height):
                 for j in range(width):
                     if self.Mask[i][j] == 0:
-                        output[i][j] = input[i][j] + (input[i + 1][j] + input[i - 1][j] + input[i][j + 1] + input[i][
-                            j - 1] - 1 * input[i][j]) * self.CoeffDiff
+                        output[i][j] = input_arr[i][j] + (input_arr[i + 1][j] + input_arr[i - 1][j] +
+                                                          input_arr[i][j + 1] + input_arr[i][
+                            j - 1] - 1 * input_arr[i][j]) * self.CoeffDiff
                     else:
                         output[i][j] = self.Mask[i][j]
             # Normalize the plate
@@ -143,12 +144,12 @@ class DiffusionModel():
                 for Y in range(self.Array.shape[1]):
                     lext_plate.append(output[X + 1][Y + 1])
 
-            Average = np.nanmean(lext_plate)
-            Stdev = np.nanstd(lext_plate)
+            average = np.nanmean(lext_plate)
+            stdev = np.nanstd(lext_plate)
 
             for X in range(self.Array.shape[0]):
                 for Y in range(self.Array.shape[1]):
-                    output[X + 1][Y + 1] = (output[X + 1][Y + 1] - Average) / Stdev
+                    output[X + 1][Y + 1] = (output[X + 1][Y + 1] - average) / stdev
 
             return output
         except Exception as e:

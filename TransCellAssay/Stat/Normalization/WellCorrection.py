@@ -64,12 +64,12 @@ class WellCorrection():
         :param verbose:
         """
         try:
-            self._apply_approx()
-            self._apply_zscore()
+            self.__apply_approx()
+            self.__apply_zscore()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def _apply_approx(self, approx="lst", apply_on='replicat', verbose=False):
+    def __apply_approx(self, approx="lst", apply_on='replicat', verbose=False):
         """
 
         :param approx:
@@ -83,7 +83,7 @@ class WellCorrection():
                 for plate in self.screen:
                     # check if plate object
                     if not isinstance(plate, TCA.Plate):
-                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
+                        raise TypeError("Must provided good object")
                     else:
                         return 0
 
@@ -92,7 +92,7 @@ class WellCorrection():
                 for plate in self.screen:
                     # check if plate object
                     if not isinstance(plate, TCA.Plate):
-                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
+                        raise TypeError("Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in plate.replica.items():
@@ -101,11 +101,11 @@ class WellCorrection():
                             else:
                                 return 0
             else:
-                raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
+                raise AttributeError("Apply strategy only on plate or replicat")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def _apply_zscore(self, data):
+    def __apply_zscore(self, data):
         """
 
         :param data:
@@ -117,7 +117,7 @@ class WellCorrection():
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def _compute_approximation(self, data_y, approx="lst", verbose=False):
+    def __compute_approximation(self, data_y, approx="lst", verbose=False):
         """
 
         :param data_y:

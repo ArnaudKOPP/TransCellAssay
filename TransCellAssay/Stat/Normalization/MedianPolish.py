@@ -102,7 +102,7 @@ def median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbo
 
             return grand_effect, col_effects, row_effects, tbl, tbl_org
         else:
-            raise TypeError('\033[0;31m[ERROR]\033[0m  Expected the argument to be a numpy.ndarray.')
+            raise TypeError('Expected the argument to be a numpy.ndarray.')
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -185,6 +185,6 @@ def bz_median_polish(array, max_iterations=100, method='median', trimmed=0.0, ve
 
             return grand_effect, col_effects, row_effects, tbl, tbl_org
         else:
-            raise TypeError('\033[0;31m[ERROR]\033[0m  Expected the argument to be a numpy.ndarray.')
+            raise TypeError('Expected the argument to be a numpy.ndarray.')
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)

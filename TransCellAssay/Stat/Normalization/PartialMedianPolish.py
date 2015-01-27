@@ -63,11 +63,11 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
             mu = 0
             # # compute mu
             for row in range(shape[0]):
-                if not row in nrows:
+                if row not in nrows:
                     for col in range(shape[1]):
-                        if not col in ncols:
+                        if col not in ncols:
                             mu += input_array[row][col]
-            mu /= ((shape[0] - nrows.__len__()) * (shape[1] - ncols.__len__()))
+            mu /= ((shape[0] - len(nrows)) * (shape[1] - len(ncols)))
 
             rmu = [0] * shape[0]
             cmu = [0] * shape[1]
@@ -99,7 +99,7 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
                     for i in range(shape[0]):
                         input_array[i][j] += diff
                 loop += 1
-                if not (not (converge > epsilon) or not (loop < max_iteration)):
+                if not (not (converge > epsilon) and not (loop < max_iteration)):
                     break
 
             np.set_printoptions(suppress=True)
@@ -115,6 +115,6 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
                 print("")
             return input_array
         else:
-            raise TypeError
+            raise TypeError('Expected the argument to be a numpy.ndarray.')
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)

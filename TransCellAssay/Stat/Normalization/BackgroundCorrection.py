@@ -53,13 +53,13 @@ class BackgroundCorrection():
         :param verbose:
         """
         try:
-            self.background_evaluation(apply_on=apply, verbose=verbose)
-            self.background_surface_analysis()
-            self.apply_background_elimination()
+            self.__background_evaluation(apply_on=apply, verbose=verbose)
+            self.__background_surface_analysis()
+            self.__apply_background_elimination()
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
-    def background_evaluation(self, apply_on='Plate', verbose=False, control_well=None):
+    def __background_evaluation(self, apply_on='Plate', verbose=False, control_well=None):
         """
 
         :param apply_on:
@@ -73,7 +73,7 @@ class BackgroundCorrection():
                 for plate in self.screen:
                     # check if plate object
                     if not isinstance(plate, TCA.Plate):
-                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
+                        raise TypeError("Must provided good object")
                     else:
                         if self.BackgroundModel is None:
                             self.BackgroundModel = np.zeros(plate.array.shape)
@@ -85,7 +85,7 @@ class BackgroundCorrection():
                 for plate in self.screen:
                     # check if plate object
                     if not isinstance(plate, TCA.Plate):
-                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
+                        raise TypeError("Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in plate.replica.items():
@@ -98,7 +98,7 @@ class BackgroundCorrection():
                                 object_cnt += 1
                 self.BackgroundModel *= 1 / object_cnt
             else:
-                raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
+                raise AttributeError("Apply strategy only on plate or replicat")
             if verbose:
                 np.set_printoptions(suppress=True)
                 print("Background Evaluation table (Median) :")
@@ -106,9 +106,9 @@ class BackgroundCorrection():
                 print(self.BackgroundModel)
                 print("")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
-    def background_surface_analysis(self, plot=False):
+    def __background_surface_analysis(self, plot=False):
         """
 
         :param plot:
@@ -117,9 +117,9 @@ class BackgroundCorrection():
         try:
             return 0
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
-    def apply_background_elimination(self, apply_on, control_well=None):
+    def __apply_background_elimination(self, apply_on, control_well=None):
         """
 
         :param apply_on:
@@ -132,7 +132,7 @@ class BackgroundCorrection():
                 for plate in self.screen:
                     # check if plate object
                     if not isinstance(plate, TCA.Plate):
-                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
+                        raise TypeError("Must provided good object")
                     else:
                         plate.sec_array -= self.BackgroundModel
                         plate.isSpatialNormalized = True
@@ -141,7 +141,7 @@ class BackgroundCorrection():
                 for plate in self.screen:
                     # check if plate object
                     if not isinstance(plate, TCA.Plate):
-                        raise TypeError("\033[0;31m[ERROR]\033[0m Must provided good object")
+                        raise TypeError("Must provided good object")
                     else:
                         # iterate on all replicat in the plate
                         for repName, repValue in plate.replica.items():
@@ -151,6 +151,6 @@ class BackgroundCorrection():
                                 repValue.sec_array -= self.BackgroundModel
                                 repValue.isSpatialNormalized = True
             else:
-                raise AttributeError("\033[0;31m[ERROR]\033[0m Apply strategy only on plate or replicat")
+                raise AttributeError("Apply strategy only on plate or replicat")
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)

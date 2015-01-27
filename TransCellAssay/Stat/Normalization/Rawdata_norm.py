@@ -27,6 +27,7 @@ __status__ = "Production"
 
 def plate_feature_scaling(plate, channel, mean_scaling=False):
     """
+    Apply feature scaling on plate object accross all replica
     channel Scaling to [0,1] or [0, mean of max] if mean_scaling is True
     :param plate: Plate object
     :param channel: Which channel to scale
@@ -55,10 +56,19 @@ def plate_feature_scaling(plate, channel, mean_scaling=False):
 
 
 def __df_scaling(rawdata, min_val, max_val, channel, mean=False):
-        rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - min(min_val)) / (max(max_val) - min(min_val))
-        if mean:
-            rawdata.df.loc[:, channel] *= (sum(max_val) / len(max_val))
-        return rawdata
+    """
+    Apply feature scalling on rawdata
+    :param rawdata: rawdata object
+    :param min_val: min val for inf limit
+    :param max_val: max val for sup limit
+    :param channel: which channel to work
+    :param mean: bool
+    :return: normalized raw data
+    """
+    rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - min(min_val)) / (max(max_val) - min(min_val))
+    if mean:
+        rawdata.df.loc[:, channel] *= (sum(max_val) / len(max_val))
+    return rawdata
 
 
 def rawdata_variability_normalization(obj, channel, method=None, log2_transf=True, neg_control=None, pos_control=None):
@@ -96,6 +106,9 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
 
 
 def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None, pos_control=None):
+    """
+    Function that picked up functions for normalize raw data
+    """
     if log2_transf:
         rawdata = __log2_transformation(rawdata, channel)
     if method == 'Zscore':
@@ -114,32 +127,70 @@ def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None,
 
 
 def __log2_transformation(rawdata, channel):
+    """
+    Apply log2 transformation on rawdata
+    :param rawdata: rawdata object
+    :param channel: channel to apply
+    :return: transformed rawdata
+    """
     rawdata.df.loc[:] = rawdata.df[rawdata.df[channel] > 0]
     rawdata.df.loc[:, channel] = np.log2(rawdata.df[channel])
     return rawdata
 
 
 def __zscore_(rawdata, channel):
+    """
+    Apply Zscore normalization on rawdata
+    :param rawdata: rawdata object
+    :param channel: channel to apply
+    :return: transformed rawdata
+    """
     rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - np.mean(rawdata.df[channel])) / np.std(rawdata.df[channel])
     return rawdata
 
 
 def __robustzscore(rawdata, channel):
+    """
+    Apply robust Zscore normalization on rawdata
+    :param rawdata: rawdata object
+    :param channel: channel to apply
+    :return: transformed rawdata
+    """
     rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - np.median(rawdata.df[channel])) / mad(rawdata.df[channel])
     return rawdata
 
 
 def __percentofsample(rawdata, channel):
+    """
+    Apply percent of sample normalization on rawdata
+    :param rawdata: rawdata object
+    :param channel: channel to apply
+    :return: transformed rawdata
+    """
     rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] / np.mean(rawdata.df[channel])) * 100
     return rawdata
 
 
 def __robustpercentofsample(rawdata, channel):
+    """
+    Apply robust percent of sample normalization on rawdata
+    :param rawdata: rawdata object
+    :param channel: channel to apply
+    :return: transformed rawdata
+    """
     rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] / np.median(rawdata.df[channel])) * 100
     return rawdata
 
 
 def __percentofcontrol(rawdata, channel, neg=None, pos=None):
+    """
+    Apply a percent of control (ration) normalization on rawdata
+    :param rawdata: rawdata object
+    :param channel: on which channel to work
+    :param neg: neg reference
+    :param pos: pos reference if neg is not provided
+    :return: return raw data
+    """
     if neg is None:
         if pos is None:
             raise AttributeError("Need Negative or Positive control")
@@ -155,6 +206,14 @@ def __percentofcontrol(rawdata, channel, neg=None, pos=None):
 
 
 def __normalizedpercentinhibition(rawdata, channel, neg=None, pos=None):
+    """
+    Apply a normalized percent inhibition normalization on rawdata
+    :param rawdata: rawdata object
+    :param channel: on which channel to work
+    :param neg: neg reference
+    :param pos: pos reference
+    :return: return normalized raw data
+    """
     if neg is None:
         if pos is None:
             raise AttributeError("Need Negative and Positive control")

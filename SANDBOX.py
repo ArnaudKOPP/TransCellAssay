@@ -65,24 +65,24 @@ def do_384():
     # TCA.plot_plate_3d(test1_pos)
     # TCA.plot_plate_3d(test2_pos)
 
-    # plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
-    # plaque2.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
+    plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
+    plaque2.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
 
-    plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
-    plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+    # plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
+    # plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 
     # TCA.plot_plate_3d(plaque1.sec_array)
     # TCA.plot_plate_3d(plaque2.sec_array)
     # TCA.plate_heatmap_p(plaque1)
     # TCA.plate_heatmap_p(plaque2)
     # TCA.heatmap_map_p(plaque1, plaque2, usesec=True)
-    # TCA.plate_heatmap_p(plaque1, both=True)
-    # TCA.plate_heatmap_p(plaque2, both=True)
+    TCA.plate_heatmap_p(plaque1, both=True)
+    TCA.plate_heatmap_p(plaque2, both=True)
 
-    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
-    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)
-    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, verbose=True)
-    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=True)
 
 
 do_384()
@@ -418,4 +418,4 @@ def rest():
 
 # rest()
 
-print('End of Sandbox')
+print('FINISH')

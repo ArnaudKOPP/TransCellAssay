@@ -22,10 +22,10 @@ class BackgroundSubstraction():
     :param background:
     """
 
-    def __init__(self, background):
+    def __init__(self, background=None):
         try:
             self.background = background
-            self.screen = []
+            self.plate_lst = []
         except Exception as e:
             print(e)
 
@@ -37,11 +37,11 @@ class BackgroundSubstraction():
         try:
             for arg in args:
                 if isinstance(arg, TCA.Plate):
-                    self.screen.append(arg)
+                    self.plate_lst.append(arg)
                 elif isinstance(arg, list):
                     for elem in arg:
                         if isinstance(elem, TCA.Plate):
-                            self.screen.append(elem)
+                            self.plate_lst.append(elem)
                         else:
                             raise TypeError('Accept only list of Plate element')
                 else:
@@ -49,16 +49,16 @@ class BackgroundSubstraction():
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def _process(self):
+    def __process(self):
         """
 
         """
         try:
             # iterate on all plate
-            for plate in self.screen:
+            for plate in self.plate_lst:
                 # iterate on all replicat in the plate
                 for repName, repValue in plate.replicat.items():
-                    repValue.SECData = repValue.Data - self.background
+                    repValue.sec_array = repValue.array - self.background
                     repValue.isSpatialNormalized = True
         except Exception as e:
             print(e)
