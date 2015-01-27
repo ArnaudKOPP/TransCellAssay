@@ -3,7 +3,7 @@
 Controls based normalization : Percent Of Control and Normalized percent of inhibition
 Non controls based normalization : Percent of Sample, Robust Percent of Sample, Z-score and robust Z-score
 
-Use this with caution, if you want to keep some event with 0 in value, don't normalize
+Use this with caution, if you want to keep some event with 0 in value, don't normalize with log transformation
 
 Add Feature Scaling normalization :
 http://en.wikipedia.org/wiki/Feature_scaling
@@ -81,10 +81,13 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
         if isinstance(obj, TCA.Plate):
             for key, value in obj.replica.items():
                 value.rawdata.df = __rd_norm(value.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
+            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing for plate {}'.format(obj.name))
         elif isinstance(obj, TCA.Replica):
             obj.rawdata.df = __rd_norm(obj.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
+            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing for replica {}'.format(obj.name))
         elif isinstance(obj, TCA.RawData):
             obj = __rd_norm(obj, channel, method, log2_transf, neg_control, pos_control)
+            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing')
             return obj
         else:
             raise TypeError("Don't take this object, only plate, replica or raw data")
@@ -93,7 +96,6 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
 
 
 def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None, pos_control=None):
-    print('\033[0;32m[INFO]\033[0m Raw Data normalization processing')
     if log2_transf:
         rawdata = __log2_transformation(rawdata, channel)
     if method == 'Zscore':
