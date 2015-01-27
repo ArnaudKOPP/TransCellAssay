@@ -49,7 +49,7 @@ class InputFile(object):
             remove = ['Row', 'Column']
             self.dataframe = self.dataframe.drop(remove, axis=1)
         except Exception as e:
-            print(e)
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def get_col(self):
         """

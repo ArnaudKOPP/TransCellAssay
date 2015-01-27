@@ -259,7 +259,7 @@ class Replica(object):
                 self.isNormalized = True
                 self.compute_data_for_channel(channel)
             else:
-                raise Exception("\033[0;33m[WARNING]\033[0m Data are already normalized")
+                print("\033[0;33m[WARNING]\033[0m Data are already normalized, do nothing")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

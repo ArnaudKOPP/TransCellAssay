@@ -93,7 +93,7 @@ def plate_quality_control(plate, channels, cneg, cpos, sedt=False, sec_data=Fals
     """
     try:
         if not isinstance(plate, TCA.Core.Plate):
-            raise TypeError("\033[0;31m[ERROR]\033[0m Need A Plate")
+            raise TypeError("Need A Plate")
         else:
             neg_well = plate.platemap.get_coord(cneg)
             pos_well = plate.platemap.get_coord(cpos)
@@ -115,7 +115,7 @@ def plate_quality_control(plate, channels, cneg, cpos, sedt=False, sec_data=Fals
 
             return qc_data_array
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
 def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,
@@ -135,11 +135,11 @@ def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, 
     """
     try:
         if not isinstance(replicat, TCA.Core.Replica):
-            raise TypeError("\033[0;31m[ERROR]\033[0m Need A Replicat")
+            raise TypeError("Need A Replicat")
         else:
             if not use_raw_data:
                 if replicat.array is None:
-                    raise Exception("\033[0;31m[ERROR]\033[0m compute_data_from_replicat First")
+                    raise Exception("Compute_data_from_replicat First")
 
             if skipping_wells:
                 valid_neg_well = replicat.get_valid_well(neg_well)
@@ -151,20 +151,20 @@ def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, 
             # # get Data
             if not use_raw_data:
                 if replicat.array is not None:
-                    negdata = _get_data_control_array(replicat.array, c_ref=valid_neg_well)
-                    posdata = _get_data_control_array(replicat.array, c_ref=valid_pos_well)
+                    negdata = __get_data_control_array(replicat.array, c_ref=valid_neg_well)
+                    posdata = __get_data_control_array(replicat.array, c_ref=valid_pos_well)
                 else:
                     print('\033[0;33m[WARNING]\033[0m 1data/well not available, using instead Raw Data')
-                    negdata = _get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
-                    posdata = _get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
+                    negdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
+                    posdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
             else:
                 if replicat.rawdata is not None:
-                    negdata = _get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
-                    posdata = _get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
+                    negdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
+                    posdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
                 else:
                     print('\033[0;33m[WARNING]\033[0m Raw Data not available, using instead 1data/well ')
-                    negdata = _get_data_control_array(replicat.array, c_ref=valid_neg_well)
-                    posdata = _get_data_control_array(replicat.array, c_ref=valid_pos_well)
+                    negdata = __get_data_control_array(replicat.array, c_ref=valid_neg_well)
+                    posdata = __get_data_control_array(replicat.array, c_ref=valid_pos_well)
 
             qc_data_array = pd.DataFrame(
                 np.zeros(1, dtype=[('Replicat ID', str), ('Neg Mean', float), ('Neg SD', float),
@@ -175,7 +175,7 @@ def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, 
             if sedt:
                 if sec_data:
                     if replicat.sec_array is None:
-                        raise ValueError("\033[0;31m[ERROR]\033[0m SEC Before")
+                        raise ValueError("SEC Before")
                     else:
                         TCA.systematic_error_detection_test(replicat.sec_array)
                 else:
@@ -185,42 +185,39 @@ def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, 
             qc_data_array['Neg SD'] = np.std(negdata)
             qc_data_array['Pos Mean'] = np.mean(posdata)
             qc_data_array['Pos SD'] = np.std(posdata)
-            qc_data_array['AVR'] = _avr(negdata, posdata)
-            qc_data_array['Z*Factor'] = _zfactor_prime(negdata, posdata)
-            qc_data_array['ZFactor'] = _zfactor(replicat.rawdata.df, channel, negdata, posdata)
-            qc_data_array['SSMD'] = _ssmd(negdata, posdata)
-            qc_data_array['CVD'] = _cvd(negdata, posdata)
+            qc_data_array['AVR'] = __avr(negdata, posdata)
+            qc_data_array['Z*Factor'] = __zfactor_prime(negdata, posdata)
+            qc_data_array['ZFactor'] = __zfactor(replicat.rawdata.df, channel, negdata, posdata)
+            qc_data_array['SSMD'] = __ssmd(negdata, posdata)
+            qc_data_array['CVD'] = __cvd(negdata, posdata)
 
             if verbose:
                 print("\nQuality Control for replicat : ", replicat.name + "\n")
                 print(qc_data_array)
             return qc_data_array
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def _get_data_control_array(array, c_ref):
+def __get_data_control_array(array, c_ref):
     """
     Grab value from array with from specified position
     :param array: array
     :param c_ref: ref in well format (A1)
     :return: 1d array with data from desired Wells
     """
-    try:
-        if not isinstance(array, np.ndarray):
-            raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
-        else:
-            data = list()
-            for i in c_ref:
-                if isinstance(i, str):
-                    i = TCA.get_opposite_well_format(i)
-                data.append(array[i[0]][i[1]])
-            return data
-    except Exception as e:
-        print(e)
+    if not isinstance(array, np.ndarray):
+        raise TypeError("Invalide data Format")
+    else:
+        data = list()
+        for i in c_ref:
+            if isinstance(i, str):
+                i = TCA.get_opposite_well_format(i)
+            data.append(array[i[0]][i[1]])
+        return data
 
 
-def _get_data_control(data, channel, c_ref):
+def __get_data_control(data, channel, c_ref):
     """
     Grab the data of the desired well
     :param data: data frame
@@ -228,23 +225,20 @@ def _get_data_control(data, channel, c_ref):
     :param c_ref: a control ref list that we want to search, list of well in this format : A1
     :return: 1D array with data from desired Wells
     """
-    try:
-        if not isinstance(data, TCA.RawData):
-            raise TypeError("\033[0;31m[ERROR]\033[0m Invalide data Format")
-        else:
-            datax = pd.DataFrame()
-            for i in c_ref:
-                if isinstance(i, tuple):
-                    i = TCA.get_opposite_well_format(i)
-                if datax.empty:
-                    datax = data.get_raw_data(channel=channel, well=i, well_idx=False)
+    if not isinstance(data, TCA.RawData):
+        raise TypeError("Invalide data Format")
+    else:
+        datax = pd.DataFrame()
+        for i in c_ref:
+            if isinstance(i, tuple):
+                i = TCA.get_opposite_well_format(i)
+            if datax.empty:
                 datax = data.get_raw_data(channel=channel, well=i, well_idx=False)
-            return datax
-    except Exception as e:
-        print(e)
+            datax = data.get_raw_data(channel=channel, well=i, well_idx=False)
+        return datax
 
 
-def _avr(cneg, cpos):
+def __avr(cneg, cpos):
     """
     Assay Variability ratio
     This parameters capture the data variability in both controls as opposed to signal_windows, and can be defined
@@ -253,14 +247,11 @@ def _avr(cneg, cpos):
     :param cpos: positive control data
     :return: avr value
     """
-    try:
-        avr = (3 * np.std(cpos) + 3 * np.std(cneg)) / (np.abs(np.mean(cpos) - np.mean(cneg)))
-        return avr
-    except Exception as e:
-        print(e)
+    avr = (3 * np.std(cpos) + 3 * np.std(cneg)) / (np.abs(np.mean(cpos) - np.mean(cneg)))
+    return avr
 
 
-def _zfactor_prime(cneg, cpos):
+def __zfactor_prime(cneg, cpos):
     """
     Despite of the fact that AVR and Z'factor has similar properties, the latter is the most widely used QC criterion,
     where the separation between positive and negative controls is calculated as a measure of the signal range of a
@@ -275,14 +266,11 @@ def _zfactor_prime(cneg, cpos):
     :param cpos: positive control data
     :return: z'factor value
     """
-    try:
-        zfactorprime = 1 - ((3 * np.std(cpos) + 3 * np.std(cneg)) / (np.abs(np.mean(cpos) - np.mean(cneg))))
-        return zfactorprime
-    except Exception as e:
-        print(e)
+    zfactorprime = 1 - ((3 * np.std(cpos) + 3 * np.std(cneg)) / (np.abs(np.mean(cpos) - np.mean(cneg))))
+    return zfactorprime
 
 
-def _zfactor(data, channel, cneg, cpos):
+def __zfactor(data, channel, cneg, cpos):
     """
     This is the modified version of the Z’-factor, where the mean and std of the
     negative control are substituted with the ones for the test samples. Although Z-factor
@@ -300,14 +288,11 @@ def _zfactor(data, channel, cneg, cpos):
     :param cpos: positive control data
     :return: zfactor value
     """
-    try:
-        zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data[channel])) / (np.abs(np.mean(cpos) - np.mean(cneg))))
-        return zfactor
-    except Exception as e:
-        print(e)
+    zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data[channel])) / (np.abs(np.mean(cpos) - np.mean(cneg))))
+    return zfactor
 
 
-def _ssmd(cneg, cpos):
+def __ssmd(cneg, cpos):
     """
     It is an alternative quality metric to Z’- and Z-factor, which was recently devel‐
     oped to assess the assay quality in HT screens (Zhang 2007a; Zhang 2007b). Due to its ba‐
@@ -325,14 +310,11 @@ def _ssmd(cneg, cpos):
     :param cpos: positive control data
     :return: ssmd value
     """
-    try:
-        ssmd = (np.mean(cpos) - np.mean(cneg)) / (np.sqrt(np.abs(np.std(cpos) ** 2 - np.std(cneg) ** 2)))
-        return ssmd
-    except Exception as e:
-        print(e)
+    ssmd = (np.mean(cpos) - np.mean(cneg)) / (np.sqrt(np.abs(np.std(cpos) ** 2 - np.std(cneg) ** 2)))
+    return ssmd
 
 
-def _cvd(cneg, cpos):
+def __cvd(cneg, cpos):
     """
     As in original meaning of coefficient of variability for a random variable, CVD represents the relative SD of the
     difference with respect to mean of the difference.
@@ -342,8 +324,5 @@ def _cvd(cneg, cpos):
     :param cpos: positive control data
     :return: cvd value
     """
-    try:
-        cvd = (np.sqrt(np.abs(np.std(cpos) ** 2 - np.std(cneg) ** 2))) / (np.mean(cpos) - np.mean(cneg))
-        return cvd
-    except Exception as e:
-        print(e)
+    cvd = (np.sqrt(np.abs(np.std(cpos) ** 2 - np.std(cneg) ** 2))) / (np.mean(cpos) - np.mean(cneg))
+    return cvd

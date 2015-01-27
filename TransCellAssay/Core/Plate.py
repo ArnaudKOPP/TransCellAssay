@@ -517,7 +517,7 @@ class Plate(object):
                     assert isinstance(elem, TCA.Core.Replica)
                     self.replica[elem.name] = elem
             else:
-                raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
+                raise AttributeError("Unsupported Type")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

@@ -46,13 +46,13 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
         if isinstance(plate, TCA.Plate):
             # if no neg was provided raise AttributeError
             if neg_control is None:
-                raise AttributeError('Must provided negative control')
+                raise ValueError('Must provided negative control')
             if len(plate) > 1:
                 if paired:
-                    score = _paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose)
+                    score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose)
                 else:
-                    score = _unpaired_tstat_score(plate, neg_control, variance=variance, sec_data=sec_data,
-                                                  verbose=verbose)
+                    score = __unpaired_tstat_score(plate, neg_control, variance=variance, sec_data=sec_data,
+                                                   verbose=verbose)
             else:
                 raise ValueError("T-Test need at least two replicat")
             return score
@@ -62,7 +62,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
         print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
+def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
     """
     performed unpaired t-stat score
 
@@ -77,8 +77,6 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
     :return: score data
     """
     try:
-        if neg_control is None:
-            raise AttributeError('Must provided negative control')
         if isinstance(plate, TCA.Plate):
             ttest_score = np.zeros(plate.platemap.platemap.shape)
 
@@ -136,7 +134,7 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
                             (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * (
                             (1 / nb_rep) * (1 / nb_neg_wells)))
                     else:
-                        raise AttributeError('Variance attribut must be unequal or equal.')
+                        raise ValueError('Variance attribut must be unequal or equal.')
 
             # # replace NaN with 0
             ttest_score = np.nan_to_num(ttest_score)
@@ -156,7 +154,7 @@ def _unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True,
         print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
+def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
     """
     performed paired t-stat score
     :param plate: Plate Object to analyze
@@ -166,8 +164,6 @@ def _paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
     :return: score data
     """
     try:
-        if neg_control is None:
-            raise AttributeError('Must provided negative control')
         if isinstance(plate, TCA.Plate):
             ttest_score = np.zeros(plate.platemap.platemap.shape)
 

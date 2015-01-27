@@ -29,21 +29,24 @@ class EXCEL(InputFile):
         Load excel file
         :param fpath:
         """
-        xls = pd.ExcelFile(fpath)
-        columns_name = xls.sheet_names
-        measures = filter(lambda x: 'Cell measures' in x, columns_name)
-        data = None
-        compt = 0
-        for i in measures:
-            compt += 1
-            print("sheet : %d" % compt)
-            if data is None:
-                data = pd.read_excel(fpath, i)
-            else:
-                data = data.append(pd.read_excel(fpath, i))
-            data.fillna(0)
+        try:
+            xls = pd.ExcelFile(fpath)
+            columns_name = xls.sheet_names
+            measures = filter(lambda x: 'Cell measures' in x, columns_name)
+            data = None
+            compt = 0
+            for i in measures:
+                compt += 1
+                print("sheet : %d" % compt)
+                if data is None:
+                    data = pd.read_excel(fpath, i)
+                else:
+                    data = data.append(pd.read_excel(fpath, i))
+                data.fillna(0)
 
-        self.dataframe = data
+            self.dataframe = data
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
 
 
 class Excel_Reader():

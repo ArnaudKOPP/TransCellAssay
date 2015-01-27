@@ -34,9 +34,9 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
             rk_pdt = plate.platemap.platemap.values.flatten().reshape(size, 1)
             for key, value in plate.replica.items():
                 if secdata:
-                    rank = _get_data_rank(value.sec_array, method=rank_method)
+                    rank = __get_data_rank(value.sec_array, method=rank_method)
                 else:
-                    rank = _get_data_rank(value.array, method=rank_method)
+                    rank = __get_data_rank(value.array, method=rank_method)
                 rk_pdt = np.append(rk_pdt, rank.flatten().reshape(size, 1), axis=1)
 
             if mean_method is 'mean':
@@ -48,24 +48,18 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
                 print(rk_pdt)
             return rk_pdt
         else:
-            raise TypeError
+            raise TypeError('Provide a plate')
     except Exception as e:
-        print(e)
+        print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def _get_data_rank(array, method="average"):
+def __get_data_rank(array, method="average"):
     """
     Take in input a numpy array and return rank data in same shape
     :param array: numpy array to get rank
     :param method: average (default, min, max, dense or ordinal
     :return: return rank in same shape as array input
     """
-    try:
-        if isinstance(array, np.ndarray):
-            org_shape = array.shape
-            rank_matrix = rankdata(array, method=method)
-            return rank_matrix.reshape(org_shape)
-        else:
-            raise TypeError
-    except Exception as e:
-        print(e)
+    org_shape = array.shape
+    rank_matrix = rankdata(array, method=method)
+    return rank_matrix.reshape(org_shape)

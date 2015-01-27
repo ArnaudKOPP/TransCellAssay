@@ -10,7 +10,7 @@ import time
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
-np.set_printoptions(linewidth=250)
+np.set_printoptions(linewidth=300)
 np.set_printoptions(suppress=True)
 
 import TransCellAssay as TCA
@@ -81,8 +81,8 @@ def do_384():
 
     TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
     TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)
-    TCA.plate_ssmd_score(plaque2, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
-    TCA.plate_ssmd_score(plaque2, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)
+    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, verbose=True)
+    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=True)
 
 
 do_384()

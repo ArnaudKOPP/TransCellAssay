@@ -44,7 +44,7 @@ class RawData(object):
                     self.df = pd.read_csv(path_or_file, decimal=",", sep=";", engine='c')
                     print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
                 except Exception as e:
-                    print('\033[0;31m[ERROR]\033[0m  Error in reading %s File : ' % path_or_file, e)
+                    raise IOError('Error in reading {} File : '.format(path_or_file), e)
         elif isinstance(path_or_file, TCA.InputFile):
             raise NotImplementedError
         else:
@@ -116,17 +116,20 @@ class RawData(object):
         :param chan:
         :return:
         """
-        print("\033[0;33m[INFO/WARNING]\033[0m Only to use with 1Data/Well Raw data")
-        size = len(self.df)
-        if size <= 96:
-            array = np.zeros((8, 12))
-        elif size <= 384:
-            array = np.zeros((16, 24))
-        elif size > 384:
-            raise NotImplementedError('MAX 384 Well plate are not implemented')
-        for i in range(size):
-            array[self.df['Row'][i]][self.df['Column'][i]] = self.df[chan][i]
-        return array
+        try:
+            print("\033[0;33m[INFO/WARNING]\033[0m Only to use with 1Data/Well Raw data")
+            size = len(self.df)
+            if size <= 96:
+                array = np.zeros((8, 12))
+            elif size <= 384:
+                array = np.zeros((16, 24))
+            elif size > 384:
+                raise NotImplementedError('MAX 384 Well plate are not implemented')
+            for i in range(size):
+                array[self.df['Row'][i]][self.df['Column'][i]] = self.df[chan][i]
+            return array
+        except Exception as e:
+            print("\033[0;31m[ERROR]\033[0m", e)
 
     def compute_matrix(self, channel, type_mean='mean'):
         """

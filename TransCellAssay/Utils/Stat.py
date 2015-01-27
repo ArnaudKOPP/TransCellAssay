@@ -165,28 +165,28 @@ def adjustpvalues(pvalues, method='fdr', n=None):
     return np.minimum(p0, np.ones(len(p0)))
 
 
-def Anderson_Darling(Array):
+def anderson_darling_test(array):
     """
     The Anderson–Darling test is a statistical test of whether a given sample of data is drawn from a given probability
     distribution.
-    :param Array:
+    :param array:
     :return: return value
     """
     try:
-        Mean1 = np.nanmean(Array)
-        STD = np.nanstd(Array)
-        norm = np.zeros(Array.shape)
+        mean1 = np.nanmean(array)
+        std = np.nanstd(array)
+        norm = np.zeros(array.shape)
 
-        for i in range(0, len(Array) - 1, 1):
-            norm[i] = (Array[i] - Mean1) / STD
+        for i in range(0, len(array) - 1, 1):
+            norm[i] = (array[i] - mean1) / std
 
-        A = Asquare(norm)
-        return A
+        a = __asquare(norm)
+        return a
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def Asquare(data):
+def __asquare(data):
     try:
         mean1 = np.nanmean(data)
         varianceb = np.sqrt(2 * np.nanvar(data))
@@ -194,19 +194,19 @@ def Asquare(data):
         cpt = 0
         for i in range(0, len(data) - 1, 1):
             cpt += 1
-            err += ((2 * cpt - 1) * np.log(CDF(data[i], mean1, varianceb)) + np.log(
-                1 - CDF(data[len(data - 1 - i)], mean1, varianceb)))
-        A = -len(data) - err / len(data)
+            err += ((2 * cpt - 1) * np.log(__cdf(data[i], mean1, varianceb)) + np.log(
+                1 - __cdf(data[len(data - 1 - i)], mean1, varianceb)))
+        a = -len(data) - err / len(data)
 
-        return A
+        return a
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
 
 
-def CDF(y, mu, varb):
+def __cdf(y, mu, varb):
     try:
-        Res = 0.5 * (1 + scipy.stats.norm.cdf((y - mu) / varb))
-        return Res
+        res = 0.5 * (1 + scipy.stats.norm.cdf((y - mu) / varb))
+        return res
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
 
@@ -223,11 +223,11 @@ def t_test(array1, array2):
     :return: tstat and degree of freedom
     """
     try:
-        N1 = array1.size
-        N2 = array2.size
-        tstat = (np.mean(array1) - np.mean(array2)) / (np.sqrt((np.var(array1) / N1) + (np.var(array2) / N2)))
-        dof = ((np.var(array1) / N1) + (np.var(array2) / N2)) ** 2 / (
-            ((np.var(array1) / N1) ** 2 / (N1 - 1)) + ((np.var(array2) / N2) ** 2 / (N2 - 1)))
+        n1 = array1.size
+        n2 = array2.size
+        tstat = (np.mean(array1) - np.mean(array2)) / (np.sqrt((np.var(array1) / n1) + (np.var(array2) / n2)))
+        dof = ((np.var(array1) / n1) + (np.var(array2) / n2)) ** 2 / (
+            ((np.var(array1) / n1) ** 2 / (n1 - 1)) + ((np.var(array2) / n2) ** 2 / (n2 - 1)))
         return tstat, dof
     except Exception as e:
         print("\033[0;31m[ERROR]\033[0m", e)
@@ -246,11 +246,11 @@ def ttest(array1, array2, alpha=0.05):
     :return: True if Systematic error is present or False
     """
     try:
-        N1 = array1.size
-        N2 = array2.size
-        tstat = (np.mean(array1) - np.mean(array2)) / (np.sqrt((np.var(array1) / N1) + (np.var(array2) / N2)))
-        dof = ((np.var(array1) / N1) + (np.var(array2) / N2)) ** 2 / (
-            ((np.var(array1) / N1) ** 2 / (N1 - 1)) + ((np.var(array2) / N2) ** 2 / (N2 - 1)))
+        n1 = array1.size
+        n2 = array2.size
+        tstat = (np.mean(array1) - np.mean(array2)) / (np.sqrt((np.var(array1) / n1) + (np.var(array2) / n2)))
+        dof = ((np.var(array1) / n1) + (np.var(array2) / n2)) ** 2 / (
+            ((np.var(array1) / n1) ** 2 / (n1 - 1)) + ((np.var(array2) / n2) ** 2 / (n2 - 1)))
         theo = scipy.stats.t.isf(alpha, dof)
         if tstat > theo:
             return True
