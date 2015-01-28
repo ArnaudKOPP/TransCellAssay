@@ -374,16 +374,16 @@ def plot_multiple_plate(*args, usesec=False, neg=None, pos=None, other=None, mar
                 if neg is not None or pos is not None or other is not None:
                     pm = plate.platemap.platemap.values.flatten()
                     posi = np.random.normal(i, 0.05, len(data))
-                    for i in range(len(data)):
-                        curr = str(pm[i])
+                    for j in range(len(data)):
+                        curr = str(pm[j])
                         if curr == neg:
-                            plt.scatter(posi[i], data[i], c='g', marker=marker)
+                            plt.scatter(posi[j], data[j], c='g', marker=marker)
                         elif curr == pos:
-                            plt.scatter(posi[i], data[i], c='r', marker=marker)
+                            plt.scatter(posi[j], data[j], c='r', marker=marker)
                         elif curr == other:
-                            plt.scatter(posi[i], data[i], c='y', marker=marker)
+                            plt.scatter(posi[j], data[j], c='y', marker=marker)
                         else:
-                            plt.scatter(posi[i], data[i], marker=marker)
+                            plt.scatter(posi[j], data[j], marker=marker)
                 # part all in blue
                 if neg is None and pos is None and other is None:
                     plt.scatter(np.random.normal(i, 0.05, len(data)), data, marker=marker)
