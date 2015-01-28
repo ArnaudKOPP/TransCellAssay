@@ -76,8 +76,10 @@ def do_384():
     # TCA.plate_heatmap_p(plaque1)
     # TCA.plate_heatmap_p(plaque2)
     # TCA.heatmap_map_p(plaque1, plaque2, usesec=True)
-    TCA.plate_heatmap_p(plaque1, both=True)
-    TCA.plate_heatmap_p(plaque2, both=True)
+    # TCA.plate_heatmap_p(plaque1, both=True)
+    # TCA.plate_heatmap_p(plaque2, both=True)
+    # TCA.plot_multiple_plate(plaque1, plaque2, usesec=True)
+    TCA.plot_multiple_plate(plaque1, plaque2, neg=neg, pos=pos)
 
     # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
     # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)

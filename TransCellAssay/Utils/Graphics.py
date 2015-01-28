@@ -332,23 +332,28 @@ def boxplot_by_wells(dataframe, channel):
         print(e)
 
 
-def plot_multiple_plate(*args):
+def plot_multiple_plate(*args, usesec=False, neg=None, pos=None, other=None, marker='o'):
     """
     Plot from all replica from given plate, the array value
-    :param args:
+    :param args: plate object
+    :param usesec: use sec data
+    :param neg: neg in green
+    :param pos: pos in red
+    :param other: some gene in yellow
+    :param marker: marker style
     """
     try:
         import matplotlib.pyplot as plt
         import numpy as np
 
-        screen = []
+        plt_list = []
         for arg in args:
             if isinstance(arg, TCA.Plate):
-                screen.append(arg)
+                plt_list.append(arg)
             elif isinstance(arg, list):
                 for elem in arg:
                     if isinstance(elem, TCA.Plate):
-                        screen.append(elem)
+                        plt_list.append(elem)
                     else:
                         raise TypeError('Accept only list of Plate element')
             else:
@@ -356,18 +361,35 @@ def plot_multiple_plate(*args):
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        platedata = list()
-        platenumber = list()
-        I = 0
-        for plate in screen:
+        i = 0
+        for plate in plt_list:
             assert isinstance(plate, TCA.Plate)
             for key, value in plate.replica.items():
-                platedata.append(value.array.flatten())
-                platenumber.append(I)
-                I += 1
-        ax.plot(platenumber, platedata, 'b.')
-        ax.set_xlim([-0.5, I-0.5])
-        ax.set_ylabel('Data')
+                # select data
+                if usesec:
+                    data = value.sec_array.flatten()
+                else:
+                    data = value.array.flatten()
+                # part for neg, pos or other in color
+                if neg is not None or pos is not None or other is not None:
+                    pm = plate.platemap.platemap.values.flatten()
+                    posi = np.random.normal(i, 0.05, len(data))
+                    for i in range(len(data)):
+                        curr = str(pm[i])
+                        if curr == neg:
+                            plt.scatter(posi[i], data[i], c='g', marker=marker)
+                        elif curr == pos:
+                            plt.scatter(posi[i], data[i], c='r', marker=marker)
+                        elif curr == other:
+                            plt.scatter(posi[i], data[i], c='y', marker=marker)
+                        else:
+                            plt.scatter(posi[i], data[i], marker=marker)
+                # part all in blue
+                if neg is None and pos is None and other is None:
+                    plt.scatter(np.random.normal(i, 0.05, len(data)), data, marker=marker)
+                i += 1
+        ax.set_xlim([-0.5, i-0.5])
+        ax.set_ylabel('Well value')
         ax.set_xlabel('Plate/Replicat ID')
         plt.show()
     except Exception as e:
