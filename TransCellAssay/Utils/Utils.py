@@ -5,6 +5,7 @@ Usefull function
 
 import sys
 import time
+import numpy as np
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -75,3 +76,36 @@ def get_masked_array(data_arr, plate_array, to_keep):
             if not plate_array[i][j] == to_keep:
                 data[i][j] = 0
     return data
+
+
+def mad_based_outlier(data, thresh=3.5):
+    """
+    http://stackoverflow.com/questions/22354094/pythonic-way-of-detecting-outliers-in-one-dimensional-observation-data
+
+    Based on mad, determine outliers
+    :param data:
+    :param thresh:
+    :return:
+    """
+    if len(data.shape) == 1:
+        data = data[:, None]
+    median = np.median(data, axis=0)
+    diff = np.sum((data - median)**2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+    modified_z_score = 0.6745 * diff / med_abs_deviation
+    return modified_z_score > thresh
+
+
+def percentile_based_outlier(data, threshold=95):
+    """
+    http://stackoverflow.com/questions/22354094/pythonic-way-of-detecting-outliers-in-one-dimensional-observation-data
+
+    Based on percentilen determine outliers
+    :param data:
+    :param threshold:
+    :return:
+    """
+    diff = (100 - threshold) / 2.0
+    minval, maxval = np.percentile(data, [diff, 100 - diff])
+    return (data < minval) | (data > maxval)
