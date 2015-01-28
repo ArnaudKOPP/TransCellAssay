@@ -71,6 +71,11 @@ def do_384():
     # plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
     # plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=False)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=True)
+
     # TCA.plot_plate_3d(plaque1.sec_array)
     # TCA.plot_plate_3d(plaque2.sec_array)
     # TCA.plate_heatmap_p(plaque1)
@@ -79,13 +84,10 @@ def do_384():
     # TCA.plate_heatmap_p(plaque1, both=True)
     # TCA.plate_heatmap_p(plaque2, both=True)
     # TCA.plot_multiple_plate(plaque1, plaque2, usesec=True)
-    TCA.plot_multiple_plate(plaque1, plaque2, neg=neg, pos=pos)
-
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=True)
-
+    TCA.plot_wells(plaque1, plaque2, neg=neg, pos=pos)
+    # TCA.dual_flashlight_plot(plaque1.array, ssmd)
+    # TCA.boxplot_by_wells(plaque1['rep1'].rawdata.df, channel=channel)
+    # TCA.plot_distribution(wells=['B5', 'B6'], plate=plaque1, channel=channel)
 
 do_384()
 
@@ -95,11 +97,9 @@ def do_it(plate_nb, verbose=False):
     platesetup = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/Toulouse_12_2014/Pl"+plate_nb+"PP.csv")
     plaque + platesetup
     rep1 = TCA.Core.Replica(name="rep1",
-                            data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".1.csv",
-                            skip=((2, 0), (3, 0), (4, 0), (5, 0)))
+                            data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".1.csv")
     rep2 = TCA.Core.Replica(name="rep2",
-                            data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".2.csv",
-                            skip=((3, 0), (1, 11)))
+                            data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".2.csv")
     rep3 = TCA.Core.Replica(name="rep3",
                             data="/home/arnaud/Desktop/Toulouse_12_2014/toulouse pl " + plate_nb + ".3.csv")
 
@@ -135,7 +135,7 @@ def do_it(plate_nb, verbose=False):
     plaque.normalization(channel, method='PercentOfControl', log=False, neg=platesetup.get_well(neg),
                          pos=platesetup.get_well(pos))
 
-    TCA.plate_quality_control(plaque, channels=channel, cneg=neg, cpos=pos, use_raw_data=False, skipping_wells=True,
+    TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=False, skipping_wells=True,
                               verbose=True)
 
     # TCA.ReferenceDataWriter(plaque, plaque, plaque, plaque, plaque, plaque, plaque, plaque, filepath='/home/arnaud/Desktop/test.xlsx', ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'], channels=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
@@ -146,27 +146,27 @@ def do_it(plate_nb, verbose=False):
     # TCA.independance(plaque, neg='Neg', channel=channel)
     # TCA.rank_product(plaque, secdata=True, verbose=True)
 
-    ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
-                                 verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, verbose=verbose)
-    ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
-                                 variance="equal", verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, variance="equal",
-                         verbose=verbose)
-    ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
-                                 verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, verbose=verbose)
-    ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
-                                 method='MM', verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, method='MM',
-                         verbose=verbose)
-    tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=True,
-                                   verbose=verbose)
-    TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=False, verbose=verbose)
-    tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=True, verbose=verbose)
-    TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=False, verbose=verbose)
-    tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
-    TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=False, verbose=verbose)
+    # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
+    #                              verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, verbose=verbose)
+    # ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
+    #                              variance="equal", verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False, variance="equal",
+    #                      verbose=verbose)
+    # ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
+    #                              verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, verbose=verbose)
+    # ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
+    #                              method='MM', verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, method='MM',
+    #                      verbose=verbose)
+    # tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=True,
+    #                                verbose=verbose)
+    # TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=False, verbose=verbose)
+    # tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=True, verbose=verbose)
+    # TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=False, verbose=verbose)
+    # tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
+    # TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=False, verbose=verbose)
 
     __SIZE__ = 96
 
@@ -187,7 +187,10 @@ def do_it(plate_nb, verbose=False):
     # to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
 
     # plaque.save_raw_data("/home/arnaud/Desktop/plaque1_poc/")
+    # print(ssmd3)
 
+    # TCA.dual_flashlight_plot(plaque.array, ssmd3)
+    TCA.plot_wells(plaque, plaque, neg=neg, pos=pos)
     # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, channel, rep='rep2')
     # TCA.Graphics.plot_distribution(('C1', 'D1'), plaque, channel, rep='rep1')
     # TCA.boxplot_by_wells(rep1.rawdata.df, channel)

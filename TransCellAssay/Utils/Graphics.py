@@ -332,7 +332,21 @@ def boxplot_by_wells(dataframe, channel):
         print(e)
 
 
-def plot_multiple_plate(*args, usesec=False, neg=None, pos=None, other=None, marker='o'):
+def dual_flashlight_plot(y, x):
+    """
+    y is ssmd, x is log fold change
+    :param y: ssmd
+    :param x: log fold change
+    """
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plt.scatter(y.flatten(), x.flatten())
+    plt.show()
+    pass
+
+
+def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', width=0.1):
     """
     Plot from all replica from given plate, the array value
     :param args: plate object
@@ -341,6 +355,7 @@ def plot_multiple_plate(*args, usesec=False, neg=None, pos=None, other=None, mar
     :param pos: pos in red
     :param other: some gene in yellow
     :param marker: marker style
+    :param width: width of plate value
     """
     try:
         import matplotlib.pyplot as plt
@@ -373,7 +388,7 @@ def plot_multiple_plate(*args, usesec=False, neg=None, pos=None, other=None, mar
                 # part for neg, pos or other in color
                 if neg is not None or pos is not None or other is not None:
                     pm = plate.platemap.platemap.values.flatten()
-                    posi = np.random.normal(i, 0.05, len(data))
+                    posi = np.random.normal(i, width, len(data))
                     for j in range(len(data)):
                         curr = str(pm[j])
                         if curr == neg:
@@ -383,10 +398,10 @@ def plot_multiple_plate(*args, usesec=False, neg=None, pos=None, other=None, mar
                         elif curr == other:
                             plt.scatter(posi[j], data[j], c='y', marker=marker)
                         else:
-                            plt.scatter(posi[j], data[j], marker=marker)
+                            plt.scatter(posi[j], data[j], marker='.')
                 # part all in blue
                 if neg is None and pos is None and other is None:
-                    plt.scatter(np.random.normal(i, 0.05, len(data)), data, marker=marker)
+                    plt.scatter(np.random.normal(i, width, len(data)), data, marker=marker)
                 i += 1
         ax.set_xlim([-0.5, i-0.5])
         ax.set_ylabel('Well value')
@@ -529,22 +544,3 @@ plt.title('Raw Data point')
 ax.legend(loc='upper right')
 plt.show()
 '''
-
-
-def plot_raw_data(dataframe):
-    """
-    DataFrame must be clean of unwanted columns
-    :param dataframe:
-    """
-    try:
-        import pandas as pd
-        from matplotlib import pyplot as plt
-
-        assert isinstance(dataframe, TCA.RawData)
-
-        datagp = dataframe.get_groupby_data()
-        median = datagp.median()
-        median.plot()
-        plt.show()
-    except Exception as e:
-        print(e)
