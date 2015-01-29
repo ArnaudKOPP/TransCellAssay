@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Base Class for REST services, inspired by bioservices
+Base Class for REST services, inspired by bioservices package
 """
 
 __author__ = "Arnaud KOPP"
@@ -20,18 +20,18 @@ import json
 import time
 import xml.etree.ElementTree as ET
 import bs4
+import urllib
 from urllib.request import urlopen
 import requests  # replacement for urllib2 (2-3 times faster)
 from requests.models import Response
 
 
 __all__ = ["Service", "REST"]
-DEBUG = True
 
 
 class Service(object):
     """
-    Base class for REST/WSDL class
+    Base class for REST class
     """
 
     response_codes = {
@@ -58,17 +58,18 @@ class Service(object):
             If you need or can do more (e.g., ChEMBL does not seem to have
             restrictions), change the value. You can also have several instance
             but again, if you send too many requests at the same, your future
-            requests may be retricted. Currently implemented for REST only
+            requests may be restricted.
         """
-        self.request_per_sec = request_per_sec
+        self._verbose = verbose
+        self._request_per_sec = request_per_sec
         self.url = url
-        self.timeout = 30
-        self.max_retries = 3
+        self._timeout = 30
+        self._max_retries = 3
         try:
             if self.url is not None:
                 urlopen(self.url)
         except Exception:
-            if verbose:
+            if self._verbose:
                 print("\033[0;33m[WARNING]\033[0m The URL (%s) provided cannot be reached." % self.url)
         self.name = name
 
@@ -174,19 +175,19 @@ class REST(Service):
         Creates a normal session using HTTPAdapter
         max retries is defined in the :attr:`MAX_RETRIES`
         """
-        if DEBUG:
+        if self._verbose:
             print("Create session")
         self._session = requests.session()
-        adapter = requests.adapters.HTTPAdapter(max_retries=self.max_retries)
+        adapter = requests.adapters.HTTPAdapter(max_retries=self._max_retries)
         self._session.mount('http://', adapter)
         self._session.mount('https://', adapter)
         return self._session
 
     def _get_timeout(self):
-        return self.timeout
+        return self._timeout
 
     def _set_timeout(self, timeout):
-        self.timeout = timeout
+        self._timeout = timeout
 
     TIMEOUT = property(_get_timeout, _set_timeout)
 
@@ -212,11 +213,11 @@ class REST(Service):
         * query is either a string or a list of strings.
         """
         if isinstance(query, list):
-            if DEBUG:
+            if self._verbose:
                 print("Running sync call for a list")
             return [self.get_one(key, frmt, params=params, **kargs) for key in query]
             # return self.get_sync(query, frmt)
-        if DEBUG:
+        if self._verbose:
             print("Running http_get (single call mode)")
         return self.get_one(query, frmt, params=params, **kargs)
 
@@ -237,9 +238,9 @@ class REST(Service):
                 url = '%s/%s' % (self.url, query)
         try:
             kargs['params'] = params
-            kargs['timeout'] = self.timeout
+            kargs['timeout'] = self._timeout
             # res = self.session.get(url, **{'timeout':self.timeout, 'params':params})
-            if DEBUG:
+            if self._verbose:
                 print("Target URL :%s" % url)
             res = self.session.get(url, **kargs)
 
@@ -248,7 +249,7 @@ class REST(Service):
                                                                                                 self.response_codes[
                                                                                                     res.status_code]))
             # For avoid too many requests
-            time.sleep(1 / self.request_per_sec)
+            time.sleep(1 / self._request_per_sec)
 
             self.last_response = res
             res = self._interpret_returned_request(res, frmt)
@@ -260,7 +261,7 @@ class REST(Service):
             return res
         except Exception as err:
             print(err)
-            print("Issue while Your current timeout is {0}. ".format(self.timeout))
+            print("Issue while Your current timeout is {0}. ".format(self._timeout))
 
     def http_post(self, query, params=None, data=None, frmt='xml', headers=None, files=None, **kargs):
         # query and frmt are services parameters. Others are post parameters
@@ -287,7 +288,7 @@ class REST(Service):
             url = '%s/%s' % (self.url, query)
 
         try:
-            if DEBUG:
+            if self._verbose:
                 print(url)
             res = self.session.post(url, **kargs)
             self.last_response = res
@@ -302,7 +303,6 @@ class REST(Service):
 
     def getUserAgent(self):
         try:
-            import urllib
             urllib_agent = 'Python-urllib/%s' % urllib.request.__version__
         except Exception:
             raise Exception

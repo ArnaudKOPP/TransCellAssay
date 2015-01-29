@@ -1,4 +1,7 @@
 # coding=utf-8
+"""
+Class for making local download of string data
+"""
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
@@ -19,6 +22,39 @@ import urllib.request
 from TransCellAssay.Utils.Utils import reporthook
 from collections import namedtuple
 from operator import itemgetter
+
+_COMMON_NAMES = (
+    ("3702",   "Arabidopsis thaliana"),
+    ("9913",   "Bos taurus"),
+    ("6239",   "Caenorhabditis elegans"),
+    ("3055",   "Chlamydomonas reinhardtii"),
+    ("7955",   "Danio rerio"),
+    ("352472", "Dictyostelium discoideum AX4"),
+    ("7227",   "Drosophila melanogaster"),
+    ("562",    "Escherichia coli"),
+    ("11103",  "Hepatitis C virus"),
+    ("9606",   "Homo sapiens"),
+    ("10090",  "Mus musculus"),
+    ("2104",   "Mycoplasma pneumoniae"),
+    ("4530",   "Oryza sativa"),
+    ("5833",   "Plasmodium falciparum"),
+    ("4754",   "Pneumocystis carinii"),
+    ("10116",  "Rattus norvegicus"),
+    ("4932",   "Saccharomyces cerevisiae"),
+    ("4896",   "Schizosaccharomyces pombe"),
+    ("31033",  "Takifugu rubripes"),
+    ("8355",   "Xenopus laevis"),
+    ("4577",   "Zea mays")
+)
+
+_COMMON_NAMES_MAPPING = dict(_COMMON_NAMES)
+
+
+# list of common organisms from http://www.ncbi.nlm.nih.gov/Taxonomy
+def common_taxids():
+    """Return taxonomy IDs for common organisms."""
+    # Sorted lexicographically by names
+    return [taxid for taxid, _ in _COMMON_NAMES]
 
 
 class STRING(object):
@@ -56,12 +92,11 @@ class STRING(object):
     # Homo sapiens and mus musculus default id
     TAXID_MAP = ("9606", "10090")
 
-    def __init__(self, taxid=None, database=None):
+    def __init__(self, taxid=None, database=None, verbose=False):
+        self._verbose = verbose
         if taxid is not None and database is not None:
             raise ValueError("taxid and database parameters are exclusive.")
-
         self.db = None
-
         if taxid is None and database is not None:
             if isinstance(database, sqlite3.Connection):
                 self.db = database

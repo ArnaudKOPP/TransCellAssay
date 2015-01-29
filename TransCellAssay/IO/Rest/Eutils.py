@@ -92,10 +92,9 @@ class EUtils(REST):
 """
 
     def __init__(self, verbose=False, email="unknown"):
-
         url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils"
         super(EUtils, self).__init__(url=url, name="EUtils", verbose=verbose)
-
+        self._verbose = verbose
         warning = """
 
         NCBI recommends that users post no more than three URL requests per second.

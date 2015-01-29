@@ -1,4 +1,7 @@
 # coding=utf-8
+"""
+Class for download data from biogrid
+"""
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
@@ -29,6 +32,16 @@ class BioGRID(object):
     print biogrid.ids(taxid="9606") # Print a set of all human protein ids
     print biogrid.synonyms("110004") # Print a list of all synonyms for protein id '110004' as reported by BioGRID
     """
+
+    STRINGInteraction = namedtuple(
+        "STRINGInteraciton",
+        ["protein_id1",
+         "protein_id2",
+         "combined_score",
+         "mode",
+         "action",
+         "score"]
+    )
 
     SCHEMA = [
         ("links",
@@ -88,7 +101,8 @@ class BioGRID(object):
 
     SERVER_FILE = "BIOGRID-ALL.sqlite"
 
-    def __init__(self):
+    def __init__(self, verbose=False):
+        self._verbose = verbose
         self.filename = "BIOGRID-ALL.sqlite"
         if not os.path.isfile(self.filename):
             self.download_data()
@@ -354,14 +368,3 @@ class BioGRID(object):
         create index if not exists index_on_biogrid_id_interactor
            on proteins (biogrid_id_interactor)
         """)
-
-
-STRINGInteraction = namedtuple(
-    "STRINGInteraciton",
-    ["protein_id1",
-     "protein_id2",
-     "combined_score",
-     "mode",
-     "action",
-     "score"]
-)

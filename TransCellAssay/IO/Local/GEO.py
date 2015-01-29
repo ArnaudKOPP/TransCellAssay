@@ -57,14 +57,15 @@ FTP_NCBI = "ftp.ncbi.nih.gov"
 FTP_DIR = "pub/geo/DATA/SOFT/GDS/"
 
 
-class GDSInfo:
+class GDSInfo(object):
     """
     An instance behaves like a dictionary: the keys are GEO DataSets
     IDs, and the dictionary values for is a dictionary providing various
     information about the particular data set.
     """
 
-    def __init__(self, path):
+    def __init__(self, path, verbose=False):
+        self._verbose = verbose
         f = open(path, "rb")
         self.info, self.excluded = pickle.load(f)
 
@@ -96,7 +97,7 @@ class GDSInfo:
         return key in self.info
 
 
-class GeneData:
+class GeneData(object):
     """Store mapping between spot id and gene."""
     def __init__(self, spot_id, gene_name, d):
         self.spot_id = spot_id

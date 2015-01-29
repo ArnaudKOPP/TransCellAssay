@@ -51,13 +51,14 @@ class Ensembl(REST):
     """
     _url = "http://rest.ensembl.org"
 
-    def __init__(self, verbose=False, cache=False):
+    def __init__(self, verbose=False):
         """**Constructor**
 
         :param verbose: set to False to prevent informative messages
         """
         super(Ensembl, self).__init__(name="Ensembl", url=Ensembl._url, verbose=verbose)
         self.callback = None  # use in all methods
+        self._verbose = verbose
 
     def _check_frmt(self, frmt, values=[]):
         check_param_in_list(frmt, ['json', 'jsonp'] + values)

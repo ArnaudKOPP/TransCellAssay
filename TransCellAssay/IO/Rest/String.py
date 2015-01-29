@@ -25,6 +25,7 @@ class String(REST):
     # TODO finish this class
 
     def __init__(self, verbose=False, alt=False, stitch=False):
+        self._verbose = verbose
         if alt:
             super(String, self).__init__(name="String", url="string.embl.de", verbose=verbose)
         if stitch:

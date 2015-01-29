@@ -125,7 +125,6 @@ from functools import reduce
 import webbrowser
 
 __all__ = ['KEGG', 'KEGGParser']
-DEBUG = True
 
 
 class KEGG(REST):
@@ -196,6 +195,7 @@ class KEGG(REST):
         self._reaction = None
         self._brite = None
         self._buffer = {}
+        self._verbose = verbose
 
     def __getattr__(self, req):
         if req.endswith("Ids"):
@@ -245,7 +245,7 @@ class KEGG(REST):
             return False
 
     def _checkDB(self, database=None, mode=None):
-        if DEBUG:
+        if self._verbose:
             print("Checking database %s (mode %s)" % (database, mode))
         isOrg = self.isOrganism(database)
 

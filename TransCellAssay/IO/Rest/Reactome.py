@@ -36,7 +36,7 @@ class Reactome(REST):
     def __init__(self, verbose=True):
         super(Reactome, self).__init__("Reactome(URL)", url=Reactome._url, verbose="ERROR")
         self.debugLevel = verbose
-
+        self._verbose = verbose
         # buffer
         self._list_pathways = None
 

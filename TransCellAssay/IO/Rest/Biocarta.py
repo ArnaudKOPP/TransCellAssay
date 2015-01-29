@@ -63,7 +63,7 @@ class BioCarta(REST):
         """
         super(BioCarta, self).__init__(name="BioCarta", url=BioCarta._url, verbose=verbose)
         self.fname = "biocarta_pathways.txt"
-
+        self._verbose = verbose
         self._allPathwaysURL = "http://www.biocarta.com/genes/allPathways.asp"
 
     def get_pathway_names(self, startswith=""):

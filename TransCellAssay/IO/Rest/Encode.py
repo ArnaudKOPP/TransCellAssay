@@ -25,6 +25,7 @@ class Encode(REST):
     def __init__(self, verbose=False):
         super(Encode, self).__init__(name="Encode", url="https://www.encodeproject.org/", verbose=verbose)
         # Force return from the server in JSON format
+        self._verbose = verbose
         self.HEADERS = {'accept': 'application/json'}
 
     def test(self):

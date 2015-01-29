@@ -34,7 +34,8 @@ class ProteinAtlas(object):
     RNA_DATA = "http://www.proteinatlas.org/download/rna.csv.zip"
     DATA = "http://www.proteinatlas.org/download/proteinatlas.xml.gz"
 
-    def __init__(self):
+    def __init__(self, verbose=False):
+        self._verbose = verbose
         raise NotImplementedError
 
     @classmethod
@@ -61,6 +62,7 @@ class ProteinAtlas(object):
                     mygzip.extractall()
         except Exception as e:
             print(e)
+
     @classmethod
     def init_db(cls):
         raise NotImplementedError

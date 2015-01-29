@@ -93,6 +93,7 @@ class Biogrid(REST):
             webbrowser.open("http://webservice.thebiogrid.org/")
             raise ValueError('Get access Key for this service, (url open)')
         self.SupportedOrganismId = self._supported_organism_list(json=True)
+        self._verbose = verbose
 
     def interaction(self, **kwargs):
         """

@@ -229,7 +229,7 @@ class PSICQUIC(REST):
         urlStr = 'http://www.ebi.ac.uk/Tools/webservices/psicquic'
         super(PSICQUIC, self).__init__("PSICQUIC", verbose=verbose, url=urlStr)
         self._registry = None
-
+        self._verbose = verbose
         try:
             self.uniprot = UniProt(verbose=False)
         except:

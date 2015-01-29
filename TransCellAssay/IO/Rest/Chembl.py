@@ -67,8 +67,9 @@ class ChEMBL(REST):
     _assays_example = "CHEMBL1217643"
     _inspect_example = ('CHEMBL1', 'compound')
 
-    def __init__(self, verbose=False, cache=False):
+    def __init__(self, verbose=False):
         super(ChEMBL, self).__init__(url=ChEMBL._url, name="ChEMBL", verbose=verbose)
+        self._verbose = verbose
 
     def _process(self, query, frmt, request):
         check_param_in_list(frmt, ["json", "xml"])

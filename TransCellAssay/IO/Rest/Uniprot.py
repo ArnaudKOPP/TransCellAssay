@@ -148,6 +148,7 @@ class UniProt(REST):
         """
         super(UniProt, self).__init__(name="UniProt", url=UniProt._url, verbose=verbose)
         self.TIMEOUT = 100
+        self._verbose = verbose
 
     def _download_flat_files(self):
         """Not implemented"""
