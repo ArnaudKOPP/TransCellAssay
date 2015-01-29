@@ -16,10 +16,16 @@ import os
 import platform
 import webbrowser
 import binascii
+import json
+import time
+import xml.etree.ElementTree as ET
+import bs4
+from urllib.request import urlopen
 import requests  # replacement for urllib2 (2-3 times faster)
 from requests.models import Response
 
-__all__ = ["Service"]
+
+__all__ = ["Service", "REST"]
 DEBUG = True
 
 
@@ -242,8 +248,7 @@ class REST(Service):
                                                                                                 self.response_codes[
                                                                                                     res.status_code]))
             # For avoid too many requests
-            import time
-            time.sleep(1/self.request_per_sec)
+            time.sleep(1 / self.request_per_sec)
 
             self.last_response = res
             res = self._interpret_returned_request(res, frmt)
@@ -298,7 +303,6 @@ class REST(Service):
     def getUserAgent(self):
         try:
             import urllib
-
             urllib_agent = 'Python-urllib/%s' % urllib.request.__version__
         except Exception:
             raise Exception
@@ -317,8 +321,8 @@ class REST(Service):
         headers['User-Agent'] = self.getUserAgent()
         headers['Accept'] = self.content_types[content]
         headers['Content-Type'] = self.content_types[content]
-        #"application/json;odata=verbose" required in reactome
-        #headers['Content-Type'] = "application/json;odata=verbose" required in reactome
+        # "application/json;odata=verbose" required in reactome
+        # headers['Content-Type'] = "application/json;odata=verbose" required in reactome
         return headers
 
     def debug_last_response(self):
@@ -399,9 +403,6 @@ def check_param_in_list(param, valid_values, name=None):
         raise ValueError(msg)
 
 
-import json
-
-
 def to_json(dictionary):
     return json.dumps(dictionary)
 
@@ -425,11 +426,6 @@ def check_range(value, a, b, strict=False):
             raise ValueError(" {} must be greater than {}".format(value, a))
         if value > b:
             raise ValueError(" {} must be less than {}".format(value, b))
-
-
-import xml.etree.ElementTree as ET
-import bs4
-from urllib.request import urlopen
 
 
 class easyXML(object):

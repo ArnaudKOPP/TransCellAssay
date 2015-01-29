@@ -89,7 +89,7 @@ def do_384():
     # TCA.boxplot_by_wells(plaque1['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['B5', 'B6'], plate=plaque1, channel=channel)
 
-do_384()
+# do_384()
 
 
 def do_it(plate_nb, verbose=False):
@@ -237,6 +237,14 @@ def rest():
     """
     Rest test function
     """
+    # ### Eutils REST TEST
+    from TransCellAssay.IO.Rest.Eutils import EUtils
+    eutils = EUtils()
+
+    db = eutils.get_databases()
+    print(db)
+    print(eutils._db)
+
     # ### Encode REST TEST
     # from TransCellAssay.IO.Rest.Encode import Encode
     # encode = Encode()
@@ -273,7 +281,7 @@ def rest():
     # #### Biogrid REST TEST
 
     # from TransCellAssay.IO.Rest.Biogrid import Biogrid
-    # b = Biogrid()
+    # b = Biogrid(acceskey="dc589cabccb374194e060d3586b31349")
     # print(b.get_biogrid_version())
     # print(b._supported_organism_list())
     # print(b.SupportedOrganismId)
@@ -421,6 +429,6 @@ def rest():
     # print(r.species_list())
     # print(r.SBML_exporter(109581))
 
-# rest()
+rest()
 
 print('FINISH')

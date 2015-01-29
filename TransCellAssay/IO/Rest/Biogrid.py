@@ -85,9 +85,13 @@ class Biogrid(REST):
                                              "pubmedList", "excludePubmeds", "htpThreshold", "throughputTag", "taxId",
                                              "includeHeader", "translate"]]
 
-    def __init__(self, accesKey="dc589cabccb374194e060d3586b31349", verbose=False):
+    def __init__(self, acceskey=None, verbose=False):
         super(Biogrid, self).__init__(name="Biogrid", url="http://webservice.thebiogrid.org", verbose=verbose)
-        self.AccesKey = accesKey
+        if acceskey is not None:
+            self.AccesKey = acceskey
+        else:
+            webbrowser.open("http://webservice.thebiogrid.org/")
+            raise ValueError('Get access Key for this service, (url open)')
         self.SupportedOrganismId = self._supported_organism_list(json=True)
 
     def interaction(self, **kwargs):

@@ -6,7 +6,7 @@ setup(
     version='1.0',
     packages=['Core', 'Utils', 'Stat', 'IO'],
     install_requires=['pandas', 'numpy', 'scipy', 'scikit-learn', 'matplotlib', 'seaborn', 'xlsxwriter',
-                      'beautifulsoup4', 'requests'],  # if WSDL add -> 'suds-jurko'
+                      'beautifulsoup4', 'requests'],
     url='https://github.com/ArnaudKOPP/TransCellAssay',
     license='CC BY-NC-ND 4.0 License',
     author='Arnaud KOPP',
