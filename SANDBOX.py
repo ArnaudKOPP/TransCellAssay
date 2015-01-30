@@ -215,22 +215,28 @@ def do_it(plate_nb, verbose=False):
 # do_it(plate_nb="1", verbose=False)
 
 
-# import TransCellAssay.Stat.Omics.GO_enrichment as GO
-# go_tree = GO.GO_tree(obo_file="go.obo")
-# go_term = go_tree.go_Term['GO:0000001']
-# go_tree.query_term('GO:0045056', verbose=True)
-# print(go_term)
-# #print(go_tree.paths_to_top('GO:0000001'))
-# #go_tree.print_all_go_id()
-# asso = GO.Association("/home/akopp/Bureau/gene_id_go_id.csv")
-# print(asso.query(3804))
-# go_tree.update_association(asso)
-# print(asso.query(3804))
-# print(asso.association[3804])
-# enrichment = GO.EnrichmentStudy(study="/home/arnaud/Desktop/study.txt", pop="/home/arnaud/Desktop/pop.txt",
-#                                 assoc="/home/arnaud/Desktop/assoc.csv", compare=False)
-# result = enrichment.to_dataframe()
-# print(pd.DataFrame(result))
+def go():
+    """
+    Go Enrichment testing
+    """
+    # import TransCellAssay.Stat.Omics.GO_enrichment as GO
+    # go_tree = GO.GO_tree(obo_file="go.obo")
+    # go_term = go_tree.go_Term['GO:0000001']
+    # go_tree.query_term('GO:0045056', verbose=True)
+    # print(go_term)
+    # #print(go_tree.paths_to_top('GO:0000001'))
+    # #go_tree.print_all_go_id()
+    # asso = GO.Association("/home/akopp/Bureau/gene_id_go_id.csv")
+    # print(asso.query(3804))
+    # go_tree.update_association(asso)
+    # print(asso.query(3804))
+    # print(asso.association[3804])
+    # enrichment = GO.EnrichmentStudy(study="/home/arnaud/Desktop/study.txt", pop="/home/arnaud/Desktop/pop.txt",
+    #                                 assoc="/home/arnaud/Desktop/assoc.csv", compare=False)
+    # result = enrichment.to_dataframe()
+    # print(pd.DataFrame(result))
+
+# go()
 
 
 def rest():
@@ -238,20 +244,25 @@ def rest():
     Rest test function
     """
     # ### Eutils REST TEST
-    from TransCellAssay.IO.Rest.Eutils import EUtils
-    eutils = EUtils()
+    from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
+    eutils = EUtils(email='kopp@igbmc.fr')
 
     db = eutils.get_databases()
     print(db)
-    print(eutils._db)
+
+    einfo = eutils.EInfo(db='bioproject', retmode='json')
+    import json
+    print(json.dumps(einfo, indent=4, separators=(',', ': ')))
+
+    einfo = eutils.EInfo(db='bioproject')
+    print(EUtilsParser(einfo)) # if xml retmode
 
     # ### Encode REST TEST
     # from TransCellAssay.IO.Rest.Encode import Encode
     # encode = Encode()
     # response = encode.test()
-
+    #
     # import json
-    # Print the object
     # print(json.dumps(response, indent=4, separators=(',', ': ')))
 
     # ### String REST TEST

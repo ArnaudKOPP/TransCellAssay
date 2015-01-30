@@ -31,6 +31,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
+import webbrowser
 
 
 class EUtils(REST):
@@ -47,49 +48,6 @@ class EUtils(REST):
         before being banned, you may be contacted.
 
     """
-
-    _db = """
-
-        Entrez Database     UID common name     E-utility Database Name
-        ---------------------------------------------------------------
-        Bioproject          BioProject ID       bioproject
-        BioSample           BioSample ID        biosample
-        Biosystems          BSID                biosystems
-        Books               Book ID             books
-        Conserved Domains   PSSM-ID             cdd
-        dbGaP               dbGap ID            gap
-        dbVar               dbVar ID            dbvar
-        Epigenomics         Epigenomics ID      epigenomics
-        EST                 GI number           nucest
-        Gene                Gene ID             gene
-        Genome              Genome ID           genome
-        GEO Datasets        GDS ID              gds
-        GEO Profils         GEO ID              geoprofiles
-        GSS                 GI number           nucgss
-        HomoloGene          HomoloGene ID       homologene
-        MeSH                MeSH ID             mesh
-        NCBI C++ Toolkit    Toolkit ID          toolkit
-        NCBI Web Site       Web Site ID         ncbisearch
-        NLM Catalog         NLM Catalog ID      nlmcatalog
-        Nucleotide          GI number           nuccore
-        OMIA                OMIA ID             omia
-        PopSet              PopSet ID           popset
-        Probe               Probe ID            probe
-        Protein             GI number           protein
-        Protein Clusters    Protein CLuster ID  proteinclusters
-        PubChem BioAssay    AID                 pcassay
-        PubChem Compound    CID                 pccompound
-        PubChem Substance   SID                 pcsubstance
-        PubMed              PMID                pubmed
-        PubMed Central      PMCID               pmc
-        SNP                 rs number           snp
-        SRA                 SRA ID              sra
-        Structure           MMDB-ID             structure
-        Taxonomy            TaxID               taxonomy
-        Unigene             Unigene Cluster ID  unigene
-        UniSTS              STS ID              unists
-
-"""
 
     def __init__(self, verbose=False, email="unknown"):
         url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils"
@@ -119,7 +77,7 @@ class EUtils(REST):
 
     def get_databases(self):
         if self._databases is None:
-            tmp = self.easyXML(self.http_get(query="einfo.fcgi", frmt='xml'))
+            tmp = self.easyXML(self.http_get(query="einfo.fcgi?", frmt='xml'))
             self._databases = sorted([tag.contents[0] for tag in tmp.soup.find_all('dbname')])
         return self._databases
 
@@ -144,55 +102,99 @@ class EUtils(REST):
             raise ValueError("Number of comma separated IDs must be less than 200")
         return sid
 
-    def ESearch(self, db, query):
+    @staticmethod
+    def open_query_doc():
         """
-        Return UIDs that match to request in specific databse
-        :param query:
+        Open in brower documentation for making query
+        :return:
+        """
+        webbrowser.open('http://www.ncbi.nlm.nih.gov/books/NBK25499/')
+
+    @staticmethod
+    def _format_param(param, value):
+        """
+        Format a required/optionnal parameter to query
+        &query
+        :param param: parameter
+        :param value: value
+        :return: return str query
+        """
+        return '&'+str(param)+'='+str(value)
+
+    def _add_email_tools(self):
+        txt = str()
+        if self.email is not None:
+            txt += self._format_param('email', self.email)
+        txt += self._format_param('tool', self.tool)
+        return txt
+
+    def ESearch(self, db, term, retmode='xml', **kwargs):
+        """
+        Return UIDs that match to request in specific database
         :param db:
+        :param term:
         :return: return UIDs
         """
+        _valid_opt_param = ['usehistory', 'WebEnv', 'query_key', 'retstart', 'retmax', 'rettype', 'sort', 'field',
+                            'datatype', 'reldata' 'mindata', 'maxdate']
+
+        url = 'esearch.fcgi?'
         pass
 
-    def EGQuery(self, query):
+    def EGQuery(self, term):
         """
         Return UIDs that match to requests in all database
-        :param query:
+        :param term: Entrez text query. All special characters must be URL encoded. Spaces may be replaced by '+'
+            signs. For very long queries (more than hundred characters long), consider using HTTP POST call
         :return:
         """
+        url = 'egquery.fcgi?'
         pass
 
-    def ESummary(self, database, uid):
+    def ESummary(self, db, id, retmode='xml', **kwargs):
         """
         Return document Summary of list of UIDs
-        :param database:
-        :param uid:
+        :param db:
+        :param id:
+        :param retmode:
         :return: Return DocSum
         """
+        _valid_opt_param = ['query_key', 'WebEnv', 'retstart', 'retmax']
+        url = 'esummary.fcgi?'
         pass
 
-    def EInfo(self, database=None):
+    def EInfo(self, db=None, retmode='xml'):
         """
         Return detailed information about database : indexing fields
-        :param database:
-        :return:
+        :param db: database to get info
+        :param retmode: xml or json
+        :return: Return xml doc with field list, use with EutilsParser
         """
-        if database is not None:
-            self._check_db(database)
-            url = "einfo.fcgi?db=" + str(database)
+        if db is None:
+            raise ValueError('Need a database name')
         else:
-            raise ValueError('Must provided database')
+            self._check_db(db)
+            url = "einfo.fcgi?"+self._format_param('db', db) + self._add_email_tools()
+            if retmode is 'xml':
+                res = self.easyXML(self.http_get(url, frmt=retmode))
+            elif retmode is 'json':
+                url += self._format_param('retmode', retmode)
+                res = self.http_get(url, frmt=retmode)
+            return res
 
-    def EFetch(self, db, uid=None, frmt="text", **kwargs):
+    def EFetch(self, db, id=None, **kwargs):
         """
 
         :param db: Database from which to retrieve UIDs, must be a valid entrez database
-        :param uid: UID list, limited to 200
-        :param frmt: text, xml not good
+        :param id: UID list, limited to 200
         :param kwargs: rettype, could be fasta, summar
         """
+        _valid_opt_param = ['query_key', 'WebEnv', 'retmode', 'rettype', 'retstart', 'retmax', 'strand', 'seq_start',
+                            'seq_stop', 'complexity']
+        url = 'efetch.fcgi'
         pass
 
-    def ELink(self, dbfrom, db, cmd, uid=None):
+    def ELink(self, db, dbfrom, cmd, id=None, **kwargs):
         """
         The entrez links utility, Responds to a list of UIDs in a given database with either a list of
         related UIDs (and relevancy scores) in the same database or a list of linked
@@ -209,14 +211,20 @@ class EUtils(REST):
                 full list of Entrez links for available computational neighbors. Computational
                 neighbors have linknames that begin with dbname_dbname (examples:
                 protein_protein, pcassay_pcassay_activityneighbor).
-        :param uid: Either a single UID or a comma-delimited list of UIDs may be provided.
+        :param id: Either a single UID or a comma-delimited list of UIDs may be provided.
                 All of the UIDs must be from the database specified by db. Limited to 200 Ids
         :param cmd: ELink command mode. The command mode specified which
                 function ELink will perform. Some optional parameters only function for certain
                 values of cmd (see http://www.ncbi.nlm.nih.gov/books/NBK25499/#chapter4.ELink).
                 Examples are neighbor, prlinks.
+        :param kwargs:
         :return:
         """
+        _valid_cmd = ['neighbor', 'neighbor_score', 'neighbor_history', 'acheck', 'ncheck', 'lcheck', 'llinks',
+                      'llinkslib', 'prlinks']
+        _valid_opt_param = ['query_key', 'WebEnv', 'linkname', 'term', 'holding', 'datetype', 'reldate', 'mindata',
+                            'maxdata']
+
         pass
 
     def ESpell(self, db, term, **kwargs):
@@ -226,16 +234,30 @@ class EUtils(REST):
         :param term: entrez query text, url encoded
         :param kwargs:
         """
+
+        url = 'espell.fcgi?'
         pass
 
-    def EPost(self, db, uid, **kwargs):
+    def EPost(self, db, id, **kwargs):
         """
         Accepts a list of UIDs from a given database, store the set on the history server, and responds with a query
         key and web env fro the uploaded dataset
         :param db: valid databse
-        :param uid: list of string of string
+        :param id: list of string of string
         :param kwargs:
         """
+        _valid_opt_param = ['query_key', 'WebEnv']
+        url = 'epost.fcgi?'
+        pass
+
+    def ECitMatch(self, db, bdata, rettype='xml'):
+        """
+        Retrieve PubMed IDs (PMIDs) that correspond to a set of input citation strings.
+        :param db: database to search
+        :param rettype: xml
+        :param bdata: Citation strings
+        """
+        url = 'ecitmatch.cgi?'
         pass
 
 
@@ -267,3 +289,13 @@ class EUtilsParser(AttrDict):
                 self[child.tag] = []
                 for subchild in child.getchildren():
                     self[child.tag].append(EUtilsParser(subchild))
+
+    def __str__(self):
+        name = self._EUtilsParser__name
+        if name == "DbInfo":
+            txt = ""
+            for this in self.FieldList:
+                txt += "{0:10}:{1}\n".format(this.Name, this.Description)
+            return txt
+        else:
+            print("Not implemented for {0}".format(name))
