@@ -32,6 +32,8 @@ __status__ = "Dev"
 from TransCellAssay.IO.Rest.Service import REST
 import webbrowser
 
+# TODO pass all params by params and not in url construct
+
 
 class EUtils(REST):
     """

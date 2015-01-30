@@ -109,7 +109,7 @@ class ArrayExpress(REST):
         super(ArrayExpress, self).__init__(name="ArrayExpress",
                                            url="http://www.ebi.ac.uk/arrayexpress", verbose=verbose)
         self.easyXMLConversion = True
-        self._format = "xml"
+        self._format = "json"
         self.version = "v2"
 
     def _set_format(self, f):
@@ -119,8 +119,7 @@ class ArrayExpress(REST):
     def _get_format(self):
         return self._format
 
-    format = property(_get_format, _set_format,
-                      doc="Read/Write access to specify the output format (json or xml)")
+    format = property(_get_format, _set_format, doc="Read/Write access to specify the output format (json or xml)")
 
     def _search(self, mode, **kargs):
         """
@@ -225,7 +224,7 @@ class ArrayExpress(REST):
             s = ArrayExpress()
             res = s.queryFiles(keywords="cancer+breast", wholewords=True)
             res = s.queryExperiments(array="A-AFFY-33", species="Homo Sapiens")
-            res = s.queryExperiments(array="A-AFFY-33", species="Homo Sapiens", sortorder="releasedate")
+            res = s.queryExperiments(array="A-AFFY-33", species="Homo Sapiens", sortby="releasedate")
             res = s.queryExperiments(array="A-AFFY-33", species="Homo+Sapiens",
             ...     expdesign="dose response", sortby="releasedate", sortorder="ascending")
             dates = [x.findall("releasedate")[0].text for x in res.getchildren()]

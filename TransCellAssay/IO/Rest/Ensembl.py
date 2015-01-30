@@ -103,11 +103,14 @@ class Ensembl(REST):
             returned by the requested JSONP response. Required ONLY when using
             JSONP as the serialisation method. Please see the user guide.
 
+        :param str identifiers: An Ensembl stable ID
+        :param str frmt: output formart(json, xml or jsonp)
+
         """
         self._check_frmt(frmt, ['xml'])
         res = self.http_post("archive/id/", frmt=frmt,
                              headers=self.get_headers(content=frmt),
-                             data=self.devtools.to_json({'id': identifiers}),
+                             data=to_json({'id': identifiers}),
                              params={'callback': self.callback})
         if frmt == 'xml':
             res = self.easyXML(res)

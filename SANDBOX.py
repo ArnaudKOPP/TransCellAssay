@@ -244,18 +244,18 @@ def rest():
     Rest test function
     """
     # ### Eutils REST TEST
-    from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
-    eutils = EUtils(email='kopp@igbmc.fr')
+    # from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
+    # eutils = EUtils(email='kopp@igbmc.fr')
 
-    db = eutils.databases
-    print(db)
+    # db = eutils.databases
+    # print(db)
 
     # einfo = eutils.EInfo(db='bioproject', retmode='json')
     # import json
     # print(json.dumps(einfo, indent=4, separators=(',', ': ')))
 
-    einfo = eutils.EInfo(db='protein')
-    print(EUtilsParser(einfo))
+    # einfo = eutils.EInfo(db='protein')
+    # print(EUtilsParser(einfo))
 
     # ### Encode REST TEST
     # from TransCellAssay.IO.Rest.Encode import Encode
@@ -272,9 +272,21 @@ def rest():
     # print(response)
 
     # ### Array Express REST TEST
-    # from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
-    # ae = ArrayExpress()
-    # res = ae.query_experiments(species="Homo sapiens", ef="organism_part", efv="liver")
+    from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
+    ae = ArrayExpress(verbose=True)
+    # res = ae.queryExperiments(species="Homo sapiens", ef="organism_part", efv="liver")
+    # print(res)
+    # res = ae.retrieveExperiment("E-MEXP-31")
+    # print(res)
+
+    res = ae.queryExperiments(array="A-AFFY-33", species="Homo Sapiens", sortby="releasedate")
+    print(res)
+
+    # ### Ensembl REST TEST
+    # from TransCellAssay.IO.Rest.Ensembl import Ensembl
+    # s = Ensembl(verbose=True)
+    # res = s.get_archive("ENSG00000157764")
+    # print(res)
 
     # #### Psicquic REST TEST
 

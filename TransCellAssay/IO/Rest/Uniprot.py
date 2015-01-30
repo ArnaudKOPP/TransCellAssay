@@ -152,9 +152,8 @@ class UniProt(REST):
 
     def _download_flat_files(self):
         """Not implemented"""
-        raise NotImplementedError
         url = "ftp://ftp.ebi.ac.uk/pub/databases/uniprot/knowledgebase/uniprot_sprot.dat.gz"
-        pass
+        raise NotImplementedError
 
     def mapping(self, fr="ID", to="KEGG_ID", query="P13368"):
         """
