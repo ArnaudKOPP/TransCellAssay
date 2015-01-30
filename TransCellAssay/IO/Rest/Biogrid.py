@@ -107,7 +107,7 @@ class Biogrid(REST):
                 if key.lower() in self._valid_parameters:
                     query += key + "=" + value + "&"
                 else:
-                    print("\033[0;33m[WARNING]\033[0m %s is not a valid paramenters" % key)
+                    print("\033[0;33m[WARNING]\033[0m %s is not a valid parameters" % key)
         query += self._add_acces_key()
         res = self.http_get(query)
         return res

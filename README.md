@@ -13,7 +13,7 @@ on 96 and 384 Well plate with acceptable performance (1536 on plate for further 
 * Systematic Error Detection Test
 * Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and basic background Correction/Well Correction
 * Scoring (SSMD, T-Statistics, Rank product, single cell properties)
-* GO enrichment, pathways enrichment, PPI, KEGG, STRING, Panther, Biogrid, ... 
+* GO enrichment, PPI, KEGG, STRING, Biogrid, ... 
 
 ##Python Module Dependencies
 

@@ -26,9 +26,6 @@ import requests  # replacement for urllib2 (2-3 times faster)
 from requests.models import Response
 
 
-__all__ = ["Service", "REST"]
-
-
 class Service(object):
     """
     Base class for REST class

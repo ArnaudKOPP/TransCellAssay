@@ -20,7 +20,6 @@ Interface to the EUtils web Service.
 
 """
 
-
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
@@ -113,13 +112,13 @@ class EUtils(REST):
     @staticmethod
     def _format_param(param, value):
         """
-        Format a required/optionnal parameter to query
-        &query
+        Format a required/optionnal parameter to query :
+        &param=value
         :param param: parameter
         :param value: value
         :return: return str query
         """
-        return '&'+str(param)+'='+str(value)
+        return '&' + str(param) + '=' + str(value)
 
     def _add_email_tools(self):
         txt = str()
@@ -138,8 +137,16 @@ class EUtils(REST):
         _valid_opt_param = ['usehistory', 'WebEnv', 'query_key', 'retstart', 'retmax', 'rettype', 'sort', 'field',
                             'datatype', 'reldata' 'mindata', 'maxdate']
 
-        url = 'esearch.fcgi?'
-        pass
+        url = 'esearch.fcgi?' + self._format_param('db', db) + self._format_param('term', term) + \
+              self._format_param('retmode', retmode)
+        for key, value in kwargs:
+            if key in _valid_opt_param:
+                url += self._format_param(key, value)
+        if retmode is 'xml':
+            res = self.easyXML(self.http_get(url, frmt='xml'))
+        else:
+            res = self.http_get(url)
+        return res
 
     def EGQuery(self, term):
         """
@@ -148,8 +155,9 @@ class EUtils(REST):
             signs. For very long queries (more than hundred characters long), consider using HTTP POST call
         :return:
         """
-        url = 'egquery.fcgi?'
-        pass
+        url = 'egquery.fcgi?' + self._format_param('term', term)
+        res = self.easyXML(self.http_get(url, frmt='xml'))
+        return res
 
     def ESummary(self, db, id, retmode='xml', **kwargs):
         """
@@ -160,8 +168,13 @@ class EUtils(REST):
         :return: Return DocSum
         """
         _valid_opt_param = ['query_key', 'WebEnv', 'retstart', 'retmax']
-        url = 'esummary.fcgi?'
-        pass
+        url = 'esummary.fcgi?' + self._format_param('db', db) + self._format_param('id', id) + \
+              self._format_param('retmode', retmode)
+        for key, value in kwargs:
+            if key in _valid_opt_param:
+                url += self._format_param(key, value)
+        res = self.easyXML(self.http_get(url, frmt='xml'))
+        return res
 
     def EInfo(self, db=None, retmode='xml'):
         """
@@ -174,7 +187,7 @@ class EUtils(REST):
             raise ValueError('Need a database name')
         else:
             self._check_db(db)
-            url = "einfo.fcgi?"+self._format_param('db', db) + self._add_email_tools()
+            url = "einfo.fcgi?" + self._format_param('db', db) + self._add_email_tools()
             if retmode is 'xml':
                 res = self.easyXML(self.http_get(url, frmt=retmode))
             elif retmode is 'json':
@@ -184,15 +197,19 @@ class EUtils(REST):
 
     def EFetch(self, db, id=None, **kwargs):
         """
-
+        Return formatted data records for a list of input id
         :param db: Database from which to retrieve UIDs, must be a valid entrez database
         :param id: UID list, limited to 200
         :param kwargs: rettype, could be fasta, summar
         """
         _valid_opt_param = ['query_key', 'WebEnv', 'retmode', 'rettype', 'retstart', 'retmax', 'strand', 'seq_start',
                             'seq_stop', 'complexity']
-        url = 'efetch.fcgi'
-        pass
+        url = 'efetch.fcgi?' + self._format_param('db', db) + self._format_param('id', id)
+        for key, value in kwargs:
+            if key in _valid_opt_param:
+                url += self._format_param(key, value)
+        res = self.http_get(url)
+        return res
 
     def ELink(self, db, dbfrom, cmd, id=None, **kwargs):
         """
@@ -224,19 +241,25 @@ class EUtils(REST):
                       'llinkslib', 'prlinks']
         _valid_opt_param = ['query_key', 'WebEnv', 'linkname', 'term', 'holding', 'datetype', 'reldate', 'mindata',
                             'maxdata']
+        url = 'elink.fcgi?' + self._format_param('db', db) + self._format_param('dbfrom', dbfrom) + \
+              self._format_param('id', id)
+        if cmd in _valid_cmd:
+            url += self._format_param('cmd', cmd)
+        for key, value in kwargs:
+            if key in _valid_opt_param:
+                url += self._format_param(key, value)
+        res = self.easyXML(self.http_get(url, frmt='xml'))
+        return res
 
-        pass
-
-    def ESpell(self, db, term, **kwargs):
+    def ESpell(self, db, term):
         """
         Retrieve spelling suggestions for a text query in a given databse
         :param db: database to search
         :param term: entrez query text, url encoded
-        :param kwargs:
         """
-
-        url = 'espell.fcgi?'
-        pass
+        url = 'espell.fcgi?' + self._format_param('db', db) + self._format_param('term', term)
+        res = self.easyXML(self.http_get(url, frmt='xml'))
+        return res
 
     def EPost(self, db, id, **kwargs):
         """
@@ -247,18 +270,24 @@ class EUtils(REST):
         :param kwargs:
         """
         _valid_opt_param = ['query_key', 'WebEnv']
-        url = 'epost.fcgi?'
-        pass
+        url = 'epost.fcgi?' + self._format_param('db', db) + self._format_param('id', id)
+        for key, value in kwargs.items():
+            if key in _valid_opt_param:
+                url += self._format_param(key, value)
+        res = self.easyXML(self.http_get(url, frmt='xml'))
+        return res
 
-    def ECitMatch(self, db, bdata, rettype='xml'):
+    def ECitMatch(self, db, bdata, retmode='xml'):
         """
         Retrieve PubMed IDs (PMIDs) that correspond to a set of input citation strings.
         :param db: database to search
-        :param rettype: xml
+        :param retmode: xml
         :param bdata: Citation strings
         """
-        url = 'ecitmatch.cgi?'
-        pass
+        url = 'ecitmatch.cgi?' + self._format_param('db', db) + self._format_param('bdata', bdata) +\
+              self._format_param('retmode', retmode)
+        res = self.easyXML(self.http_get(url, frmt=retmode))
+        return res
 
 
 class AttrDict(dict):
@@ -270,9 +299,10 @@ class AttrDict(dict):
 class EUtilsParser(AttrDict):
     """
     Convert xml returned by EUtils into a structure easier to manipulate
-    Tested and used for EInfo,
+    Tested and used for EInfo, for discoving Field for each database
     Does not work for Esummary
     """
+
     def __init__(self, xml):
         super(EUtilsParser, self).__init__()
         try:
@@ -295,7 +325,7 @@ class EUtilsParser(AttrDict):
         if name == "DbInfo":
             txt = ""
             for this in self.FieldList:
-                txt += "{0:10}:{1}\n".format(this.Name, this.Description)
+                txt += "{0:10}:  {1}\n".format(this.Name, this.Description)
             return txt
         else:
             print("Not implemented for {0}".format(name))

@@ -40,14 +40,6 @@ class Ensembl(REST):
     each method for the list of parameters. The API was copied
     from the Ensemble API (http://rest.ensembl.org)
 
-    All methods have been tests using this BioServices
-    `notebook <http://nbviewer.ipython.org/github/bioservices/notebooks/blob/master/ensembl/Ensembl.ipynb>`_
-
-
-    .. todo:: There are 3 methods out of 50 that are not implemented so far.
-    .. todo:: some methods have a parameter called *feature*. The official
-       Ensembl API allows one to provide several features at the same time.
-       This is not yet implemented. Only one at a time is accepted.
     """
     _url = "http://rest.ensembl.org"
 

@@ -247,15 +247,15 @@ def rest():
     from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
     eutils = EUtils(email='kopp@igbmc.fr')
 
-    db = eutils.get_databases()
+    db = eutils.databases
     print(db)
 
-    einfo = eutils.EInfo(db='bioproject', retmode='json')
-    import json
-    print(json.dumps(einfo, indent=4, separators=(',', ': ')))
+    # einfo = eutils.EInfo(db='bioproject', retmode='json')
+    # import json
+    # print(json.dumps(einfo, indent=4, separators=(',', ': ')))
 
-    einfo = eutils.EInfo(db='bioproject')
-    print(EUtilsParser(einfo)) # if xml retmode
+    einfo = eutils.EInfo(db='protein')
+    print(EUtilsParser(einfo))
 
     # ### Encode REST TEST
     # from TransCellAssay.IO.Rest.Encode import Encode
@@ -307,7 +307,7 @@ def rest():
     # #### UNIPROT REST TEST
 
     # from TransCellAssay.IO.Rest.Uniprot import UniProt
-    # u = UniProt()
+    # u = UniProt(verbose=True)
     # print(u.mapping("ACC", "KEGG_ID", query='P43403 P29317'))
     # res = u.search("P43403")
     # print(res)
