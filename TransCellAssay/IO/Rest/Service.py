@@ -236,10 +236,10 @@ class REST(Service):
         try:
             kargs['params'] = params
             kargs['timeout'] = self._timeout
-            # res = self.session.get(url, **{'timeout':self.timeout, 'params':params})
-            if self._verbose:
-                print("Target URL :%s" % url)
             res = self.session.get(url, **kargs)
+
+            if self._verbose:
+                print("Target URL :%s" % res.url)
 
             if res.status_code != 200:
                 print("\033[0;33m[WARNING]\033[0m Requests Status is not OK : {0} : {1}".format(res.status_code,

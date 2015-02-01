@@ -29,10 +29,8 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
-from TransCellAssay.IO.Rest.Service import REST
+from TransCellAssay.IO.Rest.Service import REST, check_param_in_list
 import webbrowser
-
-# TODO pass all params by params and not in url construct
 
 
 class EUtils(REST):
@@ -70,26 +68,26 @@ class EUtils(REST):
             e = EUtils(email="name@adress")
 
         """
-        self._databases = None
+        self.databases = None
         self.tool = "TransCellAssay"
         self.email = email
         if self.email == "unknown":
             print('\033[0;33m[WARNING]\033[0m', warning)
 
     def get_databases(self):
-        if self._databases is None:
+        if self.databases is None:
             tmp = self.easyXML(self.http_get(query="einfo.fcgi?", frmt='xml'))
-            self._databases = sorted([tag.contents[0] for tag in tmp.soup.find_all('dbname')])
-        return self._databases
+            self.databases = sorted([tag.contents[0] for tag in tmp.soup.find_all('dbname')])
+        return self.databases
 
-    databases = property(get_databases, doc="Returns list of valid databases")
+    available_databases = property(get_databases, doc="Returns list of valid databases")
 
     def _check_db(self, db):
         if db not in self.databases:
             raise ValueError("You must provide a valid databases from : ", self.databases)
 
-    def _check_frmt(self, frmt):
-        if frmt not in ['xml', 'json', 'text']:
+    def _check_retmode(self, retmode):
+        if retmode not in ['xml', 'json', 'text']:
             raise ValueError("Unsupported format")
 
     def _check_ids(self, sid):
@@ -111,27 +109,11 @@ class EUtils(REST):
         """
         webbrowser.open('http://www.ncbi.nlm.nih.gov/books/NBK25499/')
 
-    @staticmethod
-    def _format_param(param, value):
-        """
-        Format a required/optionnal parameter to query :
-        &param=value
-        :param param: parameter
-        :param value: value
-        :return: return str query
-        """
-        return '&' + str(param) + '=' + str(value)
-
-    def _add_email_tools(self):
-        txt = str()
-        if self.email is not None:
-            txt += self._format_param('email', self.email)
-        txt += self._format_param('tool', self.tool)
-        return txt
-
     def ESearch(self, db, term, retmode='xml', **kwargs):
         """
         Return UIDs that match to request in specific database
+        :param retmode:
+        :param kwargs:
         :param db:
         :param term:
         :return: return UIDs
@@ -139,15 +121,18 @@ class EUtils(REST):
         _valid_opt_param = ['usehistory', 'WebEnv', 'query_key', 'retstart', 'retmax', 'rettype', 'sort', 'field',
                             'datatype', 'reldata' 'mindata', 'maxdate']
 
-        url = 'esearch.fcgi?' + self._format_param('db', db) + self._format_param('term', term) + \
-              self._format_param('retmode', retmode)
-        for key, value in kwargs:
+        params = {'db': db, 'term': term, 'retmode': retmode, 'tool': self.tool, 'email': self.email}
+        url = 'esearch.fcgi'
+        for key, value in kwargs.items():
             if key in _valid_opt_param:
-                url += self._format_param(key, value)
+                params[key] = value
+            else:
+                print(key + ' Not a valid parameters')
+        # TODO make a post call for long query ( several hundred char long)
         if retmode is 'xml':
-            res = self.easyXML(self.http_get(url, frmt='xml'))
+            res = self.easyXML(self.http_get(url, frmt='xml', params=params))
         else:
-            res = self.http_get(url)
+            res = self.http_get(url, params=params)
         return res
 
     def EGQuery(self, term):
@@ -157,63 +142,81 @@ class EUtils(REST):
             signs. For very long queries (more than hundred characters long), consider using HTTP POST call
         :return:
         """
-        url = 'egquery.fcgi?' + self._format_param('term', term)
-        res = self.easyXML(self.http_get(url, frmt='xml'))
+        params = {'term': term, 'tool': self.tool, 'email': self.email}
+        url = 'egquery.fcgi'
+        res = self.easyXML(self.http_get(url, frmt='xml', params=params))
         return res
 
-    def ESummary(self, db, id, retmode='xml', **kwargs):
+    def ESummary(self, db, sid, retmode='xml', **kwargs):
         """
         Return document Summary of list of UIDs
+        :param kwargs:
         :param db:
-        :param id:
-        :param retmode:
+        :param sid:
+        :param retmode: xml or json
         :return: Return DocSum
         """
+        params = {'db': db, 'id': sid, 'retmode': retmode, 'tool': self.tool, 'email': self.email}
         _valid_opt_param = ['query_key', 'WebEnv', 'retstart', 'retmax']
-        url = 'esummary.fcgi?' + self._format_param('db', db) + self._format_param('id', id) + \
-              self._format_param('retmode', retmode)
-        for key, value in kwargs:
+        url = 'esummary.fcgi'
+        self._check_ids(sid)
+        self._check_db(db)
+
+        for key, value in kwargs.items():
             if key in _valid_opt_param:
-                url += self._format_param(key, value)
-        res = self.easyXML(self.http_get(url, frmt='xml'))
+                params[key] = value
+        if retmode is 'xml':
+            res = self.easyXML(self.http_get(url, frmt='xml', params=params))
+        else:
+            res = self.http_get(url, params=params)
         return res
 
-    def EInfo(self, db=None, retmode='xml'):
+    def EInfo(self, db, retmode='xml'):
         """
         Return detailed information about database : indexing fields
         :param db: database to get info
         :param retmode: xml or json
         :return: Return xml doc with field list, use with EutilsParser
         """
-        if db is None:
-            raise ValueError('Need a database name')
-        else:
-            self._check_db(db)
-            url = "einfo.fcgi?" + self._format_param('db', db) + self._add_email_tools()
-            if retmode is 'xml':
-                res = self.easyXML(self.http_get(url, frmt=retmode))
-            elif retmode is 'json':
-                url += self._format_param('retmode', retmode)
-                res = self.http_get(url, frmt=retmode)
-            return res
+        params = {'db': db, 'retmode': retmode, 'tool': self.tool, 'email': self.email}
+        self._check_db(db)
+        url = "einfo.fcgi"
+        if retmode is 'xml':
+            res = self.easyXML(self.http_get(url, frmt=retmode, params=params))
+        elif retmode is 'json':
+            res = self.http_get(url, params=params)
+        return res
 
-    def EFetch(self, db, id=None, **kwargs):
+    def EFetch(self, db, id, retmode='text', **kwargs):
         """
         Return formatted data records for a list of input id
+        :param retmode: text, xml not recommended
         :param db: Database from which to retrieve UIDs, must be a valid entrez database
         :param id: UID list, limited to 200
         :param kwargs: rettype, could be fasta, summar
         """
         _valid_opt_param = ['query_key', 'WebEnv', 'retmode', 'rettype', 'retstart', 'retmax', 'strand', 'seq_start',
                             'seq_stop', 'complexity']
-        url = 'efetch.fcgi?' + self._format_param('db', db) + self._format_param('id', id)
-        for key, value in kwargs:
+        params = {'db': db, 'id': id, 'retmode': retmode, 'tool': self.tool, 'email': self.email}
+
+        url = 'efetch.fcgi'
+        for key, value in kwargs.items():
             if key in _valid_opt_param:
-                url += self._format_param(key, value)
-        res = self.http_get(url)
+                if key is 'strand':
+                    check_param_in_list(value, [1, 2])
+                    params[key] = value
+                else:
+                    raise ValueError('Strand must be 0 or 1')
+                if key is 'complexity':
+                    check_param_in_list(value, [0, 1, 2, 3, 4])
+                    params[key] = value
+                else:
+                    raise ValueError("invalid complexity. must be a number in 0,1,2,3,4")
+                params[key] = value
+        res = self.http_get(url, frmt=retmode, params=params)
         return res
 
-    def ELink(self, db, dbfrom, cmd, id=None, **kwargs):
+    def ELink(self, db, dbfrom, cmd, id, **kwargs):
         """
         The entrez links utility, Responds to a list of UIDs in a given database with either a list of
         related UIDs (and relevancy scores) in the same database or a list of linked
@@ -243,14 +246,14 @@ class EUtils(REST):
                       'llinkslib', 'prlinks']
         _valid_opt_param = ['query_key', 'WebEnv', 'linkname', 'term', 'holding', 'datetype', 'reldate', 'mindata',
                             'maxdata']
-        url = 'elink.fcgi?' + self._format_param('db', db) + self._format_param('dbfrom', dbfrom) + \
-              self._format_param('id', id)
+        url = 'elink.fcgi'
+        params = {'db': db, 'dbfrom': dbfrom, 'id': id, 'tool': self.tool, 'email': self.email}
         if cmd in _valid_cmd:
-            url += self._format_param('cmd', cmd)
-        for key, value in kwargs:
+            params['cmd'] = cmd
+        for key, value in kwargs.items():
             if key in _valid_opt_param:
-                url += self._format_param(key, value)
-        res = self.easyXML(self.http_get(url, frmt='xml'))
+                params[key] = value
+        res = self.easyXML(self.http_get(url, frmt='xml', params=params))
         return res
 
     def ESpell(self, db, term):
@@ -259,24 +262,27 @@ class EUtils(REST):
         :param db: database to search
         :param term: entrez query text, url encoded
         """
-        url = 'espell.fcgi?' + self._format_param('db', db) + self._format_param('term', term)
-        res = self.easyXML(self.http_get(url, frmt='xml'))
+        url = 'espell.fcgi'
+        params = {'db': db, 'term': term, 'tool': self.tool, 'email': self.email}
+        res = self.easyXML(self.http_get(url, frmt='xml', params=params))
         return res
 
-    def EPost(self, db, id, **kwargs):
+    def EPost(self, db, sid, **kwargs):
         """
         Accepts a list of UIDs from a given database, store the set on the history server, and responds with a query
         key and web env fro the uploaded dataset
         :param db: valid databse
-        :param id: list of string of string
+        :param sid: list of string of string
         :param kwargs:
         """
+        params = {'db': db, 'id': sid, 'tool': self.tool, 'email': self.email}
         _valid_opt_param = ['query_key', 'WebEnv']
-        url = 'epost.fcgi?' + self._format_param('db', db) + self._format_param('id', id)
+        url = 'epost.fcgi'
+        # TODO post call for more than 200 sid long requests
         for key, value in kwargs.items():
             if key in _valid_opt_param:
-                url += self._format_param(key, value)
-        res = self.easyXML(self.http_get(url, frmt='xml'))
+                params[key] = value
+        res = self.easyXML(self.http_get(url, frmt='xml', params=params))
         return res
 
     def ECitMatch(self, db, bdata, retmode='xml'):
@@ -286,9 +292,9 @@ class EUtils(REST):
         :param retmode: xml
         :param bdata: Citation strings
         """
-        url = 'ecitmatch.cgi?' + self._format_param('db', db) + self._format_param('bdata', bdata) +\
-              self._format_param('retmode', retmode)
-        res = self.easyXML(self.http_get(url, frmt=retmode))
+        url = 'ecitmatch.cgi'
+        params = {'db': db, 'bdata': bdata, 'retmode': retmode, 'tool': self.tool, 'email': self.email}
+        res = self.easyXML(self.http_get(url, frmt=retmode, params=params))
         return res
 
 

@@ -92,8 +92,13 @@ class Biogrid(REST):
         else:
             webbrowser.open("http://webservice.thebiogrid.org/")
             raise ValueError('Get access Key for this service, (url open)')
-        self.SupportedOrganismId = self._supported_organism_list(json=True)
+        self.SupportedOrganismId = self.__supported_organism_list(json=True)
         self._verbose = verbose
+
+    def get_valid_parameters(self):
+        return self._valid_parameters
+
+    parameters = property(get_valid_parameters, doc="Returns list of valid parameters")
 
     def interaction(self, **kwargs):
         """
@@ -101,15 +106,17 @@ class Biogrid(REST):
         :param kwargs:
         :return:
         """
-        query = "interactions/?"
+        url = "interactions/"
+        params = {'acceskey': self.AccesKey}
         if kwargs is not None:
             for key, value in kwargs.items():
                 if key.lower() in self._valid_parameters:
-                    query += key + "=" + value + "&"
+                    params[key] = value
                 else:
                     print("\033[0;33m[WARNING]\033[0m %s is not a valid parameters" % key)
-        query += self._add_acces_key()
-        res = self.http_get(query)
+        else:
+            raise ValueError('Need parameters to search interaction')
+        res = self.http_get(url, params=params)
         return res
 
     def get_biogrid_version(self):
@@ -117,31 +124,27 @@ class Biogrid(REST):
         Get the biogrid Version
         :return:
         """
-        query = "version/?" + self._add_acces_key()
-        res = self.http_get(query, frmt='xml')
+        url = "version/"
+        params = {'acceskey': self.AccesKey}
+        res = self.http_get(url, frmt='xml', params=params)
         return res
 
-    def _add_acces_key(self):
-        """
-        Generate acces Key for url
-        :return:
-        """
-        return "accesskey=%s" % self.AccesKey
-
-    def _supported_organism_list(self, json=False):
+    def __supported_organism_list(self, json=False):
         """
         Get list of organism id and names supported by the REST taxId option
         :return:
         """
-        query = "organisms/?" + self._add_acces_key()
+        url = "organisms/"
+        params = {'acceskey': self.AccesKey}
         if json:
-            query += "&format=json"
-            res = self.http_get(query, frmt='json')
+            params['format'] = 'json'
+            res = self.http_get(url, params=params)
             return res
-        res = self.http_get(query)
+        res = self.http_get(url, params=params)
         return res
 
-    def open_documentation(self):
+    @staticmethod
+    def open_documentation():
         """
         Open a brower tab with documentation for filling requests
         """

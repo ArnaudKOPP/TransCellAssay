@@ -42,7 +42,7 @@ class Encode(REST):
         :param accession_number:
         :return: json object
         """
-        url = "biosample/"+accession_number+"/?frame=object"
+        url = "biosample/" + accession_number + "/?frame=object"
         response = self.http_get(url, headers=self.HEADERS)
         return response
 
@@ -69,9 +69,10 @@ class Encode(REST):
 
     _valid_search_type = ['file', 'replicate', 'biosample']
 
-    def search(self, searchterm=None, limit=False, format='json', full=False, embedded=False, data_type=None, md5=None, fastq_file=False, experiment_id=None, dataset=None):
+    def search(self, searchterm=None, limit=False, format='json', full=False, embedded=False, data_type=None, md5=None,
+               fastq_file=False, experiment_id=None, dataset=None):
         url = "search/"
-        search = "?searchTerm="+str(searchterm)
+        search = "?searchTerm=" + str(searchterm)
         fastq = "&file_format=fastq"
-        experiment = "&experiment=/experiments/"+experiment_id+"/"
-        data_set = "&dataset==/experiments/"+dataset+"/"
+        experiment = "&experiment=/experiments/" + experiment_id + "/"
+        data_set = "&dataset==/experiments/" + dataset + "/"

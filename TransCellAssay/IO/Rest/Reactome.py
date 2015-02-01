@@ -237,7 +237,6 @@ class Reactome(REST):
 
 
 class ReactomeAnalysis(REST):
-
     _url = "http://www.reactome.org:80/AnalysisService"
     # "identifiers/projection?pageSize=8000&page=1&sortBy=ENTITIES_PVALUE&order=ASC&resource=TOTAL",
 
@@ -258,6 +257,7 @@ class ReactomeAnalysis(REST):
         res = self.http_post(url, frmt="json", data=genes, headers={"Content-Type": "text/plain;charset=UTF-8",
                                                                     "Accept": "application/json"})
         return res
+
 
 """
 class ReactomePathway(object):

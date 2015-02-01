@@ -151,7 +151,7 @@ class ArrayExpress(REST):
             check_param_in_list(k, list(defaults.keys()))
 
         # if len(kargs.keys()):
-        #    url += "?"
+        # url += "?"
         params = {}
 
         for k, v in kargs.items():
@@ -237,6 +237,7 @@ class ArrayExpress(REST):
         """
         Retrieve experiments
             res = s.queryExperiments(keywords="cancer+breast", wholewords=True)
+        :param kargs:
         """
         res = self._search("experiments", **kargs)
         return res
@@ -249,6 +250,7 @@ class ArrayExpress(REST):
             # equivalent to
             s.queryExperiments(accession="E-MEXP-31")
 
+        :param experiment:
         """
         res = self.queryExperiments(keywords=experiment)
         return res
@@ -256,6 +258,9 @@ class ArrayExpress(REST):
     def retrieveFile(self, experiment, filename, save=False):
         """
         Retrieve a specific file from an experiment
+        :param experiment:
+        :param filename:
+        :param save:
         :param str filename:
             s.retrieveFile("E-MEXP-31", "E-MEXP-31.idf.txt")
         """

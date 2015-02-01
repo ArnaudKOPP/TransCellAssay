@@ -1261,7 +1261,7 @@ class Ensembl(REST):
         # self._check_frmt(frmt, ['xml'])
         # res = self.http_get('variation/{0}/{1}'.format(species, identifier),
         # frmt=frmt,
-        #                     headers=self.get_headers(content=frmt),
+        # headers=self.get_headers(content=frmt),
         #                     params={'genotypes': int(genotypes), 'phenotypes': int(phenotypes),
         #                             'pops': int(pops)})
 

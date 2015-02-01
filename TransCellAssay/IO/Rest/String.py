@@ -37,7 +37,8 @@ class String(REST):
     _list_requests = ['resolve', 'resolveList', 'abstracts', 'abstractsList', 'interactors', 'interactorsList',
                       'actions', 'actionsList', 'interactions', 'interactionsList', 'network', 'networkList']
     _list_parameters = ["parameters", "identifier", "identifiers", "format", "species", "limit", "required_score,"
-                        "additional_network_nodes", "network_flavor", "caller_identity"]
+                                                                                                 "additional_network_nodes",
+                        "network_flavor", "caller_identity"]
 
     def print_doc_requests(self):
         """

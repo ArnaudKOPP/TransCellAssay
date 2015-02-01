@@ -134,8 +134,9 @@ class UniProt(REST):
     _url = "http://www.uniprot.org"
     _valid_columns = ['citation', 'clusters', 'comments', 'database',
                       'domains', 'domain', 'ec', 'id', 'entry name', 'existence'
-                      'families', 'feature', 'features', 'genes', 'go', 'go-id', 'interpro'
-                      'interactor', 'keywords', 'keyword-id', 'last-modified',
+                                                                     'families', 'feature', 'features', 'genes', 'go',
+                      'go-id', 'interpro'
+                               'interactor', 'keywords', 'keyword-id', 'last-modified',
                       'length', 'organism', 'organism-id', 'pathway', 'protein names',
                       'reviewed', 'score', 'sequence', '3d', 'subcellular locations',
                       'taxonomy', 'tools', 'version', 'virus hosts', 'lineage-id',

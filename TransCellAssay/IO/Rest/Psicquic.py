@@ -539,7 +539,7 @@ class PSICQUIC(REST):
         # remove the " character that can be found in a few cases (e.g,
         # chebi:"CHEBI:29036")
         # idsA = [x.replace("chebi:CHEBI:","chebi:") for x in idsA]
-        #idsB = [x.replace("chebi:CHEBI:", "chebi:") for x in idsB]
+        # idsB = [x.replace("chebi:CHEBI:", "chebi:") for x in idsB]
 
         # special case:
         # in mint, there is an entry that ends with a | uniprotkb:P17844|
