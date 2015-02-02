@@ -124,7 +124,7 @@ from TransCellAssay.IO.Rest.Service import REST
 from functools import reduce
 import webbrowser
 
-__all__ = ['KEGG', 'KEGGParser']
+# TODO clean up this class
 
 
 class KEGG(REST):

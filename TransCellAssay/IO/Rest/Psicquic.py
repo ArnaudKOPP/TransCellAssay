@@ -125,7 +125,7 @@ __status__ = "Dev"
 from TransCellAssay.IO.Rest.Service import REST, check_param_in_list
 from TransCellAssay.IO.Rest.Uniprot import UniProt
 
-__all__ = ["PSICQUIC"]
+# TODO clean up this class
 
 
 class PSICQUIC(REST):
@@ -212,7 +212,6 @@ class PSICQUIC(REST):
                         "ensemblgenomes": "ENSEMBLGENOME_ID",
                         "omim": "MIM_ID",
                         "chebi": None,
-                        "chembl": None,
                         "intact": None}
 
     # unknown: hprd, omim, bind, bind complexid, mdl,
@@ -226,8 +225,8 @@ class PSICQUIC(REST):
         import PSICQUIC
         s = PSICQUIC()
         """
-        urlStr = 'http://www.ebi.ac.uk/Tools/webservices/psicquic'
-        super(PSICQUIC, self).__init__("PSICQUIC", verbose=verbose, url=urlStr)
+        super(PSICQUIC, self).__init__("PSICQUIC", verbose=verbose,
+                                       url='http://www.ebi.ac.uk/Tools/webservices/psicquic')
         self._registry = None
         self._verbose = verbose
         try:

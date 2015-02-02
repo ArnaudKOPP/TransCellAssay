@@ -32,15 +32,22 @@ class Service(object):
     """
 
     response_codes = {
-        200: 'OK',
-        201: 'Created',
-        400: 'Bad Request. There is a problem with your input',
-        404: 'Not found. The resource you requests does not exist',
+        200: "OK",
+        201: "Created",
+        400: "Bad Request. There is a problem with your input",
+        403: "You are submitting far too many requests and have been temporarily forbidden access to the service. "
+             "Wait and retry with a maximum of 15 requests per second.",
+        404: "Not found. The resource you requests does not exist",
         406: "Not Acceptable. Usually headers issue",
-        410: 'Gone. The resource you requested was removed.',
+        408: "The request was not processed in time. Wait and retry later",
+        410: "Gone. The resource you requested was removed.",
         415: "Unsupported Media Type",
-        500: 'Internal server error. Most likely a temporary problem',
-        503: 'Service not available. The server is being updated, try again later'
+        429: "You have been rate-limited; wait and retry. The headers X-RateLimit-Reset, X-RateLimit-Limit and "
+             "X-RateLimit-Remaining will inform you of how long you have until your limit is reset and what that limit "
+             "was. If you get this response and have not exceeded your limit then check if you have made too many "
+             "requests per second.",
+        500: "Internal server error. Most likely a temporary problem",
+        503: "Service not available. The server is being updated, try again later"
     }
 
     def __init__(self, name, url=None, verbose=True, request_per_sec=3):
@@ -239,7 +246,7 @@ class REST(Service):
             res = self.session.get(url, **kargs)
 
             if self._verbose:
-                print("Target URL :%s" % res.url)
+                print("Targeted URL :%s" % res.url)
 
             if res.status_code != 200:
                 print("\033[0;33m[WARNING]\033[0m Requests Status is not OK : {0} : {1}".format(res.status_code,
@@ -285,9 +292,13 @@ class REST(Service):
             url = '%s/%s' % (self.url, query)
 
         try:
-            if self._verbose:
-                print(url)
             res = self.session.post(url, **kargs)
+            if self._verbose:
+                print("Targeted URL :%s" % res.url)
+
+            # For avoid too many requests
+            time.sleep(1 / self._request_per_sec)
+
             self.last_response = res
             res = self._interpret_returned_request(res, frmt)
             try:

@@ -11,9 +11,7 @@ import io
 from TransCellAssay.IO.Rest.Service import REST, list2string, check_param_in_list, tolist
 import pandas as pd
 
-
-__all__ = ["UniProt"]
-
+# TODO clean up this class
 
 # to do: flat files to get list of identifiers
 # http://www.ebi.ac.uk/uniprot/database/download.html

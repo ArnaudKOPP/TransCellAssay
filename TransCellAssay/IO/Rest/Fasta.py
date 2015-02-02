@@ -9,10 +9,14 @@ __email__ = "kopp.arnaud@gmail.com"
 
 from collections import OrderedDict
 
-__all__ = ["FASTA", "MultiFASTA"]
+# TODO clean up this class
 
 
 class MultiFASTA(object):
+    """
+    Class for FASTA files
+    """
+
     def __init__(self):
         # fetch the sequence using this attribute
         self._fasta_fetcher = FASTA()
@@ -34,8 +38,10 @@ class MultiFASTA(object):
     ids = property(_get_ids, doc="returns list of keys/accession identifiers")
 
     def load_fasta(self, ids):
-        """Loads a single FASTA file into the dictionary
+        """
+        Loads a single FASTA file into the dictionary
 
+        :param ids:
         """
         if isinstance(ids, str):
             ids = [ids]
@@ -51,14 +57,20 @@ class MultiFASTA(object):
             print("%s loaded" % id_)
 
     def save_fasta(self, filename):
-        """Save all FASTA into a file"""
+        """
+        Save all FASTA into a file
+        :param filename:
+        """
         fh = open(filename, "w")
         for f in self._fasta.values():
             fh.write(f.fasta)
         fh.close()
 
     def read_fasta(self, filename):
-        """Load several FASTA from a filename"""
+        """
+        Load several FASTA from a filename
+        :param filename:
+        """
         fh = open(filename, "r")
         data = fh.read()
         fh.close()
@@ -67,14 +79,13 @@ class MultiFASTA(object):
         for thisfasta in data.split(">")[1:]:
             f = FASTA()
             f._fasta = f._interpret(thisfasta)
-            if f.accession != None and f.accession not in self.ids:
+            if f.accession is not None and f.accession not in self.ids:
                 self._fasta[f.accession] = f
             else:
                 print("Accession %s is already in the ids list or could not be interpreted. skipped" % str(f.accession))
 
     def _get_df(self):
         import pandas as pd
-
         df = pd.concat([self.fasta[id_].df for id_ in self.fasta.keys()])
         df.reset_index(inplace=True)
         return df
@@ -82,6 +93,10 @@ class MultiFASTA(object):
     df = property(_get_df)
 
     def hist_size(self, **kargs):
+        """
+
+        :param kargs:
+        """
         import pylab
 
         self.df.Size.hist(**kargs)
@@ -90,6 +105,9 @@ class MultiFASTA(object):
 
 
 class FASTA(object):
+    """
+    Fasta class
+    """
     known_dbtypes = ["sp", "gi"]
 
     def __init__(self):
@@ -222,7 +240,11 @@ class FASTA(object):
         return str_
 
     def get_fasta(self, id_):
+        """
 
+        :param id_:
+        :return:
+        """
         print("get_fasta is deprecated. Use load_fasta instead")
         from TransCellAssay.IO.Rest.Uniprot import UniProt
 
@@ -235,8 +257,11 @@ class FASTA(object):
         self.load_fasta(id_)
 
     def load_fasta(self, id_):
+        """
 
-        # save fasta into attributes fasta
+        :param id_:
+        :raise Exception:
+        """
         from TransCellAssay.IO.Rest.Uniprot import UniProt
 
         u = UniProt(verbose=False)
@@ -250,12 +275,12 @@ class FASTA(object):
             pass
 
     def save_fasta(self, filename):
-        """Save FASTA file into a filename
+        """
+        Save FASTA file into a filename
 
-        :param str data: the FASTA contents
         :param str filename: where to save it
         """
-        if self._fasta == None:
+        if self._fasta is None:
             raise ValueError("No fasta was read or downloaded. Nothing to save.")
 
         fh = open(filename, "w")
@@ -263,6 +288,11 @@ class FASTA(object):
         fh.close()
 
     def read_fasta(self, filename):
+        """
+
+        :param filename:
+        :raise ValueError:
+        """
         fh = open(filename, "r")
         data = fh.read()
         fh.close()
@@ -282,7 +312,8 @@ class FASTA(object):
         if self.dbtype not in self.known_dbtypes:
             print("Only sp and gi header are recognised so far but sequence and header are loaded")
 
-    def _interpret(self, data):
+    @staticmethod
+    def _interpret(data):
         # cleanup the data in case of empty spaces or \n characters
         return data
 

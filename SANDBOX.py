@@ -261,10 +261,10 @@ def rest():
     # print(esearch)
 
     # ### Encode REST TEST
-    from TransCellAssay.IO.Rest.Encode import Encode
-    encode = Encode()
-    response = encode.biosample('ENCBS000AAA')
-    encode.show_response(response)
+    # from TransCellAssay.IO.Rest.Encode import Encode
+    # encode = Encode()
+    # response = encode.biosample('ENCBS000AAA')
+    # encode.show_response(response)
 
     # ### String REST TEST
     # from TransCellAssay.IO.Rest.String import String
@@ -282,10 +282,17 @@ def rest():
     # print(res)
 
     # ### Ensembl REST TEST
-    # from TransCellAssay.IO.Rest.Ensembl import Ensembl
-    # s = Ensembl(verbose=True)
-    # res = s.get_archive("ENSG00000157764")
-    # print(res)
+    from TransCellAssay.IO.Rest.Ensembl import Ensembl
+    s = Ensembl(verbose=True)
+    # print(s.get_rest_version())
+    # print(s.get_api_version())
+    # print(s.get_archive("AT3G52430"))
+    # print(s.post_archive(["AT3G52430", "AT1G01160"]))
+    # print(s.get_gene_family_information_by_id('MF_01687'))
+    # print(s.get_info_analysis('arabidopsis_thaliana'))
+    # print(s.get_info_assembly('arabidopsis_thaliana'))
+    print(s.get_info_assembly_by_region('arabidopsis_thaliana', region=1))
+    # print(s.get_info_compara_methods())
 
     # #### Psicquic REST TEST
 

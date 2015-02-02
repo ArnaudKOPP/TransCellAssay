@@ -22,8 +22,7 @@ __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST, list2string, check_param_in_list
 
-
-__all__ = ["Reactome"]
+# TODO clean up this class
 
 
 class Reactome(REST):

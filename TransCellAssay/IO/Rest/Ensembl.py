@@ -7,6 +7,8 @@ Interface to Ensembl web service
     :URL: http://www.ensembl.org/
     :URL: https://github.com/Ensembl/ensembl-rest/wiki/Output-formats
 
+    REST : http://rest.ensemblgenomes.org/
+
     .. highlights::
 
         The Ensembl project produces genome databases for vertebrates and
@@ -29,36 +31,44 @@ __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST, check_param_in_list, tolist, to_json
 
-__all__ = ["Ensembl"]
+# TODO finish to clean up this class
 
 
 class Ensembl(REST):
     """
-    Interface to the `Ensembl <http://rest.ensembl.org>`_ service
+    Interface to the Ensembl service
 
-    For the BioServices documentation see the documentation of
-    each method for the list of parameters. The API was copied
-    from the Ensemble API (http://rest.ensembl.org)
+    The API was copied from the Ensemble API (http://rest.ensemblgenomes.org/)
+    REST API in V4.0 used here
 
     """
-    _url = "http://rest.ensembl.org"
 
-    def __init__(self, verbose=False):
-        """**Constructor**
+    def __init__(self, verbose=False, requests_per_sec=15):
+        """
+        INIT REST object for ensembl
 
         :param verbose: set to False to prevent informative messages
+        :param requests_per_sec: number of requests per sec (max)
         """
-        super(Ensembl, self).__init__(name="Ensembl", url=Ensembl._url, verbose=verbose)
+        super(Ensembl, self).__init__(name="Ensembl", url='http://rest.ensemblgenomes.org', verbose=verbose)
+        self._request_per_sec = requests_per_sec
         self.callback = None  # use in all methods
         self._verbose = verbose
 
-    def _check_frmt(self, frmt, values=[]):
+    @staticmethod
+    def _check_frmt(frmt, values=[]):
         check_param_in_list(frmt, ['json', 'jsonp'] + values)
 
     def _check_id(self, identifier):
         pass
 
-    def nh_format_to_frmt(self, value):
+    @staticmethod
+    def nh_format_to_frmt(value):
+        """
+
+        :param value:
+        :return:
+        """
         if value == 'phylip':
             return 'phyloxml'
         elif value == 'simple':
@@ -66,10 +76,20 @@ class Ensembl(REST):
         else:
             return 'json'
 
-    def check_sequence(self, value):
+    @staticmethod
+    def check_sequence(value):
+        """
+
+        :param value:
+        """
         check_param_in_list(value, ['none', 'cdna', 'protein'])
 
-    def check_nh_format(self, value):
+    @staticmethod
+    def check_nh_format(value):
+        """
+
+        :param value:
+        """
         check_param_in_list(value, ['full', 'display_label_composite', 'simple', 'species', 'species_short_name',
                                     'ncbi_taxon', 'ncbi_name', 'njtree', 'phylip'])
 
@@ -79,11 +99,11 @@ class Ensembl(REST):
         """
         Uses the given identifier to return the archived sequence
 
-        :param str identifier: An Ensembl stable ID
-        :param str frmt: output formart(json, xml or jsonp)
+        :param identifier: An Ensembl stable ID
+        :param frmt: output formart(json, xml or jsonp)
 
             s = Ensembl()
-            res = s.get_archive("ENSG00000157764")
+            res = s.get_archive("AT3G52430")
 
         """
         self._check_frmt(frmt, ['xml'])
@@ -103,8 +123,8 @@ class Ensembl(REST):
             returned by the requested JSONP response. Required ONLY when using
             JSONP as the serialisation method. Please see the user guide.
 
-        :param str identifiers: An Ensembl stable ID
-        :param str frmt: output formart(json, xml or jsonp)
+        :param identifiers: An Ensembl stable ID
+        :param frmt: output formart(json, xml or jsonp)
 
         """
         self._check_frmt(frmt, ['xml'])
@@ -112,17 +132,53 @@ class Ensembl(REST):
                              headers=self.get_headers(content=frmt),
                              data=to_json({'id': identifiers}),
                              params={'callback': self.callback})
-        if frmt == 'xml':
-            res = self.easyXML(res)
         return res
 
     # COMPARATIVE GENOMICS
     # ------------------------------------------------------------------
 
+    def get_gene_family_information_by_id(self, gene_family, compara='bacteria', frmt='json'):
+        """
+        Retrieve gene family information by ID
+
+        ensembl.get_gene_family_information_by_id('MF_01687')
+
+        :param compara:
+        :param gene_family:
+        :param frmt:
+        :return:
+        """
+        res = self.http_get('family/id/' + gene_family, frmt=frmt,
+                            headers=self.get_headers(content=frmt),
+                            params={"compara": compara})
+        return res
+
+    def get_gene_family_by_id(self):
+        """
+        Retrieves gene families to which a gene belongs
+        :return:
+        """
+        raise NotImplementedError
+
+    def get_gene_family_by_symbol(self):
+        """
+        Retrieves gene families to which a gene belongs
+        :return:
+        """
+        raise NotImplementedError
+
     def get_genetree_by_member_symbol(self, species, symbol, frmt='json', aligned=False, db_type='core',
-                                      object_type=None, nh_format='simple', sequence='protein', compara='multi'):
+                                      nh_format='simple', sequence='protein', compara='multi'):
         """
         Retrieves a gene tree containing the gene identified by a symbol
+        :param species:
+        :param symbol:
+        :param frmt:
+        :param aligned:
+        :param db_type:
+        :param nh_format:
+        :param sequence:
+        :param compara:
         """
         self._check_frmt(frmt, ['nh', 'phyloxml'])
         frmt = self.nh_format_to_frmt(nh_format)
@@ -137,19 +193,23 @@ class Ensembl(REST):
                                     'db_type': db_type})
         return res
 
-    def get_genetree_by_member_id(self, identifier, frmt='json', aligned=False, db_type='core', object_type=None,
-                                  nh_format='simple', sequence='protein', species='homo_sapiens', compara='multi'):
+    def get_genetree_by_member_id(self, identifier, frmt='json', aligned=False, db_type='core', nh_format='simple',
+                                  sequence='protein', species='homo_sapiens', compara='multi'):
         """
         Retrieves a gene tree containing the gene identified by a symbol
 
-        :param str compara: Name of the compara database to use. Multiple
+        :param identifier: 
+        :param frmt: 
+        :param aligned: 
+        :param nh_format: 
+        :param sequence: 
+        :param species: 
+        :param compara: Name of the compara database to use. Multiple
             comparas can exist on a server if you are accessing Ensembl
             Genomes data. Defautl to 'multi'
         :param db_type: Restrict the search to a database other than the
             default. Useful if you need to use a DB other than core. Defaults
             to core
-        :param object_type: Filter by feature type. Default to None
-            examples are gene, transcript.
 
             get_genetree_by_member_id('ENSG00000157764', frmt='phyloxml')
 
@@ -167,18 +227,15 @@ class Ensembl(REST):
                                     'db_type': db_type, 'species': species})
         return res
 
-    def get_genetree_by_id(self, identifier, aligned=False, frmt='json', nh_format='simple', sequence='protein',
-                           compara='multi'):
+    def get_genetree_by_id(self, identifier, aligned=False, frmt='json', nh_format='simple', sequence='protein'):
         """
         Retrieves a gene tree dump for a gene tree stable identifier
 
-        :param str identifier: An Ensembl genetree ID
-        :param str frmt: response formats: json, jsonp, nh, phyloxml
+        :param identifier: An Ensembl genetree ID
+        :param frmt: response formats: json, jsonp, nh, phyloxml
         :param bool aligned: if true, return the aligned string otherwise, i
             return the original
             sequence (no insertions). Can be True/1 or False/0 and defaults to 0
-        :param str compara: Name of the compara database to use. Multiple comparas can
-            exist on a server if you are accessing Ensembl Genomes data
         :param nh_format: The format of a NH (New Hampshire) request.
             Valid values are 'full', 'display_label_composite', 'simple',
             'species', 'species_short_name', 'ncbi_taxon', 'ncbi_name',
@@ -211,35 +268,37 @@ class Ensembl(REST):
         Retrieves genomic alignments as separate blocks based on a region and
         species
 
-        :param str region: Query region. A maximum of 10Mb is allowed to be
+        :param method: 
+        :param frmt: 
+        :param region: Query region. A maximum of 10Mb is allowed to be
             requested at any one time (e.g.,  'X:1000000..1000100:1',
             'X:1000000..1000100:-1',  'X:1000000..1000100')
-        :param str species: Species name/alias (e.g., human)
+        :param species: Species name/alias (e.g., human)
         :param bool aligned: Return the aligned string if true. Otherwise,
             return the original sequence (no insertions)
         :param bool compact: Applicable to EPO_LOW_COVERAGE alignments.
             If true, concatenate the low coverage species sequences
             together to create a single sequence. Otherwise, separates
             out all sequences.
-        :param str compara: Name of the compara database to use. Multiple
+        :param compara: Name of the compara database to use. Multiple
             comparas can exist on a server if you are accessing Ensembl
             Genomes data (defaults to multi)
-        :param str display_species_set: Subset of species in the alignment
+        :param display_species_set: Subset of species in the alignment
             to be displayed (multiple values). All the species in the alignment
             will be displayed if this is not set. Any valid alias may be
             used.. (e.g., human, chimp, gorilla)
-        :param str mask: Request the sequence masked for repeat sequences.
+        :param mask: Request the sequence masked for repeat sequences.
             Hard will mask all repeats as N's and soft will mask repeats
             as lowercased characters.
-        :param str method:The alignment method amongst Enum(EPO,
+        :param method:The alignment method amongst Enum(EPO,
             EPO_LOW_COVERAGE, PECAN, LASTZ_NET, BLASTZ_NET, TRANSLATED_BLAT_NET)
-        :param str species_set: the set of species used to define the pairwise
+        :param species_set: the set of species used to define the pairwise
             alignment (multiple values). Should not be used with the
             species_set_group parameter. Use :meth:`get_info_compara_by_method`
             with one of the methods listed above to obtain a valid list of
             species sets. Any valid alias may be used. (e.g., musc_musculus,
             homo_sapiens)
-        :param str species_set_group: The species set group name of the multiple
+        :param species_set_group: The species set group name of the multiple
             alignment. Should not be used with the species_set parameter.
             Use /info/compara/species_sets/:method with one of the methods
             listed above to obtain a valid list of group names. (Defaults to
@@ -261,6 +320,16 @@ class Ensembl(REST):
                            species=None, target_species=None, target_taxon=None, type='all'):
         """
         Retrieves homology information (orthologs) by Ensembl gene id
+        :param type: 
+        :param target_taxon: 
+        :param target_species: 
+        :param species: 
+        :param sequence: 
+        :param format: 
+        :param compara: 
+        :param aligned: 
+        :param frmt: 
+        :param identifier: 
         """
         self._check_frmt(frmt, ['xml'])
         res = self.http_get("homology/id/{0}".format(identifier),
@@ -276,10 +345,14 @@ class Ensembl(REST):
     def get_homology_by_symbol(self, species, symbol, frmt='json', aligned=True, compara=None):
         """
         Retrieves homology information (orthologs) by symbol
+        :param compara: 
+        :param aligned: 
+        :param frmt: 
+        :param symbol: 
+        :param species: 
         """
         raise NotImplementedError
         # species='human', symbol='BRCA2'
-
 
     # CROSS REFERENCES
     # -------------------------------
@@ -290,26 +363,24 @@ class Ensembl(REST):
         Perform lookups of Ensembl Identifiers and retrieve their external
         references in other databases
 
-        :param str identifier: An Ensembl Stable ID (ENSG00000157764)
-        :param str frmt: response formats: json, jsonp, nh, phyloxml
+        :param identifier: An Ensembl Stable ID (ENSG00000157764)
+        :param frmt: response formats: json, jsonp, nh, phyloxml
         :param bool all_levels: Set to find all genetic features linked to
             the stable ID, and fetch all external references for them.
             Specifying this on a gene will also return values from its
             transcripts and translations.
-        :param str db_type: Restrict the search to a database other than the
+        :param db_type: Restrict the search to a database other than the
             default. Useful if you need to use a DB other than core
-        :param str external_db: Filter by external database (e.g., HGNC)
-        :param str object_type: filter by feature type (e.g., gene, transcript)
-        :param str species: Species name/alias (human)
+        :param external_db: Filter by external database (e.g., HGNC)
+        :param object_type: filter by feature type (e.g., gene, transcript)
+        :param species: Species name/alias (human)
 
         """
         self._check_frmt(frmt)
         res = self.http_get('xrefs/id/{0}'.format(identifier), frmt=frmt,
                             headers=self.get_headers(content=frmt),
-                            params={'db_type': db_type, 'callback': self.callback,
-                                    'db_type': db_type, 'all_levels': int(all_levels),
-                                    'external_db': external_db, 'object_type': object_type,
-                                    'species': species})
+                            params={'db_type': db_type, 'callback': self.callback, 'all_levels': int(all_levels),
+                                    'external_db': external_db, 'object_type': object_type, 'species': species})
         return res
 
     def get_xrefs_by_name(self, name, species, frmt='json', db_type='core', external_db=None):
@@ -318,12 +389,12 @@ class Ensembl(REST):
         of an external reference and returning the information we hold about the
         entry
 
-        :param str name: Symbol or display name of a gene (e.g., BRCA2)
-        :param str species: Species name/alias (e.g., human)
-        :param str frmt: response formats: json, jsonp,xml
-        :param str db_type: Restrict the search to a database other than the
+        :param name: Symbol or display name of a gene (e.g., BRCA2)
+        :param species: Species name/alias (e.g., human)
+        :param frmt: response formats: json, jsonp,xml
+        :param db_type: Restrict the search to a database other than the
             default. Useful if you need to use a DB other than core
-        :param str external_db: Filter by external database (e.g., HGNC)
+        :param external_db: Filter by external database (e.g., HGNC)
 
 
         """
@@ -342,32 +413,32 @@ class Ensembl(REST):
         linked to the supplied symbol the service will return both gene and
         transcript (it supports transient links).
 
-        :param str species: Species name/alias (e.g., human)
-        :param str symbol: Symbol or display name of a gene (BRCA2)
-        :param str frmt: response formats: json, jsonp,xml
-        :param str db_type: Restrict the search to a database other than the
+        :param species: Species name/alias (e.g., human)
+        :param symbol: Symbol or display name of a gene (BRCA2)
+        :param frmt: response formats: json, jsonp,xml
+        :param db_type: Restrict the search to a database other than the
             default. Useful if you need to use a DB other than core
-        :param str external_db: Filter by external database (e.g., HGNC)
-        :param str object_type: filter by feature type (e.g., gene, transcript)
+        :param external_db: Filter by external database (e.g., HGNC)
+        :param object_type: filter by feature type (e.g., gene, transcript)
 
         """
         self._check_frmt(frmt, ['xml'])
         res = self.http_get('xrefs/symbol/{0}/{1}'.format(species, symbol), frmt=frmt,
                             headers=self.get_headers(content=frmt),
-                            # params = {'db_type': db_type, 'callback':self.callback,
-                            # 'object_type':object_type, 'external_db': external_db}
+                            params={'db_type': db_type, 'callback': self.callback,
+                                    'object_type': object_type, 'external_db': external_db}
         )
         return res
 
-
     # INFORMATION
     # ---------------------------------------------------------------------------
+
     def get_info_analysis(self, species, frmt='json'):
         """
         List the names of analyses involved in generating Ensembl data.
 
-        :param str species: Species name/alias (e.g., homo_sapiens)
-        :param str frmt: response formats: json, jsonp,xml
+        :param species: Species name/alias (e.g., homo_sapiens)
+        :param frmt: response formats: json, jsonp,xml
 
         """
         self._check_frmt(frmt, ['xml'])
@@ -380,8 +451,8 @@ class Ensembl(REST):
         """
         List the currently available assemblies for a species.
 
-        :param str species: Species name/alias (e.g., homo_sapiens)
-        :param str frmt: response formats: json, jsonp,xml
+        :param species: Species name/alias (e.g., homo_sapiens)
+        :param frmt: response formats: json, jsonp,xml
         :param bool bands: if set to 1, include karyotype band information.
             Only display if band information is available
 
@@ -395,13 +466,17 @@ class Ensembl(REST):
     def get_info_assembly_by_region(self, species, region, frmt='json', bands=0):
         """
         Returns information about the specified toplevel sequence region for the
-            given species."""
+            given species.
+        :param bands: 
+        :param frmt: 
+        :param region: 
+        :param species: 
+            """
         self._check_frmt(frmt, ['xml'])
         res = self.http_get('info/assembly/{0}/{1}'.format(species, region),
                             frmt=frmt,
                             headers=self.get_headers(content=frmt),
-                            params={'bands': bands, 'callback': self.callback
-                            })
+                            params={'bands': bands, 'callback': self.callback})
         return res
 
     def get_info_biotypes(self, species, frmt='json'):
@@ -410,8 +485,8 @@ class Ensembl(REST):
         with a particular species. Useful for restricting the type of genes/transcripts
         retrieved by other endpoints.
 
-        :param str species: Species name/alias (e.g., homo_sapiens)
-        :param str frmt: response formats: json, jsonp,xml
+        :param species: Species name/alias (e.g., homo_sapiens)
+        :param frmt: response formats: json, jsonp,xml
 
         """
         self._check_frmt(frmt, ['xml'])
@@ -420,26 +495,16 @@ class Ensembl(REST):
                             params={'callback': self.callback})
         return res
 
-    def get_info_compara_methods(self, frmt='json', compara='multi', method_class=None):
+    def get_info_compara_methods(self, frmt='json'):
         """
         List all compara analyses available (an analysis defines the type of
         comparative data).
 
-        :param str frmt: response formats: json, yaml, jsonp, xml
-        :param str class: The class of the method to query for.
-            Regular expression patterns are supported.
-            (Defaults to  GenomicAlign)
-        :param str compara: Name of the compara database to use.
-            Multiple comparas may exist on a server when accessing Ensembl Genomes data.
-
-        .. note:: API argument is class, renamed in method_class
-
+        :param frmt: response formats: json, yaml, jsonp, xml
         """
-        self._check_frmt(frmt, ['xml'])
         res = self.http_get('info/compara/methods', frmt=frmt,
                             headers=self.get_headers(content=frmt),
-                            params={'class': method_class, 'compara': compara,
-                                    'callback': self.callback})
+                            params={'callback': self.callback})
         return res
 
     def get_info_compara_by_method(self, method, frmt='json', compara='multi'):
@@ -447,11 +512,11 @@ class Ensembl(REST):
         List all collections of species analysed with the specified compara
         method.
 
-        :param str method: Filter by compara method. Use one the
+        :param method: Filter by compara method. Use one the
             methods returned by /info/compara/methods endpoint.
             e.g., EPO
-        :param str frmt: response formats: json, jsonp,xml
-        :param str compara: Name of the compara database to use. Multiple
+        :param frmt: response formats: json, jsonp,xml
+        :param compara: Name of the compara database to use. Multiple
             comparas may exist on a server when accessing Ensembl Genomes data.
             defaults to 'multi'
 
@@ -467,7 +532,7 @@ class Ensembl(REST):
         """
         Lists all available comparative genomics databases and their data release.
 
-        :param str frmt: response formats: json, jsonp,xml
+        :param frmt: response formats: json, jsonp,xml
         """
         self._check_frmt(frmt, ['xml', 'yaml'])
         res = self.http_get('info/comparas', frmt=frmt,
@@ -480,7 +545,7 @@ class Ensembl(REST):
         Shows the data releases available on this REST server. May return more than
         one release (unfrequent non-standard Ensembl configuration).
 
-        :param str frmt: response formats: json, jsonp,xml
+        :param frmt: response formats: json, jsonp,xml
 
 
         """
@@ -490,13 +555,16 @@ class Ensembl(REST):
                             params={'callback': self.callback})
         return res
 
+    def get_info_ensembl_genomes(self):
+        raise NotImplementedError
+
     def get_info_external_dbs(self, species, frmt='json', filter=None):
         """
         Lists all available external sources for a species.
 
-        :param str frmt: response formats: json, jsonp,xml
-        :param str species: Species name/alias
-        :param str filter: Restrict external DB searches to a single
+        :param frmt: response formats: json, jsonp,xml
+        :param species: Species name/alias
+        :param filter: Restrict external DB searches to a single
             source or pattern. SQL-LIKE patterns are supported.
             (e.g., HGNC, GO%)
 
@@ -508,9 +576,31 @@ class Ensembl(REST):
                             params={'callback': self.callback, 'filter': filter})
         return res
 
+    def get_info_division(self):
+        raise NotImplementedError
+
+    def get_info_genomes_by_name(self):
+        raise NotImplementedError
+
+    def get_info_genomes(self):
+        raise NotImplementedError
+
+    def get_info_genomes_by_accesion(self):
+        raise NotImplementedError
+
+    def get_info_genomes_by_assembly(self):
+        raise NotImplementedError
+
+    def get_info_genomes_by_division(self):
+        raise NotImplementedError
+
+    def get_info_genomes_by_taxonomy(self):
+        raise NotImplementedError
+
     def get_info_ping(self, frmt='json'):
         """
         Checks if the service is alive.
+        :param frmt: 
         """
         self._check_frmt(frmt, ['xml'])
         res = self.http_get('info/ping/', frmt=frmt,
@@ -522,7 +612,7 @@ class Ensembl(REST):
         """
         Shows the current version of the Ensembl REST API.
 
-        :param str frmt: response formats: json, jsonp,xml
+        :param frmt: response formats: json, jsonp,xml
 
         """
         self._check_frmt(frmt, ['xml'])
@@ -535,7 +625,7 @@ class Ensembl(REST):
         """
         Shows the current version of the Ensembl API used by the REST server.
 
-        :param str frmt: response formats: json, jsonp,xml
+        :param frmt: response formats: json, jsonp,xml
         """
         self._check_frmt(frmt, ['xml'])
         res = self.http_get('info/software/', frmt=frmt,
@@ -548,7 +638,7 @@ class Ensembl(REST):
         Lists all available species, their aliases, available adaptor groups and data
         release.
 
-        :param str frmt: response formats: json, jsonp,xml
+        :param frmt: response formats: json, jsonp,xml
 
         """
         self._check_frmt(frmt, ['xml'])
@@ -563,16 +653,16 @@ class Ensembl(REST):
         """
         Find the species and database for a single identifier
 
-        :param str identifier: An ontology term identifier (e.g., GO:0005667)
-        :param str frmt: response formats in json, xml, jsonp
-        :param str db_type: Restrict the search to a database other than the
+        :param identifier: An ontology term identifier (e.g., GO:0005667)
+        :param frmt: response formats in json, xml, jsonp
+        :param db_type: Restrict the search to a database other than the
             default. Useful if you need to use a DB other than core. Defaults
             to core
-        :param str expand: Expands the search to include any connected features.
+        :param expand: Expands the search to include any connected features.
             e.g. If the object is a gene, its transcripts, translations and exons
             will be returned as well.
-        :param str format: Specify the formats to emit from this endpoint
-        :param str species: Species name/alias (e.g., human)
+        :param format: Specify the formats to emit from this endpoint
+        :param species: Species name/alias (e.g., human)
 
             get_lookup_by_id('ENSG00000157764', expand=True)
 
@@ -584,22 +674,23 @@ class Ensembl(REST):
                                     'callback': self.callback, 'species': species})
         return res
 
-    def post_lookup_by_id(self, identifiers, frmt='json', db_type=None, expand=False, format='full', object_type=None,
-                          species=None):
+    def get_lookup_by_genome_name(self):
+        raise NotImplementedError
+
+    def post_lookup_by_id(self, identifiers, frmt='json', db_type=None, expand=False, format='full', species=None):
         """
         Find the species and database for a single identifier
 
-        :param str identifier: An ontology term identifier (e.g., GO:0005667)
-        :param str frmt: response formats in json, xml, jsonp
-        :param str db_type: Restrict the search to a database other than the
+        :param identifiers: An ontology term identifier (e.g., GO:0005667)
+        :param frmt: response formats in json, xml, jsonp
+        :param db_type: Restrict the search to a database other than the
             default. Useful if you need to use a DB other than core. Defaults
             to core
-        :param str expand: Expands the search to include any connected features.
+        :param expand: Expands the search to include any connected features.
             e.g. If the object is a gene, its transcripts, translations and exons
             will be returned as well.
-        :param str format: Specify the formats to emit from this endpoint
-        :param str object_type: Filter by feature type (e.g., gene, transcript)
-        :param str species: Species name/alias (e.g., human)
+        :param format: Specify the formats to emit from this endpoint
+        :param species: Species name/alias (e.g., human)
 
         ::
 
@@ -621,14 +712,14 @@ class Ensembl(REST):
         """
         Find the species and database for a single identifier
 
-        :param str species: Species name/alias (e.g., human)
-        :param str symbol: A name or symbol from an annotation source has been
+        :param species: Species name/alias (e.g., human)
+        :param symbol: A name or symbol from an annotation source has been
             linked to a genetic feature. e.g., BRCA2
-        :param str frmt: response formats in json, xml, jsonp
-        :param str expand: Expands the search to include any connected features.
+        :param frmt: response formats in json, xml, jsonp
+        :param expand: Expands the search to include any connected features.
             e.g. If the object is a gene, its transcripts, translations and exons
             will be returned as well.
-        :param str format: Specify the formats to emit from this endpoint
+        :param format: Specify the formats to emit from this endpoint
 
         ::
 
@@ -648,14 +739,14 @@ class Ensembl(REST):
         """
         Find the species and database for a set of symbols
 
-        :param str species: Species name/alias (e.g., human)
+        :param species: Species name/alias (e.g., human)
         :param list symbols: A list of names or symbols from an annotation source has been
             linked to a genetic feature. e.g., BRCA2
-        :param str frmt: response formats in json, xml, jsonp
-        :param str expand: Expands the search to include any connected features.
+        :param frmt: response formats in json, xml, jsonp
+        :param expand: Expands the search to include any connected features.
             e.g. If the object is a gene, its transcripts, translations and exons
             will be returned as well.
-        :param str format: Specify the formats to emit from this endpoint
+        :param format: Specify the formats to emit from this endpoint
 
         ::
 
@@ -680,11 +771,12 @@ class Ensembl(REST):
         """
         Convert from cDNA coordinates to genomic coordinates.
 
+        :param species: 
+        :param frmt: 
         :param identifier: Ensembl ID e.g. ENST00000288602
         :param region: Query region e.g., 100..300
 
         Output reflects forward orientation coordinates as returned from the Ensembl API.
-
 
             get_map_cds_to_region('ENST00000288602', '1..1000')
         """
@@ -699,15 +791,12 @@ class Ensembl(REST):
         """
         Convert from cDNA coordinates to genomic coordinates.
 
-        :param str first: version of the input assembly
-        :param str first: version of the output assembly
-        :param str region:  query region (see example)
-        :param str species: default to human
+        :param frmt: 
+        :param identifier: 
+        :param region:  query region (see example)
+        :param species: default to human
 
         Output reflects forward orientation coordinates as returned from the Ensembl API.
-
-
-        ::
 
             get_map_cdna_to_region('ENST00000288602', '100..300')
 
@@ -722,11 +811,12 @@ class Ensembl(REST):
         """
         Convert the co-ordinates of one assembly to another
 
-
-        :param str first: version of the input assembly
-        :param str first: version of the output assembly
-        :param str region:  query region (see example)
-        :param str species: default to human
+        :param frmt: 
+        :param second: 
+        :param first: version of the input assembly
+        :param first: version of the output assembly
+        :param region:  query region (see example)
+        :param species: default to human
 
         ::
 
@@ -740,16 +830,16 @@ class Ensembl(REST):
                             params={})
         return res
 
-    def get_map_translation_to_region(self, identifier, region, frmt='json', species=None):
+    def get_map_translation_to_region(self, identifier, region, frmt='json'):
         """
         Convert from protein (translation) coordinates to genomic coordinates.
 
         Output reflects forward orientation coordinates as returned from the
         Ensembl API.
 
+        :type frmt:
+        :param region: 
         :param identifier: a stable Ensembl ID
-        :param str query: a query region
-        :param str species: Species name/alias (e.g., homo_sapiens)
 
         ::
 
@@ -761,7 +851,6 @@ class Ensembl(REST):
                             params={'callback': self.callback})
         return res
 
-
     # ONTOLOGY and Taxonomy
     # -------------------------------------------------------------------------
 
@@ -769,11 +858,11 @@ class Ensembl(REST):
         """
         Search for an ontological  term by its namespaced identifier
 
-        :param str identifier: An ontology term identifier (e.g., GO:0005667)
+        :param identifier: An ontology term identifier (e.g., GO:0005667)
         :param bool simple: If set the API will avoid the fetching of parent and child terms
-        :param str frmt: response formats in json, xml, yaml, jsonp
-        :param str simple: If set the API will avoid the fetching of parent and child terms
-        :param str relation: The types of relationships to include in the output. Fetches
+        :param frmt: response formats in json, xml, yaml, jsonp
+        :param simple: If set the API will avoid the fetching of parent and child terms
+        :param relation: The types of relationships to include in the output. Fetches
             all relations by default (e.g., is_a, part_of)
 
             e = Ensembl()
@@ -793,13 +882,13 @@ class Ensembl(REST):
         """
         Search for a list of ontological terms by their name
 
-        :param str name: An ontology name. SQL wildcards are supported (e.g.,
+        :param name: An ontology name. SQL wildcards are supported (e.g.,
             transcription factor complex)
-        :param str frmt: response formats in json, xml, yaml, jsonp
-        :param str simple: If set the API will avoid the fetching of parent and child terms
-        :param str relation: The types of relationships to include in the output. Fetches
+        :param frmt: response formats in json, xml, yaml, jsonp
+        :param simple: If set the API will avoid the fetching of parent and child terms
+        :param relation: The types of relationships to include in the output. Fetches
             all relations by default (e.g., is_a, part_of)
-        :param str ontology: Filter by ontology. Used to disambiguate terms which are
+        :param ontology: Filter by ontology. Used to disambiguate terms which are
             shared between ontologies such as GO and EFO (e.g., GO)
 
             e = Ensembl()
@@ -820,10 +909,10 @@ class Ensembl(REST):
         """
         Search for a taxonomic term by its identifier or name
 
-        :param str identifier: A taxon identifier. Can be a NCBI taxon id or
+        :param identifier: A taxon identifier. Can be a NCBI taxon id or
             a name (e.g., 9606 or Homo sapiens)
         :param bool simple: If set the API will avoid the fetching of parent and child terms
-        :param str frmt: response formats in json, xml, yaml, jsonp
+        :param frmt: response formats in json, xml, yaml, jsonp
         """
         self._check_frmt(frmt, ['xml', 'yaml'])
         res = self.http_get("taxonomy/id/{0}".format(identifier),
@@ -832,33 +921,14 @@ class Ensembl(REST):
                             params={'simple': int(simple)})
         return res
 
-    def get_taxonomy_by_name(self, name, frmt='json'):
-        """
-        Search for a taxonomic id by a non-scientific name
-
-        :param str name: A non-scientific species name. Can include SQL wildcards
-        :param str frmt: response formats in json, xml, yaml, jsonp
-
-
-            e = Ensembl()
-            res = e.get_taxonomy_by_name('homo')
-
-        """
-        self._check_frmt(frmt, ['xml', 'yaml'])
-        res = self.http_get("taxonomy/name/{0}".format(name),
-                            frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={'callback': self.callback})
-        return res
-
     def get_taxonomy_classification_by_id(self, identifier, frmt='json'):
         """
         Return the taxonomic classification of a taxon node
 
 
-        :param str identifier: A taxon identifier. Can be a NCBI taxon id or a name
+        :param identifier: A taxon identifier. Can be a NCBI taxon id or a name
             (e.g., 9606, Homo sapiens)
-        :param str frmt: json, xml, yaml, jsonp
+        :param frmt: json, xml, yaml, jsonp
 
             e = Ensembl()
             res = e.get_taxonomy_classification_by_id('9606')
@@ -876,9 +946,9 @@ class Ensembl(REST):
         Reconstruct the entire ancestry of a term from is_a and part_of
         relationships
 
-        :param str identifier: An ontology term identifier (e.g., GO:0005667)
-        :param str frmt: json, xml, yaml, jsonp
-        :param str ontology: Filter by ontology. Used to disambiguate
+        :param identifier: An ontology term identifier (e.g., GO:0005667)
+        :param frmt: json, xml, yaml, jsonp
+        :param ontology: Filter by ontology. Used to disambiguate
             terms which are shared between ontologies such as GO and EFO (e.g.,
             GO)
 
@@ -896,9 +966,9 @@ class Ensembl(REST):
         Reconstruct the entire ancestry of a term from is_a and part_of
         relationships.
 
-        :param str identifier: an ontology term identifier (GO:0005667)
-        :param str frmt: json, xml, yaml, jsonp
-        :param str ontology: Filter by ontology. Used to disambiguate
+        :param identifier: an ontology term identifier (GO:0005667)
+        :param frmt: json, xml, yaml, jsonp
+        :param ontology: Filter by ontology. Used to disambiguate
             terms which are shared between ontologies such as GO and EFO
 
         """
@@ -916,13 +986,13 @@ class Ensembl(REST):
         Find all the terms descended from a given term. By default searches
         are conducted within the namespace of the given identifier
 
-        :param str identifier: an ontology term identifier (GO:0005667)
-        :param str frmt: json, xml, jsonp
+        :param identifier: an ontology term identifier (GO:0005667)
+        :param frmt: json, xml, jsonp
         :param bool closest_term: If true return only the closest terms to the
             specified term
-        :param str ontology: Filter by ontology. Used to disambiguate terms
+        :param ontology: Filter by ontology. Used to disambiguate terms
             which are shared between ontologies such as GO and EFO
-        :param str subset: Filter terms by the specified subset
+        :param subset: Filter terms by the specified subset
         :param bool zero_distance: Return terms with a distance of 0
 
         """
@@ -945,26 +1015,27 @@ class Ensembl(REST):
         Retrieves features (e.g. genes, transcripts, variations etc.)
         that overlap a region defined by the given identifier.
 
-        :param str identifier: An Ensemble stable ID
-        :param str feature: The type of feature to retrieve. Multiple values
+        :param frmt: 
+        :param identifier: An Ensemble stable ID
+        :param feature: The type of feature to retrieve. Multiple values
             are accepted. Value in Enum(gene, transcript, cds, exon, repeat,
             simple, misc, variation, somatic_variation, structural_variation,
             somatic_structural_variation, constrained, regulatory
-        :param str biotype: The functional classification of the gene or
+        :param biotype: The functional classification of the gene or
             transcript to fetch. Cannot be used in conjunction with logic_name
             when querying transcripts. (e.g., protein_coding)
-        :param str db_type: Restrict the search to a database other than
+        :param db_type: Restrict the search to a database other than
             the default. Useful if you need to use a DB other than core
-        :param str logic_name: Limit retrieval of genes, transcripts and
+        :param logic_name: Limit retrieval of genes, transcripts and
             exons by a given name of an analysis.
-        :param str misc_set: Miscellaneous set which groups together
+        :param misc_set: Miscellaneous set which groups together
             feature entries. Consult the DB or returned data sets to discover
             what is available. (e.g., cloneset_30k
-        :param str object_type: Filter by feature type (e.g., gene)
-        :param str so_term: Sequence Ontology term to narrow down the
+        :param object_type: Filter by feature type (e.g., gene)
+        :param so_term: Sequence Ontology term to narrow down the
             possible variations returned. (e.g., SO:0001650)
-        :param str species: Species name/alias.
-        :param str species_set: Filter by species set for
+        :param species: Species name/alias.
+        :param species_set: Filter by species set for
             retrieving constrained elements. (e.g. mammals)
 
         """
@@ -979,38 +1050,37 @@ class Ensembl(REST):
                                     'species_set': species_set})
         return res
 
-    def get_overlap_by_region(self, region, species, feature=None,
-                              frmt='json', biotype=None, cell_type=None,
-                              db_type=None, logic_name=None,
-                              misc_set=None, object_type=None, so_term=None,
+    def get_overlap_by_region(self, region, species, feature=None, frmt='json', biotype=None, cell_type=None,
+                              db_type=None, logic_name=None, misc_set=None, so_term=None,
                               species_set=None, trim_downstream=False, trim_upstream=False):
         """
         Retrieves multiple types of features for a given region.
 
-        :param str region: Query region. A maximum of 5Mb is allowed to
+        :param frmt: 
+        :param region: Query region. A maximum of 5Mb is allowed to
             be requested at any one time. e.g.,  X:1..1000:1, X:1..1000:-1,
             X:1..1000
-        :param str species: Species name/alias.
-        :param str feature: The type of feature to retrieve. Multiple
+        :param species: Species name/alias.
+        :param feature: The type of feature to retrieve. Multiple
             values are accepted: gene, transcript, cds, exon, repeat,
             simple, misc, variation, somatic_variation, structural_variation,
             somatic_structural_variation, constrained, regulatory
-        :param str biotype: The functional classification of the gene or
+        :param biotype: The functional classification of the gene or
             transcript to fetch. Cannot be used in conjunction with logic_name
             when querying transcripts. (e.g., protein_coding)
         :param cell_type: Cell type name in Ensembl's Regulatory Build,
             required for segmentation feature, optional for regulatory elements.
             e.g., K562
-        :param str db_type: Restrict the search to a database other than
+        :param db_type: Restrict the search to a database other than
             the default. Useful if you need to use a DB other than core
-        :param str logic_name: Limit retrieval of genes, transcripts and
+        :param logic_name: Limit retrieval of genes, transcripts and
             exons by a given name of an analysis.
-        :param str misc_set: Miscellaneous set which groups together
+        :param misc_set: Miscellaneous set which groups together
             feature entries. Consult the DB or returned data sets to discover
             what is available. (e.g., cloneset_30k)
-        :param str so_term: Sequence Ontology term to narrow down the
+        :param so_term: Sequence Ontology term to narrow down the
             possible variations returned. (e.g., SO:0001650)
-        :param str species_set: Filter by species set for
+        :param species_set: Filter by species set for
             retrieving constrained elements. (e.g. mammals)
         :param bool trim_downstream: Do not return features which overlap
             the downstream end of the region.
@@ -1030,28 +1100,27 @@ class Ensembl(REST):
                                     'so_term': so_term, 'species_set': species_set,
                                     'trim_downstream': trim_downstream,
                                     'trim_upstream': trim_upstream
-                            })
+                                    })
         return res
 
-    def get_overlap_by_translation(self, identifier, frmt='json',
-                                   db_type=None, feature='protein_feature',
-                                   so_term=None, species=None, type='none'):
+    def get_overlap_by_translation(self, identifier, frmt='json', db_type=None, feature='protein_feature', so_term=None,
+                                   species=None, type='none'):
         """
         Retrieve features related to a specific Translation as
         described by its stable ID (e.g. domains, variations).
 
-        :param str identifier:
-        :param str frmt:
-        :param str db_type: Restrict the search to a database other
+        :param identifier:
+        :param frmt:
+        :param db_type: Restrict the search to a database other
             than the default. Useful if you need to use a DB other than core
-        :param str feature: requested feature in: transcript_variation,
+        :param feature: requested feature in: transcript_variation,
             protein_feature, residue_overlap, translation_exon,
             somatic_transcript_variation
-        :param str so_term: Sequence Ontology term to restrict the variations
+        :param so_term: Sequence Ontology term to restrict the variations
             found. Its descendants are also included in the search. (e.g.,
             SO:0001650)
-        :param str species: species name/alias
-        :param str type: Type of data to filter by. By default, all
+        :param species: species name/alias
+        :param type: Type of data to filter by. By default, all
             features are returned. Can specify a domain or consequence
             type. (e.g.,  low_complexity)
         """
@@ -1065,38 +1134,17 @@ class Ensembl(REST):
                                     'type': type})
         return res
 
-    # REGULATION
-    # --------------------------------------
-    def get_regulatory_by_id(self, identifier, species, frmt='json'):
-        """
-        Returns a RegulatoryFeature given its stable ID
-
-        :param str identifier:
-        :param str species:
-
-
-        """
-        self._check_frmt(frmt, ['xml'])
-        res = self.http_get("regulatory/{0}/{1}".format(species, identifier),
-                            frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={'callback': self.callback})
-        return res
-
-
     # SEQUENCE
     # -----------------------------
-    def get_sequence_by_id(self, identifier, frmt='fasta',
-                           db_type=None, expand_3prime=None,
-                           expand_5prime=None, format=None, mask=None,
-                           mask_feature=False, multiple_sequences=False,
-                           object_type=None, species=None, type='genomic'):
+    def get_sequence_by_id(self, identifier, frmt='fasta', db_type=None, expand_3prime=None, expand_5prime=None,
+                           format=None, mask=None, mask_feature=False, multiple_sequences=False, object_type=None,
+                           species=None, type='genomic'):
         """
         Request multiple types of sequence by stable identifier.
-
-        :param str identifier:
-        :param str frmt: response formats: fasta, json, text, yam, jsonp
-        :param str db_type: Restrict the search to a database other than the
+ 
+        :param identifier: 
+        :param frmt: response formats: fasta, json, text, yam, jsonp
+        :param db_type: Restrict the search to a database other than the
             default. Useful if you need to use a DB other than core (e.g.,
             core)
         :param int expand_3prime: Expand the sequence downstream of the
@@ -1105,8 +1153,8 @@ class Ensembl(REST):
         :param int expand_5prime: Expand the sequence upstream of the
             sequence by this many basepairs. Only available when using
             genomic sequence type.
-        :param str format: Format of the data (e.g., fasta)
-        :param str mask: Request the sequence masked for repeat sequences.
+        :param format: Format of the data (e.g., fasta)
+        :param mask: Request the sequence masked for repeat sequences.
             Hard will mask all repeats as N's and soft will mask repeats
             as lowercased characters. Only available when using genomic
             sequence type. (hard/soft)
@@ -1116,9 +1164,9 @@ class Ensembl(REST):
         :param bool multiple_sequences: Allow the service to return more
             than 1 sequence per identifier. This is useful when querying
             for a gene but using a type such as protein.
-        :param str object_type: Filter by feature type (e.g., gene)
-        :param str species: Species name/alias (e.g., homo_sapiens)
-        :param str type:. could be genomic, cds, cdna, protein (homo_sapiens).
+        :param object_type: Filter by feature type (e.g., gene)
+        :param species: Species name/alias (e.g., homo_sapiens)
+        :param type: could be genomic, cds, cdna, protein (homo_sapiens).
             Requesting a gene and kind not equal to genomic may result in
             multiple sequence, which required the parameter multi_sequences
             to be set to True
@@ -1152,25 +1200,25 @@ class Ensembl(REST):
                                 'multiple_sequences': multiple_sequences, 'species': species,
                                 'expand_3prime': expand_3prime,
                                 'expand_5prime': expand_5prime, 'format': format, 'mask': mask,
-                                'mask_feature': mask_feature, 'type': type,
-                                'multiple_sequences': multiple_sequences, 'species': species}
+                                'mask_feature': mask_feature, 'type': type}
         )
         return res
 
-    def get_sequence_by_region(self, region, species, frmt='json',
-                               coord_system=None, coord_system_version=None,
-                               expand_3prime=None,
-                               expand_5prime=None, format=None, mask=None,
-                               mask_feature=False):
+    def post_sequence_by_id(self):
+        raise NotImplementedError
+
+    def get_sequence_by_region(self, region, species, frmt='json', coord_system=None, coord_system_version=None,
+                               expand_3prime=None, expand_5prime=None, format=None, mask=None, mask_feature=False):
         """
         Returns the genomic sequence of the specified region of the given species.
 
-        :param str region: Query region. A maximum of 10Mb is allowed to be
+        :param frmt: 
+        :param region: Query region. A maximum of 10Mb is allowed to be
             requested at any one time. e.g.,  X:1000000..1000100:1
-        :param str species: Species name/alias
-        :param str coord_system: Filter by coordinate system name (e.g., contig,
+        :param species: Species name/alias
+        :param coord_system: Filter by coordinate system name (e.g., contig,
             seqlevel)
-        :param str  coord_system_version: Filter by coordinate system version
+        :param  coord_system_version: Filter by coordinate system version
             (e.g., GRCh37)
         :param int expand_3prime: Expand the sequence downstream of the
             sequence by this many basepairs. Only available when using
@@ -1178,8 +1226,8 @@ class Ensembl(REST):
         :param int expand_5prime: Expand the sequence upstream of the
             sequence by this many basepairs. Only available when using
             genomic sequence type.
-        :param str format: Format of the data. (e.g., fasta)
-        :param str mask: Request the sequence masked for repeat sequences.
+        :param format: Format of the data. (e.g., fasta)
+        :param mask: Request the sequence masked for repeat sequences.
             Hard will mask all repeats as N's and soft will mask repeats
             as lowercased characters. Only available when using genomic
             sequence type. (hard/soft)
@@ -1201,16 +1249,17 @@ class Ensembl(REST):
         )
         return res
 
+    def pos_sequence_by_region(self):
+        raise NotImplementedError
 
-    # VARIATION
+    # VARIATION VEP
     # -----------------------------------------------------
-    def get_variation_by_id(self, identifier, species, frmt='json',
-                            genotypes=False, phenotypes=False,
+    def get_variation_by_id(self, identifier, species, frmt='json', genotypes=False, phenotypes=False,
                             pops=False):
         """
-        :param str identifier: variation identifier (e.g., rs56116432)
-        :param str species: Species name/alias (e.g., homo_sapiens)
-        :param str frmt: response format (json, xml, jsonp)
+        :param identifier: variation identifier (e.g., rs56116432)
+        :param species: Species name/alias (e.g., homo_sapiens)
+        :param frmt: response format (json, xml, jsonp)
         :param bool genotypes: Include genotypes
         :param bool phenotypes: Include phenotypes
         :param bool pops: Include populations
@@ -1225,15 +1274,16 @@ class Ensembl(REST):
         )
         return res
 
-    def get_vep_by_id(self, identifier, species, frmt='json',
-                      canonical=False, ccds=False, domains=False,
-                      hgvs=False, numbers=False, protein=False, xref_refseq=False):
+    def get_vep_by_id(self, identifier, species, frmt='json', canonical=False, ccds=False, domains=False, hgvs=False,
+                      numbers=False, protein=False, xref_refseq=False):
         """
         Fetch variant consequences based on a variation identifier
 
-        :param str identifier: Query ID. Supports dbSNP, COSMIC and
+        :param domains: 
+        :param frmt: 
+        :param identifier: Query ID. Supports dbSNP, COSMIC and
             HGMD identifiers   (e.g.,    rs116035550, COSM476)
-        :param str species: Species name/alias
+        :param species: Species name/alias
         :param bool canonical: Include a flag indicating the canonical transcript for a gene
         :param bool ccds: Include CCDS transcript identifiers
         :param bool domains:Include names of overlapping protein domains
@@ -1255,25 +1305,16 @@ class Ensembl(REST):
                                     'xref_refseq': xref_refseq})
         return res
 
-    def post_vep_by_id(self, species, identifiers):
-        raise NotImplementedError
-        # POST vep/:species/id/   Fetch variant consequences for multiple ids
-        # self._check_frmt(frmt, ['xml'])
-        # res = self.http_get('variation/{0}/{1}'.format(species, identifier),
-        # frmt=frmt,
-        # headers=self.get_headers(content=frmt),
-        #                     params={'genotypes': int(genotypes), 'phenotypes': int(phenotypes),
-        #                             'pops': int(pops)})
-
-    def get_vep_by_region(self, region, allele, species, frmt='json',
-                          canonical=False, ccds=False, domains=False,
+    def get_vep_by_region(self, region, allele, species, frmt='json', canonical=False, ccds=False, domains=False,
                           hgvs=False, numbers=False, protein=False, xref_refseq=False):
         """
         Fetch variant consequences
 
+        :param domains: 
+        :param frmt: 
         :param region: Query region e.g,  9:22125503-22125502:1
-        :param str allele: Variation allele (e.g., C, DUP)
-        :param str species: Species name/alias
+        :param allele: Variation allele (e.g., C, DUP)
+        :param species: Species name/alias
         :param bool canonical: Include a flag indicating the canonical transcript for a gene
         :param bool ccds: Include CCDS transcript identifiers
         :param bool domains:Include names of overlapping protein domains
@@ -1298,7 +1339,10 @@ class Ensembl(REST):
 
     def post_vep_by_region(self, species, region):
         # POST vep/:species/region/   Fetch variant consequences for multiple regions
+        """
+
+        :param species: 
+        :param region: 
+        :raise NotImplementedError: 
+        """
         raise NotImplementedError
-
-
-
