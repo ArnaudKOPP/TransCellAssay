@@ -259,17 +259,16 @@ def rest():
 
     # esearch = eutils.ESearch(db='protein', term='human', retmax=5)
     # print(esearch)
+
     # ### Encode REST TEST
-    # from TransCellAssay.IO.Rest.Encode import Encode
-    # encode = Encode()
-    # response = encode.test()
-    #
-    # import json
-    # print(json.dumps(response, indent=4, separators=(',', ': ')))
+    from TransCellAssay.IO.Rest.Encode import Encode
+    encode = Encode()
+    response = encode.biosample('ENCBS000AAA')
+    encode.show_response(response)
 
     # ### String REST TEST
-    from TransCellAssay.IO.Rest.String import String
-    string = String(identity='kopp@igbmc.fr')
+    # from TransCellAssay.IO.Rest.String import String
+    # string = String(identity='kopp@igbmc.fr')
 
     # ### Array Express REST TEST
     # from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress

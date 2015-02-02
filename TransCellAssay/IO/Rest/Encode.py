@@ -21,20 +21,11 @@ class Encode(REST):
     """
     Class for doing REST requests to Encode
     """
-    # TODO finish this class
     def __init__(self, verbose=False):
         super(Encode, self).__init__(name="Encode", url="https://www.encodeproject.org/", verbose=verbose)
-        # Force return from the server in JSON format
         self._verbose = verbose
+        # Force return from the server in JSON format
         self.HEADERS = {'accept': 'application/json'}
-
-    def test(self):
-        # This URL locates the ENCODE biosample with accession number ENCBS000AAA
-        url = "biosample/ENCBS000AAA/?frame=object"
-
-        # GET the object
-        response = self.http_get(url, headers=self.HEADERS)
-        return response
 
     def biosample(self, accession_number):
         """
@@ -42,11 +33,13 @@ class Encode(REST):
         :param accession_number:
         :return: json object
         """
-        url = "biosample/" + accession_number + "/?frame=object"
-        response = self.http_get(url, headers=self.HEADERS)
+        url = "biosample/" + accession_number
+        params = {'frame': 'object'}
+        response = self.http_get(url, params=params, headers=self.HEADERS)
         return response
 
-    def response_keys(self, response, first_level=True):
+    @staticmethod
+    def response_keys(response, first_level=True):
         """
         Get all keys from response
         :param response: reponse object from request
@@ -59,7 +52,8 @@ class Encode(REST):
             keys = [key for key, value in response.iteritems()]
         return keys
 
-    def show_response(self, response):
+    @staticmethod
+    def show_response(response):
         """
         Print the response in pretty format
         :param response:
@@ -67,12 +61,32 @@ class Encode(REST):
         """
         print(json.dumps(response, indent=4, separators=(',', ': ')))
 
-    _valid_search_type = ['file', 'replicate', 'biosample']
+    def search(self, searchterm, embedded=False, **kwargs):
+        """
+        Make a search in Encode database
+        :param searchterm:
+        :param embedded:
+        :param kwargs:
+        :return: :raise ValueError:
+        """
+        __valid_params = ['file_format', 'experiment', 'dataset', 'type', 'md5sum']
+        __valid_search_type = ['file', 'replicate', 'biosample']
 
-    def search(self, searchterm=None, limit=False, format='json', full=False, embedded=False, data_type=None, md5=None,
-               fastq_file=False, experiment_id=None, dataset=None):
+        if embedded:
+            params = {'searchTerm': searchterm, 'frame': 'embedded', 'format': 'json'}
+        else:
+            params = {'searchTerm': searchterm, 'frame': 'object', 'format': 'json'}
         url = "search/"
-        search = "?searchTerm=" + str(searchterm)
-        fastq = "&file_format=fastq"
-        experiment = "&experiment=/experiments/" + experiment_id + "/"
-        data_set = "&dataset==/experiments/" + dataset + "/"
+
+        for key, value in kwargs.items():
+            if key in __valid_params:
+                if key is 'type':
+                    if value in __valid_search_type:
+                        params[key] = value
+                    else:
+                        raise ValueError('Not valid type')
+                else:
+                    params[key] = value
+
+        response = self.http_get(url, params=params, headers=self.HEADERS)
+        return response
