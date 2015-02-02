@@ -244,11 +244,11 @@ def rest():
     Rest test function
     """
     # ### Eutils REST TEST
-    from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
-    eutils = EUtils(email='kopp@igbmc.fr', verbose=True)
+    # from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
+    # eutils = EUtils(email='kopp@igbmc.fr', verbose=True)
 
-    db = eutils.available_databases
-    print(db)
+    # db = eutils.available_databases
+    # print(db)
 
     # einfo = eutils.EInfo(db='bioproject', retmode='json')
     # import json
@@ -257,8 +257,8 @@ def rest():
     # einfo = eutils.EInfo(db='protein')
     # print(EUtilsParser(einfo))
 
-    esearch = eutils.ESearch(db='protein', term='human', retmax=5)
-    print(esearch)
+    # esearch = eutils.ESearch(db='protein', term='human', retmax=5)
+    # print(esearch)
     # ### Encode REST TEST
     # from TransCellAssay.IO.Rest.Encode import Encode
     # encode = Encode()
@@ -268,10 +268,8 @@ def rest():
     # print(json.dumps(response, indent=4, separators=(',', ': ')))
 
     # ### String REST TEST
-    # from TransCellAssay.IO.Rest.String import String
-    # str = String()
-    # response = str.test()
-    # print(response)
+    from TransCellAssay.IO.Rest.String import String
+    string = String(identity='kopp@igbmc.fr')
 
     # ### Array Express REST TEST
     # from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress

@@ -22,25 +22,21 @@ class String(REST):
     """
     Class for doing REST requests to String-db
     """
-    # TODO finish this class
 
-    def __init__(self, verbose=False, alt=False, stitch=False):
+    def __init__(self, identity, verbose=False, alternative_db=False, sister_db=False):
         self._verbose = verbose
-        if alt:
-            super(String, self).__init__(name="String", url="string.embl.de", verbose=verbose)
-        if stitch:
-            super(String, self).__init__(name="String", url="stitch.embl.de", verbose=verbose)
-        if not alt and not stitch:
+        self._identity = identity
+        if alternative_db and sister_db:
+            raise ValueError('Choose one DB')
+        if alternative_db and not sister_db:
+            super(String, self).__init__(name="String", url="http://string.embl.de/", verbose=verbose)
+        if sister_db and not alternative_db:
+            super(String, self).__init__(name="String", url="http://stitch.embl.de/", verbose=verbose)
+        if not alternative_db and not sister_db:
             super(String, self).__init__(name="String", url="http://string-db.org/", verbose=verbose)
 
-    _list_format = ['json', 'tsv', 'tsv-no-header', 'psi-mi', 'psi-mi-tab', 'image']
-    _list_requests = ['resolve', 'resolveList', 'abstracts', 'abstractsList', 'interactors', 'interactorsList',
-                      'actions', 'actionsList', 'interactions', 'interactionsList', 'network', 'networkList']
-    _list_parameters = ["parameters", "identifier", "identifiers", "format", "species", "limit", "required_score,"
-                                                                                                 "additional_network_nodes",
-                        "network_flavor", "caller_identity"]
-
-    def print_doc_requests(self):
+    @staticmethod
+    def print_doc_requests():
         """
         print doc
         """
@@ -52,45 +48,18 @@ class String(REST):
                 string.embl.de 	Alternative entry point of STRING
                 stitch.embl.de 	The sister database of STRING
 
-
-                access	    Description
-                ----------------------------------------------
-                api 	    Application programming interface
-                services	Other services to access data
-
-
-                format 	        Return value
-                -------------------------------------------------------------------------------------------------------
-                json	        JSON format either as a list of hashes/dictionaries, or as a plain list (if there is
-                                    only one value to be returned per record)
-                tsv	Tab         separated values, with a header line
-                tsv-no-header	Tab separated values, without header line
-                psi-mi	        The interaction network in PSI-MI 2.5 XML format
-                psi-mi-tab	    Tab-delimited form of PSI-MI (similar to tsv, modeled after the IntAct specification.
-                                    (Easier to parse, but contains less information than the XML format.)
-                image	        The network image
-
-
                 List of requests
                 -------------------------------------------------------------------------------------------------------
-                request	            Return value
                 resolve	            List of items that match (in name or identifier) the query item
-                resolveList	        List of items that match (in name or identifier) the query items
                 abstracts	        List of abstracts that contain the query item
-                abstractsList	    List of abstracts that contain any of the query items
                 interactors	        List of interaction partners for the query item
-                interactorsList	    List of interaction partners for any of the query items
                 actions	            Action partners for the query item
-                actionsList	        Action partners for any of the query items
-                interactions	    Interaction network in PSI-MI 2.5 format or PSI-MI-TAB format (similar to tsv)
-                interactionsList	Interaction network as above, but for a list of identifiers
+                interactions	    Interaction network in PSI-MI 2.5 format (xml format)
                 network	            The network image for the query item
-                networkList	        The network image for the query items
 
 
                 List of parameters and values
                 -------------------------------------------------------------------------------------------------------
-                parameters	                Descriptions, value
                 identifier	                required parameter for single item, e.g. DRD1_HUMAN
                 identifiers	                required parameter for multiple items, e.g.DRD1_HUMAN%0DDRD2_HUMAN
                 format	                    For resolve requests: only-ids get the list of only the STRING identifiers
@@ -102,32 +71,209 @@ class String(REST):
                 additional_network_nodes	Number of additional nodes in network (ordered by score), e.g./ 10
                 network_flavor	            The style of edges in the network. evidence for colored multilines.
                                                 confidence for singled lines where hue correspond to confidence score.
-                                                (actions for stitch only)
+                                                value = evidence, confidence, actions
                 caller_identity	            Your identifier for us.
         ''')
 
-    def test(self):
-        # test url
-        url = "api/tsv/abstractsList?identifiers=4932.YML115C%0D4932.YJR075W%0D4932.YEL036"
+    @staticmethod
+    def __get_indentifiers_param(identifier):
+        if isinstance(identifier, list):
+            params = {'identifiers': []}
+            for elem in identifier:
+                params['identifiers'].append(str(elem)+'%0D')
+        else:
+            params = {'identifier': str(identifier)}
+        return params
 
-        # GET the object
-        response = self.http_get(url)
-        return response
+    def resolve(self, identifier, **kwargs):
+        """
+        List of items that match query items
+        :param identifier:
+        :param kwargs:
+        :return: :raise ValueError:
+        """
+        __valid_param = ['species', 'format']
+        __valid_frmt = ['full', 'only_ids']
 
-    def resolve(self):
-        return 0
+        if isinstance(identifier, list):
+            query = 'api/json/resolveList'
+        else:
+            query = 'api/json/resolve'
 
-    def abstracts(self):
-        return 0
+        params = self.__get_indentifiers_param(identifier)
+        params['caller_identity'] = self._identity
 
-    def actions(self):
-        return 0
+        for key, value in kwargs.items():
+            if key in __valid_param:
+                if key is 'format':
+                    if value in __valid_frmt:
+                        params[key] = value
+                    else:
+                        raise ValueError('additional_network_nodes error value, must be :', __valid_frmt)
+                else:
+                    params[key] = value
+        res = self.http_get(query, frmt="txt", params=params)
 
-    def interactors(self):
-        return 0
+        return res
 
-    def interactions(self):
-        return 0
+    def abstracts(self, identifier, **kwargs):
+        """
+        List of abstract that contain the query items
+        :param identifier:
+        :param kwargs:
+        :return: :raise ValueError:
+        """
+        __valid_param = ['format', 'limit']
+        __valid_frmt = ['colon', 'pmids']
 
-    def network(self):
-        return 0
+        if isinstance(identifier, list):
+            query = 'api/tsv/abstractsList'
+        else:
+            query = 'api/tsv/abstracts'
+
+        params = self.__get_indentifiers_param(identifier)
+        params['caller_identity'] = self._identity
+
+        for key, value in kwargs.items():
+            if key in __valid_param:
+                if key is 'format':
+                    if value in __valid_frmt:
+                        params[key] = value
+                    else:
+                        raise ValueError('additional_network_nodes error value, must be :', __valid_frmt)
+                else:
+                    params[key] = value
+        res = self.http_get(query, frmt="txt", params=params)
+
+        return res
+
+    def actions(self, identifier, **kwargs):
+        """
+        Actions partners the query items
+        :param identifier:
+        :param kwargs:
+        :return: :raise ValueError:
+        """
+        __valid_param = ['limit', 'required_score', 'additional_network_nodes']
+        __valide_netw_fl = ['evidence', 'confidence', 'actions']
+
+        if isinstance(identifier, list):
+            query = 'api/tsv/actionsList'
+        else:
+            query = 'api/tsv/actions'
+
+        params = self.__get_indentifiers_param(identifier)
+        params['caller_identity'] = self._identity
+
+        for key, value in kwargs.items():
+            if key in __valid_param:
+                if key is 'additional_network_nodes':
+                    if value in __valide_netw_fl:
+                        params[key] = value
+                    else:
+                        raise ValueError('additional_network_nodes error value, must be :', __valide_netw_fl)
+                else:
+                    params[key] = value
+        res = self.http_get(query, frmt="txt", params=params)
+
+        return res
+
+    def interactors(self, identifier, **kwargs):
+        """
+        List of interaction partners for the query items
+        :param identifier:
+        :param kwargs:
+        :return: :raise ValueError:
+        """
+        __valid_param = ['limit', 'required_score', 'additional_network_nodes']
+        __valide_netw_fl = ['evidence', 'confidence', 'actions']
+
+        if isinstance(identifier, list):
+            query = 'api/psi-mi/interactorsList'
+        else:
+            query = 'api/psi-mi/interactors'
+
+        params = self.__get_indentifiers_param(identifier)
+        params['caller_identity'] = self._identity
+
+        for key, value in kwargs.items():
+            if key in __valid_param:
+                if key is 'additional_network_nodes':
+                    if value in __valide_netw_fl:
+                        params[key] = value
+                    else:
+                        raise ValueError('additional_network_nodes error value, must be :', __valide_netw_fl)
+                else:
+                    params[key] = value
+        res = self.http_get(query, frmt="xml", params=params)
+
+        return res
+
+    def interactions(self, identifier, **kwargs):
+        """
+        Interaction network
+        :param identifier:
+        :param kwargs:
+        :return: :raise ValueError:
+        """
+        __valid_param = ['limit', 'required_score', 'additional_network_nodes']
+        __valide_netw_fl = ['evidence', 'confidence', 'actions']
+
+        if isinstance(identifier, list):
+            query = 'api/psi-mi/interactionsList'
+        else:
+            query = 'api/psi-mi/interactions'
+
+        params = self.__get_indentifiers_param(identifier)
+        params['caller_identity'] = self._identity
+
+        for key, value in kwargs.items():
+            if key in __valid_param:
+                if key is 'additional_network_nodes':
+                    if value in __valide_netw_fl:
+                        params[key] = value
+                    else:
+                        raise ValueError('additional_network_nodes error value, must be :', __valide_netw_fl)
+                else:
+                    params[key] = value
+
+        res = self.http_get(query, frmt="xml", params=params)
+
+        return res
+
+    def network(self, identifier, file, **kwargs):
+        """
+        Network image for the query items
+        :param identifier:
+        :param file:
+        :param kwargs:
+        :raise ValueError:
+        """
+        __valid_param = ['limit', 'required_score', 'additional_network_nodes']
+        __valide_netw_fl = ['evidence', 'confidence', 'actions']
+
+        if isinstance(identifier, list):
+            query = 'api/image/networkList'
+        else:
+            query = 'api/image/network'
+
+        params = self.__get_indentifiers_param(identifier)
+        params['caller_identity'] = self._identity
+
+        for key, value in kwargs.items():
+            if key in __valid_param:
+                if key is 'additional_network_nodes':
+                    if value in __valide_netw_fl:
+                        params[key] = value
+                    else:
+                        raise ValueError('additional_network_nodes error value, must be :', __valide_netw_fl)
+                else:
+                    params[key] = value
+
+        res = self.http_get(query, frmt="txt", params=params)
+
+        if self._verbose:
+            print('\033[0;32m[INFO]\033[0m Writing image @ :{}'.format(file))
+        f = open(file, "w")
+        f.write(res)
+        f.close()
