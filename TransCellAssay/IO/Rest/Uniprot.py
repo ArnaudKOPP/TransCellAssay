@@ -1,6 +1,9 @@
 # coding=utf-8
 """
 Uniprot class
+
+http://www.uniprot.org/help/programmatic_access
+
 """
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -21,107 +24,6 @@ import os
 from TransCellAssay.IO.Rest.Fasta import FASTA
 
 
-mapping = {"UniProtKB AC/ID": "ACC+ID",
-           "UniProtKB": "ACC",
-           "UniProtKB": "ID",
-           "UniParc": "UPARC",
-           "UniRef50": "NF50",
-           "UniRef90": "NF90",
-           "UniRef100": "NF100",
-           "EMBL/GenBank/DDBJ": "EMBL_ID",
-           "EMBL/GenBank/DDBJ CDS": "EMBL",
-           "PIR": "PIR",
-           "UniGene": "UNIGENE_ID",
-           "Entrez Gene (GeneID)": "P_ENTREZGENEID",
-           "GI number*": "P_GI",
-           "IPI": "P_IPI",
-           "RefSeq Protein": "P_REFSEQ_AC",
-           "RefSeq Nucleotide": "REFSEQ_NT_ID",
-           "PDB": "PDB_ID",
-           "DisProt": "DISPROT_ID",
-           "HSSP": "HSSP_ID",
-           "DIP": "DIP_ID",
-           "MINT": "MINT_ID",
-           "Allergome": "ALLERGOME_ID",
-           "MEROPS": "MEROPS_ID",
-           "mycoCLAP": "MYCOCLAP_ID",
-           "PeroxiBase": "PEROXIBASE_ID",
-           "PptaseDB": "PPTASEDB_ID",
-           "REBASE": "REBASE_ID",
-           "TCDB": "TCDB_ID",
-           "PhosSite": "PHOSSITE_ID",
-           "DMDM": "DMDM_ID",
-           "Aarhus/Ghent-2DPAGE": "AARHUS_GHENT_2DPAGE_ID",
-           "World-2DPAGE": "WORLD_2DPAGE_ID",
-           "DNASU": "DNASU_ID",
-           "Ensembl": "ENSEMBL_ID",
-           "Ensembl Protein": "ENSEMBL_PRO_ID",
-           "Ensembl Transcript": "ENSEMBL_TRS_ID",
-           "Ensembl Genomes": "ENSEMBLGENOME_ID",
-           "Ensembl Genomes Protein": "ENSEMBLGENOME_PRO_ID",
-           "Ensembl Genomes Transcript": "ENSEMBLGENOME_TRS_ID",
-           "GeneID": "P_ENTREZGENEID",
-           "GenomeReviews": "GENOMEREVIEWS_ID",
-           "KEGG": "KEGG_ID",
-           "PATRIC": "PATRIC_ID",
-           "UCSC": "UCSC_ID",
-           "VectorBase": "VECTORBASE_ID",
-           "AGD": "AGD_ID",
-           "ArachnoServer": "ARACHNOSERVER_ID",
-           "CGD": "CGD",
-           "ConoServer": "CONOSERVER_ID",
-           "CYGD": "CYGD_ID",
-           "dictyBase": "DICTYBASE_ID",
-           "EchoBASE": "ECHOBASE_ID",
-           "EcoGene": "ECOGENE_ID",
-           "euHCVdb": "EUHCVDB_ID",
-           "EuPathDB": "EUPATHDB_ID",
-           "FlyBase": "FLYBASE_ID",
-           "GeneCards": "GENECARDS_ID",
-           "GeneFarm": "GENEFARM_ID",
-           "GenoList": "GENOLIST_ID",
-           "H-InvDB": "H_INVDB_ID",
-           "HGNC": "HGNC_ID",
-           "HPA": "HPA_ID",
-           "LegioList": "LEGIOLIST_ID",
-           "Leproma": "LEPROMA_ID",
-           "MaizeGDB": "MAIZEGDB_ID",
-           "MIM": "MIM_ID",
-           "MGI": "MGI_ID",
-           "neXtProt": "NEXTPROT_ID",
-           "Orphanet": "ORPHANET_ID",
-           "PharmGKB": "PHARMGKB_ID",
-           "PomBase": "POMBASE_ID",
-           "PseudoCAP": "PSEUDOCAP_ID",
-           "RGD": "RGD_ID",
-           "SGD": "SGD_ID",
-           "TAIR": "TAIR_ID",
-           "TubercuList": "TUBERCULIST_ID",
-           "WormBase": "WORMBASE_ID",
-           "WormBase Transcript": "WORMBASE_TRS_ID",
-           "WormBase Protein": "WORMBASE_PRO_ID",
-           "Xenbase": "XENBASE_ID",
-           "ZFIN": "ZFIN_ID",
-           "eggNOG": "EGGNOG_ID",
-           "GeneTree": "GENETREE_ID",
-           "HOGENOM": "HOGENOM_ID",
-           "HOVERGEN": "HOVERGEN_ID",
-           "KO": "KO_ID",
-           "OMA": "OMA_ID",
-           "OrthoDB": "ORTHODB_ID",
-           "ProtClustDB": "PROTCLUSTDB_ID",
-           "BioCyc": "BIOCYC_ID",
-           "Reactome": "REACTOME_ID",
-           "UniPathWay": "UNIPATHWAY_ID",
-           "CleanEx": "CLEANEX_ID",
-           "GermOnline": "GERMONLINE_ID",
-           "ChEMBL": "CHEMBL_ID",
-           "ChiTaRS": "CHITARS_ID",
-           "DrugBank": "DRUGBANK_ID",
-           "GenomeRNAi": "GENOMERNAI_ID",
-           "NextBio": "NEXTBIO_ID"}
-
-
 class UniProt(REST):
     """
     Interface to the uniprot service
@@ -132,7 +34,119 @@ class UniProt(REST):
     # Returns sequence on the ZAP70_HUMAN accession Id
     sequence = u.search("ZAP70_HUMAN", columns="sequence")
     """
-    _mapping = mapping.copy()
+    _mapping = {"ACC/ID": "UniProTKB AC+ID",
+                "ACC": "UniProTKB ACC",
+                "ID": "UniProTKB ID",
+                "UniParc": "UPARC",
+                "UniRef50": "NF50",
+                "UniRef90": "NF90",
+                "UniRef100": "NF100",
+                # Other sequence databses
+                "EMBL/GenBank/DDBJ": "EMBL_ID",
+                "EMBL/GenBank/DDBJ CDS": "EMBL",
+                "PIR": "PIR",
+                "UniGene": "UNIGENE_ID",
+                "Entrez Gene (GeneID)": "P_ENTREZGENEID",
+                "GI number*": "P_GI",
+                "RefSeq Protein": "P_REFSEQ_AC",
+                "RefSeq Nucleotide": "REFSEQ_NT_ID",
+                # 3D structure database
+                "PDB": "PDB_ID",
+                "DisProt": "DISPROT_ID",
+                # PP interaction database
+                "BioGrid": "BIOGRID_ID",
+                "DIP": "DIP_ID",
+                "MINT": "MINT_ID",
+                "STRING": "STRING_ID",
+                # chemistry
+                "ChEMBL": "CHEMBL_ID",
+                "DrugBank": "DRUGBANK_ID",
+                "GuidetoPHARMACOLOGY": "GUIDETOPHARMACOLOGY_ID",
+                # protein family/group database
+                "Allergome": "ALLERGOME_ID",
+                "MEROPS": "MEROPS_ID",
+                "mycoCLAP": "MYCOCLAP_ID",
+                "PeroxiBase": "PEROXIBASE_ID",
+                "PptaseDB": "PPTASEDB_ID",
+                "REBASE": "REBASE_ID",
+                "TCDB": "TCDB_ID",
+                # PTM database
+                "PhosSite": "PHOSSITE_ID",
+                # polymorphism database
+                "DMDM": "DMDM_ID",
+                # 2D get databases
+                "World-2DPAGE": "WORLD_2DPAGE_ID",
+                # protocol and materials database
+                "DNASU": "DNASU_ID",
+                # Genome annotation databases
+                "Ensembl": "ENSEMBL_ID",
+                "Ensembl Protein": "ENSEMBL_PRO_ID",
+                "Ensembl Transcript": "ENSEMBL_TRS_ID",
+                "Ensembl Genomes": "ENSEMBLGENOME_ID",
+                "Ensembl Genomes Protein": "ENSEMBLGENOME_PRO_ID",
+                "Ensembl Genomes Transcript": "ENSEMBLGENOME_TRS_ID",
+                "GeneID": "P_ENTREZGENEID",
+                "GenomeReviews": "GENOMEREVIEWS_ID",
+                "KEGG": "KEGG_ID",
+                "PATRIC": "PATRIC_ID",
+                "UCSC": "UCSC_ID",
+                "VectorBase": "VECTORBASE_ID",
+                # Organism-specific gene databases
+                "ArachnoServer": "ARACHNOSERVER_ID",
+                "CGD": "CGD",
+                "ConoServer": "CONOSERVER_ID",
+                "CYGD": "CYGD_ID",
+                "dictyBase": "DICTYBASE_ID",
+                "EchoBASE": "ECHOBASE_ID",
+                "EcoGene": "ECOGENE_ID",
+                "euHCVdb": "EUHCVDB_ID",
+                "EuPathDB": "EUPATHDB_ID",
+                "FlyBase": "FLYBASE_ID",
+                "GeneCards": "GENECARDS_ID",
+                "GeneFarm": "GENEFARM_ID",
+                "GenoList": "GENOLIST_ID",
+                "H-InvDB": "H_INVDB_ID",
+                "HGNC": "HGNC_ID",
+                "HPA": "HPA_ID",
+                "LegioList": "LEGIOLIST_ID",
+                "Leproma": "LEPROMA_ID",
+                "MaizeGDB": "MAIZEGDB_ID",
+                "MIM": "MIM_ID",
+                "MGI": "MGI_ID",
+                "neXtProt": "NEXTPROT_ID",
+                "Orphanet": "ORPHANET_ID",
+                "PharmGKB": "PHARMGKB_ID",
+                "PomBase": "POMBASE_ID",
+                "PseudoCAP": "PSEUDOCAP_ID",
+                "RGD": "RGD_ID",
+                "SGD": "SGD_ID",
+                "TAIR": "TAIR_ID",
+                "TubercuList": "TUBERCULIST_ID",
+                "WormBase": "WORMBASE_ID",
+                "WormBase Transcript": "WORMBASE_TRS_ID",
+                "WormBase Protein": "WORMBASE_PRO_ID",
+                "Xenbase": "XENBASE_ID",
+                "ZFIN": "ZFIN_ID",
+                # Phylogenomic database
+                "eggNOG": "EGGNOG_ID",
+                "GeneTree": "GENETREE_ID",
+                "HOGENOM": "HOGENOM_ID",
+                "HOVERGEN": "HOVERGEN_ID",
+                "KO": "KO_ID",
+                "OMA": "OMA_ID",
+                "OrthoDB": "ORTHODB_ID",
+                "ProtClustDB": "PROTCLUSTDB_ID",
+                "TreeFarm": "TREEFRAM_ID",
+                # Enzyme and pathway database
+                "BioCyc": "BIOCYC_ID",
+                "Reactome": "REACTOME_ID",
+                "UniPathWay": "UNIPATHWAY_ID",
+                # other
+                "ChiTaRS": "CHITARS_ID",
+                "GenomeRNAi": "GENOMERNAI_ID",
+                "GeneWiki": "GENEWIKI_ID",
+                "NextBio": "NEXTBIO_ID"}
+
     _url = "http://www.uniprot.org"
     _valid_columns = ['citation', 'clusters', 'comments', 'database', 'domains', 'domain', 'ec', 'id', 'entry name',
                       'existence', 'families', 'feature', 'features', 'genes', 'go', 'go-id', 'interpro', 'interactor',
@@ -141,7 +155,8 @@ class UniProt(REST):
                       'tools', 'version', 'virus hosts', 'lineage-id', 'sequence-modified', 'proteome']
 
     def __init__(self, user="TransCellAssayUser", verbose=False):
-        """**Constructor**
+        """
+        **Constructor**
 
         :param verbose: set to False to prevent informative messages
         """
@@ -173,8 +188,8 @@ class UniProt(REST):
     def mapping(self, fr="ID", to="KEGG_ID", query="P13368"):
         """
         This is an interface to the UniProt mapping service
-        :param fr: the source database identifier. See :attr:`_mapping`.
-        :param to: the targetted database identifier. See :attr:`_mapping`.
+        :param fr: the source database identifier.
+        :param to: the targetted database identifier.
         :param query: a string containing one or more IDs separated by a space
         It can also be a list of strings.
         :return: a list. The first element is the source database Id. The second
@@ -190,11 +205,6 @@ class UniProt(REST):
         u.mapping("ID", "PDB_ID", "P43403")
         defaultdict(<type 'list'>, {'P43403': ['1FBV', '1M61', '1U59',
         '2CBL', '2OQ1', '2OZO', '2Y1N', '3ZNI', '4A4B', '4A4C', '4K2R']})
-
-        There is a web page that gives the list of correct `database identifiers
-        <http://www.uniprot.org/faq/28>`_. You can also look at the
-        :attr:`_mapping` attribute.
-        :URL: http://www.uniprot.org/mapping/
 
         """
         url = 'mapping/'  # the slash matters
@@ -215,7 +225,6 @@ class UniProt(REST):
             return {}
         else:
             from collections import defaultdict
-
             result_dict = defaultdict(list)
 
             keys = result[0::2]
@@ -237,7 +246,6 @@ class UniProt(REST):
         """
         _valid_formats = ['txt', 'xml', 'rdf', 'gff', 'fasta']
         check_param_in_list(frmt, _valid_formats)
-
         queries = tolist(uniprot_id)
 
         url = ["uniprot/" + query + '.' + frmt for query in queries]
@@ -318,7 +326,6 @@ class UniProt(REST):
         .. warning:: some columns although valid may not return anything, not even in
         the header: 'score', 'taxonomy', 'tools'. this is a uniprot feature
         """
-
         params = {}
 
         if frmt is not None:

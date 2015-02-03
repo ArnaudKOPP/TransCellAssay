@@ -313,15 +313,16 @@ def rest():
 
     # #### Psicquic REST TEST
 
-    # from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
-    # p = PSICQUIC()
-    # p.print_status()
-    # print(p.query("string", "species:10090", firstResult=0, maxResults=100, output="tab25"))
+    from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
+    p = PSICQUIC()
+    p.print_status()
+    print(p.activeDBs)
+    # print(p.query("string", "species:10090", firstresult=0, maxresults=100, output="tab25"))
     # print(p.query("biogrid", "ZAP70"))
     # print(p.query("biogrid", "ZAP70 AND species:10090"))
     # res = p.query("intact", "zap70")
     # for x in res:
-    # print(x)
+    #     print(x)
     # print(p.queryAll("ZAP70 AND species:9606"))
 
     # #### Biogrid REST TEST
@@ -341,24 +342,24 @@ def rest():
 
     # #### UNIPROT REST TEST
 
-    from TransCellAssay.IO.Rest.Uniprot import UniProt
-    u = UniProt(user='kopp@igbmc.fr', verbose=True)
-    print(u.mapping("ACC", "KEGG_ID", query='P43403 P29317'))
-    res = u.search("P43403")
-    print(res)
-    # u.download_flat_files()
-    # Returns sequence on the ZAP70_HUMAN accession Id
-    sequence = u.search("ZAP70_HUMAN", columns="sequence")
-    print(sequence)
-    fasta = u.retrieve([u'P29317', u'Q5BKX8', u'Q8TCD6'], frmt='fasta')
-    print(fasta[0])
-    res = u.retrieve("P09958", frmt="xml")
-    print(res)
-    res = u.get_fasta("P09958")
-    print(res)
-    print(u.get_fasta_sequence("P09958"))
-    print(u.search('zap70+AND+organism:9606', frmt='list'))
-    print(u.search("zap70+and+taxonomy:9606", frmt="tab", limit=3, columns="entry name,length,id, genes"))
+    # from TransCellAssay.IO.Rest.Uniprot import UniProt
+    # u = UniProt(user='kopp@igbmc.fr', verbose=True)
+    # print(u.mapping("ACC", "KEGG_ID", query='P43403 P29317'))
+    # res = u.search("P43403")
+    # print(res)
+    # # u.download_flat_files()
+    # # Returns sequence on the ZAP70_HUMAN accession Id
+    # sequence = u.search("ZAP70_HUMAN", columns="sequence")
+    # print(sequence)
+    # fasta = u.retrieve([u'P29317', u'Q5BKX8', u'Q8TCD6'], frmt='fasta')
+    # print(fasta[0])
+    # res = u.retrieve("P09958", frmt="xml")
+    # print(res)
+    # res = u.get_fasta("P09958")
+    # print(res)
+    # print(u.get_fasta_sequence("P09958"))
+    # print(u.search('zap70+AND+organism:9606', frmt='list'))
+    # print(u.search("zap70+and+taxonomy:9606", frmt="tab", limit=3, columns="entry name,length,id, genes"))
 
     # #### KEGG REST TEST
 

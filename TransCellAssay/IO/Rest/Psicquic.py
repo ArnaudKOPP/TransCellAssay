@@ -16,13 +16,8 @@ Interface to the PSICQUIC web service
 
         -- Dec 2012
 
-
-.. _about_queries:
-
 About queries
 ================
-
-.. rubric:: source: PSICQUIC View web page
 
 The idea behind PSICQUIC is to retrieve information related to protein
 interactions from various databases. Note that protein interactions does not
@@ -130,18 +125,13 @@ from TransCellAssay.IO.Rest.Uniprot import UniProt
 
 class PSICQUIC(REST):
     """
-    Interface to the `PSICQUIC <http://code.google.com/p/psicquic/>`_ service
-
-    There are 2 interfaces to the PSICQUIC service (REST and WSDL) but we used
-    the REST only.
-
+    Interface to the `PSICQUIC service
 
     This service provides a common interface to more than 25 other services
     related to protein. So, we won't detail all the possiblity of this service.
     Here is an example that consists of looking for interactors of the
     protein ZAP70 within the IntAct database::
 
-        from bioservices import *
         s = PSICQUIC()
         res = s.query("intact", "zap70")
         len(res) # there are 11 interactions found
@@ -153,13 +143,10 @@ class PSICQUIC(REST):
         intact:EBI-716238
         intact:EBI-1211276
         psi-mi:ndub8_human(display_long)|uniprotkb:NADH-ubiquinone oxidoreductase ASHI
-        .
-        .
 
     Here we have a list of entries. There are 15 of them (depending on
     the *output* parameter). The meaning of the entries is described on PSICQUIC
     website: https://code.google.com/p/psicquic/wiki/MITAB25Format . In short:
-
 
     #. Unique identifier for interactor A
     #. Unique identifier for interactor B.
@@ -177,12 +164,8 @@ class PSICQUIC(REST):
     #. Interaction identifier(s) i
     #. Confidence score. Denoted as scoreType:value.
 
-
-
     Another example with reactome database::
-
         res = s.query("reactome", "Q9Y266")
-
 
     .. warning:: PSICQUIC gives access to 25 other services. We cannot create
         a dedicated parsing for all of them. So, the ::`query` method returns
@@ -194,7 +177,6 @@ class PSICQUIC(REST):
 
     _formats = ["tab25", "tab26", "tab27", "xml25", "count", "biopax", "xgmml", "rdf-xml", "rdf-xml-abbrev", "rdf-n3",
                 "rdf-turtle"]
-
 
     # note the typo in "genbank indentifier from bind DB
     _mapping_uniprot = {"genbank indentifier": "P_GI",
@@ -219,7 +201,6 @@ class PSICQUIC(REST):
     def __init__(self, verbose=True):
         """
         Constructor
-
         :param bool verbose: print informative messages
 
         import PSICQUIC
@@ -259,37 +240,30 @@ class PSICQUIC(REST):
     def print_status(self):
         """
         Prints the services that are available
-
         :return: Nothing
 
         The output is tabulated. The columns are:
-
         * names
         * active
         * count
         * version
         * rest URL
-        * soap URL
         * rest example
         * restricted
-
-        .. seealso:: If you want the data into lists, see all attributes
-            starting with registry such as :meth:`registry_names`
         """
         names = self.registry_names
         counts = self.registry_counts
         versions = self.registry_versions
         actives = self.registry_actives
         resturls = self.registry_resturls
-        soapurls = self.registry_soapurls
         restexs = self.registry_restexamples
         restricted = self.registry_restricted
-        N = len(names)
+        n = len(names)
 
-        for i in range(0, N):
+        for i in range(0, n):
             # print("%s\t %s\t %s\t %s\t" % (names[i], actives[i], counts[i], versions[i]))
-            print("%s\t %s\t %s\t %s\t %s %s %s %s\n" % (names[i], actives[i], counts[i], versions[i], resturls[i],
-                                                         soapurls[i], restexs[i], restricted[i]))
+            print("%s\t %s\t %s\t %s\t %s %s %s\n" % (names[i], actives[i], counts[i], versions[i], resturls[i],
+                                                      restexs[i], restricted[i]))
 
     def _get_registry(self):
         if self._registry is None:
@@ -331,13 +305,6 @@ class PSICQUIC(REST):
     registry_restexamples = property(_get_registry_restex,
                                      doc="retuns REST example for each service")
 
-    def _get_registry_soapurl(self):
-        res = self.registry
-        return [x.findAll('soapurl')[0].text for x in res.findAll("service")]
-
-    registry_soapurls = property(_get_registry_soapurl,
-                                 doc="returns URL of WSDL service")
-
     def _get_registry_active(self):
         res = self.registry
         return [x.findAll('active')[0].text for x in res.findAll("service")]
@@ -368,10 +335,13 @@ class PSICQUIC(REST):
     registry_versions = property(_get_registry_version,
                                  doc="returns version of each service")
 
-    def query(self, service, query, output="tab25", firstResult=None, maxResults=None):
+    def query(self, service, query, output="tab25",  version="current", firstresult=None, maxresults=None):
         """
         Send a query to a specific database
 
+        :param version:
+        :param maxresults:
+        :param firstresult:
         :param str service: a registered service. See :attr:`registry_names`.
         :param str query: a valid query. Can be `*` or a protein name.
         :param str output: a valid format. See s._formats
@@ -424,10 +394,10 @@ class PSICQUIC(REST):
         # get the base url according to the service requested
         resturl = self.registry_resturls[index]
 
-        if firstResult is not None:
-            params['firstResult'] = firstResult
-        if maxResults is not None:
-            params['maxResults'] = maxResults
+        if firstresult is not None:
+            params['firstResult'] = firstresult
+        if maxresults is not None:
+            params['maxResults'] = maxresults
 
         url = resturl + 'query/' + query
 
@@ -444,7 +414,8 @@ class PSICQUIC(REST):
 
         return res
 
-    def _convert_tab2dict(self, data):
+    @staticmethod
+    def _convert_tab2dict(data):
         """
         https://code.google.com/p/psicquic/wiki/MITAB26Format
         """
@@ -454,10 +425,15 @@ class PSICQUIC(REST):
 
         return results
 
-    def queryAll(self, query, databases=None, output="tab25", version="current", firstResult=None, maxResults=None):
+    def queryAll(self, query, databases=None, output="tab25", version="current", firstresult=None, maxresults=None):
         """
         Same as query but runs on all active database
 
+        :param maxresults:
+        :param firstresult:
+        :param version:
+        :param output:
+        :param query:
         :param list databases: database to query. Queries all active DB if not provided
         :return: dictionary where keys correspond to databases and values to the output of the query.
 
@@ -474,8 +450,8 @@ class PSICQUIC(REST):
 
         for name in databases:
             print("\033[0;33m[WARNING]\033[0m Querying %s" % name),
-            res = self.query(name, query, output=output, version=version, firstResult=firstResult,
-                             maxResults=maxResults)
+            res = self.query(name, query, output=output, version=version, firstresult=firstresult,
+                             maxresults=maxresults)
             if output.startswith("tab25"):
                 results[name] = [x for x in res if x != [""]]
             else:
@@ -496,14 +472,19 @@ class PSICQUIC(REST):
         Consider only the active database.
         """
         # get the active names only
-        activeDBs = self.activeDBs[:]
-        res = [(str(name), int(self.query(name, query, output="count")[0])) for name in activeDBs]
+        activedbs = self.activeDBs[:]
+        res = [(str(name), int(self.query(name, query, output="count")[0])) for name in activedbs]
         return dict(res)
 
     def getName(self, data):
-        idsA = [x[0] for x in data]
-        idsB = [x[1] for x in data]
-        return idsA, idsB
+        """
+
+        :param data:
+        :return:
+        """
+        idsa = [x[0] for x in data]
+        idsb = [x[1] for x in data]
+        return idsa, idsb
 
     def knownName(self, data):
         """
@@ -514,6 +495,7 @@ class PSICQUIC(REST):
         The output is made of 2 lists corresponding to
         interactor A and B found in the mitab entries.
 
+        :param data:
         elements in the input list takes the following forms::
 
             DB1:ID1|DB2:ID2
@@ -530,8 +512,8 @@ class PSICQUIC(REST):
         """
 
         print("converting data into known names")
-        idsA = [x[0].replace("\"", "") for x in data]
-        idsB = [x[1].replace("\"", "") for x in data]
+        idsa = [x[0].replace("\"", "") for x in data]
+        idsb = [x[1].replace("\"", "") for x in data]
         # extract the first and second ID but let us check if it is part of a
         # known uniprot mapping.Otherwise no conversion will be possible.
         # If so, we set the ID to "unknown"
@@ -542,53 +524,53 @@ class PSICQUIC(REST):
 
         # special case:
         # in mint, there is an entry that ends with a | uniprotkb:P17844|
-        idsA = [x.strip("|") for x in idsA]
-        idsB = [x.strip("|") for x in idsB]
-
+        idsa = [x.strip("|") for x in idsa]
+        idsb = [x.strip("|") for x in idsb]
 
         # the first ID
-        for i, entry in enumerate(idsA):
+        for i, entry in enumerate(idsa):
             try:
                 dbs = [x.split(":")[0] for x in entry.split("|")]
-                IDs = [x.split(":")[1] for x in entry.split("|")]
-                valid_dbs = [(db, ID) for db, ID in zip(dbs, IDs) if db in self._mapping_uniprot.keys()]
+                ids = [x.split(":")[1] for x in entry.split("|")]
+                valid_dbs = [(db, ID) for db, ID in zip(dbs, ids) if db in self._mapping_uniprot.keys()]
                 # search for an existing DB
                 if len(valid_dbs) >= 1:
-                    idsA[i] = valid_dbs[0][0] + ":" + valid_dbs[0][1]
+                    idsa[i] = valid_dbs[0][0] + ":" + valid_dbs[0][1]
                 else:
                     print("\033[0;33m[WARNING]\033[0m none of the DB for this entry (%s) are available" % (entry))
-                    idsA[i] = "?" + dbs[0] + ":" + IDs[0]
+                    idsa[i] = "?" + dbs[0] + ":" + ids[0]
             except:
                 print("\033[0;33m[WARNING]\033[0m Could not extract name from %s" % entry)
-                idsA[i] = "??:" + entry  # we add a : so that we are sure that a split(":") will work
+                idsa[i] = "??:" + entry  # we add a : so that we are sure that a split(":") will work
         # the second ID
-        for i, entry in enumerate(idsB):
+        for i, entry in enumerate(idsb):
             try:
                 dbs = [x.split(":")[0] for x in entry.split("|")]
-                IDs = [x.split(":")[1] for x in entry.split("|")]
-                valid_dbs = [(db, ID) for db, ID in zip(dbs, IDs) if db in self._mapping_uniprot.keys()]
+                ids = [x.split(":")[1] for x in entry.split("|")]
+                valid_dbs = [(db, ID) for db, ID in zip(dbs, ids) if db in self._mapping_uniprot.keys()]
                 # search for an existing DB
                 if len(valid_dbs) >= 1:
-                    idsB[i] = valid_dbs[0][0] + ":" + valid_dbs[0][1]
+                    idsb[i] = valid_dbs[0][0] + ":" + valid_dbs[0][1]
                 else:
                     print("\033[0;33m[WARNING]\033[0m none of the DB (%s) for this entry are available" % (entry))
-                    idsB[i] = "?" + dbs[0] + ":" + IDs[0]
+                    idsb[i] = "?" + dbs[0] + ":" + ids[0]
             except:
                 print("\033[0;33m[WARNING]\033[0m Could not extract name from %s" % entry)
-                idsB[i] = "??:" + entry
+                idsb[i] = "??:" + entry
 
-        countA = len([x for x in idsA if x.startswith("?")])
-        countB = len([x for x in idsB if x.startswith("?")])
-        if countA + countB > 0:
-            print("\033[0;33m[WARNING]\033[0m %s ids out of %s were not identified" % (countA + countB, len(idsA) * 2))
-            print(set([x.split(":")[0] for x in idsA if x.startswith("?")]))
-            print(set([x.split(":")[0] for x in idsB if x.startswith("?")]))
+        counta = len([x for x in idsa if x.startswith("?")])
+        countb = len([x for x in idsb if x.startswith("?")])
+        if counta + countb > 0:
+            print("\033[0;33m[WARNING]\033[0m %s ids out of %s were not identified" % (counta + countb, len(idsa) * 2))
+            print(set([x.split(":")[0] for x in idsa if x.startswith("?")]))
+            print(set([x.split(":")[0] for x in idsb if x.startswith("?")]))
         print("\033[0;33m[WARNING]\033[0m knownName done")
-        return idsA, idsB
+        return idsa, idsb
 
     def preCleaning(self, data):
         """
         remove entries ehre IdA or IdB is set to "-"
+        :param data:
         """
         ret = [x for x in data if x[0] != "-" and x[1] != "-"]
         return ret
@@ -597,6 +579,10 @@ class PSICQUIC(REST):
         """
         even more cleaing by ignoring score, db and interaction
         len(set([(x[0],x[1]) for x in retnew]))
+        :param verbose:
+        :param flatten:
+        :param keep_only:
+        :param data:
         """
         results = {}
         for k in data.keys():
@@ -611,6 +597,11 @@ class PSICQUIC(REST):
     def postCleaning(self, data, keep_only="HUMAN", remove_db=["chebi", "chembl"], keep_self_loop=False, verbose=True):
         """
         Remove entries with a None and keep only those with the keep pattern
+        :param verbose:
+        :param keep_self_loop:
+        :param remove_db:
+        :param keep_only:
+        :param data:
         """
         if verbose: print("Before removing anything: ", len(data))
 
@@ -644,6 +635,11 @@ class PSICQUIC(REST):
         return data
 
     def convertAll(self, data):
+        """
+
+        :param data:
+        :return:
+        """
         results = {}
         for k in data.keys():
             print("\033[0;33m[WARNING]\033[0m Analysing %s" % k)
@@ -651,13 +647,19 @@ class PSICQUIC(REST):
         return results
 
     def convert(self, data, db=None):
+        """
+
+        :param data:
+        :param db:
+        :return:
+        """
         print("\033[0;33m[WARNING]\033[0m converting the database %s" % db)
-        idsA, idsB = self.knownName(data)
+        idsa, idsb = self.knownName(data)
         mapping = self.mappingOneDB(data)
         results = []
         for i, entry in enumerate(data):
-            x = idsA[i].split(":", 1)[1]
-            y = idsB[i].split(":", 1)[1]
+            x = idsa[i].split(":", 1)[1]
+            y = idsb[i].split(":", 1)[1]
             xp = mapping[x]
             yp = mapping[y]
             try:
@@ -676,17 +678,20 @@ class PSICQUIC(REST):
         return results
 
     def mappingOneDB(self, data):
+        """
+        :param data:
+        """
         query = {}
         print("\033[0;33m[WARNING]\033[0m converting IDs with proper DB name (knownName function)")
-        entriesA, entriesB = self.knownName(data)  # idsA and B contains list of a single identifier of the form db:id
+        entriesa, entriesb = self.knownName(data)  # idsA and B contains list of a single identifier of the form db:id
         # the db is known from _mapping.uniprot otherwise it is called "unknown"
 
         # get unique DBs to build the query dictionary
-        dbsA = [x.split(":")[0] for x in entriesA]
-        dbsB = [x.split(":")[0] for x in entriesB]
-        for x in set(dbsA):
+        dbsa = [x.split(":")[0] for x in entriesa]
+        dbsb = [x.split(":")[0] for x in entriesb]
+        for x in set(dbsa):
             query[x] = set()
-        for x in set(dbsB):
+        for x in set(dbsb):
             query[x] = set()
         for k in query.keys():
             if k.startswith("?"):
@@ -694,22 +699,22 @@ class PSICQUIC(REST):
 
         # the data to store
         mapping = {}
-        N = len(data)
+        n = len(data)
 
         # scan all entries
         counter = 0
-        for entryA, entryB in zip(entriesA, entriesB):
+        for entryA, entryB in zip(entriesa, entriesb):
             counter += 1
-            dbA, idA = entryA.split(":")
+            dba, ida = entryA.split(":")
             try:
                 dbB, idB = entryB.split(":")
             except:
                 print(entryB)
-            if idA not in mapping.keys():
-                if dbA.startswith("?"):
-                    mapping[idA] = entryA
+            if ida not in mapping.keys():
+                if dba.startswith("?"):
+                    mapping[ida] = entryA
                 else:
-                    query[dbA].add(idA)
+                    query[dba].add(ida)
             if idB not in mapping.keys():
                 if dbB.startswith("?"):
                     mapping[idB] = entryB
@@ -717,13 +722,14 @@ class PSICQUIC(REST):
                     query[dbB].add(idB)
 
             for k in query.keys():
-                if len(query[k]) > 2000 or counter == N:
+                if len(query[k]) > 2000 or counter == n:
                     this_query = list(query[k])
-                    DBname = self._mapping_uniprot[k]
+                    dbname = self._mapping_uniprot[k]
 
-                    if DBname is not None:
-                        self.logging.warning("Request sent to uniprot for %s database (%s/%s)" % (DBname, counter, N))
-                        res = self.uniprot.mapping(fr=DBname, to="ID", query=" ".join(this_query))
+                    if dbname is not None:
+                        print("\033[0;33m[WARNING]\033[0mRequest sent to uniprot for %s database (%s/%s)" % (
+                              dbname, counter, n))
+                        res = self.uniprot.mapping(fr=dbname, to="ID", query=" ".join(this_query))
                         for x in this_query:
                             if x not in res:  # was not found
                                 mapping[x] = "!" + k + ":" + x
@@ -735,7 +741,8 @@ class PSICQUIC(REST):
                                 if len(res[x]) == 1:
                                     mapping[x] = res[x][0]
                                 else:
-                                    self.logging.warning("psicquic mapping found more than 1 id. keep first one")
+                                    print(
+                                        "\033[0;33m[WARNING]\033[0m psicquic mapping found more than 1 id. keep first one")
                                     mapping[x] = res[x][0]
                     else:
                         for x in this_query:
@@ -758,7 +765,6 @@ class AppsPPI(object):
 
     This class works as follows. First, you query a protein:
 
-
         p = AppsPPI()
         p.query("ZAP70 AND species:9606")
 
@@ -769,11 +775,11 @@ class AppsPPI(object):
     cleaning inside the postCleaningall method.
 
     Then, you can call the summary method that counts the interactions. The
-    count is stored in the attrbiute relevant_interactions.
+    count is stored in the attribute relevant_interactions.
 
         p.summary()
 
-    Let us see how many intercations where found with. THe number of databases
+    Let us see how many interactions where found with. THe number of databases
     that contains at least one interactions is
 
         p.N
@@ -784,21 +790,19 @@ class AppsPPI(object):
     """
 
     def __init__(self, verbose=False):
-        """.. rubric:: constructor"""
         self.psicquic = PSICQUIC(verbose=False)
         self.verbose = verbose
 
     def queryAll(self, query, databases=None):
         """
-        :param str query: a valid query. See :class:`~bioservices.psicquic.PSICQUIC`
-            and :mod:`bioservices.psicquic` documentation.
+        :param str query: a valid query.
         :param str databases: by default, queries are sent to each active database.
             you can overwrite this behavious by providing your own list of
-            databses
+            databases
         :return: nothing but the interactions attributes is populated with a
             dictionary where keys correspond to each database that returned a non empty list
             of interactions. The item for each key is a list of interactions containing the
-            interactors A and B, the score, the type of intercations and the score.
+            interactors A and B, the score, the type of interactions and the score.
         """
         # self.results_query = self.psicquic.queryAll("ZAP70 AND species:9606")
         print("Requests sent to psicquic. Can take a while, please be patient...")
