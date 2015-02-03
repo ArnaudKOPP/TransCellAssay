@@ -31,8 +31,6 @@ __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
 
-# TODO finish class
-
 
 class BioMart(REST):
     """

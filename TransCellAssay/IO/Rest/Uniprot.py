@@ -20,8 +20,6 @@ import gzip
 import os
 from TransCellAssay.IO.Rest.Fasta import FASTA
 
-# TODO clean up this class
-
 
 mapping = {"UniProtKB AC/ID": "ACC+ID",
            "UniProtKB": "ACC",
@@ -142,7 +140,7 @@ class UniProt(REST):
                       'protein names', 'reviewed', 'score', 'sequence', '3d', 'subcellular locations', 'taxonomy',
                       'tools', 'version', 'virus hosts', 'lineage-id', 'sequence-modified', 'proteome']
 
-    def __init__(self, verbose=False):
+    def __init__(self, user="TransCellAssayUser", verbose=False):
         """**Constructor**
 
         :param verbose: set to False to prevent informative messages
@@ -151,6 +149,7 @@ class UniProt(REST):
         self.TIMEOUT = 100
         self._verbose = verbose
         self.__uniprot_flt_file = None
+        self.__headers = {'User-Agent': str(user)}
 
     def download_flat_files(self, directory=''):
         """
@@ -201,12 +200,9 @@ class UniProt(REST):
         url = 'mapping/'  # the slash matters
 
         query = list2string(query, sep=" ", space=False)
-        # if isinstance(query, list):
-        # query = " ".join(query)
         params = {'from': fr, 'to': to, 'format': "tab", 'query': query}
-        result = self.http_post(url, frmt="txt", data=params)
+        result = self.http_post(url, frmt="txt", data=params, headers=self.__headers)
 
-        # changes in version 1.1.1 returns a dictionary instead of list
         try:
             result = result.split()
             del result[0]
@@ -218,8 +214,6 @@ class UniProt(REST):
         if len(result) == 0:
             return {}
         else:
-            # bug fix based on ticket #19 version 1.1.2
-            # the default dict set empty list for all keys by default
             from collections import defaultdict
 
             result_dict = defaultdict(list)
@@ -246,10 +240,8 @@ class UniProt(REST):
 
         queries = tolist(uniprot_id)
 
-        # data = {'format':frmt}
-
         url = ["uniprot/" + query + '.' + frmt for query in queries]
-        res = self.http_get(url, frmt="txt")
+        res = self.http_get(url, frmt="txt", headers=self.__headers)
         if frmt == "xml":
             res = [self.easyXML(x) for x in res]
         if isinstance(res, list) and len(res) == 1:
@@ -337,7 +329,6 @@ class UniProt(REST):
         if columns is not None:
             check_param_in_list(frmt, ["tab", "xls"])
 
-            # remove unneeded spaces before/after commas if any
             if "," in columns:
                 columns = [x.strip() for x in columns.split(",")]
             else:
@@ -349,7 +340,6 @@ class UniProt(REST):
                 else:
                     check_param_in_list(col, self._valid_columns)
 
-            # convert back to a string as expected by uniprot
             params['columns'] = ",".join([x.strip() for x in columns])
 
         if include is True and frmt in ["fasta", "rdf"]:
@@ -370,11 +360,9 @@ class UniProt(REST):
             if isinstance(limit, int):
                 params['limit'] = limit
 
-        # + are interpreted and have a meaning.
         params['query'] = query.replace("+", " ")
-        # res = s.request("/uniprot/?query=zap70+AND+organism:9606&format=xml", params)
-        # print(params)
-        res = self.http_get("uniprot/", frmt="txt", params=params)
+
+        res = self.http_get("uniprot/", frmt="txt", params=params, headers=self.__headers)
         return res
 
     def quick_search(self, query, include=False, sort="score", limit=None):
@@ -395,16 +383,13 @@ class UniProt(REST):
         """
         res = self.search(query, "tab", include=include, sort=sort, limit=limit)
 
-        # if empty result, nothing to do
         if len(res) == 0:
             return res
-        # else populate a dictionary
+
         newres = {}
         for line in res.split("\n")[1:-1]:
-            # print line
-            Entry, a, b, c, d, e, f = line.split("\t")
-            # print Entry, a, b, c, d, e, f
-            newres[Entry] = {'Entry name': a, 'Status': b, 'Protein names': c, 'Gene names': d, 'Organism': e,
+            entry, a, b, c, d, e, f = line.split("\t")
+            newres[entry] = {'Entry name': a, 'Status': b, 'Protein names': c, 'Gene names': d, 'Organism': e,
                              'Length': f}
         return newres
 
@@ -417,7 +402,7 @@ class UniProt(REST):
         df = u.uniref("member:Q03063")
         df.Size
         """
-        res = self.http_get("uniref/", params={"query": query, 'format': 'tab'}, frmt="txt")
+        res = self.http_get("uniref/", params={"query": query, 'format': 'tab'}, frmt="txt", headers=self.__headers)
         res = pd.read_csv(io.StringIO(res.strip()), sep="\t")
         return res
 
@@ -459,11 +444,8 @@ class UniProt(REST):
                 else:
                     output = output.append(df, ignore_index=True)
 
-        # you may end up with duplicated...
         output.drop_duplicates(inplace=True)
-        # you may have new entries...
-        # output = output[output.Entry.apply(lambda x: x in entries)]
-        # to transform into list:
+
         columns = ['PubMed ID', 'Comments', u'Domains', 'Protein families', 'Gene names', 'Gene ontology (GO)',
                    'Gene ontology IDs', 'InterPro', 'Interacts with', 'Keywords', 'Subcellular location']
         for col in columns:
@@ -472,9 +454,6 @@ class UniProt(REST):
                 output[col] = res
             except:
                 print("\033[0;33m[WARNING]\033[0m column could not be parsed. %s" % col)
-        # Sequences are splitted into chunks of 10 characters. let us rmeove the
-        # spaces:
+
         output.Sequence = output['Sequence'].apply(lambda x: x.replace(" ", ""))
-
         return output
-
