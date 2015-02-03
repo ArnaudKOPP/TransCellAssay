@@ -71,118 +71,44 @@ USAGE
                             help="Input path of csv data file ", required=True)
         parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
                             help="Output path of csv file", required=True)
-        parser.add_argument("-m", "--oldmode", dest="oldmode", des='mode', action="store_true",
-                            help="old mode of directory")
 
         # # Process arguments
         args = parser.parse_args()
         input = args.input
         output = args.output
-        mode = args.mode
 
-        # # Old api and directory style
-        if mode:
-            i = 1
-            # # Process arguments
-            args = parser.parse_args()
-            filed = args.inputDir
-            outputd = args.outputDir
-            # # init file parser
-            excel_parser = Excel_Reader()
-            csv_parser = CSV_Reader()
-            txt_parser = TXT_Reader()
+        print("\n*********** START ***********\n")
+        print("READING INPUT DIRECTORY ")
 
-            try:
-                os.stat(outputd)
-            except:
-                os.mkdir(outputd)
+        try:
+            os.stat(output)
+        except:
+            os.mkdir(output)
+        print("Beging Processing")
+        for root, dirs, filenames in os.walk(input):
+            if "Legend.xml" in filenames:
 
-            print("\n*********** START ***********\n")
-            print("READING INPUT DIRECTORY ")
-
-            if filed:
-                for root, dirs, filenames in os.walk(filed):
+                print("Working on %s" % root)
+                try:
+                    well = pd.read_csv((root + "/Plate.csv"))
+                except:
                     try:
-                        for input_file_tmp in filenames:
-                            extension = input_file_tmp.split(".")[-1]
-                            input_file = filed + str(input_file_tmp)
-                            try:
-                                # # make process for each type of file
-                                if extension.lower() == 'XLS':
-                                    print("xls file %d opening ..." % i)
-                                    output_file = input_file_tmp.split(".")[0] + ".csv"
-                                    name_file = os.path.join(outputd, output_file)
-                                    excel_parser.read_save_data(input_file, name_file)
-                                    print("... xls file %d closing \n" % i)
-                                    i += 1
-                                elif extension.lower() == 'xls':
-                                    print("xls file %d opening ..." % i)
-                                    output_file = input_file_tmp.split(".")[0] + ".csv"
-                                    name_file = os.path.join(outputd, output_file)
-                                    excel_parser.read_save_data(input_file, name_file)
-                                    print("... xls file %d closing \n" % i)
-                                    i += 1
-                                elif extension.lower() == 'CSV':
-                                    print("csv file %d opening ..." % i)
-                                    name_file = os.path.join(outputd, input_file_tmp)
-                                    csv_parser.read_data(input_file)
-                                    csv_parser.save_data(name_file)
-                                    print("... csv file %d closing \n" % i)
-                                    i += 1
-                                elif extension.lower() == 'csv':
-                                    print("csv file %d opening ..." % i)
-                                    name_file = os.path.join(outputd, input_file_tmp)
-                                    csv_parser.read_data(input_file)
-                                    csv_parser.save_data(name_file)
-                                    print("... csv file %d closing \n" % i)
-                                    i += 1
-                                elif extension.lower() == 'txt':
-                                    print("txt file %d opening ..." % i)
-                                    output_file_tmp = input_file_tmp.split(".")[0] + ".csv"
-                                    name_file = os.path.join(outputd, output_file_tmp)
-                                    txt_parser.read_data(input_file)
-                                    txt_parser.save_data(name_file)
-                                    print("... txt file %d closing \n" % i)
-                                    i += 1
-                                else:
-                                    print("No support of this format for file : %s \n" % (str(input_file_tmp)))
-                            except Exception as e:
-                                print("Error in reading data dir")
-                                print(e)
+                        well = pd.read_csv((root + "/Plate.csv"), decimal=",", sep=";")
                     except Exception as e:
-                        print(e)
-            print("\n*********** END ***********\n")
+                        print("Error in reading  File", e)
 
-        else:
-            try:
-                os.stat(output)
-            except:
-                os.mkdir(output)
-            print("Beging Processing")
-            for root, dirs, filenames in os.walk(input):
-                if "Legend.xml" in filenames:
+                barcode = well['PlateId/Barcode'][0]
 
-                    print("Working on %s" % root)
-                    try:
-                        well = pd.read_csv((root + "/Plate.csv"))
-                    except:
-                        try:
-                            well = pd.read_csv((root + "/Plate.csv"), decimal=",", sep=";")
-                        except Exception as e:
-                            print("Error in reading  File", e)
+                # # read
+                file = TCA.CSV()
+                file.load(fpath=os.path.join(root, "Cell.csv"))
 
-                    barcode = well['PlateId/Barcode'][0]
-
-                    # # read
-                    file =TCA.CSV()
-                    file.load(fpath=os.path.join(root, "Cell.csv"))
-
-                    # # create well
-                    file.format_data()
-                    file.remove_col()
-                    file.remove_nan()
-                    outputfilename = barcode
-                    file.write_raw_data(path=output, name=outputfilename)
+                # # create well
+                file.format_data()
+                file.remove_col()
+                file.remove_nan()
+                outputfilename = barcode
+                file.write_raw_data(path=output, name=outputfilename)
             print("\n*********** END ***********\n")
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###

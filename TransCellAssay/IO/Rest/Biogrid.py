@@ -96,6 +96,9 @@ class Biogrid(REST):
         self._verbose = verbose
 
     def get_valid_parameters(self):
+        """
+        :return: get valid parameters for search
+        """
         return self._valid_parameters
 
     parameters = property(get_valid_parameters, doc="Returns list of valid parameters")

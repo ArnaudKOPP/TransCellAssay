@@ -22,7 +22,6 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST, list2string, check_param_in_list
-import copy
 
 
 class Reactome(REST):
@@ -218,8 +217,8 @@ class Reactome(REST):
         :param query: Gene symbols
         """
         identifiers = list2string(query)
-        res = self.http_post("queryHitPathways", frmt='json', data=identifiers, headers={'Content-Type':
-                                                                                         "application/json"})
+        res = self.http_post("queryHitPathways", frmt='json', data=identifiers,
+                             headers={'Content-Type': "application/json"})
         return res
 
     def query_pathway_for_entities(self, identifiers):
@@ -230,10 +229,9 @@ class Reactome(REST):
         identifiers should be in the database.
         :param identifiers:
         """
-        # TODO Don't work
         identifiers = list2string(identifiers, space=False)
-        res = self.http_post("pathwayForEntities", frmt='json', data={'ID': identifiers}, headers={'Content-Type':
-                                                                                                   "application/json"})
+        res = self.http_post("pathwaysForEntities", frmt='json', data={'ID': identifiers},
+                             headers={'Content-Type': "application/json"})
         return res
 
     def query_reviewed_pathways(self, personid):
@@ -297,7 +295,7 @@ class Reactome(REST):
         res = self.http_get(url)
         return res
 
-    def SBML_exporter(self, identifier):
+    def sbml_exporter(self, identifier):
         """
         Get the SBML XML text of a pathway identifier
 
@@ -317,105 +315,85 @@ class ReactomeAnalysis(REST):
 
     http://www.reactome.org/AnalysisService/
     """
-    # TODO finish
+
     def __init__(self, verbose=True):
         super(ReactomeAnalysis, self).__init__("Reactome Analysis", url="http://www.reactome.org:80/AnalysisService",
                                                verbose=verbose)
         print("\033[0;33m[WARNING]\033[0m Class in development. Some methods are already working but those required "
               "POST do not. Coming soon ")
 
-    def identifiers(self, genes):
+    def identifiers(self, genes, human_projection=False):
         """
-        s.identfiers("TP53")
-        :param genes:
-        .. warning:: works for oe gene only for now
+        Analyse the post identifiers over the different species and projects the result to Homo Sapiens
+        s.identifiers("TP53")
+        :param human_projection: project result to homo sapiens
+        :param genes: gene like TP53
         """
-        url = "identifiers/projection?pageSize=8000&page=1&sortBy=ENTITIES_PVALUE&order=ASC&resource=TOTAL"
+        pagesize = 8000
+        page = 1
+        sortby = 'ENTITIES_PVALUE'
+        params = {'pageSize': str(pagesize), 'page': str(page), 'sortBy': sortby, 'order': 'ASC',
+                  'ressource': 'TOTAL'}
+
+        if human_projection:
+            url = "identifiers/projection?"
+        else:
+            url = "identifiers/?"
         genes = list2string(genes)
         genes = genes.replace(" ", "")
-        print(genes)
-        res = self.http_post(url, frmt="json", data=genes, headers={"Content-Type": "text/plain;charset=UTF-8",
-                                                                    "Accept": "application/json"})
+        res = self.http_post(url, frmt="json", data=genes, params=params,
+                             headers={"Content-Type": "text/plain;charset=UTF-8", "Accept": "application/json"})
         return res
 
-    def download(self):
+    def download(self, token):
         """
         Download data
+        :param token:
         """
         raise NotImplementedError
 
-    def identifier(self):
+    def identifier(self, id, human_projection=False):
         """
         analyse identifier
+        :param human_projection: project to human
+        :param id: id of identifier
         """
-        raise NotImplementedError
+        pagesize = 8000
+        page = 1
+        sortby = 'ENTITIES_PVALUE'
+        params = {'pageSize': str(pagesize), 'page': str(page), 'sortBy': sortby, 'order': 'ASC',
+                  'ressource': 'TOTAL'}
 
-    def species(self):
-        """
-        Compare homo sapiens to species
-        """
-        raise NotImplementedError
+        if human_projection:
+            url = "identifier/{}/projection/".format(id)
+        else:
+            url = "identifier/{}".format(id)
 
-    def token(self):
+        res = self.http_get(url, params=params,
+                            headers={"Content-Type": "text/plain;charset=UTF-8", "Accept": "application/json"})
+        return res
+
+    def species(self, dbid):
+        """
+        Compare homo sapiens to specified species
+        ra.species(48895)
+
+        :param dbid: dbId of species
+        """
+        pagesize = 8000
+        page = 1
+        sortby = 'ENTITIES_PVALUE'
+        params = {'pageSize': str(pagesize), 'page': str(page), 'sortBy': sortby, 'order': 'ASC',
+                  'ressource': 'TOTAL'}
+
+        url = "/species/homoSapiens/{}".format(dbid)
+        res = self.http_get(url, params=params,
+                            headers={"Content-Type": "text/plain;charset=UTF-8", "Accept": "application/json"})
+        return res
+
+    def token(self, token):
         """
         Return token
+        :param token:
         """
         raise NotImplementedError
-
-
-class ReactomePathway(object):
-    """
-    Reactome Pathways class, in Dev
-    """
-    def __init__(self, entry):
-        print("\033[0;33m[WARNING]\033[0m Class in development !!!")
-        self.raw_data = copy.deepcopy(entry)
-        # just adding the attributes to make life easier
-        for k in self.raw_data._keyord:
-            setattr(self, k, getattr(self.raw_data, k))
-
-    def __str__(self):
-
-        txt = "id: " + str(self.id)
-        txt += "\nname: " + str(self.name)
-
-        txt += "\nhasComponent:"
-        if self.hasComponent:
-            txt += str(len(self.hasComponent))
-
-        if self.raw_data.compartment:
-            txt += "\ncompartment:" + str(len(self.raw_data.compartment))
-        else:
-            txt += "\ncompartment: " + str(self.raw_data.compartment)
-
-        txt += "\nliteratureReference:"
-        this = self.raw_data.literatureReference
-        if this:
-            for i, x in enumerate(this):
-                txt += " --- %s: %s %s\n" % (i, x.id, x.name)
-
-        txt += "\nspecies:"
-        this = self.raw_data.species
-        if this:
-            txt += "  %s (%s)" % (this.scientificName, this.id)
-
-        txt += "\nsummation:"
-        this = self.raw_data.summation
-        if this:
-            for x in this:
-                txt += " - %s \n" % (self.raw_data.id)
-
-        txt += "\ngoBiologicalProcess:"
-        this = self.raw_data.goBiologicalProcess
-        if this: txt += "\n - %s %s\n" % (this.id, this.name)
-
-        txt += "\ninferredFrom:" + str(self.raw_data.inferredFrom)
-        txt += "\northologousEvent: "
-        this = self.raw_data.orthologousEvent
-        if this:
-            txt += str(len(this))
-
-        txt += "\nprecedingEvent: " + str(self.raw_data.precedingEvent)
-        txt += "\nevidence Type: " + str(self.raw_data.evidenceType) + "\n"
-
-        return txt

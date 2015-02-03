@@ -282,8 +282,8 @@ def rest():
     # print(res)
 
     # ### Ensembl REST TEST
-    from TransCellAssay.IO.Rest.Ensembl import Ensembl
-    s = Ensembl(verbose=True)
+    # from TransCellAssay.IO.Rest.Ensembl import Ensembl
+    # s = Ensembl(verbose=True)
     # print(s.get_rest_version())
     # print(s.get_api_version())
     # print(s.get_archive("AT3G52430"))
@@ -291,7 +291,7 @@ def rest():
     # print(s.get_gene_family_information_by_id('MF_01687'))
     # print(s.get_info_analysis('arabidopsis_thaliana'))
     # print(s.get_info_assembly('arabidopsis_thaliana'))
-    print(s.get_info_assembly_by_region('arabidopsis_thaliana', region=1))
+    # print(s.get_info_assembly_by_region('arabidopsis_thaliana', region=1))
     # print(s.get_info_compara_methods())
 
     # #### Psicquic REST TEST
@@ -437,8 +437,9 @@ def rest():
 
     # #### REACTOME REST TEST
 
-    # from TransCellAssay.IO.Rest.Reactome import Reactome
+    from TransCellAssay.IO.Rest.Reactome import Reactome, ReactomeAnalysis
     # r = Reactome()
+    # print(r.front_page_items("homo sapiens"))
     # print(r.get_list_pathways())
     # print(r.get_species())
     # print(r.biopax_exporter(109581))
@@ -453,10 +454,24 @@ def rest():
     # print(r.pathway_participantes(109581))
     # print(r.pathway_complexes(109581))
     # print(r.query_by_id("Pathway", "109581"))
+    # print(r.query_by_ids("Pathway", "CDC2"))
+    # print(r.query_pathway_for_entities(170075))
     # print(r.query_hit_pathways('CDC2'))
     # print(r.query_hit_pathways(['CDC2']))
     # print(r.species_list())
     # print(r.SBML_exporter(109581))
+    ra = ReactomeAnalysis()
+    # res = ra.identifiers('TP53')
+    # import json
+    # print(json.dumps(res, indent=4, separators=(',', ': ')))
+
+    # res = ra.identifier(170075)
+    # import json
+    # print(json.dumps(res, indent=4, separators=(',', ': ')))
+
+    res = ra.species(48895)
+    import json
+    print(json.dumps(res, indent=4, separators=(',', ': ')))
 
 rest()
 

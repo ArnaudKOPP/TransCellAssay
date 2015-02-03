@@ -147,10 +147,6 @@ USAGE
                             help="Input path of csv data file ", required=True)
         parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
                             help="Output path of xlsx file", required=True)
-        parser.add_argument("-m", "--oldmode", dest="oldmode", des='mode', action="store_true",
-                            help="old mode of directory")
-        parser.add_argument("-s", "--size", dest="size", action="store", help="Size of Plate, only needed in old mode")
-
 
         # # format string to float
         def format(x):
@@ -160,157 +156,79 @@ USAGE
         args = parser.parse_args()
         input = args.input
         output = args.output
-        mode = args.mode
+        try:
+            os.stat(output)
+        except:
+            os.mkdir(output)
+        print("Beging Processing")
+        for root, dirs, filenames in os.walk(input):
+            if "Legend.xml" in filenames:
 
-        if mode:
-            # # Process arguments
-            size = args.size
-            try:
-                os.stat(output)
-            except:
-                os.mkdir(output)
-            print("Beging Processing")
-            for root, dirs, filenames in os.walk(input):
-                for f in filenames:
+                try:
+
+                    well = pd.read_csv((root + "/Plate.csv"))
+                except:
                     try:
-                        print("Handling %s file" % f)
-                        to_remove = [u'WellID', u'PlateID', u'UPD', u'BarCode', u'TimePoint', u'TimeInterval',
-                                     u'ImageLinkWellID', u'FieldID', u'CellID', u'Left', u'Top', u'Height', u'Width',
-                                     u'FieldIndex', u'CellNum']
-                        data = pd.DataFrame()
-                        ### modified here sep if modified csv from excel ####
+                        well = pd.read_csv((root + "/Plate.csv"), decimal=",", sep=";")
+                    except Exception as e:
+                        print("Error in reading  File", e)
+
+                barcode = well['PlateId/Barcode'][0]
+                nbrow = well['NumberOfRows'][0]
+                nbcol = well['NumberOfColumns'][0]
+
+                if nbrow * nbcol > 96:
+                    size = 396
+                else:
+                    size = 96
+
+                try:
+                    data = pd.read_csv((root + "/Well.csv"))
+                except:
+                    try:
+                        data = pd.read_csv((root + "/Well.csv"), decimal=",", sep=";")
+                    except Exception as e:
+                        print("Error in reading File", e)
+
+                skip = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column']
+
+                # # get all channel (columns)
+                all_col = data.columns
+
+                # # create new excel file and worksheet
+                workbook = xlsxwriter.Workbook(output + barcode + '-save.xlsx')
+                i = 0
+                list_sheets = ["%s" % x for x in (all_col - skip)]
+                # # put on channel per sheet
+                for chan in all_col:
+                    if chan in skip:
+                        continue
+
+                    if data[chan].dtypes == 'object':
+                        data[chan] = data[chan].str.replace(",", ".")
+                    data[chan].apply(format)
+                    data = data.fillna(0)
+                    list_sheets[i] = workbook.add_worksheet(str(chan))
+                    list_sheets[i] = init_plate(list_sheets[i], size)
+                    # # put value in cell
+                    for pos in range(len(data.Row)):
+                        row = int(data.Row[pos]) + 1
                         try:
-                            data = pd.read_csv(os.path.join(input, f))
+                            col = int(data.Column[pos]) + 1
                         except:
                             try:
-                                data = pd.read_csv(os.path.join(input, f), decimal=",", sep=";")
-                            except Exception as e:
-                                print(e)
-                                print("Error in reading %s File" % f)
-
-                        try:
-                            filename = str(data.BarCode[0])
-                        except Exception as e:
-                            print(e)
-                            filename = str(f.split(".")[0])
-
-                        try:
-                            data = data.drop(to_remove, axis=1)
-                        except Exception:
-                            try:
-                                drop = [u'PlateNumber', u'Status', u'Zposition']
-                                data = data.drop(drop, axis=1)
-                            except Exception as e:
-                                print(e)
-
-                        ## get all channel (columns)
-                        col_channel = data.columns
-                        ## create new excel file and worksheet
-                        workbook = xlsxwriter.Workbook(output + filename + '-save.xlsx')
-                        i = 0
-                        list_sheets = ["%s" % x for x in col_channel[2:]]
-                        ## put on channel per sheet
-                        for chan in col_channel[2:]:
-                            if data[chan].dtypes == 'object':
-                                data[chan] = data[chan].str.replace(",", ".")
-                            data[chan].apply(format)
-                            data = data.fillna(0)
-                            list_sheets[i] = workbook.add_worksheet(str(chan))
-                            list_sheets[i] = init_plate(list_sheets[i], size)
-                            ## put value in cell
-                            for pos in range(len(data.Row)):
-                                row = int(data.Row[pos]) + 1
-                                try:
-                                    col = int(data.Col[pos]) + 1
-                                except:
-                                    try:
-                                        col = int(data.Col[pos]) + 1
-                                    except Exception as e:
-                                        print(e)
-                                tmp = data.loc[[pos]]
-                                val = float(tmp[str(chan)])
-                                list_sheets[i].write_number(row, col, val)
-                            i += 1
-                        workbook.close()
-                    except Exception as e:
-                        print(e)
-                        print("Error in reading %s File" % f)
-            print("DONE")
-
-        else:
-            try:
-                os.stat(output)
-            except:
-                os.mkdir(output)
-            print("Beging Processing")
-            for root, dirs, filenames in os.walk(input):
-                if "Legend.xml" in filenames:
-
-                    try:
-
-                        well = pd.read_csv((root + "/Plate.csv"))
-                    except:
-                        try:
-                            well = pd.read_csv((root + "/Plate.csv"), decimal=",", sep=";")
-                        except Exception as e:
-                            print("Error in reading  File", e)
-
-                    barcode = well['PlateId/Barcode'][0]
-                    nbrow = well['NumberOfRows'][0]
-                    nbcol = well['NumberOfColumns'][0]
-
-                    if nbrow * nbcol > 96:
-                        size = 396
-                    else:
-                        size = 96
-
-                    try:
-                        data = pd.read_csv((root + "/Well.csv"))
-                    except:
-                        try:
-                            data = pd.read_csv((root + "/Well.csv"), decimal=",", sep=";")
-                        except Exception as e:
-                            print("Error in reading File", e)
-
-                    skip = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column']
-
-                    # # get all channel (columns)
-                    all_col = data.columns
-
-                    # # create new excel file and worksheet
-                    workbook = xlsxwriter.Workbook(output + barcode + '-save.xlsx')
-                    i = 0
-                    list_sheets = ["%s" % x for x in (all_col - skip)]
-                    # # put on channel per sheet
-                    for chan in all_col:
-                        if chan in skip:
-                            continue
-
-                        if data[chan].dtypes == 'object':
-                            data[chan] = data[chan].str.replace(",", ".")
-                        data[chan].apply(format)
-                        data = data.fillna(0)
-                        list_sheets[i] = workbook.add_worksheet(str(chan))
-                        list_sheets[i] = init_plate(list_sheets[i], size)
-                        # # put value in cell
-                        for pos in range(len(data.Row)):
-                            row = int(data.Row[pos]) + 1
-                            try:
                                 col = int(data.Column[pos]) + 1
-                            except:
-                                try:
-                                    col = int(data.Column[pos]) + 1
-                                except Exception as e:
-                                    print(e)
-                            tmp = data.loc[[pos]]
-                            val = float(tmp[str(chan)])
-                            list_sheets[i].write_number(row, col, val)
-                        i += 1
-                    workbook.close()
+                            except Exception as e:
+                                print(e)
+                        tmp = data.loc[[pos]]
+                        val = float(tmp[str(chan)])
+                        list_sheets[i].write_number(row, col, val)
+                    i += 1
+                workbook.close()
 
-            print("DONE")
-    except KeyboardInterrupt:
-        # ## handle keyboard interrupt ###
+        print("DONE")
+
+    except KeyboardInterrupt:  # ## handle keyboard interrupt ###
         return 0
     except Exception as e:
         if DEBUG:
@@ -321,7 +239,6 @@ USAGE
         return 2
     time_stop = time.time()
     print("Executed in {0:f}s".format(float(time_stop - time_start)))
-
 
 if __name__ == "__main__":
     main()
