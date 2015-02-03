@@ -134,13 +134,11 @@ class BioMart(REST):
         else:
             return res
 
-    def container_for_marts(self, datasets, config,frmt='json'):
+    def container_for_marts(self, datasets, config, frmt='json'):
         """
         Lists all containers for the given Mart, starting from the root Container
         :param datasets: Comma-separated string of datasets
         :param config: name of config as returned bu the mart object
-        :param withattributes: include container attributes
-        :param withfilters:  include container filter
         :param frmt: json or xml
         :return:
         """
@@ -151,3 +149,116 @@ class BioMart(REST):
             return self.easyXML(res)
         else:
             return res
+
+    def linkable_datasets(self, datasets, frmt='json'):
+        """
+        List all the datasets that can be linked with selected datasets
+        :param frmt: json or xml
+        :param datasets: comma-separated string of datasets
+        :return:
+        """
+        query = "martservice/linkables"
+        res = self.http_get(query, params={'datasets': str(datasets)},
+                            headers={'Accept': self.content_types[frmt]})
+        if frmt is 'xml':
+            return self.easyXML(res)
+        else:
+            return res
+
+    def querying(self, xmlq):
+        """
+        Post a query xml
+        :param xmlq: the xml query
+
+
+        Query xml must be formatted like that:
+
+        <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE Query>
+                <Query virtualSchemaName="default" formatter="CSV" header="0" uniqueRows="0" count="" datasetConfigVersion="0.6">
+                <Dataset name="mmusculus_gene_ensembl" interface="default">
+                <Filter name="ensembl_gene_id" value="ENSMUSG00000086981"/>
+                <Attribute name="ensembl_gene_id"/>
+                <Attribute name="ensembl_transcript_id"/>
+                <Attribute name="transcript_start"/>
+                <Attribute name="transcript_end"/>
+                <Attribute name="exon_chrom_start"/>
+                <Attribute name="exon_chrom_end"/>
+                </Dataset>
+                </Query>
+
+        """
+        query = "martservices/results"
+        ret = self.http_post(query, frmt=None, data={'query': xmlq.strip()}, headers={})
+        return ret
+
+
+class BioMartQuery(object):
+    """
+    Class for creating xml query
+    """
+    def __init__(self, version="1.0", virtualscheme="default"):
+
+        params = {
+            "version": version,
+            "virtualSchemaName": virtualscheme,
+            "formatter": "TSV",
+            "header": 0,
+            "uniqueRows": 0,
+            "configVersion": "0.6"
+
+        }
+
+        self.header = """<?xml version="%(version)s" encoding="UTF-8"?>
+    <!DOCTYPE Query>
+    <Query  virtualSchemaName = "%(virtualSchemaName)s" formatter = "%(formatter)s"
+    header = "%(header)s" uniqueRows = "%(uniqueRows)s" count = ""
+    datasetConfigVersion = "%(configVersion)s" >\n""" % params
+
+        self.footer = "    </Dataset>\n</Query>"
+        self.reset()
+
+    def add_filter(self, flt):
+        """
+        Add filter in query xml
+        :param flt:
+        """
+        self.filters.append(flt)
+
+    def add_attribute(self, attribute):
+        """
+        Add attribut in query xml
+        :param attribute:
+        """
+        self.attributes.append(attribute)
+
+    def add_dataset(self, dataset):
+        """
+        Set dataset
+        :param dataset:
+        """
+        self.dataset = """    <Dataset name = "%s" interface = "default" >""" % dataset
+
+    def reset(self):
+        """
+        Reset all value
+        """
+        self.attributes = []
+        self.filters = []
+        self.dataset = None
+
+    def get_xml(self):
+        """
+        Return the xml query
+        :return: :raise ValueError:
+        """
+        if self.dataset is None:
+            raise ValueError("data set must be set.")
+        xml = self.header
+        xml += self.dataset + "\n\n"
+        for line in self.filters:
+            xml += line + "\n"
+        for line in self.attributes:
+            xml += line + "\n"
+        xml += self.footer
+        return xml
