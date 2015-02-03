@@ -7,6 +7,7 @@ collaboration with Reactome editorial staff and cross-referenced to many
 bioinformatics databases. These include NCBI Entrez Gene, Ensembl and UniProt
 databases, the UCSC and HapMap Genome Browsers, the KEGG Compound and ChEBI
 small molecule databases, PubMed, and Gene Ontology
+
 URL: http://www.reactome.org/ReactomeGWT/entrypoint.html
 REST: http://reactomews.oicr.on.ca:8080/ReactomeRESTfulAPI/ReactomeRESTFulAPI.html
 """
@@ -21,8 +22,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST, list2string, check_param_in_list
-
-# TODO clean up this class
+import copy
 
 
 class Reactome(REST):
@@ -33,7 +33,7 @@ class Reactome(REST):
     _url = "http://reactomews.oicr.on.ca:8080/ReactomeRESTfulAPI/RESTfulWS"
 
     def __init__(self, verbose=True):
-        super(Reactome, self).__init__("Reactome(URL)", url=Reactome._url, verbose="ERROR")
+        super(Reactome, self).__init__("Reactome", url=Reactome._url, verbose="ERROR")
         self.debugLevel = verbose
         self._verbose = verbose
         # buffer
@@ -62,7 +62,7 @@ class Reactome(REST):
         """
         Return list of species from all pathways
         """
-        res = self._download_list_pathways()
+        self._download_list_pathways()
         res = set([x[2] for x in self.get_list_pathways()])
         return res
 
@@ -74,6 +74,8 @@ class Reactome(REST):
 
         s = Reactome()
         res = s.biopax_exporter(109581)
+        :param level: BioPAX level 2 or 3
+        :param identifier: Event database identifier
         """
         res = self.http_get("biopaxExporter/Level{0}/{1}".format(level, identifier), frmt=None)
         return res
@@ -85,15 +87,20 @@ class Reactome(REST):
         s = Reactome()
         res = s.front_page_items("homo sapiens")
 
+        :param species: full species name
         Pathway Browser <http://www.reactome.org/PathwayBrowser/>
         """
-        species = species.replace("+", " ")
-        res = self.http_get("frontPageItems/{0}".format(species), frmt="json")
+        species = species.replace(" ", "+")
+        res = self.http_get("frontPageItems/{0}".format(species))
         return res
 
-    def highlight_pathway_diagram(self, identifier, genes, frmt="PNG"):
+    def highlight_pathway_diagram(self, identifier, genes, frmt="PDF"):
         """
-        Highlight a diagram for a specified pathways based on its identifier
+        Highlight a diagram for a specified pathways based on its identifier.This method should be used after method
+        queryHitPathways
+        :param frmt: pdf or png
+        :param genes: gene symbol delimited by comma(no space)
+        :param identifier: pathway databse identifier
         """
         check_param_in_list(frmt, ['PDF', 'PNG'])
         url = "highlightPathwayDiagram/{0}/{1}"
@@ -109,6 +116,8 @@ class Reactome(REST):
         s = Reactome()
         res = list_by_query("Pathway", name='Apoptosis')
         identifiers = [x['dbId'] for x in res]
+        :param kargs: key, value
+        :param classname: class name
         """
         url = "listByQuery/{0}".format(classname)
         # NOTE: without the content-type this request fails with error 415
@@ -125,6 +134,8 @@ class Reactome(REST):
         s.pathway_diagram('109584', 'PNG', save=True)
 
         if PNG or PDF, the output is base64 but there is no facility to easily save the results in a file for now
+        :param frmt: pdf, png or xml
+        :param identifier: pthway database identifier
         """
         check_param_in_list(frmt, ['PDF', 'PNG', 'XML'])
         url = 'pathwayDiagram/{0}/{1}'.format(identifier, frmt)
@@ -137,8 +148,9 @@ class Reactome(REST):
 
         s = Reactome()
         s.pathway_hierarchy("homo sapiens")
+        :param species: full species name
         """
-        species = species.replace("+", " ")
+        species = species.replace(" ", "+")
         res = self.http_get("pathwayHierarchy/{0}".format(species), frmt="xml")
         return res
 
@@ -148,8 +160,9 @@ class Reactome(REST):
 
         s = Reactome()
         s.pathway_participantes(109581)
+        :param identifier: pathway database identifier
         """
-        res = self.http_get("pathwayParticipants/{0}".format(identifier), frmt='json')
+        res = self.http_get("pathwayParticipants/{0}".format(identifier))
         return res
 
     def pathway_complexes(self, identifier):
@@ -158,8 +171,9 @@ class Reactome(REST):
 
         s = Reactome()
         s.pathway_complexes(109581)
+        :param identifier: pathway database identifier
         """
-        res = self.http_get("pathwayComplexes/{0}".format(identifier), frmt="json")
+        res = self.http_get("pathwayComplexes/{0}".format(identifier))
         return res
 
     def query_by_id(self, classname, identifier):
@@ -168,9 +182,11 @@ class Reactome(REST):
 
         s = Reactome()
         s.query_by_id("Pathway", "109581")
+        :param identifier: instance database identifer
+        :param classname: class name
         """
         url = "queryById/{0}/{1}".format(classname, identifier)
-        res = self.http_get(url, frmt='json')
+        res = self.http_get(url)
         return res
 
     def query_by_ids(self, classname, identifiers):
@@ -181,11 +197,12 @@ class Reactome(REST):
         s.query_by_ids("Pathway", "CDC2")
 
         not sure if wrapping is correct
+        :param identifiers: database identifiers or stable identifiers
+        :param classname: class name
         """
         identifiers = list2string(identifiers)
         url = "queryByIds/{0}".format(classname)
-        res = self.http_post(url, frmt="json", data=identifiers)
-        # headers={'Content-Type': "application/json"})
+        res = self.http_post(url, frmt="json", data=identifiers, headers={'Content-Type': "application/json"})
         return res
 
     def query_hit_pathways(self, query):
@@ -198,9 +215,11 @@ class Reactome(REST):
 
         s.query_hit_pathways('CDC2')
         s.query_hit_pathways(['CDC2'])
+        :param query: Gene symbols
         """
         identifiers = list2string(query)
-        res = self.http_post("queryHitPathways", frmt='json', data=identifiers)
+        res = self.http_post("queryHitPathways", frmt='json', data=identifiers, headers={'Content-Type':
+                                                                                         "application/json"})
         return res
 
     def query_pathway_for_entities(self, identifiers):
@@ -209,10 +228,49 @@ class Reactome(REST):
         The returned Pathways should
         contain the passed EventEntity objects. All passed EventEntity database
         identifiers should be in the database.
+        :param identifiers:
         """
+        # TODO Don't work
         identifiers = list2string(identifiers, space=False)
-        url = "pathwayForEntities"
-        res = self.http_post(url, frmt='json', data={'ID': identifiers})
+        res = self.http_post("pathwayForEntities", frmt='json', data={'ID': identifiers}, headers={'Content-Type':
+                                                                                                   "application/json"})
+        return res
+
+    def query_reviewed_pathways(self, personid):
+        """
+        This API lets you query the Reactome Database for pathways reviewed by a particular person. It requires the
+        DB_ID for the Person class. Person IDs can be located with either the QueryPeopleByName or QueryPeopleByEmail
+        methods
+
+        reactome.queryReviewedPathways(1169275)
+
+        :param personid: personn ID
+        :return:
+        """
+        url = "queryReviewedPathways/{0}".format(personid)
+        res = self.http_get(url)
+        return res
+
+    def query_people_by_name(self, name):
+        """
+        This API lets you query the Reactome Database for a particular person. It requires a full or partial name.
+        NOTE: spaces must be escaped with '%20'.
+        :param name: name of persone
+        :return:
+        """
+        name = name.replace(' ', '%20')
+        url = "queryPeopleByName/{0}".format(name)
+        res = self.http_get(url)
+        return res
+
+    def query_people_by_email(self, email):
+        """
+        This API lets you query the Reactome Database for a particular person by a valid email address.
+        :param email: name of persone
+        :return:
+        """
+        url = "queryPeopleByEmail/{0}".format(email)
+        res = self.http_get(url)
         return res
 
     def species_list(self):
@@ -220,7 +278,23 @@ class Reactome(REST):
         Get the list of species used in the Swithc Species box in Reactome pathway browser
         """
         url = "speciesList"
-        res = self.http_get(url, frmt='json')
+        res = self.http_get(url)
+        return res
+
+    def disease_list(self):
+        """
+        Get a list of diseases and their disease ontology Ids (DOID)
+        """
+        url = "getDiseases"
+        res = self.http_get(url)
+        return res
+
+    def get_uniprot_ref_seqs(self):
+        """
+        Get a list of Reactome proteins that have UniProt identifiers
+        """
+        url = "getUniProtRefSeqs"
+        res = self.http_get(url)
         return res
 
     def SBML_exporter(self, identifier):
@@ -229,6 +303,7 @@ class Reactome(REST):
 
         s = Reactome()
         xml = s.SBML_exporter(109581)
+        :param identifier:
         """
         url = "sbmlExporter/{0}".format(identifier)
         res = self.http_get(url, frmt='xml')
@@ -236,17 +311,23 @@ class Reactome(REST):
 
 
 class ReactomeAnalysis(REST):
-    _url = "http://www.reactome.org:80/AnalysisService"
-    # "identifiers/projection?pageSize=8000&page=1&sortBy=ENTITIES_PVALUE&order=ASC&resource=TOTAL",
+    """
+    Pathway Analysis Service
+    Provides an API for pathway over-representation and expression analysis as well as species comparison tool
 
-    def __init__(self, verbose=True, cache=False):
-        super(ReactomeAnalysis, self).__init__("Reactome(URL)", url=ReactomeAnalysis._url, verbose=verbose)
+    http://www.reactome.org/AnalysisService/
+    """
+    # TODO finish
+    def __init__(self, verbose=True):
+        super(ReactomeAnalysis, self).__init__("Reactome Analysis", url="http://www.reactome.org:80/AnalysisService",
+                                               verbose=verbose)
         print("\033[0;33m[WARNING]\033[0m Class in development. Some methods are already working but those required "
               "POST do not. Coming soon ")
 
     def identifiers(self, genes):
         """
         s.identfiers("TP53")
+        :param genes:
         .. warning:: works for oe gene only for now
         """
         url = "identifiers/projection?pageSize=8000&page=1&sortBy=ENTITIES_PVALUE&order=ASC&resource=TOTAL"
@@ -257,10 +338,37 @@ class ReactomeAnalysis(REST):
                                                                     "Accept": "application/json"})
         return res
 
+    def download(self):
+        """
+        Download data
+        """
+        raise NotImplementedError
 
-"""
+    def identifier(self):
+        """
+        analyse identifier
+        """
+        raise NotImplementedError
+
+    def species(self):
+        """
+        Compare homo sapiens to species
+        """
+        raise NotImplementedError
+
+    def token(self):
+        """
+        Return token
+        """
+        raise NotImplementedError
+
+
 class ReactomePathway(object):
+    """
+    Reactome Pathways class, in Dev
+    """
     def __init__(self, entry):
+        print("\033[0;33m[WARNING]\033[0m Class in development !!!")
         self.raw_data = copy.deepcopy(entry)
         # just adding the attributes to make life easier
         for k in self.raw_data._keyord:
@@ -283,7 +391,7 @@ class ReactomePathway(object):
         txt += "\nliteratureReference:"
         this = self.raw_data.literatureReference
         if this:
-            for i,x in enumerate(this):
+            for i, x in enumerate(this):
                 txt += " --- %s: %s %s\n" % (i, x.id, x.name)
 
         txt += "\nspecies:"
@@ -311,4 +419,3 @@ class ReactomePathway(object):
         txt += "\nevidence Type: " + str(self.raw_data.evidenceType) + "\n"
 
         return txt
-"""
