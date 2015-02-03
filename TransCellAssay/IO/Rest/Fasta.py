@@ -8,8 +8,8 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 from collections import OrderedDict
-
-# TODO clean up this class
+import pandas as pd
+import pylab
 
 
 class MultiFASTA(object):
@@ -85,7 +85,6 @@ class MultiFASTA(object):
                 print("Accession %s is already in the ids list or could not be interpreted. skipped" % str(f.accession))
 
     def _get_df(self):
-        import pandas as pd
         df = pd.concat([self.fasta[id_].df for id_ in self.fasta.keys()])
         df.reset_index(inplace=True)
         return df
@@ -97,8 +96,6 @@ class MultiFASTA(object):
 
         :param kargs:
         """
-        import pylab
-
         self.df.Size.hist(**kargs)
         pylab.title("Histogram length of the sequences")
         pylab.xlabel("Length")
@@ -172,8 +169,6 @@ class FASTA(object):
     name = property(_get_name_sp)
 
     def _get_df(self):
-        import pandas as pd
-
         df = pd.DataFrame({
             "Identifiers": [self.identifier],
             "Accession": [self.accession],
@@ -247,7 +242,6 @@ class FASTA(object):
         """
         print("get_fasta is deprecated. Use load_fasta instead")
         from TransCellAssay.IO.Rest.Uniprot import UniProt
-
         u = UniProt(verbose=False)
         res = u.retrieve(id_, frmt="fasta")
         self._fasta = res[:]
@@ -263,7 +257,6 @@ class FASTA(object):
         :raise Exception:
         """
         from TransCellAssay.IO.Rest.Uniprot import UniProt
-
         u = UniProt(verbose=False)
         try:
             res = u.retrieve(id_, frmt="fasta")

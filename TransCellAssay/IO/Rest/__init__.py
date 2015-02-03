@@ -12,3 +12,4 @@ from TransCellAssay.IO.Rest.Reactome import Reactome, ReactomeAnalysis
 from TransCellAssay.IO.Rest.String import String
 from TransCellAssay.IO.Rest.Uniprot import UniProt
 from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
+from TransCellAssay.IO.Rest.Biomart import BioMart

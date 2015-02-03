@@ -243,6 +243,23 @@ def rest():
     """
     Rest test function
     """
+
+    # ### Biomart REST TEST
+    from TransCellAssay.IO.Rest.Biomart import BioMart
+    s = BioMart(verbose=True)
+    # print(s.portal())
+    # marts = s.available_marts()
+    # import json
+    # print(json.dumps(marts, indent=4, separators=(',', ':')))
+
+    # dataset = s.datasets_for_marts(config='snp_config')
+    # import json
+    # print(json.dumps(dataset, indent=4, separators=(',', ':')))
+
+    # print(s.filter_for_datasets(config='snp_config', datasets='btaurus_snp'))
+    # print(s.attributs_for_datasets(config='snp_config', datasets='btaurus_snp'))
+    print(s.container_for_marts(config='snp_config', datasets='btaurus_snp'))
+
     # ### Eutils REST TEST
     # from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
     # eutils = EUtils(email='kopp@igbmc.fr', verbose=True)
@@ -329,6 +346,7 @@ def rest():
     # print(u.mapping("ACC", "KEGG_ID", query='P43403 P29317'))
     # res = u.search("P43403")
     # print(res)
+    # u.download_flat_files()
     # Returns sequence on the ZAP70_HUMAN accession Id
     # sequence = u.search("ZAP70_HUMAN", columns="sequence")
     # print(sequence)
@@ -437,7 +455,7 @@ def rest():
 
     # #### REACTOME REST TEST
 
-    from TransCellAssay.IO.Rest.Reactome import Reactome, ReactomeAnalysis
+    # from TransCellAssay.IO.Rest.Reactome import Reactome, ReactomeAnalysis
     # r = Reactome()
     # print(r.front_page_items("homo sapiens"))
     # print(r.get_list_pathways())
@@ -460,7 +478,7 @@ def rest():
     # print(r.query_hit_pathways(['CDC2']))
     # print(r.species_list())
     # print(r.SBML_exporter(109581))
-    ra = ReactomeAnalysis()
+    # ra = ReactomeAnalysis()
     # res = ra.identifiers('TP53')
     # import json
     # print(json.dumps(res, indent=4, separators=(',', ': ')))
@@ -469,9 +487,9 @@ def rest():
     # import json
     # print(json.dumps(res, indent=4, separators=(',', ': ')))
 
-    res = ra.species(48895)
-    import json
-    print(json.dumps(res, indent=4, separators=(',', ': ')))
+    # res = ra.species(48895)
+    # import json
+    # print(json.dumps(res, indent=4, separators=(',', ': ')))
 
 rest()
 

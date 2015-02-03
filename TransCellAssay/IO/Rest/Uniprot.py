@@ -1,3 +1,7 @@
+# coding=utf-8
+"""
+Uniprot class
+"""
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
@@ -10,12 +14,14 @@ __status__ = "Dev"
 import io
 from TransCellAssay.IO.Rest.Service import REST, list2string, check_param_in_list, tolist
 import pandas as pd
+import urllib.request
+from TransCellAssay.Utils.Utils import reporthook
+import gzip
+import os
+from TransCellAssay.IO.Rest.Fasta import FASTA
 
 # TODO clean up this class
 
-# to do: flat files to get list of identifiers
-# http://www.ebi.ac.uk/uniprot/database/download.html
-# grep sp uniprot_sprot.fasta  | grep HUMAN | awk '{print substr($1, 12, length($1))}'
 
 mapping = {"UniProtKB AC/ID": "ACC+ID",
            "UniProtKB": "ACC",
@@ -130,15 +136,11 @@ class UniProt(REST):
     """
     _mapping = mapping.copy()
     _url = "http://www.uniprot.org"
-    _valid_columns = ['citation', 'clusters', 'comments', 'database',
-                      'domains', 'domain', 'ec', 'id', 'entry name', 'existence'
-                                                                     'families', 'feature', 'features', 'genes', 'go',
-                      'go-id', 'interpro'
-                               'interactor', 'keywords', 'keyword-id', 'last-modified',
-                      'length', 'organism', 'organism-id', 'pathway', 'protein names',
-                      'reviewed', 'score', 'sequence', '3d', 'subcellular locations',
-                      'taxonomy', 'tools', 'version', 'virus hosts', 'lineage-id',
-                      'sequence-modified', 'proteome']
+    _valid_columns = ['citation', 'clusters', 'comments', 'database', 'domains', 'domain', 'ec', 'id', 'entry name',
+                      'existence', 'families', 'feature', 'features', 'genes', 'go', 'go-id', 'interpro', 'interactor',
+                      'keywords', 'keyword-id', 'last-modified', 'length', 'organism', 'organism-id', 'pathway',
+                      'protein names', 'reviewed', 'score', 'sequence', '3d', 'subcellular locations', 'taxonomy',
+                      'tools', 'version', 'virus hosts', 'lineage-id', 'sequence-modified', 'proteome']
 
     def __init__(self, verbose=False):
         """**Constructor**
@@ -148,11 +150,26 @@ class UniProt(REST):
         super(UniProt, self).__init__(name="UniProt", url=UniProt._url, verbose=verbose)
         self.TIMEOUT = 100
         self._verbose = verbose
+        self.__uniprot_flt_file = None
 
-    def _download_flat_files(self):
-        """Not implemented"""
+    def download_flat_files(self, directory=''):
+        """
+        Download uniprot swissprot fasta file
+        :param directory: Where to save file
+        """
+        print('\033[0;32m[INFO]\033[0m Retrieving file')
         url = "ftp://ftp.ebi.ac.uk/pub/databases/uniprot/knowledgebase/uniprot_sprot.dat.gz"
-        raise NotImplementedError
+        gzfile = os.path.join(directory, "uniprot_sprot.dat.gz")
+        urllib.request.urlretrieve(url=url, filename=gzfile, reporthook=reporthook)
+
+        print("\033[0;33m[WARNING]\033[0m Uncompressing file...")
+        str_file = gzip.open("uniprot_sprot.dat.gz")
+        content = str_file.read()
+        self.__uniprot_flt_file = os.path.join(directory, "uniprot_sprot.fasta")
+        f = open(self.__uniprot_flt_file, "wb")
+        f.write(content)
+        f.close()
+        print('\033[0;32m[INFO]\033[0m Finish uncompressing file')
 
     def mapping(self, fr="ID", to="KEGG_ID", query="P13368"):
         """
@@ -166,7 +183,7 @@ class UniProt(REST):
         of one the entry and its mapped Id. If a query has several mapped
         Ids, the query is repeated (see example with PDB mapping here below)
         e.g., ["From:ID", "to:PDB_ID", "P43403"]
-        ::
+
         u.mapping("ACC", "KEGG_ID", 'P43403')
         defaultdict(<type 'list'>, {'P43403': ['hsa:7535']})
         u.mapping("ACC", "KEGG_ID", 'P43403 P00958')
@@ -180,13 +197,6 @@ class UniProt(REST):
         :attr:`_mapping` attribute.
         :URL: http://www.uniprot.org/mapping/
 
-        .. versionchanged:: 1.1.1 to return a dictionary instaed of a list
-        .. versionchanged:: 1.1.2 the values for each key is now made of a list
-        instead of strings so as to store more than one values.
-        .. versionchanged:: 1.2.0 input query can also be a list of strings
-        instead of just a string
-        .. versionchanged:: 1.3.1:: use http_post instead of http_get. This is 3 times
-        faster and allows queries with more than 600 entries in one go.
         """
         url = 'mapping/'  # the slash matters
 
@@ -228,6 +238,8 @@ class UniProt(REST):
         res = u.retrieve("P09958", frmt="xml")
         fasta = u.retrieve([u'P29317', u'Q5BKX8', u'Q8TCD6'], frmt='fasta')
         print(fasta[0])
+        :param uniprot_id:
+        :param frmt:
         """
         _valid_formats = ['txt', 'xml', 'rdf', 'gff', 'fasta']
         check_param_in_list(frmt, _valid_formats)
@@ -244,28 +256,28 @@ class UniProt(REST):
             res = res[0]
         return res
 
-    def get_fasta(self, id_):
+    @staticmethod
+    def get_fasta(id):
         """
         Returns FASTA string given a valid identifier
+        :param id:
         """
-        from TransCellAssay.IO.Rest.Fasta import FASTA
-
         f = FASTA()
-        f.load_fasta(id_)
+        f.load_fasta(id)
         return f.fasta
 
-    def get_fasta_sequence(self, id_):
+    @staticmethod
+    def get_fasta_sequence(id):
         """
         Returns FASTA sequence
 
+        :param id:
         warning:: this is the sequence found in a fasta file, not the fasta
         content itself. The difference is that the header is removed and the
         formatting of end of lines every 60 characters is removed.
         """
-        from TransCellAssay.IO.Rest.Fasta import FASTA
-
         f = FASTA()
-        f.load_fasta(id_)
+        f.load_fasta(id)
         return f.sequence
 
     def search(self, query, frmt="tab", columns=None, include=False, sort="score", compress=False, limit=None,
@@ -312,8 +324,7 @@ class UniProt(REST):
         .. warning:: this function request seems a bit unstable (UniProt web issue ?)
         so we repeat the request if it fails
         .. warning:: some columns although valid may not return anything, not even in
-        the header: 'score', 'taxonomy', 'tools'. this is a uniprot feature,
-        not bioservices.
+        the header: 'score', 'taxonomy', 'tools'. this is a uniprot feature
         """
 
         params = {}
@@ -368,6 +379,11 @@ class UniProt(REST):
 
     def quick_search(self, query, include=False, sort="score", limit=None):
         """
+
+        :param query:
+        :param include:
+        :param sort:
+        :param limit:
         a specialised version of :meth:`search`
 
         This is equivalent to::
@@ -397,6 +413,7 @@ class UniProt(REST):
         Calls UniRef service
 
         u = UniProt()
+        :param query:
         df = u.uniref("member:Q03063")
         df.Size
         """
@@ -404,11 +421,12 @@ class UniProt(REST):
         res = pd.read_csv(io.StringIO(res.strip()), sep="\t")
         return res
 
-    def get_df(self, entries, nChunk=100, organism=None):
+    def get_df(self, entries, nchunk=100, organism=None):
         """
         Given a list of uniprot entries, this method returns a dataframe with all possible columns
+        :param organism:
         :param entries: list of valid entry name. if list is too large (about>200), you need to split the list
-        :param chunk:
+        :param nchunk:
         :return: dataframe with indices being the uniprot id (e.g. DIG1_YEAST)
 
         to do : cleanup the content of the data frame to replace strings
@@ -421,10 +439,10 @@ class UniProt(REST):
             entries = list(set(entries))
         output = pd.DataFrame()
 
-        nChunk = min(nChunk, len(entries))
-        N, rest = divmod(len(entries), nChunk)
-        for i in range(0, N + 1):
-            this_entries = entries[i * nChunk:(i + 1) * nChunk]
+        nchunk = min(nchunk, len(entries))
+        n, rest = divmod(len(entries), nchunk)
+        for i in range(0, n + 1):
+            this_entries = entries[i * nchunk:(i + 1) * nchunk]
             if len(this_entries):
                 query = "+or+".join(this_entries)
                 if organism:
