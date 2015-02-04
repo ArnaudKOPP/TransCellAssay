@@ -453,16 +453,18 @@ class PSICQUIC(REST):
             results.append(line.split("\t"))
         return results
 
-    def retrieve(self, service, query, methods='query', output="tab25", firstresult=None, maxresults=None):
+    def retrieve(self, service, query, methods='query', output="tab25", firstresult=None, maxresults=None,
+                 compressed=True):
         """
         Send a query to a specific database
 
-        :param methods:
-        :param maxresults:
-        :param firstresult:
+        :param methods: interation , interactor or query
+        :param maxresults: max results
+        :param firstresult: pos of first result
         :param str service: a registered service. See :attr:`registry_names`.
         :param str query: a valid query. Can be `*` or a protein name.
         :param str output: a valid format. See s._formats
+        :param compressed: gzipped or not data, speedup and requests unzipped auto
 
             s.query("intact", "brca2", "tab27")
             s.query("intact", "zap70", "xml25")
@@ -506,6 +508,8 @@ class PSICQUIC(REST):
             params['firstResult'] = firstresult
         if maxresults is not None:
             params['maxResults'] = maxresults
+        if compressed:
+            params['compressed'] = 'y'
 
         url = resturl + 'query/' + query
 
@@ -522,16 +526,18 @@ class PSICQUIC(REST):
 
         return res
 
-    def retrieve_all(self, query, methods='query', databases=None, output="tab25", firstresult=None, maxresults=None):
+    def retrieve_all(self, query, methods='query', databases=None, output="tab25", firstresult=None, maxresults=None,
+                     compressed=True):
         """
         Same as query but runs on all active database
 
-        :param methods:
-        :param maxresults:
-        :param firstresult:
-        :param output:
-        :param query:
+        :param methods: interation , interactor or query
+        :param maxresults: max results
+        :param firstresult: pos of first result
+        :param output: a valid format. See s._formats
+        :param query: a valid query. Can be `*` or a protein name.
         :param list databases: database to query. Queries all active DB if not provided
+        :param compressed: gzipped or not data, speedup and requests unzipped auto
         :return: dictionary where keys correspond to databases and values to the output of the query.
 
         res = s.queryAll("ZAP70 AND species:9606")
@@ -550,7 +556,7 @@ class PSICQUIC(REST):
         for name in databases:
             print("\033[0;33m[WARNING]\033[0m Querying %s" % name)
             res = self.retrieve(service=name, query=query, methods=methods, output=output, firstresult=firstresult,
-                                maxresults=maxresults)
+                                maxresults=maxresults, compressed=compressed)
             if output.startswith("tab25"):
                 results[name] = [x for x in res if x != [""]]
             else:

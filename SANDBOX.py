@@ -267,21 +267,21 @@ def rest():
     # print(filter)
 
     # ### Eutils REST TEST
-    from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
-    eutils = EUtils(email='kopp@igbmc.fr', verbose=True)
-
-    db = eutils.available_databases
-    print(db)
-
-    einfo = eutils.EInfo(db='bioproject', retmode='json')
-    import json
-    print(json.dumps(einfo, indent=4, separators=(',', ': ')))
-
-    einfo = eutils.EInfo(db='protein')
-    print(EUtilsParser(einfo))
-
-    esearch = eutils.ESearch(db='protein', term='human', retmax=5)
-    print(esearch)
+    # from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
+    # eutils = EUtils(email='kopp@igbmc.fr', verbose=True)
+    #
+    # db = eutils.available_databases
+    # print(db)
+    #
+    # einfo = eutils.EInfo(db='bioproject', retmode='json')
+    # import json
+    # print(json.dumps(einfo, indent=4, separators=(',', ': ')))
+    #
+    # einfo = eutils.EInfo(db='protein')
+    # print(EUtilsParser(einfo))
+    #
+    # esearch = eutils.ESearch(db='protein', term='human', retmax=5)
+    # print(esearch)
 
     # ### Encode REST TEST
     # from TransCellAssay.IO.Rest.Encode import Encode
@@ -319,9 +319,9 @@ def rest():
 
     # #### Psicquic REST TEST
 
-    from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
-    p = PSICQUIC()
-    p.print_status(full=True)
+    # from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
+    # p = PSICQUIC()
+    # p.print_status(full=True)
     # print(p.activeDBs)
     # p.retrieve("intact", "brca2", "tab27")
     # p.retrieve("intact", "zap70", "xml25")
@@ -329,10 +329,10 @@ def rest():
     # print(p.retrieve("string", "species:10090", firstresult=0, maxresults=100, output="tab25"))
     # print(p.retrieve("biogrid", "ZAP70"))
     # print(p.retrieve("biogrid", "ZAP70 AND species:10090"))
-    res = p.retrieve("intact", "zap70")
-    for x in res:
-        print(x)
-    print(p.get_db_properties('intact'))
+    # res = p.retrieve("intact", "zap70")
+    # for x in res:
+    #     print(x)
+    # print(p.get_db_properties('intact'))
     # print(p.retrive_all("ZAP70 AND species:9606"))
 
     # #### Biogrid REST TEST
