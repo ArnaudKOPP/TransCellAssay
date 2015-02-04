@@ -35,31 +35,21 @@ from TransCellAssay.IO.Rest.Service import REST
 class BioMart(REST):
     """
     Interface to the `BioMart <http://www.biomart.org>`_ service
-
-    V 0.9 implemented
-
-    BioMart is made of different views. Each view correspond to a specific **MART**.
-    For instance the UniProt service has a `BioMart view <http://www.ebi.ac.uk/uniprot/biomart/martview/>`_.
-
-    .. note:: the biomart sevice is slow (in my experience, 2013-2014) so please be patient...
-
+    V0.9 implemented
+    note:: the biomart sevice is slow so please be patient...
     """
 
     def __init__(self, verbose=False):
         """
         By default, the URL used for the biomart service is::
-
-            http://www.biomart.org/biomart/martservice
-
-        Sometimes, the server is down, in which case you may want to use another
-        one (e.g., www.ensembl.org). To do so, use the **host** parameter.
-
+            http://central.biomart.org
+        Server are frequenlty down and slow
         """
         url = "http://central.biomart.org"
-
         super(BioMart, self).__init__("BioMart", url=url, verbose=verbose)
+        self.marts_lst = None
 
-    def portal(self, frmt='json'):
+    def registry(self, frmt='json'):
         """
         Return the root GUI container containing all child Containers and associated marts
         :param frmt: json or xml
@@ -83,7 +73,11 @@ class BioMart(REST):
         if frmt is 'xml':
             return self.easyXML(res)
         else:
-            return res
+            import json
+            marts = json.dumps(res, indent=4, separators=(',', ':'))
+            marts = json.loads(marts)
+            self.marts_lst = [marts[i]['name'] for i in range(len(marts))]
+            return res, self.marts_lst
 
     def datasets_for_marts(self, config, frmt='json'):
         """
@@ -98,7 +92,10 @@ class BioMart(REST):
         if frmt is 'xml':
             return self.easyXML(res)
         else:
-            return res
+            import json
+            marts = json.dumps(res, indent=4, separators=(',', ':'))
+            marts = json.loads(marts)
+            return res, [marts[i]['name'] for i in range(len(marts))]
 
     def filter_for_datasets(self, datasets, config, frmt='json'):
         """
@@ -114,7 +111,10 @@ class BioMart(REST):
         if frmt is 'xml':
             return self.easyXML(res)
         else:
-            return res
+            import json
+            filter = json.dumps(res, indent=4, separators=(',', ':'))
+            filter = json.loads(filter)
+            return res, [filter[i]['name'] for i in range(len(filter))]
 
     def attributs_for_datasets(self, datasets, config, frmt='json'):
         """
@@ -130,7 +130,10 @@ class BioMart(REST):
         if frmt is 'xml':
             return self.easyXML(res)
         else:
-            return res
+            import json
+            attr = json.dumps(res, indent=4, separators=(',', ':'))
+            attr = json.loads(attr)
+            return res, [attr[i]['name'] for i in range(len(attr))]
 
     def container_for_marts(self, datasets, config, frmt='json'):
         """
@@ -171,19 +174,16 @@ class BioMart(REST):
 
         Query xml must be formatted like that:
 
-        <?xml version="1.0" encoding="UTF-8"?>
-            <!DOCTYPE Query>
-                <Query virtualSchemaName="default" formatter="CSV" header="0" uniqueRows="0" count="" datasetConfigVersion="0.6">
-                <Dataset name="mmusculus_gene_ensembl" interface="default">
-                <Filter name="ensembl_gene_id" value="ENSMUSG00000086981"/>
+        <Query client="" processor="TSV" limit="1000" header="1">
+            <Dataset name="hsapiens_gene_ensembl_hopkinsBreast3" config="hsapiens_gene_ensembl">
+                <Filter name="biotype" value="miRNA"/>
                 <Attribute name="ensembl_gene_id"/>
-                <Attribute name="ensembl_transcript_id"/>
-                <Attribute name="transcript_start"/>
-                <Attribute name="transcript_end"/>
-                <Attribute name="exon_chrom_start"/>
-                <Attribute name="exon_chrom_end"/>
-                </Dataset>
-                </Query>
+                <Attribute name="cancertype"/>
+                <Attribute name="description"/>
+                <Attribute name="start_position"/>
+                <Attribute name="end_position"/>
+            </Dataset>
+        </Query>
 
         """
         query = "martservices/results"
@@ -194,48 +194,42 @@ class BioMart(REST):
 class BioMartQuery(object):
     """
     Class for creating xml query
+    client = name of client makin call
+    processor = TSV or CSV (format of return type)
+    limit = -1 for no limit, number of row returned
+    header = if set to 1 then first row of result will be column headers
     """
-    def __init__(self, version="1.0", virtualscheme="default"):
-
-        params = {
-            "version": version,
-            "virtualSchemaName": virtualscheme,
-            "formatter": "TSV",
-            "header": 0,
-            "uniqueRows": 0,
-            "configVersion": "0.6"
-
-        }
-
-        self.header = """<?xml version="%(version)s" encoding="UTF-8"?>
-    <!DOCTYPE Query>
-    <Query  virtualSchemaName = "%(virtualSchemaName)s" formatter = "%(formatter)s"
-    header = "%(header)s" uniqueRows = "%(uniqueRows)s" count = ""
-    datasetConfigVersion = "%(configVersion)s" >\n""" % params
-
+    def __init__(self, client="", processor='TSV', limit=1000, header=1):
+        self.header = '<Query client="{}" processor="{}" limit="{}" header="{}">\n'.format(client, processor, limit,
+                                                                                           header)
         self.footer = "    </Dataset>\n</Query>"
+        self.dataset = None
+        self.attributes = []
+        self.filters = []
         self.reset()
 
-    def add_filter(self, flt):
+    def add_filter(self, name, value):
         """
         Add filter in query xml
-        :param flt:
+        :param name: name of filter
+        :param value: value
         """
-        self.filters.append(flt)
+        self.filters.append('       <Filter name="{}" value="{}"/>\n'.format(name, value))
 
     def add_attribute(self, attribute):
         """
         Add attribut in query xml
         :param attribute:
         """
-        self.attributes.append(attribute)
+        self.attributes.append('        <Attribute name="{}"/>\n'.format(attribute))
 
-    def add_dataset(self, dataset):
+    def add_dataset_config(self, dataset, config):
         """
         Set dataset
+        :param config:
         :param dataset:
         """
-        self.dataset = """    <Dataset name = "%s" interface = "default" >""" % dataset
+        self.dataset = '        <Dataset name="{}" config="{}">\n'.format(dataset, config)
 
     def reset(self):
         """
@@ -253,10 +247,10 @@ class BioMartQuery(object):
         if self.dataset is None:
             raise ValueError("data set must be set.")
         xml = self.header
-        xml += self.dataset + "\n\n"
+        xml += self.dataset
         for line in self.filters:
-            xml += line + "\n"
+            xml += line
         for line in self.attributes:
-            xml += line + "\n"
+            xml += line
         xml += self.footer
         return xml

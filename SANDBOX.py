@@ -6,6 +6,7 @@ For testing module in actual dev
 import pandas as pd
 import numpy as np
 import time
+import json
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -245,25 +246,31 @@ def rest():
     """
 
     # ### Biomart REST TEST
-    # from TransCellAssay.IO.Rest.Biomart import BioMart
-    # s = BioMart(verbose=True)
-    # print(s.portal())
-    # marts = s.available_marts()
-    # import json
-    # print(json.dumps(marts, indent=4, separators=(',', ':')))
+    from TransCellAssay.IO.Rest.Biomart import BioMart
+    s = BioMart(verbose=True)
+    # portal = s.registry()
+    # print(json.dumps(portal, indent=4, separators=(',', ':')))
 
-    # dataset = s.datasets_for_marts(config='snp_config')
-    # import json
-    # print(json.dumps(dataset, indent=4, separators=(',', ':')))
+    res, marts = s.available_marts()
+    marts = json.dumps(marts, indent=4, separators=(',', ':'))
+    print(marts)
 
-    # print(s.filter_for_datasets(config='snp_config', datasets='btaurus_snp'))
-    # print(s.attributs_for_datasets(config='snp_config', datasets='btaurus_snp'))
-    # print(s.container_for_marts(config='snp_config', datasets='btaurus_snp'))
+    res, dataset = s.datasets_for_marts('gene_ensembl_config')
+    datasets = json.dumps(dataset, indent=4, separators=(',', ':'))
+    print(datasets)
+
+    res, attribut = s.attributs_for_datasets(datasets='hsapiens_gene_ensembl', config='gene_ensembl_config')
+    attribut = json.dumps(attribut, indent=4, separators=(',', ':'))
+    print(attribut)
+
+    res, filter = s.filter_for_datasets(datasets='hsapiens_gene_ensembl', config='gene_ensembl_config')
+    filter = json.dumps(filter, indent=4, separators=(',', ':'))
+    print(filter)
 
     # ### Eutils REST TEST
     # from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
     # eutils = EUtils(email='kopp@igbmc.fr', verbose=True)
-
+    #
     # db = eutils.available_databases
     # print(db)
 
@@ -313,10 +320,10 @@ def rest():
 
     # #### Psicquic REST TEST
 
-    from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
-    p = PSICQUIC()
-    p.print_status()
-    print(p.activeDBs)
+    # from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
+    # p = PSICQUIC()
+    # p.print_status()
+    # print(p.activeDBs)
     # print(p.query("string", "species:10090", firstresult=0, maxresults=100, output="tab25"))
     # print(p.query("biogrid", "ZAP70"))
     # print(p.query("biogrid", "ZAP70 AND species:10090"))
