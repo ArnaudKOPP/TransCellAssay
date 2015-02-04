@@ -94,13 +94,14 @@ class Service(object):
         self._easyXMLConversion = value
 
     easyXMLConversion = property(_get_easyXMLConversion, _set_easyXMLConversion,
-                                 doc="""If True, xml output from a request are converted to easyXML object (Default behaviour).""")
+                                 doc="If True, xml output from a request are converted to easyXML object")
 
     def easyXML(self, res):
         """
         Use this method to convert a XML document
         The easyXML object provides utilities to ease access to the XML
         tag/attributes.
+        :param res:
         """
         return easyXML(res)
 
@@ -108,17 +109,21 @@ class Service(object):
         txt = "Instance of %s service" % self.name
         return txt
 
-    def pubmed(self, id):
+    @staticmethod
+    def pubmed(id):
         """
         Open a pubmed id into a brower tab
-        :param id: valie pubmed id
+        :param id: valide pubmed id
         """
         url = "http://www.ncbi.nlm.nih.gov/pubmed"
         webbrowser.open(url + str(id))
 
-    def save_str_to_image(self, data, filename):
+    @staticmethod
+    def save_str_to_image(data, filename):
         """
         Save string object into a file converting into binary
+        :param filename: filename for image
+        :param data: data
         """
         with open(filename, 'wb') as f:
             try:
@@ -195,7 +200,8 @@ class REST(Service):
 
     TIMEOUT = property(_get_timeout, _set_timeout)
 
-    def _interpret_returned_request(self, res, frmt):
+    @staticmethod
+    def __interpret_returned_request(res, frmt):
         # must be a response
         if isinstance(res, Response) is False:
             return res
@@ -213,24 +219,27 @@ class REST(Service):
 
     def http_get(self, query, frmt='json', params={}, **kargs):
         """
-        * query is the suffix that will be appended to the main url attribute.
-        * query is either a string or a list of strings.
+        Do a HTTP Get
+        :param kargs: headers or other
+        :param params: params to add in url
+        :param frmt: frmt of response, xml or json mainly
+        :param query: suffix that will be appended to the main url attribute.
         """
         if isinstance(query, list):
             if self._verbose:
                 print("Running sync call for a list")
-            return [self.get_one(key, frmt, params=params, **kargs) for key in query]
-            # return self.get_sync(query, frmt)
+            return [self.__get_one(key, frmt, params=params, **kargs) for key in query]
         if self._verbose:
             print("Running http_get (single call mode)")
-        return self.get_one(query, frmt, params=params, **kargs)
+        return self.__get_one(query, frmt, params=params, **kargs)
 
-    def get_sync(self, keys, frmt='json', **kargs):
-        return [self.get_one(key, frmt=frmt, **kargs) for key in keys]
-
-    def get_one(self, query, frmt='json', params={}, **kargs):
+    def __get_one(self, query, frmt='json', params={}, **kargs):
         """
-        if query starts with http:// do not use self.url
+        HTTP get only one requests
+        :param kargs: headers or other
+        :param params: params to add in url
+        :param frmt: frmt of response, xml or json mainly
+        :param query: suffix that will be appended to the main url attribute.
         """
         if query is None:
             url = self.url
@@ -256,7 +265,7 @@ class REST(Service):
             time.sleep(1 / self._request_per_sec)
 
             self.last_response = res
-            res = self._interpret_returned_request(res, frmt)
+            res = self.__interpret_returned_request(res, frmt)
             try:
                 # for python 3 compatibility
                 res = res.decode()
@@ -268,13 +277,26 @@ class REST(Service):
             print("Issue while Your current timeout is {0}. ".format(self._timeout))
 
     def http_post(self, query, params=None, data=None, frmt='xml', headers=None, files=None, **kargs):
-        # query and frmt are services parameters. Others are post parameters
-        # NOTE in requests.get you can use params parameter
-        # BUT in post, you use data
-        # only single post implemented for now unlike get that can be asynchronous
-        # or list of queries
+        """
+        Performe multiple http post if multiple query
+
+        query and frmt are services parameters. Others are post parameters
+        #NOTE in requests.get you can use params parameter
+        BUT in post, you use data
+        only single post implemented for now unlike get that can be asynchronous
+        or list of queries
+
+        :param query:
+        :param params:
+        :param data:
+        :param frmt:
+        :param headers:
+        :param files:
+        :param kargs:
+        :return:
+        """
         if headers is None:
-            headers = {'User-Agent': self.getUserAgent(), 'Accept': self.content_types[frmt]}
+            headers = {'User-Agent': self.get_user_agent(), 'Accept': self.content_types[frmt]}
 
         print("Running http_post (single call mode)")
         kargs.update({'query': query})
@@ -283,9 +305,16 @@ class REST(Service):
         kargs.update({'params': params})
         kargs.update({'data': data})
         kargs.update({'frmt': frmt})
-        return self.post_one(**kargs)
+        return self.__post_one(**kargs)
 
-    def post_one(self, query, frmt='json', **kargs):
+    def __post_one(self, query, frmt='json', **kargs):
+        """
+        Perform a HTTP post
+        :param query:
+        :param frmt:
+        :param kargs:
+        :return:
+        """
         if query is None:
             url = self.url
         else:
@@ -300,7 +329,7 @@ class REST(Service):
             time.sleep(1 / self._request_per_sec)
 
             self.last_response = res
-            res = self._interpret_returned_request(res, frmt)
+            res = self.__interpret_returned_request(res, frmt)
             try:
                 return res.decode()
             except:
@@ -309,7 +338,12 @@ class REST(Service):
             print(err)
             return None
 
-    def getUserAgent(self):
+    @staticmethod
+    def get_user_agent():
+        """
+        Get user agent to be the header
+        :return: :raise Exception:
+        """
         try:
             urllib_agent = 'Python-urllib/%s' % urllib.request.__version__
         except Exception:
@@ -325,23 +359,32 @@ class REST(Service):
         :param str content: ste to default that is application/x-www-form-urlencoded
         so that it has the same behaviour as urllib2 (Sept 2014)
         """
-        headers = {}
-        headers['User-Agent'] = self.getUserAgent()
-        headers['Accept'] = self.content_types[content]
-        headers['Content-Type'] = self.content_types[content]
+        headers = {'User-Agent': self.get_user_agent(), 'Accept': self.content_types[content],
+                   'Content-Type': self.content_types[content]}
         # "application/json;odata=verbose" required in reactome
         # headers['Content-Type'] = "application/json;odata=verbose" required in reactome
         return headers
 
     def debug_last_response(self):
+        """
+        Print information about last response
+        """
         print(self.last_response.content)
         print(self.last_response.reason)
         print(self.last_response.status_code)
 
     def http_put(self):
+        """
+        Performe a htttp put requests
+        :raise NotImplementedError:
+        """
         raise NotImplementedError
 
     def http_delete(self):
+        """
+        Performe a http delete requests
+        :raise NotImplementedError:
+        """
         raise NotImplementedError
 
 
@@ -349,6 +392,7 @@ def tolist(data, verbose=True):
     """
     Transform an object into a list if possible
 
+    :param verbose:
     :param data: a list, tuple, or simple type (e.g. int)
     :return: a list
     """
@@ -374,6 +418,7 @@ def list2string(data, sep=",", space=True):
     """
     Transform a list into a string
 
+    :param space:
     :param list data: list of items that have a string representation.
         the input data could also be a simple object, in which case
         it is simply returned with a cast into a string
@@ -390,6 +435,7 @@ def check_param_in_list(param, valid_values, name=None):
     """
     Checks that the value of param is amongst valid
 
+    :param name:
     :param param: a parameter to be checked
     :param list valid_values: a list of values
 
@@ -412,12 +458,18 @@ def check_param_in_list(param, valid_values, name=None):
 
 
 def to_json(dictionary):
+    """
+    Dict to json
+    :param dictionary:
+    :return:
+    """
     return json.dumps(dictionary)
 
 
 def check_range(value, a, b, strict=False):
     """
     Check that a value lies in a given range
+    :param strict:
     :param value: value to test
     :param a: lower bound
     :param b: upper bound

@@ -246,43 +246,42 @@ def rest():
     """
 
     # ### Biomart REST TEST
-    from TransCellAssay.IO.Rest.Biomart import BioMart
-    s = BioMart(verbose=True)
+    # from TransCellAssay.IO.Rest.Biomart import BioMart
+    # s = BioMart(verbose=True)
     # portal = s.registry()
     # print(json.dumps(portal, indent=4, separators=(',', ':')))
-
-    res, marts = s.available_marts()
-    marts = json.dumps(marts, indent=4, separators=(',', ':'))
-    print(marts)
-
-    res, dataset = s.datasets_for_marts('gene_ensembl_config')
-    datasets = json.dumps(dataset, indent=4, separators=(',', ':'))
-    print(datasets)
-
-    res, attribut = s.attributs_for_datasets(datasets='hsapiens_gene_ensembl', config='gene_ensembl_config')
-    attribut = json.dumps(attribut, indent=4, separators=(',', ':'))
-    print(attribut)
-
-    res, filter = s.filter_for_datasets(datasets='hsapiens_gene_ensembl', config='gene_ensembl_config')
-    filter = json.dumps(filter, indent=4, separators=(',', ':'))
-    print(filter)
+    # res, marts = s.available_marts()
+    # marts = json.dumps(marts, indent=4, separators=(',', ':'))
+    # print(marts)
+    #
+    # res, dataset = s.datasets_for_marts('gene_ensembl_config')
+    # datasets = json.dumps(dataset, indent=4, separators=(',', ':'))
+    # print(datasets)
+    #
+    # res, attribut = s.attributs_for_datasets(datasets='hsapiens_gene_ensembl', config='gene_ensembl_config')
+    # attribut = json.dumps(attribut, indent=4, separators=(',', ':'))
+    # print(attribut)
+    #
+    # res, filter = s.filter_for_datasets(datasets='hsapiens_gene_ensembl', config='gene_ensembl_config')
+    # filter = json.dumps(filter, indent=4, separators=(',', ':'))
+    # print(filter)
 
     # ### Eutils REST TEST
-    # from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
-    # eutils = EUtils(email='kopp@igbmc.fr', verbose=True)
-    #
-    # db = eutils.available_databases
-    # print(db)
+    from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
+    eutils = EUtils(email='kopp@igbmc.fr', verbose=True)
 
-    # einfo = eutils.EInfo(db='bioproject', retmode='json')
-    # import json
-    # print(json.dumps(einfo, indent=4, separators=(',', ': ')))
+    db = eutils.available_databases
+    print(db)
 
-    # einfo = eutils.EInfo(db='protein')
-    # print(EUtilsParser(einfo))
+    einfo = eutils.EInfo(db='bioproject', retmode='json')
+    import json
+    print(json.dumps(einfo, indent=4, separators=(',', ': ')))
 
-    # esearch = eutils.ESearch(db='protein', term='human', retmax=5)
-    # print(esearch)
+    einfo = eutils.EInfo(db='protein')
+    print(EUtilsParser(einfo))
+
+    esearch = eutils.ESearch(db='protein', term='human', retmax=5)
+    print(esearch)
 
     # ### Encode REST TEST
     # from TransCellAssay.IO.Rest.Encode import Encode
@@ -320,17 +319,21 @@ def rest():
 
     # #### Psicquic REST TEST
 
-    # from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
-    # p = PSICQUIC()
-    # p.print_status()
+    from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
+    p = PSICQUIC()
+    p.print_status(full=True)
     # print(p.activeDBs)
-    # print(p.query("string", "species:10090", firstresult=0, maxresults=100, output="tab25"))
-    # print(p.query("biogrid", "ZAP70"))
-    # print(p.query("biogrid", "ZAP70 AND species:10090"))
-    # res = p.query("intact", "zap70")
-    # for x in res:
-    #     print(x)
-    # print(p.queryAll("ZAP70 AND species:9606"))
+    # p.retrieve("intact", "brca2", "tab27")
+    # p.retrieve("intact", "zap70", "xml25")
+    # p.retrieve("matrixdb", "*", "xml25")
+    # print(p.retrieve("string", "species:10090", firstresult=0, maxresults=100, output="tab25"))
+    # print(p.retrieve("biogrid", "ZAP70"))
+    # print(p.retrieve("biogrid", "ZAP70 AND species:10090"))
+    res = p.retrieve("intact", "zap70")
+    for x in res:
+        print(x)
+    print(p.get_db_properties('intact'))
+    # print(p.retrive_all("ZAP70 AND species:9606"))
 
     # #### Biogrid REST TEST
 

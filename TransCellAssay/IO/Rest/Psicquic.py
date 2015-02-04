@@ -120,8 +120,6 @@ __status__ = "Dev"
 from TransCellAssay.IO.Rest.Service import REST, check_param_in_list
 from TransCellAssay.IO.Rest.Uniprot import UniProt
 
-# TODO clean up this class
-
 
 class PSICQUIC(REST):
     """
@@ -172,7 +170,6 @@ class PSICQUIC(REST):
         the raw data. Addition class may provide dedicated parsing in the
         future.
 
-    .. seealso:: :class:`BioGRID`
     """
 
     _formats = ["tab25", "tab26", "tab27", "xml25", "count", "biopax", "xgmml", "rdf-xml", "rdf-xml-abbrev", "rdf-n3",
@@ -196,7 +193,7 @@ class PSICQUIC(REST):
                         "chebi": None,
                         "intact": None}
 
-    # unknown: hprd, omim, bind, bind complexid, mdl,
+    _retrieve_methods = ['interactor', 'interaction', 'query']
 
     def __init__(self, verbose=True):
         """
@@ -213,7 +210,7 @@ class PSICQUIC(REST):
         try:
             self.uniprot = UniProt(verbose=False)
         except:
-            print("\033[0;33m[WARNING]\033[0m UniProt service could be be initialised")
+            print("\033[0;33m[WARNING]\033[0m UniProt service could be be initialised, Needed for some parts")
         self.buffer = {}
 
     def _get_formats(self):
@@ -237,9 +234,10 @@ class PSICQUIC(REST):
         res = self.http_get(url, frmt='txt')
         return res.split()
 
-    def print_status(self):
+    def print_status(self, full=False):
         """
         Prints the services that are available
+        :param full: print full information
         :return: Nothing
 
         The output is tabulated. The columns are:
@@ -256,14 +254,132 @@ class PSICQUIC(REST):
         versions = self.registry_versions
         actives = self.registry_actives
         resturls = self.registry_resturls
-        restexs = self.registry_restexamples
         restricted = self.registry_restricted
         n = len(names)
-
         for i in range(0, n):
-            # print("%s\t %s\t %s\t %s\t" % (names[i], actives[i], counts[i], versions[i]))
-            print("%s\t %s\t %s\t %s\t %s %s %s\n" % (names[i], actives[i], counts[i], versions[i], resturls[i],
-                                                      restexs[i], restricted[i]))
+            if not full:
+                print("{0:15} {1:15} {2:15} {3}".format(names[i], actives[i], counts[i], versions[i]))
+            else:
+                print("%s\t %s\t %s\t %s\t %s \t %s\n" % (names[i], actives[i], counts[i], versions[i], resturls[i],
+                                                          restricted[i]))
+
+    def __get_rest_url(self, service):
+        """
+        Get the base REST url for the service
+        :param service: service name
+        :return: REST url
+        """
+        names = [x.lower() for x in self.registry_names]
+        try:
+            index = names.index(service)
+        except ValueError:
+            raise ValueError("The service you gave (%s) is not registered. See self.registery_names" % service)
+        return self.registry_resturls[index]
+
+    def get_db_properties(self, service):
+        """
+        Get db properties for the service
+        :param service:
+        :return:
+        """
+        resturl = self.__get_rest_url(service)
+        url = resturl + 'properties'
+        res = self.http_get(url, frmt="txt")
+        if res is not None:
+                res = res.strip().split("\n")
+        return res
+
+    def get_all_db_properties(self, service=None):
+        """
+        Get db properties for services
+        :param service:
+        :return: :raise ValueError:
+        """
+        results = {}
+        if service is None:
+            service = [x.lower() for x in self.activeDBs]
+
+        for x in service:
+            if x not in self.activeDBs:
+                raise ValueError("database %s not in active databases" % x)
+
+        for name in service:
+            print("\033[0;33m[WARNING]\033[0m Querying %s" % name)
+            res = self.get_db_properties(name)
+            results[name] = res
+        for name in service:
+            print("Found %s in %s" % (len(results[name]), name))
+        return results
+
+    def get_db_formats(self, service):
+        """
+        Get db format for the service
+        :param service:
+        :return:
+        """
+        resturl = self.__get_rest_url(service)
+        url = resturl + 'formats'
+        res = self.http_get(url, frmt="txt")
+        if res is not None:
+                res = res.strip().split("\n")
+        return res
+
+    def get_all_db_formats(self, service=None):
+        """
+        Get db formats for services
+        :param service:
+        :return: :raise ValueError:
+        """
+        results = {}
+        if service is None:
+            service = [x.lower() for x in self.activeDBs]
+
+        for x in service:
+            if x not in self.activeDBs:
+                raise ValueError("database %s not in active databases" % x)
+
+        for name in service:
+            print("\033[0;33m[WARNING]\033[0m Querying %s" % name)
+            res = self.get_db_formats(name)
+            results[name] = res
+        for name in service:
+            print("Found %s in %s" % (len(results[name]), name))
+        return results
+
+    def get_db_version(self, service):
+        """
+        Get db version for the service
+        :param service:
+        :return:
+        """
+        resturl = self.__get_rest_url(service)
+        url = resturl + 'version'
+        res = self.http_get(url, frmt="txt")
+        if res is not None:
+                res = res.strip().split("\n")
+        return res
+
+    def get_all_db_version(self, service=None):
+        """
+        Get db version for all services
+        :param service:
+        :return: :raise ValueError:
+        """
+        results = {}
+        if service is None:
+            service = [x.lower() for x in self.activeDBs]
+
+        for x in service:
+            if x not in self.activeDBs:
+                raise ValueError("database %s not in active databases" % x)
+
+        for name in service:
+            print("\033[0;33m[WARNING]\033[0m Querying %s" % name)
+            res = self.get_db_version(name)
+            results[name] = res
+        for name in service:
+            print("Found %s in %s" % (len(results[name]), name))
+        return results
 
     def _get_registry(self):
         if self._registry is None:
@@ -297,14 +413,6 @@ class PSICQUIC(REST):
     registry_resturls = property(_get_registry_resturl,
                                  doc="returns URL of REST services")
 
-    def _get_registry_restex(self):
-        res = self.registry
-        data = [x.findAll('restexample')[0].text for x in res.findAll("service")]
-        return data
-
-    registry_restexamples = property(_get_registry_restex,
-                                     doc="retuns REST example for each service")
-
     def _get_registry_active(self):
         res = self.registry
         return [x.findAll('active')[0].text for x in res.findAll("service")]
@@ -322,9 +430,9 @@ class PSICQUIC(REST):
     def _get_registry_version(self):
         res = self.registry
         names = [x.findAll('name')[0].text for x in res.findAll("service")]
-        N = len(names)
-        version = [0] * N
-        for i in range(0, N):
+        n = len(names)
+        version = [0] * n
+        for i in range(0, n):
             x = res.findAll("service")[i]
             if x.findAll("version"):
                 version[i] = x.findAll("version")[0].text
@@ -335,35 +443,40 @@ class PSICQUIC(REST):
     registry_versions = property(_get_registry_version,
                                  doc="returns version of each service")
 
-    def query(self, service, query, output="tab25",  version="current", firstresult=None, maxresults=None):
+    @staticmethod
+    def _convert_tab2dict(data):
+        """
+        https://code.google.com/p/psicquic/wiki/MITAB26Format
+        """
+        results = []
+        for line in data:
+            results.append(line.split("\t"))
+        return results
+
+    def retrieve(self, service, query, methods='query', output="tab25", firstresult=None, maxresults=None):
         """
         Send a query to a specific database
 
-        :param version:
+        :param methods:
         :param maxresults:
         :param firstresult:
         :param str service: a registered service. See :attr:`registry_names`.
         :param str query: a valid query. Can be `*` or a protein name.
         :param str output: a valid format. See s._formats
 
-
             s.query("intact", "brca2", "tab27")
             s.query("intact", "zap70", "xml25")
             s.query("matrixdb", "*", "xml25")
 
         This is the programmatic approach to this website:
-
         http://www.ebi.ac.uk/Tools/webservices/psicquic/view/main.xhtml
-
 
         Another example consist in accessing the *string* database for fetching
         protein-protein interaction data of a particular model organism. Here we
         restrict the query to 100 results::
-
             s.query("string", "species:10090", firstResult=0, maxResults=100, output="tab25")
 
         # spaces are automatically converted
-
             s.query("biogrid", "ZAP70 AND species:9606")
 
         warning:: AND must be in big caps. Some database are ore permissive
@@ -371,10 +484,12 @@ class PSICQUIC(REST):
             permissive and may accept the name (e.g., human)
 
         To obtain the number of interactions in intact for the human specy::
-
             len(p.query("intact", "species:9606"))
 
         """
+        if methods not in self._retrieve_methods:
+            raise ValueError("Retrieve methods {} don't exists".format(methods))
+
         if service not in self.activeDBs:
             raise ValueError("database %s not in active databases" % service)
 
@@ -385,14 +500,7 @@ class PSICQUIC(REST):
         else:
             output = "none"
 
-        names = [x.lower() for x in self.registry_names]
-        try:
-            index = names.index(service)
-        except ValueError:
-            raise ValueError("The service you gave (%s) is not registered. See self.registery_names" % service)
-
-        # get the base url according to the service requested
-        resturl = self.registry_resturls[index]
+        resturl = self.__get_rest_url(service)
 
         if firstresult is not None:
             params['firstResult'] = firstresult
@@ -414,24 +522,13 @@ class PSICQUIC(REST):
 
         return res
 
-    @staticmethod
-    def _convert_tab2dict(data):
-        """
-        https://code.google.com/p/psicquic/wiki/MITAB26Format
-        """
-        results = []
-        for line in data:
-            results.append(line.split("\t"))
-
-        return results
-
-    def queryAll(self, query, databases=None, output="tab25", version="current", firstresult=None, maxresults=None):
+    def retrieve_all(self, query, methods='query', databases=None, output="tab25", firstresult=None, maxresults=None):
         """
         Same as query but runs on all active database
 
+        :param methods:
         :param maxresults:
         :param firstresult:
-        :param version:
         :param output:
         :param query:
         :param list databases: database to query. Queries all active DB if not provided
@@ -439,6 +536,8 @@ class PSICQUIC(REST):
 
         res = s.queryAll("ZAP70 AND species:9606")
         """
+        if methods not in self._retrieve_methods:
+            raise ValueError("Retrieve methods {} don't exists".format(methods))
 
         results = {}
         if databases is None:
@@ -449,9 +548,9 @@ class PSICQUIC(REST):
                 raise ValueError("database %s not in active databases" % x)
 
         for name in databases:
-            print("\033[0;33m[WARNING]\033[0m Querying %s" % name),
-            res = self.query(name, query, output=output, version=version, firstresult=firstresult,
-                             maxresults=maxresults)
+            print("\033[0;33m[WARNING]\033[0m Querying %s" % name)
+            res = self.retrieve(service=name, query=query, methods=methods, output=output, firstresult=firstresult,
+                                maxresults=maxresults)
             if output.startswith("tab25"):
                 results[name] = [x for x in res if x != [""]]
             else:
@@ -462,7 +561,7 @@ class PSICQUIC(REST):
             print("Found %s in %s" % (len(results[name]), name))
         return results
 
-    def getInteractionCounter(self, query):
+    def count_interaction(self, query):
         """
         Returns a dictionary with database as key and results as values
 
@@ -471,12 +570,12 @@ class PSICQUIC(REST):
 
         Consider only the active database.
         """
-        # get the active names only
         activedbs = self.activeDBs[:]
         res = [(str(name), int(self.query(name, query, output="count")[0])) for name in activedbs]
         return dict(res)
 
-    def getName(self, data):
+    @staticmethod
+    def get_name(data):
         """
 
         :param data:
@@ -486,7 +585,7 @@ class PSICQUIC(REST):
         idsb = [x[1] for x in data]
         return idsa, idsb
 
-    def knownName(self, data):
+    def know_name(self, data):
         """
         Scan all entries (MITAB) and returns simplified version
 
@@ -552,7 +651,7 @@ class PSICQUIC(REST):
                 if len(valid_dbs) >= 1:
                     idsb[i] = valid_dbs[0][0] + ":" + valid_dbs[0][1]
                 else:
-                    print("\033[0;33m[WARNING]\033[0m none of the DB (%s) for this entry are available" % (entry))
+                    print("\033[0;33m[WARNING]\033[0m none of the DB (%s) for this entry are available" % entry)
                     idsb[i] = "?" + dbs[0] + ":" + ids[0]
             except:
                 print("\033[0;33m[WARNING]\033[0m Could not extract name from %s" % entry)
@@ -567,7 +666,8 @@ class PSICQUIC(REST):
         print("\033[0;33m[WARNING]\033[0m knownName done")
         return idsa, idsb
 
-    def preCleaning(self, data):
+    @staticmethod
+    def pre_cleaning(data):
         """
         remove entries ehre IdA or IdB is set to "-"
         :param data:
@@ -575,7 +675,7 @@ class PSICQUIC(REST):
         ret = [x for x in data if x[0] != "-" and x[1] != "-"]
         return ret
 
-    def postCleaningAll(self, data, keep_only="HUMAN", flatten=True, verbose=True):
+    def post_cleaning_all(self, data, keep_only="HUMAN", flatten=True, verbose=True):
         """
         even more cleaing by ignoring score, db and interaction
         len(set([(x[0],x[1]) for x in retnew]))
@@ -587,14 +687,15 @@ class PSICQUIC(REST):
         results = {}
         for k in data.keys():
             print("\033[0;33m[WARNING]\033[0m Post cleaning %s" % k)
-            ret = self.postCleaning(data[k], keep_only="HUMAN", verbose=verbose)
+            ret = self.post_cleaning(data[k], keep_only="HUMAN", verbose=verbose)
             if len(ret):
                 results[k] = ret
         if flatten:
             results = [x for k in results.keys() for x in results[k]]
         return results
 
-    def postCleaning(self, data, keep_only="HUMAN", remove_db=["chebi", "chembl"], keep_self_loop=False, verbose=True):
+    @staticmethod
+    def post_cleaning(data, keep_only="HUMAN", remove_db=["chebi", "chembl"], keep_self_loop=False, verbose=True):
         """
         Remove entries with a None and keep only those with the keep pattern
         :param verbose:
@@ -634,7 +735,7 @@ class PSICQUIC(REST):
 
         return data
 
-    def convertAll(self, data):
+    def convert_all(self, data):
         """
 
         :param data:
@@ -642,7 +743,7 @@ class PSICQUIC(REST):
         """
         results = {}
         for k in data.keys():
-            print("\033[0;33m[WARNING]\033[0m Analysing %s" % k)
+            print("Analysing %s" % k)
             results[k] = self.convert(data[k], db=k)
         return results
 
@@ -653,9 +754,9 @@ class PSICQUIC(REST):
         :param db:
         :return:
         """
-        print("\033[0;33m[WARNING]\033[0m converting the database %s" % db)
-        idsa, idsb = self.knownName(data)
-        mapping = self.mappingOneDB(data)
+        print("Converting the database %s" % db)
+        idsa, idsb = self.know_name(data)
+        mapping = self.mapping_one_db(data)
         results = []
         for i, entry in enumerate(data):
             x = idsa[i].split(":", 1)[1]
@@ -677,13 +778,13 @@ class PSICQUIC(REST):
             results.append((xp, yp, score, interaction, ref, db))
         return results
 
-    def mappingOneDB(self, data):
+    def mapping_one_db(self, data):
         """
         :param data:
         """
         query = {}
-        print("\033[0;33m[WARNING]\033[0m converting IDs with proper DB name (knownName function)")
-        entriesa, entriesb = self.knownName(data)  # idsA and B contains list of a single identifier of the form db:id
+        print("Converting IDs with proper DB name (knownName function)")
+        entriesa, entriesb = self.know_name(data)  # idsA and B contains list of a single identifier of the form db:id
         # the db is known from _mapping.uniprot otherwise it is called "unknown"
 
         # get unique DBs to build the query dictionary
@@ -707,7 +808,7 @@ class PSICQUIC(REST):
             counter += 1
             dba, ida = entryA.split(":")
             try:
-                dbB, idB = entryB.split(":")
+                dbb, idb = entryB.split(":")
             except:
                 print(entryB)
             if ida not in mapping.keys():
@@ -715,11 +816,11 @@ class PSICQUIC(REST):
                     mapping[ida] = entryA
                 else:
                     query[dba].add(ida)
-            if idB not in mapping.keys():
-                if dbB.startswith("?"):
-                    mapping[idB] = entryB
+            if idb not in mapping.keys():
+                if dbb.startswith("?"):
+                    mapping[idb] = entryB
                 else:
-                    query[dbB].add(idB)
+                    query[dbb].add(idb)
 
             for k in query.keys():
                 if len(query[k]) > 2000 or counter == n:
@@ -727,8 +828,7 @@ class PSICQUIC(REST):
                     dbname = self._mapping_uniprot[k]
 
                     if dbname is not None:
-                        print("\033[0;33m[WARNING]\033[0mRequest sent to uniprot for %s database (%s/%s)" % (
-                              dbname, counter, n))
+                        print("Request sent to uniprot for %s database (%s/%s)" % (dbname, counter, n))
                         res = self.uniprot.mapping(fr=dbname, to="ID", query=" ".join(this_query))
                         for x in this_query:
                             if x not in res:  # was not found
@@ -741,8 +841,7 @@ class PSICQUIC(REST):
                                 if len(res[x]) == 1:
                                     mapping[x] = res[x][0]
                                 else:
-                                    print(
-                                        "\033[0;33m[WARNING]\033[0m psicquic mapping found more than 1 id. keep first one")
+                                    print("Psicquic mapping found more than 1 id. keep first one")
                                     mapping[x] = res[x][0]
                     else:
                         for x in this_query:
@@ -792,8 +891,13 @@ class AppsPPI(object):
     def __init__(self, verbose=False):
         self.psicquic = PSICQUIC(verbose=False)
         self.verbose = verbose
+        self.counter = None
+        self.relevant_interactions = None
+        self.interactions = {}
+        self.N = None
+        self.results_query = None
 
-    def queryAll(self, query, databases=None):
+    def query_all(self, query, databases=None):
         """
         :param str query: a valid query.
         :param str databases: by default, queries are sent to each active database.
@@ -806,10 +910,10 @@ class AppsPPI(object):
         """
         # self.results_query = self.psicquic.queryAll("ZAP70 AND species:9606")
         print("Requests sent to psicquic. Can take a while, please be patient...")
-        self.results_query = self.psicquic.queryAll(query, databases)
-        self.interactions = self.psicquic.convertAll(self.results_query)
-        self.interactions = self.psicquic.postCleaningAll(self.interactions,
-                                                          flatten=False, verbose=self.verbose)
+        self.results_query = self.psicquic.query_all(query, databases)
+        self.interactions = self.psicquic.convert_all(self.results_query)
+        self.interactions = self.psicquic.post_cleaning_all(self.interactions,
+                                                            flatten=False, verbose=self.verbose)
         self.N = len(self.interactions.keys())
         self.counter = {}
         self.relevant_interactions = {}
@@ -840,11 +944,11 @@ class AppsPPI(object):
         for k in counter.keys():
             counter[k] = list(set(counter[k]))
 
-        N = len(self.interactions.keys())
+        n = len(self.interactions.keys())
 
         print("-------------")
         summ = {}
-        for i in range(1, N + 1):
+        for i in range(1, n + 1):
             res = [(x.split("++"), counter[x]) for x in counter.keys() if len(counter[x]) == i]
             print("Found %s interactions in %s common databases" % (len(res), i))
             res = [x.split("++") for x in counter.keys() if len(counter[x]) == i]
@@ -856,13 +960,18 @@ class AppsPPI(object):
         self.counter = counter.copy()
         self.relevant_interactions = summ.copy()
 
-    def get_reference(self, idA, idB):
-        key = idA + "++" + idB
+    def get_reference(self, ida, idb):
+        """
+
+        :param ida:
+        :param idb:
+        """
+        key = ida + "++" + idb
         uniq = len(self.counter[key])
-        ret = [x for k in self.interactions.keys() for x in self.interactions[k] if x[0] == idA and x[1] == idB]
+        ret = [x for k in self.interactions.keys() for x in self.interactions[k] if x[0] == ida and x[1] == idb]
         N = len(ret)
         print("Interactions %s -- %s has %s entries in %s databases (%s):" %
-              (idA, idB, N, uniq, self.counter[key]))
+              (ida, idb, N, uniq, self.counter[key]))
         for r in ret:
             print(r[5], " reference", r[4])
 
