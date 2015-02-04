@@ -137,96 +137,6 @@ class Ensembl(REST):
     # COMPARATIVE GENOMICS
     # ------------------------------------------------------------------
 
-    def get_gene_family_information_by_id(self, gene_family, compara='bacteria', frmt='json'):
-        """
-        Retrieve gene family information by ID
-
-        ensembl.get_gene_family_information_by_id('MF_01687')
-
-        :param compara:
-        :param gene_family:
-        :param frmt:
-        :return:
-        """
-        res = self.http_get('family/id/' + gene_family, frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={"compara": compara})
-        return res
-
-    def get_gene_family_by_id(self):
-        """
-        Retrieves gene families to which a gene belongs
-        :return:
-        """
-        raise NotImplementedError
-
-    def get_gene_family_by_symbol(self):
-        """
-        Retrieves gene families to which a gene belongs
-        :return:
-        """
-        raise NotImplementedError
-
-    def get_genetree_by_member_symbol(self, species, symbol, frmt='json', aligned=False, db_type='core',
-                                      nh_format='simple', sequence='protein', compara='multi'):
-        """
-        Retrieves a gene tree containing the gene identified by a symbol
-        :param species:
-        :param symbol:
-        :param frmt:
-        :param aligned:
-        :param db_type:
-        :param nh_format:
-        :param sequence:
-        :param compara:
-        """
-        self._check_frmt(frmt, ['nh', 'phyloxml'])
-        frmt = self.nh_format_to_frmt(nh_format)
-        self.check_sequence(sequence)
-        self.check_nh_format(nh_format)
-
-        res = self.http_get("genetree/member/symbol/%s/%s" % (species, symbol),
-                            frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={'nh_format': nh_format, 'sequence': sequence,
-                                    'aligned': int(aligned), 'compara': compara,
-                                    'db_type': db_type})
-        return res
-
-    def get_genetree_by_member_id(self, identifier, frmt='json', aligned=False, db_type='core', nh_format='simple',
-                                  sequence='protein', species='homo_sapiens', compara='multi'):
-        """
-        Retrieves a gene tree containing the gene identified by a symbol
-
-        :param identifier: 
-        :param frmt: 
-        :param aligned: 
-        :param nh_format: 
-        :param sequence: 
-        :param species: 
-        :param compara: Name of the compara database to use. Multiple
-            comparas can exist on a server if you are accessing Ensembl
-            Genomes data. Defautl to 'multi'
-        :param db_type: Restrict the search to a database other than the
-            default. Useful if you need to use a DB other than core. Defaults
-            to core
-
-            get_genetree_by_member_id('ENSG00000157764', frmt='phyloxml')
-
-        """
-        self._check_frmt(frmt, ['nh', 'phyloxml'])
-        self._check_frmt(frmt)
-        self.check_nh_format(nh_format)
-        frmt = self.nh_format_to_frmt(nh_format)
-        self.check_sequence(sequence)
-
-        res = self.http_get("genetree/member/id/" + identifier, frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={'nh_format': nh_format, 'sequence': sequence,
-                                    'aligned': int(aligned), 'compara': compara,
-                                    'db_type': db_type, 'species': species})
-        return res
-
     def get_genetree_by_id(self, identifier, aligned=False, frmt='json', nh_format='simple', sequence='protein'):
         """
         Retrieves a gene tree dump for a gene tree stable identifier
@@ -259,6 +169,66 @@ class Ensembl(REST):
                             headers=self.get_headers(content=frmt),
                             params={'nh_format': nh_format, 'sequence': sequence,
                                     'aligned': aligned})
+        return res
+
+    def get_genetree_by_member_id(self, identifier, frmt='json', aligned=False, db_type='core', nh_format='simple',
+                                  sequence='protein', species='homo_sapiens', compara='multi'):
+        """
+        Retrieves a gene tree containing the gene identified by a symbol
+
+        :param identifier:
+        :param frmt:
+        :param aligned:
+        :param nh_format:
+        :param sequence:
+        :param species:
+        :param compara: Name of the compara database to use. Multiple
+            comparas can exist on a server if you are accessing Ensembl
+            Genomes data. Defautl to 'multi'
+        :param db_type: Restrict the search to a database other than the
+            default. Useful if you need to use a DB other than core. Defaults
+            to core
+
+            get_genetree_by_member_id('ENSG00000157764', frmt='phyloxml')
+
+        """
+        self._check_frmt(frmt, ['nh', 'phyloxml'])
+        self._check_frmt(frmt)
+        self.check_nh_format(nh_format)
+        frmt = self.nh_format_to_frmt(nh_format)
+        self.check_sequence(sequence)
+
+        res = self.http_get("genetree/member/id/" + identifier, frmt=frmt,
+                            headers=self.get_headers(content=frmt),
+                            params={'nh_format': nh_format, 'sequence': sequence,
+                                    'aligned': int(aligned), 'compara': compara,
+                                    'db_type': db_type, 'species': species})
+        return res
+
+    def get_genetree_by_member_symbol(self, species, symbol, frmt='json', aligned=False, db_type='core',
+                                      nh_format='simple', sequence='protein', compara='multi'):
+        """
+        Retrieves a gene tree containing the gene identified by a symbol
+        :param species:
+        :param symbol:
+        :param frmt:
+        :param aligned:
+        :param db_type:
+        :param nh_format:
+        :param sequence:
+        :param compara:
+        """
+        self._check_frmt(frmt, ['nh', 'phyloxml'])
+        frmt = self.nh_format_to_frmt(nh_format)
+        self.check_sequence(sequence)
+        self.check_nh_format(nh_format)
+
+        res = self.http_get("genetree/member/symbol/%s/%s" % (species, symbol),
+                            frmt=frmt,
+                            headers=self.get_headers(content=frmt),
+                            params={'nh_format': nh_format, 'sequence': sequence,
+                                    'aligned': int(aligned), 'compara': compara,
+                                    'db_type': db_type})
         return res
 
     def get_alignment_by_region(self, region, species, frmt='json', aligned=True, compact=True, compara='multi',
@@ -555,46 +525,7 @@ class Ensembl(REST):
                             params={'callback': self.callback})
         return res
 
-    def get_info_ensembl_genomes(self):
-        raise NotImplementedError
-
-    def get_info_external_dbs(self, species, frmt='json', filter=None):
-        """
-        Lists all available external sources for a species.
-
-        :param frmt: response formats: json, jsonp,xml
-        :param species: Species name/alias
-        :param filter: Restrict external DB searches to a single
-            source or pattern. SQL-LIKE patterns are supported.
-            (e.g., HGNC, GO%)
-
-        """
-        self._check_frmt(frmt, ['xml'])
-        res = self.http_get('info/external_dbs/{0}'.format(species),
-                            frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={'callback': self.callback, 'filter': filter})
-        return res
-
-    def get_info_division(self):
-        raise NotImplementedError
-
-    def get_info_genomes_by_name(self):
-        raise NotImplementedError
-
-    def get_info_genomes(self):
-        raise NotImplementedError
-
-    def get_info_genomes_by_accesion(self):
-        raise NotImplementedError
-
-    def get_info_genomes_by_assembly(self):
-        raise NotImplementedError
-
-    def get_info_genomes_by_division(self):
-        raise NotImplementedError
-
-    def get_info_genomes_by_taxonomy(self):
+    def get_info_external_db_for_specie(self, specie):
         raise NotImplementedError
 
     def get_info_ping(self, frmt='json'):
@@ -673,9 +604,6 @@ class Ensembl(REST):
                             params={'db_type': db_type, 'expand': int(expand), 'format': format,
                                     'callback': self.callback, 'species': species})
         return res
-
-    def get_lookup_by_genome_name(self):
-        raise NotImplementedError
 
     def post_lookup_by_id(self, identifiers, frmt='json', db_type=None, expand=False, format='full', species=None):
         """
@@ -854,93 +782,6 @@ class Ensembl(REST):
     # ONTOLOGY and Taxonomy
     # -------------------------------------------------------------------------
 
-    def get_ontology_by_id(self, identifier, frmt='json', relation=None, simple=False):
-        """
-        Search for an ontological  term by its namespaced identifier
-
-        :param identifier: An ontology term identifier (e.g., GO:0005667)
-        :param bool simple: If set the API will avoid the fetching of parent and child terms
-        :param frmt: response formats in json, xml, yaml, jsonp
-        :param simple: If set the API will avoid the fetching of parent and child terms
-        :param relation: The types of relationships to include in the output. Fetches
-            all relations by default (e.g., is_a, part_of)
-
-            e = Ensembl()
-            res = e.get_ontology('GO:0005667')
-
-        """
-        self._check_frmt(frmt, ['xml', 'yaml'])
-        identifier = str(identifier)
-        res = self.http_get("ontology/id/{0}".format(identifier),
-                            frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={'simple': int(simple), 'relation': relation,
-                                    'callback': self.callback})
-        return res
-
-    def get_ontology_by_name(self, name, frmt='json', ontology=None, relation=None, simple=False):
-        """
-        Search for a list of ontological terms by their name
-
-        :param name: An ontology name. SQL wildcards are supported (e.g.,
-            transcription factor complex)
-        :param frmt: response formats in json, xml, yaml, jsonp
-        :param simple: If set the API will avoid the fetching of parent and child terms
-        :param relation: The types of relationships to include in the output. Fetches
-            all relations by default (e.g., is_a, part_of)
-        :param ontology: Filter by ontology. Used to disambiguate terms which are
-            shared between ontologies such as GO and EFO (e.g., GO)
-
-            e = Ensembl()
-            res = e.get_ontology_by_name('transcription factor')
-            400
-            res = e.get_ontology_by_name('transcription factor complex')
-            res[0]['children']
-
-        """
-        self._check_frmt(frmt, ['xml', 'yaml'])
-        res = self.http_get("ontology/name/{0}".format(name), frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={'simple': int(simple), 'relation': relation,
-                                    'callback': self.callback, 'ontology': ontology})
-        return res
-
-    def get_taxonomy_by_id(self, identifier, frmt='json', simple=False):
-        """
-        Search for a taxonomic term by its identifier or name
-
-        :param identifier: A taxon identifier. Can be a NCBI taxon id or
-            a name (e.g., 9606 or Homo sapiens)
-        :param bool simple: If set the API will avoid the fetching of parent and child terms
-        :param frmt: response formats in json, xml, yaml, jsonp
-        """
-        self._check_frmt(frmt, ['xml', 'yaml'])
-        res = self.http_get("taxonomy/id/{0}".format(identifier),
-                            frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={'simple': int(simple)})
-        return res
-
-    def get_taxonomy_classification_by_id(self, identifier, frmt='json'):
-        """
-        Return the taxonomic classification of a taxon node
-
-
-        :param identifier: A taxon identifier. Can be a NCBI taxon id or a name
-            (e.g., 9606, Homo sapiens)
-        :param frmt: json, xml, yaml, jsonp
-
-            e = Ensembl()
-            res = e.get_taxonomy_classification_by_id('9606')
-
-        """
-        self._check_frmt(frmt, ['xml', 'yaml'])
-        res = self.http_get("taxonomy/classification/{0}".format(identifier),
-                            frmt=frmt,
-                            headers=self.get_headers(content=frmt),
-                            params={'callback': self.callback})
-        return res
-
     def get_ontology_ancestors_by_id(self, identifier, frmt='json', ontology=None):
         """
         Reconstruct the entire ancestry of a term from is_a and part_of
@@ -1004,6 +845,96 @@ class Ensembl(REST):
                                     'closest_term': closest_term, 'subset': subset,
                                     'zero_distance': zero_distance})
         return res
+
+    def get_ontology_by_id(self, identifier, frmt='json', relation=None, simple=False):
+        """
+        Search for an ontological  term by its namespaced identifier
+
+        :param identifier: An ontology term identifier (e.g., GO:0005667)
+        :param bool simple: If set the API will avoid the fetching of parent and child terms
+        :param frmt: response formats in json, xml, yaml, jsonp
+        :param simple: If set the API will avoid the fetching of parent and child terms
+        :param relation: The types of relationships to include in the output. Fetches
+            all relations by default (e.g., is_a, part_of)
+
+            e = Ensembl()
+            res = e.get_ontology('GO:0005667')
+
+        """
+        self._check_frmt(frmt, ['xml', 'yaml'])
+        identifier = str(identifier)
+        res = self.http_get("ontology/id/{0}".format(identifier),
+                            frmt=frmt,
+                            headers=self.get_headers(content=frmt),
+                            params={'simple': int(simple), 'relation': relation,
+                                    'callback': self.callback})
+        return res
+
+    def get_ontology_by_name(self, name, frmt='json', ontology=None, relation=None, simple=False):
+        """
+        Search for a list of ontological terms by their name
+
+        :param name: An ontology name. SQL wildcards are supported (e.g.,
+            transcription factor complex)
+        :param frmt: response formats in json, xml, yaml, jsonp
+        :param simple: If set the API will avoid the fetching of parent and child terms
+        :param relation: The types of relationships to include in the output. Fetches
+            all relations by default (e.g., is_a, part_of)
+        :param ontology: Filter by ontology. Used to disambiguate terms which are
+            shared between ontologies such as GO and EFO (e.g., GO)
+
+            e = Ensembl()
+            res = e.get_ontology_by_name('transcription factor')
+            400
+            res = e.get_ontology_by_name('transcription factor complex')
+            res[0]['children']
+
+        """
+        self._check_frmt(frmt, ['xml', 'yaml'])
+        res = self.http_get("ontology/name/{0}".format(name), frmt=frmt,
+                            headers=self.get_headers(content=frmt),
+                            params={'simple': int(simple), 'relation': relation,
+                                    'callback': self.callback, 'ontology': ontology})
+        return res
+
+    def get_taxonomy_classification_by_id(self, identifier, frmt='json'):
+        """
+        Return the taxonomic classification of a taxon node
+
+
+        :param identifier: A taxon identifier. Can be a NCBI taxon id or a name
+            (e.g., 9606, Homo sapiens)
+        :param frmt: json, xml, yaml, jsonp
+
+            e = Ensembl()
+            res = e.get_taxonomy_classification_by_id('9606')
+
+        """
+        self._check_frmt(frmt, ['xml', 'yaml'])
+        res = self.http_get("taxonomy/classification/{0}".format(identifier),
+                            frmt=frmt,
+                            headers=self.get_headers(content=frmt),
+                            params={'callback': self.callback})
+        return res
+
+    def get_taxonomy_by_id(self, identifier, frmt='json', simple=False):
+        """
+        Search for a taxonomic term by its identifier or name
+
+        :param identifier: A taxon identifier. Can be a NCBI taxon id or
+            a name (e.g., 9606 or Homo sapiens)
+        :param bool simple: If set the API will avoid the fetching of parent and child terms
+        :param frmt: response formats in json, xml, yaml, jsonp
+        """
+        self._check_frmt(frmt, ['xml', 'yaml'])
+        res = self.http_get("taxonomy/id/{0}".format(identifier),
+                            frmt=frmt,
+                            headers=self.get_headers(content=frmt),
+                            params={'simple': int(simple)})
+        return res
+
+    def get_taxonomy_by_name(self, name):
+        raise NotImplementedError
 
     # OVERLAP
     # -----------------------------------------------------
@@ -1134,6 +1065,11 @@ class Ensembl(REST):
                                     'type': type})
         return res
 
+    # REGULATION
+    # -----------------------------
+    def get_regulatoryfactors_by_id(self, species, id):
+        raise NotImplementedError
+
     # SEQUENCE
     # -----------------------------
     def get_sequence_by_id(self, identifier, frmt='fasta', db_type=None, expand_3prime=None, expand_5prime=None,
@@ -1204,7 +1140,7 @@ class Ensembl(REST):
         )
         return res
 
-    def post_sequence_by_id(self):
+    def post_sequence_by_id(self, identifiers):
         raise NotImplementedError
 
     def get_sequence_by_region(self, region, species, frmt='json', coord_system=None, coord_system_version=None,
@@ -1249,7 +1185,7 @@ class Ensembl(REST):
         )
         return res
 
-    def pos_sequence_by_region(self):
+    def pos_sequence_by_region(self, region, species):
         raise NotImplementedError
 
     # VARIATION VEP
@@ -1273,6 +1209,9 @@ class Ensembl(REST):
                                     'pops': int(pops)}
         )
         return res
+
+    def get_vep_by_hgvc(self, hgvc):
+        raise NotImplementedError
 
     def get_vep_by_id(self, identifier, species, frmt='json', canonical=False, ccds=False, domains=False, hgvs=False,
                       numbers=False, protein=False, xref_refseq=False):
@@ -1304,6 +1243,9 @@ class Ensembl(REST):
                                     'hgvs': hgvs, 'numbers': numbers, 'protein': protein,
                                     'xref_refseq': xref_refseq})
         return res
+
+    def post_vep_by_ids(self, identifiers):
+        raise NotImplementedError
 
     def get_vep_by_region(self, region, allele, species, frmt='json', canonical=False, ccds=False, domains=False,
                           hgvs=False, numbers=False, protein=False, xref_refseq=False):
