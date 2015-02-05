@@ -375,28 +375,21 @@ def rest():
 
     # #### KEGG REST TEST
 
-    # from TransCellAssay.IO.Rest.Service import REST
-    # s = REST("test", "https://www.ebi.ac.uk/chemblws")
-    # res = s.get_one("targets/CHEMBL5246.json", "json")
-    # target = res['target']
-    # print(target['organism'])
     # from TransCellAssay.IO.Rest.KEGG import KEGG, KEGGParser
-    # k = KEGG()
-    # print(k.Tnumber2code("T01001"))
-    # print(k.code2Tnumber("hsa"))
-    # print(k.isOrganism("hsa"))
+    # k = KEGG(verbose=True)
+    # print(k.tnumber_to_code("T01001"))
+    # print(k.databases)
+    # print(k.code_to_tnumber("hsa"))
+    # print(k.is_organism("hsa"))
     # print(k.info())
     # print(k.info("hsa"))
     # print(k.info("T01001"))  # same as above
     # print(k.info("pathway"))
     # k.list('organism')
     # print(k.organismIds)
-    # k.organism = "hsa"
     # print(k.pathwayIds)
     # print(k.get("hsa:7535"))
     # print(k.list("pathway", organism="hsa"))
-    # k.reaction
-    # k.reactionIds
     # print(k.list("pathway"))  # returns the list of reference pathways
     # print(k.list("pathway", "hsa"))  # returns the list of human pathways
     # print(k.list("organism"))  # returns the list of KEGG organisms with taxonomic classification
