@@ -307,8 +307,10 @@ def rest():
     # ### Ensembl REST TEST
     # from TransCellAssay.IO.Rest.Ensembl import Ensembl
     # s = Ensembl(verbose=True)
-    # print(s.get_rest_version())
-    # print(s.get_api_version())
+    # print(s.get_info_rest())
+    # print(s.get_info_ping())
+    # print(s.get_info_software())
+    # print(s.get_info_species())
     # print(s.get_archive("AT3G52430"))
     # print(s.post_archive(["AT3G52430", "AT1G01160"]))
     # print(s.get_gene_family_information_by_id('MF_01687'))

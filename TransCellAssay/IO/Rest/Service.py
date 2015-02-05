@@ -1,6 +1,9 @@
 # coding=utf-8
 """
 Base Class for REST services, inspired by bioservices package
+Use requests package for all HTTP methods, but may be in future will change to aiohttp
+class Service is ground class for making REST or SOAP (don't implemented)
+class REST is for making REST request at database
 """
 
 __author__ = "Arnaud KOPP"
@@ -35,19 +38,15 @@ class Service(object):
         200: "OK",
         201: "Created",
         400: "Bad Request. There is a problem with your input",
-        403: "You are submitting far too many requests and have been temporarily forbidden access to the service. "
-             "Wait and retry with a maximum of 15 requests per second.",
+        403: "You are submitting far too many requests and have been temporarily forbidden access to the service. ",
         404: "Not found. The resource you requests does not exist",
         406: "Not Acceptable. Usually headers issue",
         408: "The request was not processed in time. Wait and retry later",
         410: "Gone. The resource you requested was removed.",
         415: "Unsupported Media Type",
-        429: "You have been rate-limited; wait and retry. The headers X-RateLimit-Reset, X-RateLimit-Limit and "
-             "X-RateLimit-Remaining will inform you of how long you have until your limit is reset and what that limit "
-             "was. If you get this response and have not exceeded your limit then check if you have made too many "
-             "requests per second.",
-        500: "Internal server error. Most likely a temporary problem",
-        503: "Service not available. The server is being updated, try again later"
+        429: "You have been rate-limited, wait and retry",
+        500: "Internal server error (Most likely a temporary problem)",
+        503: "Service not available (the server is being updated, try again later)"
     }
 
     def __init__(self, name, url=None, verbose=True, request_per_sec=3):
@@ -206,8 +205,6 @@ class REST(Service):
         if isinstance(res, Response) is False:
             return res
         if not res.ok:
-            reason = res.reason
-            print("status is not ok with {0}".format(reason))
             return res.status_code
         if frmt == 'json':
             try:
@@ -258,9 +255,9 @@ class REST(Service):
                 print("Targeted URL :%s" % res.url)
 
             if res.status_code != 200:
-                print("\033[0;33m[WARNING]\033[0m Requests Status is not OK : {0} : {1}".format(res.status_code,
-                                                                                                self.response_codes[
-                                                                                                    res.status_code]))
+                print("\033[0;33m[WARNING]\033[0m Requests Status is not OK => {0} : {1}".format(res.status_code,
+                                                                                                 self.response_codes[
+                                                                                                     res.status_code]))
             # For avoid too many requests
             time.sleep(1 / self._request_per_sec)
 
@@ -361,8 +358,6 @@ class REST(Service):
         """
         headers = {'User-Agent': self.get_user_agent(), 'Accept': self.content_types[content],
                    'Content-Type': self.content_types[content]}
-        # "application/json;odata=verbose" required in reactome
-        # headers['Content-Type'] = "application/json;odata=verbose" required in reactome
         return headers
 
     def debug_last_response(self):
