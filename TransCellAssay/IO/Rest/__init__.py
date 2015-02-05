@@ -1,7 +1,7 @@
 # coding=utf-8
 __author__ = "Arnaud KOPP"
 from TransCellAssay.IO.Rest.Service import *
-from TransCellAssay.IO.Rest.KEGG import KEGG, KEGGParser, KEGGTools
+from TransCellAssay.IO.Rest.KEGG import KEGG, KEGGParser
 from TransCellAssay.IO.Rest.Biogrid import Biogrid, BiogridParser
 from TransCellAssay.IO.Rest.Encode import Encode
 from TransCellAssay.IO.Rest.Ensembl import Ensembl
