@@ -13,7 +13,6 @@ from argparse import RawDescriptionHelpFormatter
 import time
 import pandas as pd
 import TransCellAssay as TCA
-from TransCellAssay.IO.Input import CSV_Reader, Excel_Reader, TXT_Reader
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -74,21 +73,17 @@ USAGE
 
         # # Process arguments
         args = parser.parse_args()
-        input = args.input
+        input_dir = args.input
         output = args.output
 
         print("\n*********** START ***********\n")
-        print("READING INPUT DIRECTORY ")
 
         try:
             os.stat(output)
         except:
             os.mkdir(output)
-        print("Beging Processing")
-        for root, dirs, filenames in os.walk(input):
+        for root, dirs, filenames in os.walk(input_dir):
             if "Legend.xml" in filenames:
-
-                print("Working on %s" % root)
                 try:
                     well = pd.read_csv((root + "/Plate.csv"))
                 except:
@@ -109,7 +104,7 @@ USAGE
                 file.remove_nan()
                 outputfilename = barcode
                 file.write_raw_data(path=output, name=outputfilename)
-            print("\n*********** END ***********\n")
+        print("\n*********** END ***********\n")
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
         return 0

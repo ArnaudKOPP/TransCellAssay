@@ -1,5 +1,5 @@
 # coding=utf-8
 __author__ = 'Arnaud KOPP'
-from TransCellAssay.IO.Input.CSV import *
-from TransCellAssay.IO.Input.Excel import *
-from TransCellAssay.IO.Input.TXT import *
+from TransCellAssay.IO.Input.CSV import CSV
+from TransCellAssay.IO.Input.Excel import EXCEL
+from TransCellAssay.IO.Input.TXT import TXT

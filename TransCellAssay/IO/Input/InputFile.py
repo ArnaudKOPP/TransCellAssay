@@ -3,7 +3,6 @@
 Basic Class for manipulating data into dataframe
 """
 import numpy as np
-import pandas as pd
 import os
 
 
