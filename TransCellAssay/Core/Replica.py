@@ -258,6 +258,9 @@ class Replica(object):
                                                                          pos_control=pos)
                 self.isNormalized = True
                 self.compute_data_for_channel(channel)
+                print(
+                    '\033[0;32m[INFO]\033[0m Raw Data normalization processing for replicat {} on channel {}'.format(
+                        self.name, channel))
             else:
                 print("\033[0;33m[WARNING]\033[0m Data are already normalized, do nothing")
         except Exception as e:
@@ -275,26 +278,12 @@ class Replica(object):
         """
         try:
             if isinstance(channels, str):
-                # with single channel normalization
                 self.normalization(channel=channels, method=method, log=log, neg=neg, pos=pos,
                                    skipping_wells=skipping_wells)
             elif isinstance(channels, list):
                 for chan in channels:
-                    if skipping_wells:
-                        self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=chan,
-                                                                             method=method, log2_transf=log,
-                                                                             neg_control=[x for x in neg if (
-                                                                                 TCA.get_opposite_well_format(
-                                                                                     x) not in self.skip_well)],
-                                                                             pos_control=[x for x in pos if (
-                                                                                 TCA.get_opposite_well_format(
-                                                                                     x) not in self.skip_well)])
-                    else:
-                        self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=chan,
-                                                                             method=method,
-                                                                             log2_transf=log,
-                                                                             neg_control=neg,
-                                                                             pos_control=pos)
+                    self.normalization(channel=chan, method=method, log=log, neg=neg, pos=pos,
+                                       skipping_wells=skipping_wells)
                     self.isNormalized = True
                 print("\033[0;33m[WARNING]\033[0m Choose your channels that you want to work with plate.compute_data_"
                       "from_replicat or replica.compute_data_for_channel")
@@ -329,7 +318,10 @@ class Replica(object):
             else:
                 if self.isSpatialNormalized:
                     print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
-                print('\033[0;32m[INFO]\033[0m SEC processing : {} -> replica {}'.format(algorithm, self.name))
+
+                print('\033[0;32m[INFO]\033[0m Systematic Error Correction processing : {} -> replica {}'.
+                      format(algorithm, self.name))
+
                 if algorithm == 'Bscore':
                     ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                    max_iterations=max_iterations,

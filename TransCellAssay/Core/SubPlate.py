@@ -22,14 +22,14 @@ class SubPlate(Plate):
     Class subplate for creating subplate from plate
     """
 
-    def __init__(self, parent_plate, RB, RE, CB, CE):
+    def __init__(self, parent_plate, rb, re, cb, ce):
         """
         Constructor
         :param parent_plate: Plate Parent object
-        :param RB: Row Begin
-        :param RE: Row End
-        :param CB: Col Begin
-        :param CE: Col End
+        :param rb: Row Begin
+        :param re: Row End
+        :param cb: Col Begin
+        :param ce: Col End
         """
         try:
             if isinstance(parent_plate, Plate):
@@ -38,11 +38,11 @@ class SubPlate(Plate):
             else:
                 raise AttributeError("\033[0;31m[ERROR]\033[0m Must Provided Plate for creating SubPlate")
             self.replica = collections.OrderedDict()
-            self._init_replicat(parent_plate, RB, RE, CB, CE)
+            self._init_replicat(parent_plate, rb, re, cb, ce)
             self._meta_info = parent_plate._meta_info
             self.name = parent_plate.name
 
-            self.platemap = parent_plate.platemap.platemap.iloc[RB - 1: RE - 1, CB - 1: CE - 1]
+            self.platemap = parent_plate.platemap.platemap.iloc[rb - 1: re - 1, cb - 1: ce - 1]
             self.threshold = parent_plate.threshold
             self._control_position = None
 
@@ -57,32 +57,32 @@ class SubPlate(Plate):
             if parent_plate.array is None:
                 self.array = None
             else:
-                self.array = parent_plate.array[RB - 1: RE - 1, CB - 1: CE - 1]
+                self.array = parent_plate.array[rb - 1: re - 1, cb - 1: ce - 1]
             if parent_plate.sec_array is None:
                 self.sec_array = None
             else:
-                self.sec_array = parent_plate.sec_array[RB - 1: RE - 1, CB - 1: CE - 1]
+                self.sec_array = parent_plate.sec_array[rb - 1: re - 1, cb - 1: ce - 1]
 
-            self.RB = RB
-            self.RE = RE
-            self.CB = CB
-            self.CE = CE
+            self.RB = rb
+            self.RE = re
+            self.CB = cb
+            self.CE = ce
 
         except Exception as e:
             print(e)
 
-    def _init_replicat(self, plate, RB, RE, CB, CE):
+    def _init_replicat(self, plate, rb, re, cb, ce):
         """
         select zone in replicat and put them into a dict
         :param plate: Plate object
-        :param RB: Row Begin
-        :param RE: Row End
-        :param CB: Col Begin
-        :param CE: Col End
+        :param rb: Row Begin
+        :param re: Row End
+        :param cb: Col Begin
+        :param ce: Col End
         """
         try:
             for key, value in plate.replicat.items():
-                self.replica[value.name] = SubReplica(value, RB, RE, CB, CE)
+                self.replica[value.name] = SubReplica(value, rb, re, cb, ce)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 

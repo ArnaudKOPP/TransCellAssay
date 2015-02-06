@@ -85,19 +85,25 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
     try:
         __valid_method = ['Zscore', 'RobustZscore', 'PercentOfSample', 'RobustPercentOfSample', 'PercentOfControl',
                           'NormalizedPercentInhibition']
+
         if method not in __valid_method:
             raise ValueError("Method don't exist, choose : {}".format(__valid_method))
+
+        # check if channel is list
+        if isinstance(channel, list):
+            raise NotImplementedError("Multiple channels normalization don't implemented, use class functions")
 
         if isinstance(obj, TCA.Plate):
             for key, value in obj.replica.items():
                 value.rawdata.df = __rd_norm(value.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
-            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing for plate {}'.format(obj.name))
+            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing for plate {} on channel {}'.format
+                  (obj.name, channel))
         elif isinstance(obj, TCA.Replica):
             obj.rawdata.df = __rd_norm(obj.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
-            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing for replica {}'.format(obj.name))
+            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing for replica {} on channel {}'.format
+                  (obj.name, channel))
         elif isinstance(obj, TCA.RawData):
             obj = __rd_norm(obj, channel, method, log2_transf, neg_control, pos_control)
-            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing')
             return obj
         else:
             raise TypeError("Don't take this object, only plate, replica or raw data")

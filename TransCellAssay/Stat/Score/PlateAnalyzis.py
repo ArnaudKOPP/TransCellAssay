@@ -31,7 +31,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
     """
     try:
         if isinstance(plate, TCA.Plate):
-            print('\033[0;32m[INFO]\033[0m Computing plate analysis : {}'.format(plate.name))
+            print('\033[0;32m[INFO]\033[0m Performe plate analysis : {}'.format(plate.name))
             platemap = plate.get_platemap()
             size = platemap.get_shape()
             result = Result(size=(size[0] * size[1]))

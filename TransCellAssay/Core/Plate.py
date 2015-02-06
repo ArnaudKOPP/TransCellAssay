@@ -407,7 +407,7 @@ class Plate(object):
             else:
                 if self.isSpatialNormalized:
                     print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
-                print('\033[0;32m[INFO]\033[0m Systematic Error processing : {}'.format(algorithm))
+                print('\033[0;32m[INFO]\033[0m Systematic Error Correction processing : {}'.format(algorithm))
                 if algorithm == 'Bscore':
                     ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                    max_iterations=max_iterations,

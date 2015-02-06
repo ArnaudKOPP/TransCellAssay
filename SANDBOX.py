@@ -28,14 +28,14 @@ def do_384():
     plaque1 + TCA.Replica(name='rep1', data='/home/arnaud/Desktop/HDV_plaque_Z/150121 Eloi1.csv', datatype='mean')
     plaque2 + TCA.Replica(name='rep1', data='/home/arnaud/Desktop/HDV_plaque_Z/150121 Eloi2.csv', datatype='mean')
 
-    print(platemap)
+    # print(platemap)
 
     channel = 'AvgIntenCh2'
     neg = 'Neg 1'
     pos = 'SiNTCP'
 
     # time_start = time.time()
-    # ana = TCA.plate_analysis(plaque1, [channel], neg, pos, threshold=400, percent=False)
+    ana = TCA.plate_analysis(plaque1, [channel], neg, pos, threshold=400, percent=False)
     # # ana = TCA.plate_analysis(plaque1, [channel], neg, pos)
     # print(ana)
     # time_stop = time.time()
@@ -53,8 +53,8 @@ def do_384():
 
     # TCA.heatmap_map_p(plaque1, plaque2)
 
-    TCA.plate_quality_control(plaque1, channel=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
-    TCA.plate_quality_control(plaque2, channel=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
+    TCA.plate_quality_control(plaque1, channel=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=False)
+    TCA.plate_quality_control(plaque2, channel=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=False)
 
     # # Keep only neg or pos in 3D plot
     # test1_neg = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=neg)
@@ -72,10 +72,10 @@ def do_384():
     # plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
     # plaque2.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=False)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, verbose=True)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=True)
+    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=False)
+    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=False)
+    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, verbose=False)
+    TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=False)
 
     # TCA.plot_plate_3d(plaque1.sec_array)
     # TCA.plot_plate_3d(plaque2.sec_array)
@@ -85,7 +85,7 @@ def do_384():
     # TCA.plate_heatmap_p(plaque1, both=True)
     # TCA.plate_heatmap_p(plaque2, both=True)
     # TCA.plot_multiple_plate(plaque1, plaque2, usesec=True)
-    TCA.plot_wells(plaque1, plaque2, neg=neg, pos=pos)
+    # TCA.plot_wells(plaque1, plaque2, neg=neg, pos=pos)
     # TCA.dual_flashlight_plot(plaque1.array, ssmd)
     # TCA.boxplot_by_wells(plaque1['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['B5', 'B6'], plate=plaque1, channel=channel)
@@ -220,22 +220,13 @@ def go():
     """
     Go Enrichment testing
     """
-    # import TransCellAssay.Stat.Omics.GO_enrichment as GO
-    # go_tree = GO.GO_tree(obo_file="go.obo")
-    # go_term = go_tree.go_Term['GO:0000001']
-    # go_tree.query_term('GO:0045056', verbose=True)
-    # print(go_term)
-    # #print(go_tree.paths_to_top('GO:0000001'))
-    # #go_tree.print_all_go_id()
-    # asso = GO.Association("/home/akopp/Bureau/gene_id_go_id.csv")
-    # print(asso.query(3804))
-    # go_tree.update_association(asso)
-    # print(asso.query(3804))
-    # print(asso.association[3804])
-    # enrichment = GO.EnrichmentStudy(study="/home/arnaud/Desktop/study.txt", pop="/home/arnaud/Desktop/pop.txt",
-    #                                 assoc="/home/arnaud/Desktop/assoc.csv", compare=False)
-    # result = enrichment.to_dataframe()
-    # print(pd.DataFrame(result))
+    import TransCellAssay as TCA
+    enrichment = TCA.EnrichmentStudy(study="/home/arnaud/Desktop/TEMP/study.txt",
+                                     pop="/home/arnaud/Desktop/TEMP/pop.txt",
+                                     assoc="/home/arnaud/Desktop/TEMP/assoc.csv",
+                                     compare=False)
+    result = enrichment.to_dataframe()
+    print(pd.DataFrame(result))
 
 # go()
 
@@ -497,6 +488,6 @@ def rest():
     # import json
     # print(json.dumps(res, indent=4, separators=(',', ': ')))
 
-rest()
+# rest()
 
 print('FINISH')

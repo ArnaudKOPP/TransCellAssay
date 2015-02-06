@@ -23,46 +23,31 @@ from TransCellAssay.Utils.Stat import adjustpvalues
 typedef_tag, term_tag = "[Typedef]", "[Term]"
 
 
-def after_colon(line):
-    # macro for getting anything after the :
-    return line.split(":", 1)[1].strip()
-
-
-def read_until(handle, start):
-    # read each line until it has a certain start, and then puts
-    # the start tag back
-    while 1:
-        pos = handle.tell()
-        line = handle.readline()
-        if not line:
-            break
-        if line.startswith(start):
-            handle.seek(pos)
-            return
-    raise EOFError("%s tag cannot be found" % start)
-
-
-class OBOreader():
+class OBOreader(object):
     """
     Parse obo file
     """
-
     def __init__(self, obo_file="go.obo"):
         try:
             self._handle = open(obo_file)
         except IOError:
             urllib.request.urlretrieve(
                 "http://www.berkeleybop.org/ontologies/go/go.obo", "go.obo", reporthook)
+            print('')  # add this for begin @ new line (it's ugly)
             self._handle = open(obo_file)
 
     def __iter__(self):
         line = self._handle.readline()
         if not line.startswith(term_tag):
-            read_until(self._handle, term_tag)
+            self.read_until(self._handle, term_tag)
         while 1:
             yield self.next()
 
     def next(self):
+        """
+
+        :return: :raise StopIteration:
+        """
         lines = []
         line = self._handle.readline()
         if not line or line.startswith(typedef_tag):
@@ -81,22 +66,49 @@ class OBOreader():
         rec = GOTerm()
         for line in lines:
             if line.startswith("id:"):
-                rec.id = after_colon(line)
+                rec.id = self.after_colon(line)
             if line.startswith("alt_id:"):
-                rec.alt_ids.append(after_colon(line))
+                rec.alt_ids.append(self.after_colon(line))
             elif line.startswith("name:"):
-                rec.name = after_colon(line)
+                rec.name = self.after_colon(line)
             elif line.startswith("namespace:"):
-                rec.namespace = after_colon(line)
+                rec.namespace = self.after_colon(line)
             elif line.startswith("is_a:"):
-                rec._parents.append(after_colon(line).split()[0])
-            elif line.startswith("is_obsolete:") and after_colon(line) == "true":
+                rec.parents.append(self.after_colon(line).split()[0])
+            elif line.startswith("is_obsolete:") and self.after_colon(line) == "true":
                 rec.is_obsolete = True
 
         return rec
 
+    @staticmethod
+    def after_colon(line):
+        """
+        macro for getting anything after the :
+        :param line:
+        :return:
+        """
+        return line.split(":", 1)[1].strip()
 
-class GOTerm:
+    @staticmethod
+    def read_until(handle, start):
+        """
+        read each line until it has a certain start, and then puts the start tag back
+        :param handle:
+        :param start:
+        :return:
+        """
+        while 1:
+            pos = handle.tell()
+            line = handle.readline()
+            if not line:
+                break
+            if line.startswith(start):
+                handle.seek(pos)
+                return
+        raise EOFError("%s tag cannot be found" % start)
+
+
+class GOTerm(object):
     """
     Go term, contain a lot more attribut than interfaced here
     """
@@ -117,21 +129,35 @@ class GOTerm:
         return "%s\tlevel-%02d\t%s [%s] %s" % (self.id, self.level, self.name, self.namespace, obsolete)
 
     def __repr__(self):
-        return "GOTerm('%s')" % (self.id)
+        return "GOTerm('%s')" % self.id
 
     def has_parent(self, term):
+        """
+        Check if term has parents
+        :param term:
+        :return:
+        """
         for p in self.parents:
             if p.id == term or p.has_parent(term):
                 return True
         return False
 
     def has_child(self, term):
+        """
+        Check if term has children
+        :param term:
+        :return:
+        """
         for p in self.children:
             if p.id == term or p.has_child(term):
                 return True
         return False
 
     def get_all_parents(self):
+        """
+        Get all parents of term
+        :return:
+        """
         all_parents = set()
         for p in self.parents:
             all_parents.add(p.id)
@@ -139,6 +165,10 @@ class GOTerm:
         return all_parents
 
     def get_all_children(self):
+        """
+        Get all children of term
+        :return:
+        """
         all_children = set()
         for p in self.children:
             all_children.add(p.id)
@@ -146,6 +176,10 @@ class GOTerm:
         return all_children
 
     def get_all_parent_edges(self):
+        """
+        Get all edge parents
+        :return:
+        """
         all_parent_edges = set()
         for p in self.parents:
             all_parent_edges.add((self.id, p.id))
@@ -153,6 +187,10 @@ class GOTerm:
         return all_parent_edges
 
     def get_all_child_edges(self):
+        """
+        Get all edge child
+        :return:
+        """
         all_child_edges = set()
         for p in self.children:
             all_child_edges.add((p.id, self.id))
@@ -160,13 +198,22 @@ class GOTerm:
         return all_child_edges
 
 
-class GO_tree():
+class GOtree(object):
+    """
+    Class for construct a GO tree
+    :param obo_file:
+    """
+
     def __init__(self, obo_file="go.obo"):
         self.go_Term = {}
         self.load_obo_file(obo_file)
 
     def load_obo_file(self, obo_file):
-        print("load obo file ", obo_file)
+        """
+        load obo file into obo reader
+        :param obo_file:
+        """
+        print("\033[0;32m[INFO]\033[0m Load obo file ", obo_file)
         obo_reader = OBOreader(obo_file)
         for rec in obo_reader:
             self.go_Term[rec.id] = rec
@@ -174,10 +221,20 @@ class GO_tree():
                 self.go_Term[alt] = rec
 
         self.populate_terms()
-        print("All GO nodes imported : ", len(self.go_Term))
+        print("\033[0;32m[INFO]\033[0m All GO nodes imported : ", len(self.go_Term))
 
     def populate_terms(self):
+        """
+        Construct go tree
+        :return:
+        """
+
         def depth(rec):
+            """
+
+            :param rec:
+            :return:
+            """
             if rec.level < 0:
                 if not rec.parents:
                     rec.level = 0
@@ -200,10 +257,19 @@ class GO_tree():
                 depth(rec)
 
     def print_all_go_id(self):
+        """
+        Print all go ID
+        """
         for rec_id, rec in sorted(self.go_Term.items()):
             print(rec)
 
     def query_term(self, term, verbose=True):
+        """
+        Search term
+        :param term:
+        :param verbose:
+        :return:
+        """
         if term not in self.go_Term:
             print("Term %s not found! ", term)
             return
@@ -216,6 +282,11 @@ class GO_tree():
         return rec
 
     def paths_to_top(self, term):
+        """
+        search path to the top of tree
+        :param term:
+        :return:
+        """
         if term not in self.go_Term:
             print("Term %s not found!", term)
             return
@@ -241,9 +312,10 @@ class GO_tree():
     def update_association(self, association):
         """
         Add parents in association dict
+        :param association:
         """
         bad_terms = set()
-        print("Update association")
+        print("\033[0;32m[INFO]\033[0m Update association")
         for key, terms in association.association.items():
             parents = set()
             for term in terms:
@@ -256,7 +328,7 @@ class GO_tree():
             print("terms not found: ", bad_terms)
 
 
-class Association():
+class Association(object):
     """
     Association file in csv format
     first col = id
@@ -274,28 +346,32 @@ class Association():
         self._load_association_file(file)
 
     def _load_association_file(self, file):
+        print("\033[0;32m[INFO]\033[0m Load association file")
         try:
             assoc = pd.read_csv(file)
             assoc = assoc.dropna(axis=0)
             self._make_association(assoc)
-            print("Load association file")
         except:
             try:
                 assoc = pd.read_csv(file, sep=',')
                 assoc = assoc.dropna(axis=0)
                 self._make_association(assoc)
-                print("Load association file")
             except Exception as e:
                 print(e)
 
     def _make_association(self, assoc_data_frame):
+        print("\033[0;32m[INFO]\033[0m Making association ...")
         datagp = assoc_data_frame.groupby('id')
         for gene in assoc_data_frame.id.unique():
             go = datagp.get_group(gene)['go_id']
             self.association[gene] = set(go)
-        print("Make association ")
 
     def query(self, term):
+        """
+        search a term in association
+        :param term:
+        :return:
+        """
         return self.association[term]
 
 
@@ -310,6 +386,8 @@ class GOEnrichmentRecord(object):
         self.ratio_in_study = ratio_in_study
         self.ratio_in_pop = ratio_in_pop
         self.p_uncorrected = p_uncorrected
+        self.description = None
+        self.goterm = None
 
     def __setattr__(self, name, value):
         self.__dict__[name] = value
@@ -324,29 +402,16 @@ class GOEnrichmentRecord(object):
         return "GOEnrichmentRecord(%s)" % self.id
 
     def find_goterm(self, go):
+        """
+        Find go terminology
+        :param go:
+        """
         if self.id in go.go_Term:
             self.goterm = go.go_Term[self.id]
             self.description = self.goterm.name
 
 
-def read_geneset(study_fn, pop_fn, compare=False):
-    pop = set(_.strip() for _ in open(pop_fn) if _.strip())
-    study = frozenset(_.strip() for _ in open(study_fn) if _.strip())
-    # some times the pop is a second group to compare, rather than the
-    # population in that case, we need to make sure the overlapping terms
-    # are removed first
-    if compare:
-        common = pop & study
-        pop |= study
-        pop -= common
-        study -= common
-        print("removed ", len(common), " overlapping items")
-        print("Set 1: {0}, Set 2: {1}".format(len(study), len(pop)))
-
-    return study, pop
-
-
-class EnrichmentStudy():
+class EnrichmentStudy(object):
     """
     Runs Fisher's exact test, as well as multiple corrections
     study file contain id
@@ -366,9 +431,9 @@ class EnrichmentStudy():
         assert 0 < self.alpha < 1, "Test-wise alpha must fall between (0, 1)"
 
         self.results = []
-        self.study, self.pop = read_geneset(study, pop, compare=self.compare)
+        self.study, self.pop = self.read_geneset(study, pop, compare=self.compare)
         self.association = Association(assoc)
-        self.go_tree = GO_tree()
+        self.go_tree = GOtree()
         self.go_tree.update_association(self.association)
 
         self.term_study = self.count_terms(self.study, self.association, self.go_tree)
@@ -376,9 +441,13 @@ class EnrichmentStudy():
 
         self.pop_n, self.study_n = len(self.pop), len(self.study)
 
-        self.Run()
+        self.run()
 
-    def Run(self):
+    def run(self):
+        """
+        run all
+        :return:
+        """
         for term, study_count in self.term_study.items():
             pop_count = self.term_pop[term]
             p = scipy.stats.fisher_exact(([[study_count, self.study_n], [pop_count, self.pop_n]]))
@@ -425,9 +494,37 @@ class EnrichmentStudy():
 
         return dataframe
 
-    def count_terms(self, geneset, assoc, go_tree):
+    @staticmethod
+    def read_geneset(study_fn, pop_fn, compare=False):
+        """
+        Read study and population file
+        :param study_fn:
+        :param pop_fn:
+        :param compare:
+        :return:
+        """
+        print('\033[0;32m[INFO]\033[0m Load study and population')
+        pop = set(_.strip() for _ in open(pop_fn) if _.strip())
+        study = frozenset(_.strip() for _ in open(study_fn) if _.strip())
+        # some times the pop is a second group to compare, rather than the
+        # population in that case, we need to make sure the overlapping terms
+        # are removed first
+        if compare:
+            common = pop & study
+            pop |= study
+            pop -= common
+            study -= common
+            print("removed ", len(common), " overlapping items")
+            print("Set 1: {0}, Set 2: {1}".format(len(study), len(pop)))
+        return study, pop
+
+    @staticmethod
+    def count_terms(geneset, assoc, go_tree):
         """
         count the number of terms in the study group
+        :param geneset:
+        :param assoc:
+        :param go_tree:
         """
         term_cnt = collections.defaultdict(int)
         for gene in geneset:

@@ -51,6 +51,7 @@ class PlateMap(object):
         :param platemap_file: csv file with platemap
         """
         try:
+            print('\033[0;32m[INFO]\033[0m Reading PlateMap %s File' % platemap_file)
             self.platemap = pd.read_csv(platemap_file, index_col=0)
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

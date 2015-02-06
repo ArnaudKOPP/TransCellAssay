@@ -107,7 +107,7 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
                                              skipping_wells=skipping_wells,  verbose=False))
 
             if verbose:
-                print("\nQuality control for plate: ", plate.name + "\n")
+                print("Quality control for plate: ", plate.name + "\n")
                 print(qc_data_array)
 
             if dirpath is not None:

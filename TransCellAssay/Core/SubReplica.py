@@ -22,14 +22,14 @@ class SubReplica(Replica):
     class for creating sub replicat from previous replicat
     """
 
-    def __init__(self, parent_replicat, RB, RE, CB, CE):
+    def __init__(self, parent_replicat, rb, re, cb, ce):
         """
         Constructor
         :param parent_replicat: Replicat Parent object
-        :param RB: Row Begin
-        :param RE: Row End
-        :param CB: Col Begin
-        :param CE: Col End
+        :param rb: Row Begin
+        :param re: Row End
+        :param cb: Col Begin
+        :param ce: Col End
         """
         try:
             if isinstance(parent_replicat, Replica):
@@ -48,16 +48,16 @@ class SubReplica(Replica):
             if parent_replicat.array is None:
                 self.array = None
             else:
-                self.array = parent_replicat.array[RB - 1: RE - 1, CB - 1: CE - 1]
+                self.array = parent_replicat.array[rb - 1: re - 1, cb - 1: ce - 1]
             if parent_replicat.sec_array is None:
                 self.sec_array = None
             else:
-                self.sec_array = parent_replicat.sec_array[RB - 1: RE - 1, CB - 1: CE - 1]
+                self.sec_array = parent_replicat.sec_array[rb - 1: re - 1, cb - 1: ce - 1]
 
-            self.RB = RB
-            self.RE = RE
-            self.CB = CB
-            self.CE = CE
+            self.rb = rb
+            self.re = re
+            self.cb = cb
+            self.ce = ce
 
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
@@ -91,7 +91,7 @@ class SubReplica(Replica):
                 pos = get_opposite_well_format(key)
                 data[pos[0]][pos[1]] = elem
 
-            self.array = data[self.RB - 1: self.RE - 1, self.CB - 1: self.CE - 1]
+            self.array = data[self.rb - 1: self.re - 1, self.cb - 1: self.ce - 1]
 
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)

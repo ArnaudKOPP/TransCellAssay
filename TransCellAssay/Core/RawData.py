@@ -173,15 +173,15 @@ class RawData(object):
                 if key is self.__CACHING_gbdata_key:
                     return self.__CACHING_gbdata
                 else:
-                    self._new_caching(key)
+                    self.__new_caching(key)
                     return self.__CACHING_gbdata
             else:
-                self._new_caching(key)
+                self.__new_caching(key)
                 return self.__CACHING_gbdata
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def _new_caching(self, key):
+    def __new_caching(self, key):
         self.__CACHING_gbdata = self.df.groupby(key)
         self.__CACHING_gbdata_key = key
 
@@ -195,13 +195,13 @@ class RawData(object):
             if not os.path.isdir(path):
                 os.mkdir(path)
             if name is not None:
-                self._write_raw_data(os.path.join(path, name)+'.csv')
+                self.__write_raw_data(os.path.join(path, name)+'.csv')
             else:
                 raise Exception("Writing Raw data problem")
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def _write_raw_data(self, filepath):
+    def __write_raw_data(self, filepath):
         self.df.to_csv(path=os.path.join(filepath) + ".csv", index=False)
         print('\033[0;32m[INFO]\033[0m Writing File : {}'.format(filepath))
 

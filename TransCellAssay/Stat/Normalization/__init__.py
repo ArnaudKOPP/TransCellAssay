@@ -1,3 +1,4 @@
+# coding=utf-8
 __author__ = 'Arnaud KOPP'
 from TransCellAssay.Stat.Normalization.MedianPolish import median_polish, bz_median_polish
 from TransCellAssay.Stat.Normalization.MatrixErrorAmendment import matrix_error_amendmend
