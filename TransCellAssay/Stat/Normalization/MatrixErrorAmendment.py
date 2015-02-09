@@ -8,7 +8,8 @@ the error estimates determinted in previous step.
 """
 
 import numpy as np
-from TransCellAssay.Utils.Stat import ttest
+from scipy import stats
+
 
 
 __author__ = "Arnaud KOPP"
@@ -40,11 +41,15 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
 
             # search systematic error in row
             for row in range(shape[0]):
-                if ttest(input_array[row, :], np.delete(input_array, row, 0), alpha=alpha):
+                t, prob = stats.ttest_ind(input_array[row, :].flatten(), np.delete(input_array, row, 0).flatten(),
+                                          equal_var=False)
+                if prob < alpha:
                     nrows.append(row)
             # search systematic error in column
             for col in range(shape[1]):
-                if ttest(input_array[:, col], np.delete(input_array, col, 1), alpha=alpha):
+                t, prob = stats.ttest_ind(input_array[:, col].flatten(), np.delete(input_array, col, 1).flatten(),
+                                          equal_var=False)
+                if prob < alpha:
                     ncols.append(col)
 
             # exit if not row or col affected

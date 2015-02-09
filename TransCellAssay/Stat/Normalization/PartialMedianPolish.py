@@ -6,14 +6,14 @@ Main steps of the PMP method:
     -For each row, compute the mean value and estimates the row bias; for each col, compute the mean and estimates the
 row bias.
     -For all rows affected by systematics bias, adjust their measurement using the error estimates determined in
-previous step for each row and col; For all col affected by systematics bias, adjust their measurement using the error estimates determined in
-previous step for each row and col.
+previous step for each row and col; For all col affected by systematics bias, adjust their measurement using the error
+estimates determined in previous step for each row and col.
     -Compute value of the convergence parameter.
     -If convergence parameter is inf of ref threshold, stop, else repeat previous step.
 """
 
 import numpy as np
-from TransCellAssay.Utils.Stat import ttest
+from scipy import stats
 
 
 __author__ = "Arnaud KOPP"
@@ -47,11 +47,15 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
 
             # search systematic error in row
             for row in range(shape[0]):
-                if ttest(input_array[row, :], np.delete(input_array, row, 0), alpha=alpha):
+                t, prob = stats.ttest_ind(input_array[row, :].flatten(), np.delete(input_array, row, 0).flatten(),
+                                          equal_var=False)
+                if prob < alpha:
                     nrows.append(row)
             # search systematic error in column
             for col in range(shape[1]):
-                if ttest(input_array[:, col], np.delete(input_array, col, 1), alpha=alpha):
+                t, prob = stats.ttest_ind(input_array[:, col].flatten(), np.delete(input_array, col, 1).flatten(),
+                                          equal_var=False)
+                if prob < alpha:
                     ncols.append(col)
 
             # exit if not row or col affected
@@ -94,12 +98,14 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
                         input_array[i][j] += diff
 
                 for j in ncols:
-                    diff = mu - cmu[i]
+                    diff = mu - cmu[j]
                     converge += np.absolute(diff)
                     for i in range(shape[0]):
                         input_array[i][j] += diff
                 loop += 1
-                if not (not (converge > epsilon) and not (loop < max_iteration)):
+                if converge < epsilon:
+                    break
+                if loop > max_iteration:
                     break
 
             if verbose:
