@@ -319,9 +319,6 @@ class Plate(object):
             tmp_array = np.zeros(self.platemap.platemap.shape)
             i = 0
 
-            if self._is_cutted:
-                tmp_array = tmp_array[self._rb: self._re, self._cb: self._ce]
-
             for key, replicat in self.replica.items():
                 i += 1
                 if self.array is None:
@@ -351,6 +348,10 @@ class Plate(object):
         :param ce: col end
         :param apply_down: apply the cutting to replica
         """
+        if self._is_cutted:
+            raise AttributeError('Already cutted')
+        print("\033[0;33m !!!!! [WARNING] !!!!! \033[0m Cutting operation cannot be reverted, so plate Analysis and "
+              "some other function may not be functionnal anymore")
         if self.array is not None:
             self.array = self.array[rb: re, cb: ce]
         if self.sec_array is not None:
@@ -358,6 +359,7 @@ class Plate(object):
         if apply_down:
             for key, value in self.replica.items():
                 value.cut(rb, re, cb, ce)
+        self.platemap.cut(rb, re, cb, ce)
         self._is_cutted = True
         self._rb = rb
         self._re = re
@@ -406,7 +408,7 @@ class Plate(object):
             self.normalization(channels, method, log, neg, pos, skipping_wells)
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=False, verbose=False,
-                                    save=False, max_iterations=100, alpha=0.05):
+                                    save=False, max_iterations=100, alpha=0.05, epsilon=0.01):
         """
         Apply a spatial normalization for remove edge effect
         Resulting matrix are save in plate object if save = True
@@ -418,6 +420,7 @@ class Plate(object):
         :param save: save: save the residual into self.SECData , default = False
         :param max_iterations: max iterations for all technics
         :param alpha: alpha for TTest
+        :param epsilon: epsilon parameters for PMP
         """
         try:
             __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
@@ -428,7 +431,7 @@ class Plate(object):
             if apply_down:
                 for key, value in self.replica.items():
                     value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
-                                                      max_iterations=max_iterations, alpha=alpha)
+                                                      max_iterations=max_iterations, alpha=alpha, epsilon=epsilon)
                 self.compute_data_from_replicat(channel=None, use_sec_data=True)
                 return
 
@@ -455,7 +458,7 @@ class Plate(object):
 
                 if algorithm == 'PMP':
                     corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
-                                                                   alpha=alpha, verbose=verbose)
+                                                                   alpha=alpha, verbose=verbose, epsilon=epsilon)
                     if save:
                         self.sec_array = corrected_data_array
                         self.isSpatialNormalized = True

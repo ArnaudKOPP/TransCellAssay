@@ -242,6 +242,8 @@ class Replica(object):
         :param cb: col begin
         :param ce: col end
         """
+        if self._is_cutted:
+            raise AttributeError('Already cutted')
         if self.array is not None:
             self.array = self.array[rb: re, cb: ce]
         if self.sec_array is not None:
@@ -314,7 +316,7 @@ class Replica(object):
             print("\033[0;31m[ERROR]\033[0m", e)
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=False,
-                                    max_iterations=100, alpha=0.05):
+                                    max_iterations=100, alpha=0.05, epsilon=0.01):
         """
         Apply a spatial normalization for remove edge effect
         The Bscore method showed a more stable behavior than MEA and PMP only when the number of rows and columns
@@ -328,6 +330,7 @@ class Replica(object):
         :param verbose: Output in console
         :param save: save the result into self.SECData, default = False
         :param max_iterations: maximum iterations loop, default = 100
+        :param epsilon: epsilon parameters for PMP
         """
         try:
             __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
@@ -363,7 +366,7 @@ class Replica(object):
 
                 if algorithm == 'PMP':
                     corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
-                                                                   verbose=verbose, alpha=alpha)
+                                                                   verbose=verbose, alpha=alpha, epsilon=epsilon)
                     if save:
                         self.sec_array = corrected_data_array
                         self.isSpatialNormalized = True

@@ -44,7 +44,7 @@ class RawData(object):
                     self.df = pd.read_csv(path_or_file, decimal=",", sep=";", engine='c')
                     print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
                 except Exception as e:
-                    raise IOError('Error in reading {} File : '.format(path_or_file), e)
+                    raise IOError(e)
         elif isinstance(path_or_file, TCA.InputFile):
             if path_or_file.dataframe is not None:
                 self.df = path_or_file.dataframe

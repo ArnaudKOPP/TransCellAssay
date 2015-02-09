@@ -58,8 +58,8 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
             # if no neg was provided raise AttributeError
             if neg_control is None:
                 raise ValueError('Must provided negative control')
+            print('\033[0;32m[INFO]\033[0m Performe SSMD')
             if len(plate) > 1 and not inplate_data:
-                print('\033[0;32m[INFO]\033[0m SSMD optimize for plate with replicat')
                 if not paired:
                     if robust_version:
                         score = __unpaired_ssmdr(plate, neg_control, variance=variance, sec_data=sec_data,
@@ -73,7 +73,6 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
                     else:
                         score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
             else:
-                print('\033[0;32m[INFO]\033[0m SSMD optimize for plate without replicat')
                 if robust_version:
                     score = __ssmdr(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
                 else:

@@ -162,13 +162,6 @@ def plate_analyzis(plateid):
             os.makedirs(output_data_plate_dir)
 
         # Want to skip some Well, key is plateid and rep id and give use a list of well to skip
-        to_skip_HMT = {(1, 1): ((3, 0), (4, 0), (6, 0), (5, 11)),
-                       (1, 2): ((7, 0)),
-                       (1, 3): ((0, 11), (2, 11)),
-                       (2, 1): ((7, 0), (2, 11), (5, 11)),
-                       (2, 2): ((7, 0), (2, 11)),
-                       (2, 3): ((0, 11))}
-
         to_skip = {(1, 1): ((3, 0), (4, 0), (5, 11)),
                    (1, 2): ((6, 11)),
                    (1, 3): (),
@@ -214,9 +207,9 @@ def plate_analyzis(plateid):
             # plaque + TCA.Core.Replicat(name="rep" + str(i), data=array, single=False, skip=to_skip_HMT[(plateid, i)])
             plaque + TCA.Core.Replicat(name="rep" + str(i), data=array, single=False)
             """
-            plaque + TCA.Core.Replica(name="rep" + str(i),
-                                       data=os.path.join(__INPUT__, "toulouse pl " + str(plateid) + "." + str(i) +
-                                                         ".csv"), skip=to_skip[(plateid, i)], datatype='mean')
+            file = os.path.join(__INPUT__, "toulouse pl " + str(plateid) + "." + str(i) + ".csv")
+            if os.path.isfile(file):
+                plaque + TCA.Core.Replica(name="rep" + str(i), data=file, skip=to_skip[(plateid, i)], datatype='mean')
         # # BEGIN ANALYZIS HERE
 
         __SIZE__ = 96

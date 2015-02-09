@@ -95,6 +95,9 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
         if not isinstance(plate, TCA.Core.Plate):
             raise TypeError("Need A Plate")
         else:
+            if plate._is_cutted:
+                raise NotImplementedError('Plate was cutted, for avoiding undesired effect, plate analysis cannot '
+                                          'be performed')
             neg_well = plate.platemap.get_coord(cneg)
             pos_well = plate.platemap.get_coord(cpos)
 

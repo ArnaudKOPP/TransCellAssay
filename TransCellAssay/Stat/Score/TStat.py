@@ -47,6 +47,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
             # if no neg was provided raise AttributeError
             if neg_control is None:
                 raise ValueError('Must provided negative control')
+            print('\033[0;32m[INFO]\033[0m Performe T-Stat')
             if len(plate) > 1:
                 if paired:
                     score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose)

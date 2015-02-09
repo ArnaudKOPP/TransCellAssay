@@ -31,6 +31,7 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
     """
     try:
         if isinstance(plate, TCA.Plate):
+            print('\033[0;32m[INFO]\033[0m Performe Rank product')
             rk_pdt = plate.platemap.platemap.values.flatten().reshape(size, 1)
             for key, value in plate.replica.items():
                 if secdata:

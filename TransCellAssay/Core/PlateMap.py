@@ -43,6 +43,11 @@ class PlateMap(object):
         self.platemap = pd.DataFrame()
         if platemap is not None:
             self.set_platemap(platemap)
+        self._is_cutted = False
+        self._rb = None
+        self._re = None
+        self._cb = None
+        self._ce = None
 
     def set_platemap(self, platemap_file=None):
         """
@@ -135,6 +140,24 @@ class PlateMap(object):
             return self.platemap.as_matrix()
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
+
+    def cut(self, rb, re, cb, ce):
+        """
+        Cut platemap
+        :param rb: row begin
+        :param re: row end
+        :param cb: col begin
+        :param ce: col end
+        :return:
+        """
+        if self._is_cutted:
+            raise AttributeError('Already cutted')
+        self.platemap = self.platemap.iloc[rb: re, cb: ce]
+        self._is_cutted = True
+        self._rb = rb
+        self._re = re
+        self._cb = cb
+        self._ce = ce
 
     def __getitem__(self, position):
         """
