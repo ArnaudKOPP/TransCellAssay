@@ -102,7 +102,6 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
                 if not (not (converge > epsilon) and not (loop < max_iteration)):
                     break
 
-            np.set_printoptions(suppress=True)
             if verbose:
                 print("PMP methods for removing systematics error")
                 print(u'\u03B1'" for T-Test : ", alpha)

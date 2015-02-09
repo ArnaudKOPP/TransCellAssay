@@ -12,7 +12,7 @@ pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 np.set_printoptions(linewidth=300)
-np.set_printoptions(suppress=True)
+np.set_printoptions(suppress=True, precision=4)
 
 import TransCellAssay as TCA
 
@@ -31,7 +31,7 @@ def do_384():
     neg = 'Neg infecte'
     pos = 'SiNTCP infecte'
 
-    # ana = TCA.plate_analysis(plaque1, [channel], neg, pos, threshold=400, percent=False)
+    # ana = TCA.plate_analysis(plaque1, [channel], neg, pos, threshold=600, percent=False)
     # # ana = TCA.plate_analysis(plaque1, [channel], neg, pos)
     # print(ana)
     # ana.write("/home/arnaud/Desktop/HDV/clean/percentvalue.csv")
@@ -43,7 +43,7 @@ def do_384():
 
     # TCA.heatmap_map_p(plaque1, plaque2)
 
-    TCA.plate_quality_control(plaque1, channel=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=False)
+    TCA.plate_quality_control(plaque1, channel=channel, cneg=neg, cpos=pos, use_raw_data=False, verbose=True)
 
     # # Keep only neg or pos in 3D plot
     # test1_neg = TCA.get_masked_array(plaque1.array, platemap.platemap.values, to_keep=neg)
@@ -51,16 +51,19 @@ def do_384():
     # TCA.plot_plate_3d(test1_neg)
     # TCA.plot_plate_3d(test1_pos)
 
-    plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=False, alpha=0.1)
+    # plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=True, alpha=0.1)
+
+    # TEST Diffusion Model
+    # TCA.diffusion_model(plaque1.array.copy(), max_iterations=120, verbose=True)
 
     # plaque1.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, alpha=0.1)
 
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=False)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=False)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, verbose=False)
-    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=False)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, verbose=True)
+    # TCA.plate_ssmd_score(plaque1, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=True)
 
-    TCA.plot_plate_3d(plaque1.array, surf=True)
+    # TCA.plot_plate_3d(plaque1.array, surf=True)
     # TCA.plot_plate_3d(plaque1.sec_array)
     # TCA.plot_plate_3d(plaque1.array, surf=True)
     # TCA.plate_heatmap_p(plaque1)
@@ -70,6 +73,11 @@ def do_384():
     # TCA.dual_flashlight_plot(plaque1.array, ssmd)
     # TCA.boxplot_by_wells(plaque1['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['B5', 'B6'], plate=plaque1, channel=channel)
+
+    print('TESTING CUTTING PLATE')
+    plaque1.cut(1, 15, 1, 23, apply_down=True)
+    plaque1.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=True, alpha=0.1)
+    TCA.plate_heatmap_p(plaque1, both=True)
 
 do_384()
 

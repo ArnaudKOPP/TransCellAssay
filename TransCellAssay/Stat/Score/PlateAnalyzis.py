@@ -31,12 +31,15 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
     """
     try:
         if isinstance(plate, TCA.Plate):
+            if plate._is_cutted:
+                raise NotImplementedError('Plate was cutted, for avoiding undesired effect, plate analysis cannot '
+                                          'be performed')
             print('\033[0;32m[INFO]\033[0m Performe plate analysis : {}'.format(plate.name))
             platemap = plate.get_platemap()
             size = platemap.get_shape()
             result = Result(size=(size[0] * size[1]))
             x = platemap.as_dict()
-            result._init_gene_well(x)
+            result.init_gene_well(x)
 
             neg_well = plate.platemap.get_well(neg)
             pos_well = plate.platemap.get_well(pos)
@@ -44,7 +47,6 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             cell_count_tmp = {}
             mean = {}
             median = {}
-            dict_percent_cell = {}
             dict_percent_cell_tmp = {}
             dict_percent_sd_cell = {}
 
@@ -86,8 +88,8 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             meancountlist = [(i, sum(v) / len(v)) for i, v in cell_count_tmp.items()]
             meancount = dict(meancountlist)  # # convert to dict
 
-            result._add_data(meancount, 'CellsCount')
-            result._add_data(sdvalue, 'SDCellsCount')
+            result.add_data(meancount, 'CellsCount')
+            result.add_data(sdvalue, 'SDCellsCount')
 
             # # toxicity index
             max_cell = max(meancount.values())
@@ -104,8 +106,8 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
                 viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
                     np.mean(neg_val) - np.mean(pos_val))
 
-            result._add_data(txidx, 'Toxicity')
-            result._add_data(viability, 'Viability')
+            result.add_data(txidx, 'Toxicity')
+            result.add_data(viability, 'Viability')
 
             # # variability
             std = [(i, np.std(v)) for i, v in mean.items()]
@@ -118,10 +120,10 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             mean = dict(mean)
             median = dict(median)
 
-            result._add_data(mean, 'Mean')
-            result._add_data(median, 'Median')
-            result._add_data(std, 'Std')
-            result._add_data(stdm, 'Stdm')
+            result.add_data(mean, 'Mean')
+            result.add_data(median, 'Median')
+            result.add_data(std, 'Std')
+            result.add_data(stdm, 'Stdm')
 
             # # positive cell
             # determine the mean of replicat
@@ -132,8 +134,8 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             for key, value in dict_percent_cell_tmp.items():
                 dict_percent_sd_cell[key] = np.std(value)
 
-            result._add_data(dict_percent_cell, 'PositiveCells')
-            result._add_data(dict_percent_sd_cell, 'SDPositiveCells')
+            result.add_data(dict_percent_cell, 'PositiveCells')
+            result.add_data(dict_percent_sd_cell, 'SDPositiveCells')
 
             return result
         else:
@@ -164,17 +166,7 @@ class Result(object):
 
         self._genepos_genename = {}  # # To save Well (key) and Gene position (value)
 
-    def get_values(self):
-        """
-        return value in pandas dataframe
-        :return: array
-        """
-        try:
-            return pd.DataFrame(self.values)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
-    def _init_gene_well(self, gene_list):
+    def init_gene_well(self, gene_list):
         """
         Add gene and well into the record Array in the first/second column
         :param gene_list: Dict with key are Well and Value are geneName
@@ -190,7 +182,7 @@ class Result(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def _add_data(self, datadict, col):
+    def add_data(self, datadict, col):
         """
         Insert Value from a dict where key = GeneName/pos and Value are value to insert
         Prefer by = pos in case of empty well

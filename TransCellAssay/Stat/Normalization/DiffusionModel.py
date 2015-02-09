@@ -29,23 +29,17 @@ def diffusion_model(array, max_iterations=100, verbose=False):
     :return: result array
     """
 
-    # # replace 0 with NaN
-    array[array == 0] = np.NaN
-
-    edge_effect = diffusion_model(array.copy())
+    edge_effect = DiffusionModel(array.copy())
     edge_effect.diffusion_model(max_iterations=max_iterations)
-    best_iteration = edge_effect.FindIterationsForBestMatch(array.copy())
-    shift_mult = edge_effect.FindBestShiftMultCoeff(array.copy(), best_iteration)
-    corrected_table = None
-    # Correct the plate
-    if not best_iteration == 0:
-        corrected_table = edge_effect.CorrectThePlate(array.copy(), best_iteration, shift_mult[0], shift_mult[1])
+    best_iteration = edge_effect.find_iterations_for_best_match(array.copy())
+    shift_mult = edge_effect.find_best_shift_mult_coeff(array.copy(), best_iteration)
 
-    # # replace NaN with 0
-    corrected_table = np.nan_to_num(corrected_table)
+    if not best_iteration == 0:
+        corrected_table = edge_effect.correct_the_plate(array.copy(), best_iteration, shift_mult[0], shift_mult[1])
+    else:
+        corrected_table = array.copy()
 
     if verbose:
-        np.set_printoptions(suppress=True)
         print("DiffusionModel methods for removing systematics error")
         print("Diffusion Iteration :", best_iteration)
         print("Diffusion Shift :", shift_mult[0])

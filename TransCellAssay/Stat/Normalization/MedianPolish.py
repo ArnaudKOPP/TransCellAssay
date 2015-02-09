@@ -47,8 +47,6 @@ def median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbo
             tbl_org = array
             tbl = tbl_org.copy()
 
-            # # replace 0 with NaN
-            tbl[tbl == 0] = np.NaN
             grand_effect = 0
             median_row_effects = 0
             median_col_effects = 0
@@ -57,25 +55,25 @@ def median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbo
 
             for i in range(max_iterations):
                 if method == 'median':
-                    row_medians = stats.nanmedian(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
+                    row_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                     row_effects += row_medians
-                    median_row_effects = stats.nanmedian(row_effects)
+                    median_row_effects = np.median(row_effects)
                 elif method == 'average':
-                    row_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
+                    row_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                     row_effects += row_medians
-                    median_row_effects = stats.nanmean(row_effects)
+                    median_row_effects = np.mean(row_effects)
                 grand_effect += median_row_effects
                 row_effects -= median_row_effects
                 tbl -= row_medians[:, np.newaxis]
 
                 if method == 'median':
-                    col_medians = stats.nanmedian(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
+                    col_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
                     col_effects += col_medians
-                    median_col_effects = stats.nanmedian(col_effects)
+                    median_col_effects = np.median(col_effects)
                 elif method == 'average':
-                    col_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
+                    col_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
                     col_effects += col_medians
-                    median_col_effects = stats.nanmean(col_effects)
+                    median_col_effects = np.mean(col_effects)
 
                 tbl -= col_medians
 
@@ -84,9 +82,6 @@ def median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbo
             MAD = mad(tbl.flatten())
             tbl = tbl / (MAD)
 
-            # # replace NaN with 0
-            tbl = np.nan_to_num(tbl)
-            np.set_printoptions(suppress=True)
             if verbose:
                 print("Bscore :  ")
                 print("Method used :", method)
@@ -126,8 +121,6 @@ def bz_median_polish(array, max_iterations=100, method='median', trimmed=0.0, ve
             tbl_org = array
             tbl = tbl_org.copy()
 
-            # # replace 0 with NaN
-            tbl[tbl == 0] = np.NaN
             grand_effect = 0
             median_row_effects = 0
             median_col_effects = 0
@@ -136,32 +129,29 @@ def bz_median_polish(array, max_iterations=100, method='median', trimmed=0.0, ve
 
             for i in range(max_iterations):
                 if method == 'median':
-                    row_medians = stats.nanmedian(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
+                    row_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                     row_effects += row_medians
-                    median_row_effects = stats.nanmedian(row_effects)
+                    median_row_effects = np.median(row_effects)
                 elif method == 'average':
-                    row_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
+                    row_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                     row_effects += row_medians
-                    median_row_effects = stats.nanmean(row_effects)
+                    median_row_effects = np.mean(row_effects)
                 grand_effect += median_row_effects
                 row_effects -= median_row_effects
                 tbl -= row_medians[:, np.newaxis]
 
                 if method == 'median':
-                    col_medians = stats.nanmedian(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
+                    col_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
                     col_effects += col_medians
-                    median_col_effects = stats.nanmedian(col_effects)
+                    median_col_effects = np.median(col_effects)
                 elif method == 'average':
-                    col_medians = stats.nanmean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
+                    col_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
                     col_effects += col_medians
-                    median_col_effects = stats.nanmean(col_effects)
+                    median_col_effects = np.mean(col_effects)
 
                 tbl -= col_medians
 
                 grand_effect += median_col_effects
-
-            # # replace NaN with 0
-            tbl = np.nan_to_num(tbl)
 
             # become BZscore
             for i in range(tbl.shape[0]):
@@ -169,7 +159,6 @@ def bz_median_polish(array, max_iterations=100, method='median', trimmed=0.0, ve
                     if not tbl[i][j] == np.NaN:
                         tbl[i][j] = (tbl[i][j] - np.mean(tbl.flatten()) / np.std(tbl.flatten()))
 
-            np.set_printoptions(suppress=True)
             if verbose:
                 print("BZscore:  ")
                 print("Method used :", method)

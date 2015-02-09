@@ -105,7 +105,6 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
                 for j in range(nrows.__len__()):
                     input_array[j][c] -= x[i]
 
-            np.set_printoptions(suppress=True)
             if verbose:
                 print("MEA methods for removing systematics error")
                 print(u'\u03B1'" for T-Test : ", alpha)

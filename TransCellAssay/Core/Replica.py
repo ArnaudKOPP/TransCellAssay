@@ -57,6 +57,11 @@ class Replica(object):
             self.name = None
 
         self.skip_well = skip
+        self._is_cutted = False
+        self._rb = None
+        self._re = None
+        self._cb = None
+        self._ce = None
 
     def set_raw_data(self, input_file):
         """
@@ -228,6 +233,24 @@ class Replica(object):
                 return self.array
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
+
+    def cut(self, rb, re, cb, ce):
+        """
+        Cut the replicat to 'zoom' into a defined zone, for avoiding crappy effect during SEC process
+        :param rb: row begin
+        :param re: row end
+        :param cb: col begin
+        :param ce: col end
+        """
+        if self.array is not None:
+            self.array = self.array[rb: re, cb: ce]
+        if self.sec_array is not None:
+            self.sec_array = self.sec_array[rb: re, cb: ce]
+        self._is_cutted = True
+        self._rb = rb
+        self._re = re
+        self._cb = cb
+        self._ce = ce
 
     def normalization(self, channel, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """

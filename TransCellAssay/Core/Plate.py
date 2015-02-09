@@ -67,6 +67,11 @@ class Plate(object):
         self.sec_array = None
 
         self.skip_well = skip
+        self._is_cutted = False
+        self._rb = None
+        self._re = None
+        self._cb = None
+        self._ce = None
 
     def print_meta_info(self):
         """
@@ -314,6 +319,9 @@ class Plate(object):
             tmp_array = np.zeros(self.platemap.platemap.shape)
             i = 0
 
+            if self._is_cutted:
+                tmp_array = tmp_array[self._rb: self._re, self._cb: self._ce]
+
             for key, replicat in self.replica.items():
                 i += 1
                 if self.array is None:
@@ -333,6 +341,28 @@ class Plate(object):
                 self.isSpatialNormalized = True
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
+
+    def cut(self, rb, re, cb, ce, apply_down=True):
+        """
+        Cut a plate and replicat to 'zoom' into a defined zone, for avoiding crappy effect during SEC process
+        :param rb: row begin
+        :param re: row end
+        :param cb: col begin
+        :param ce: col end
+        :param apply_down: apply the cutting to replica
+        """
+        if self.array is not None:
+            self.array = self.array[rb: re, cb: ce]
+        if self.sec_array is not None:
+            self.sec_array = self.sec_array[rb: re, cb: ce]
+        if apply_down:
+            for key, value in self.replica.items():
+                value.cut(rb, re, cb, ce)
+        self._is_cutted = True
+        self._rb = rb
+        self._re = re
+        self._cb = cb
+        self._ce = ce
 
     def normalization(self, channel, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """
