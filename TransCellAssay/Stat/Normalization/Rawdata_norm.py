@@ -84,7 +84,7 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
     """
     try:
         __valid_method = ['Zscore', 'RobustZscore', 'PercentOfSample', 'RobustPercentOfSample', 'PercentOfControl',
-                          'NormalizedPercentInhibition']
+                          'NormalizedPercentInhibition', None]
 
         if method not in __valid_method:
             raise ValueError("Method don't exist, choose : {}".format(__valid_method))

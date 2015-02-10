@@ -350,7 +350,7 @@ class Plate(object):
         """
         if self._is_cutted:
             raise AttributeError('Already cutted')
-        print("\033[0;33m !!!!! [WARNING] !!!!! \033[0m Cutting operation cannot be reverted, so plate Analysis and "
+        print("\033[0;33m[WARNING]\033[0m Cutting operation cannot be reverted, so plate Analysis and "
               "some other function may not be functionnal anymore")
         if self.array is not None:
             self.array = self.array[rb: re, cb: ce]
@@ -407,8 +407,8 @@ class Plate(object):
         else:
             self.normalization(channels, method, log, neg, pos, skipping_wells)
 
-    def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=False, verbose=False,
-                                    save=False, max_iterations=100, alpha=0.05, epsilon=0.01):
+    def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
+                                    save=True, max_iterations=100, alpha=0.05, epsilon=0.01):
         """
         Apply a spatial normalization for remove edge effect
         Resulting matrix are save in plate object if save = True

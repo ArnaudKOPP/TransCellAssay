@@ -46,7 +46,7 @@ def systematic_error_detection_test(array, alpha=0.05, verbose=False, path=None)
                     sedt_array[:, col] = 1
 
             if verbose:
-                print("Systematics Error Detection Test :")
+                print("\033[0;32m[INFO]\033[0m Systematics Error Detection Test")
                 print(u'\u03B1'" setting for T-Test : ", alpha)
                 print(sedt_array)
                 print("")

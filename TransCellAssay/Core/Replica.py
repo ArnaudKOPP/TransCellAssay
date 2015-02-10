@@ -315,7 +315,7 @@ class Replica(object):
         except Exception as e:
             print("\033[0;31m[ERROR]\033[0m", e)
 
-    def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=False,
+    def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=True,
                                     max_iterations=100, alpha=0.05, epsilon=0.01):
         """
         Apply a spatial normalization for remove edge effect
