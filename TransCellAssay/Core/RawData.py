@@ -72,9 +72,13 @@ class RawData(object):
         if well is not None:
             if not isinstance(well, list):
                 well = [well]
+                if well not in self.get_unique_well():
+                    raise ValueError('Wrong Well')
             datagp = self.get_groupby_data()
 
         if channel is not None:
+            if channel not in self.get_channel_list():
+                raise ValueError('Wrong Channel')
             if well is not None:
                 for i in well:
                     if data is None:

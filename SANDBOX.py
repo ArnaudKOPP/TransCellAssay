@@ -27,7 +27,7 @@ def do_384():
         if os.path.isfile(file):
             plaque + TCA.Core.Replica(name="rep1",
                                       data=file,
-                                      datatype='median')
+                                      datatype='mean')
     except:
         pass
     try:
@@ -35,7 +35,7 @@ def do_384():
         if os.path.isfile(file):
             plaque + TCA.Core.Replica(name="rep2",
                                       data=file,
-                                      datatype='median')
+                                      datatype='mean')
     except:
         pass
     try:
@@ -43,7 +43,7 @@ def do_384():
         if os.path.isfile(file):
             plaque + TCA.Core.Replica(name="rep3",
                                       data=file,
-                                      datatype='median')
+                                      datatype='mean')
     except:
         pass
 
@@ -63,12 +63,12 @@ def do_384():
     # print(ana)
     # ana.write("/home/arnaud/Desktop/HDV/RawdataClean/Percentvalue"+plate_nb+".csv")
 
-    plaque.normalization_channels(channels=channel,
-                                  method='Zscore',
-                                  neg=platemap.search_well(neg),
-                                  pos=platemap.search_well(pos))
+    # plaque.normalization_channels(channels=channel,
+    #                               method='Zscore',
+    #                               neg=platemap.search_well(neg),
+    #                               pos=platemap.search_well(pos))
 
-    # plaque.compute_data_from_replicat(channel=channel)
+    plaque.compute_data_from_replicat(channel=channel)
     plaque.cut(1, 15, 1, 23, apply_down=True)
     # plaque.compute_data_from_replicat(channel=channel)
 
@@ -79,27 +79,27 @@ def do_384():
     # TCA.plot_plate_3d(test1_pos)
 
     alpha = 0.1
-    TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=True, alpha=alpha)
-    TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=True, alpha=alpha)
-    TCA.systematic_error_detection_test(plaque['rep3'].array, verbose=True, alpha=alpha)
-    plaque.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=True, alpha=alpha,
+    verbose = False
+    TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
+    TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
+    TCA.systematic_error_detection_test(plaque['rep3'].array, verbose=verbose, alpha=alpha)
+    plaque.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=verbose, alpha=alpha,
                                        max_iterations=50)
 
     # TEST Diffusion Model
-    # TCA.diffusion_model(plaque.array.copy(), max_iterations=120, verbose=True)
+    # TCA.diffusion_model(plaque.array.copy(), max_iterations=120, verbose=verbose)
 
     # ### not Single Cell
-    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=True, sec_data=True, verbose=True)
-    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=True)
-    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=False, sec_data=True, verbose=True)
-    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=True)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=True, sec_data=True, verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=False, sec_data=True, verbose=verbose)
+    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=verbose)
 
     # #### Single Cell
     # TCA.independance(plaque, neg='Neg', channel=channel)
     # TCA.rank_product(plaque, secdata=True, verbose=True)
 
-    verbose = True
-    sec = False
+    sec = True
     TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec, verbose=verbose)
     TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec, variance="equal",
                          verbose=verbose)
@@ -139,7 +139,8 @@ def do_384():
     # to_save = pd.DataFrame(final_array)
     # to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
 
-    # TCA.plate_heatmap_p(plaque, both=True)
+    TCA.plate_heatmap_p(plaque, both=True)
+    TCA.plot_wells(plaque, neg=neg, pos=pos)
     # TCA.plot_plate_3d(plaque['rep1'].sec_array, surf=True)
     # TCA.plot_plate_3d(plaque.sec_array)
     # TCA.plot_plate_3d(plaque.array, surf=True)

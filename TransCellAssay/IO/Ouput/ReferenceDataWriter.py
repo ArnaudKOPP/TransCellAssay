@@ -25,35 +25,27 @@ class ReferenceDataWriter(object):
     Class for writing data of reference from plate into file
     """
 
-    def __init__(self, *args, channels, ref, filepath=None):
+    def __init__(self, plate, channels, ref, filepath=None):
         if filepath is None:
-            print('\033[0;33m[WARNING]\033[0m file path not provided')
-            self._writer = None
+            print('\033[0;33m[WARNING]\033[0m file path not provided, default will be used')
+            self._writer = pd.ExcelWriter("ReferenceDataWriter.xlsx")
         else:
             self._writer = pd.ExcelWriter(filepath)
             print('\033[0;32m[INFO]\033[0m Writing xlsx :', filepath)
-        self._save_reference(args, ref=ref, channels=channels)
+        self._save_reference(plate, ref=ref, channels=channels)
 
-    def _save_reference(self, args, channels, ref=None):
+    def _save_reference(self, plate, channels, ref):
         plt_list = []
 
         # # Grab all plate object
-        for arg in args:
-            if isinstance(arg, list):
-                for elem in arg:
-                    if isinstance(elem, TCA.Plate):
-                        plt_list.append(elem)
-                    else:
-                        raise TypeError('Put Plate into list')
-            elif isinstance(arg, TCA.Plate):
-                plt_list.append(arg)
-            else:
-                raise TypeError('Take plate in input')
+        if not isinstance(plate, TCA.Plate):
+            raise ValueError('Take Plate in input')
 
-        # # assume that every plate have the same replica number
-        plt_col_idx = [str(x)+str(y)+str(z) for x in [t for t in plt_list[0].replicat.keys()] for y in ref for z in ['Mean', 'Std', 'Sem']]
+        plt_col_idx = [str(x)+str(y)+str(z) for x in [t for t in plate.replica.keys()] for y in ref for z in ['Mean', 'Std', 'Sem']]
 
         for channel in channels:
+            if channel not in plate.platemap.get_channel_list():
+                raise ValueError('Wrong Channel')
             print('\033[0;32m[INFO]\033[0m Computation for channel :', channel)
             plt_name_index = []
             df = pd.DataFrame()
@@ -71,7 +63,11 @@ class ReferenceDataWriter(object):
         well_ref = collections.OrderedDict()
         # # search all position for desired reference
         for ref in refs:
-            well_ref[ref] = plate.platemap.search_coord(ref)
+            try:
+                well_ref[ref] = plate.platemap.search_coord(ref)
+            except KeyError:
+                print('\033[0;31m[ERROR]\033[0m Some Reference are non existing : ABORT')
+                return 0
 
         plate_ref_data = None
 

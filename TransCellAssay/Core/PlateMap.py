@@ -77,7 +77,7 @@ class PlateMap(object):
         """
         list_coord = [x for x in zip(*np.where(self.platemap.values == to_search))]
         if len(list_coord) < 1:
-            raise AttributeError('This gene don\'t exist: %s' % to_search)
+            raise KeyError('This gene don\'t exist: %s' % to_search)
         return list_coord
 
     def search_well(self, to_search):
@@ -88,7 +88,7 @@ class PlateMap(object):
         """
         list_well = [Utils.get_opposite_well_format(x) for x in zip(*np.where(self.platemap.values == to_search))]
         if len(list_well) < 1:
-            raise AttributeError('This gene don\'t exist: %s' % to_search)
+            raise KeyError('This gene don\'t exist: %s' % to_search)
         return list_well
 
     def as_dict(self):

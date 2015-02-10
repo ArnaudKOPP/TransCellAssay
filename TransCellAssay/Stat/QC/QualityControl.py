@@ -91,38 +91,39 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
     :param verbose: print or not quality data
     :return: return numpy array with qc
     """
-    try:
-        if not isinstance(plate, TCA.Core.Plate):
-            raise TypeError("Need A Plate")
-        else:
-            if plate._is_cutted:
-                raise NotImplementedError('Plate was cutted, for avoiding undesired effect, plate analysis cannot '
-                                          'be performed')
+    if not isinstance(plate, TCA.Core.Plate):
+        raise TypeError("Need A Plate")
+    else:
+        if plate._is_cutted:
+            print('\033[0;31m[ERROR]\033[0m Plate was cutted, plate analysis cannot be performed : ABORT')
+            return 0
+        try:
             neg_well = plate.platemap.search_coord(cneg)
             pos_well = plate.platemap.search_coord(cpos)
+        except KeyError:
+            print('\033[0;31m[ERROR]\033[0m Some Reference are non existing : ABORT')
+            return 0
 
-            qc_data_array = pd.DataFrame()
+        qc_data_array = pd.DataFrame()
 
-            for key, value in plate.replica.items():
-                qc_data_array = qc_data_array.append(
-                    replicat_quality_control(value, channel=channel, neg_well=neg_well, pos_well=pos_well,
-                                             sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data,
-                                             skipping_wells=skipping_wells,  verbose=False))
+        for key, value in plate.replica.items():
+            qc_data_array = qc_data_array.append(
+                __replicat_quality_control(value, channel=channel, neg_well=neg_well, pos_well=pos_well,
+                                           sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data,
+                                           skipping_wells=skipping_wells,  verbose=False))
 
-            if verbose:
-                print("Quality control for plate: ", plate.name + "\n")
-                print(qc_data_array)
+        if verbose:
+            print("Quality control for plate: ", plate.name + "\n")
+            print(qc_data_array)
 
-            if dirpath is not None:
-                qc_data_array.to_csv(os.path.join(dirpath, "QC_Data.csv"), index=False)
+        if dirpath is not None:
+            qc_data_array.to_csv(os.path.join(dirpath, "QC_Data.csv"), index=False)
 
-            return qc_data_array
-    except Exception as e:
-        print(e)
+        return qc_data_array
 
 
-def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,
-                             skipping_wells=True, verbose=False):
+def __replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,
+                               skipping_wells=True, verbose=False):
     """
     Compute quality control on replicat for selected channel
     :param replicat: Replicat to compute qc
@@ -136,70 +137,64 @@ def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, 
     :param verbose: print or not quality data
     :return:return numpy array with qc
     """
-    try:
-        if not isinstance(replicat, TCA.Core.Replica):
-            raise TypeError("Need A Replicat")
+    if not use_raw_data:
+        if replicat.array is None:
+            raise Exception("Compute_data_from_replicat First")
+
+    if skipping_wells:
+        valid_neg_well = replicat.get_valid_well(neg_well)
+        valid_pos_well = replicat.get_valid_well(pos_well)
+    else:
+        valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well]
+        valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well]
+
+    # # get Data
+    if not use_raw_data:
+        if replicat.array is not None:
+            negdata = __get_data_control_array(replicat.array, c_ref=valid_neg_well)
+            posdata = __get_data_control_array(replicat.array, c_ref=valid_pos_well)
         else:
-            if not use_raw_data:
-                if replicat.array is None:
-                    raise Exception("Compute_data_from_replicat First")
+            print('\033[0;33m[WARNING]\033[0m 1data/well not available, using instead Raw Data')
+            negdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
+            posdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
+    else:
+        if replicat.rawdata is not None:
+            negdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
+            posdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
+        else:
+            print('\033[0;33m[WARNING]\033[0m Raw Data not available, using instead 1data/well ')
+            negdata = __get_data_control_array(replicat.array, c_ref=valid_neg_well)
+            posdata = __get_data_control_array(replicat.array, c_ref=valid_pos_well)
 
-            if skipping_wells:
-                valid_neg_well = replicat.get_valid_well(neg_well)
-                valid_pos_well = replicat.get_valid_well(pos_well)
+    qc_data_array = pd.DataFrame(
+        np.zeros(1, dtype=[('Replicat ID', str), ('Neg Mean', float), ('Neg SD', float),
+                           ('Pos Mean', float), ('Pos SD', float), ('AVR', float),
+                           ('Z*Factor', float), ('ZFactor', float), ('SSMD', float),
+                           ('CVD', float)]))
+
+    if sedt:
+        if sec_data:
+            if replicat.sec_array is None:
+                raise ValueError("SEC Before")
             else:
-                valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well]
-                valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well]
+                TCA.systematic_error_detection_test(replicat.sec_array)
+        else:
+            TCA.systematic_error_detection_test(replicat.array, verbose=True)
+    qc_data_array['Replicat ID'] = replicat.name
+    qc_data_array['Neg Mean'] = np.mean(negdata)
+    qc_data_array['Neg SD'] = np.std(negdata)
+    qc_data_array['Pos Mean'] = np.mean(posdata)
+    qc_data_array['Pos SD'] = np.std(posdata)
+    qc_data_array['AVR'] = __avr(negdata, posdata)
+    qc_data_array['Z*Factor'] = __zfactor_prime(negdata, posdata)
+    qc_data_array['ZFactor'] = __zfactor(replicat.rawdata.df, channel, negdata, posdata)
+    qc_data_array['SSMD'] = __ssmd(negdata, posdata)
+    qc_data_array['CVD'] = __cvd(negdata, posdata)
 
-            # # get Data
-            if not use_raw_data:
-                if replicat.array is not None:
-                    negdata = __get_data_control_array(replicat.array, c_ref=valid_neg_well)
-                    posdata = __get_data_control_array(replicat.array, c_ref=valid_pos_well)
-                else:
-                    print('\033[0;33m[WARNING]\033[0m 1data/well not available, using instead Raw Data')
-                    negdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
-                    posdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
-            else:
-                if replicat.rawdata is not None:
-                    negdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
-                    posdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
-                else:
-                    print('\033[0;33m[WARNING]\033[0m Raw Data not available, using instead 1data/well ')
-                    negdata = __get_data_control_array(replicat.array, c_ref=valid_neg_well)
-                    posdata = __get_data_control_array(replicat.array, c_ref=valid_pos_well)
-
-            qc_data_array = pd.DataFrame(
-                np.zeros(1, dtype=[('Replicat ID', str), ('Neg Mean', float), ('Neg SD', float),
-                                   ('Pos Mean', float), ('Pos SD', float), ('AVR', float),
-                                   ('Z*Factor', float), ('ZFactor', float), ('SSMD', float),
-                                   ('CVD', float)]))
-
-            if sedt:
-                if sec_data:
-                    if replicat.sec_array is None:
-                        raise ValueError("SEC Before")
-                    else:
-                        TCA.systematic_error_detection_test(replicat.sec_array)
-                else:
-                    TCA.systematic_error_detection_test(replicat.array, verbose=True)
-            qc_data_array['Replicat ID'] = replicat.name
-            qc_data_array['Neg Mean'] = np.mean(negdata)
-            qc_data_array['Neg SD'] = np.std(negdata)
-            qc_data_array['Pos Mean'] = np.mean(posdata)
-            qc_data_array['Pos SD'] = np.std(posdata)
-            qc_data_array['AVR'] = __avr(negdata, posdata)
-            qc_data_array['Z*Factor'] = __zfactor_prime(negdata, posdata)
-            qc_data_array['ZFactor'] = __zfactor(replicat.rawdata.df, channel, negdata, posdata)
-            qc_data_array['SSMD'] = __ssmd(negdata, posdata)
-            qc_data_array['CVD'] = __cvd(negdata, posdata)
-
-            if verbose:
-                print("\nQuality Control for replicat : ", replicat.name + "\n")
-                print(qc_data_array)
-            return qc_data_array
-    except Exception as e:
-        print(e)
+    if verbose:
+        print("\nQuality Control for replicat : ", replicat.name + "\n")
+        print(qc_data_array)
+    return qc_data_array
 
 
 def __get_data_control_array(array, c_ref):

@@ -277,8 +277,11 @@ class Plate(object):
               "some other function may not be functionnal anymore")
         if self.array is not None:
             self.array = self.array[rb: re, cb: ce]
+        else:
+            raise AttributeError('array is empty')
         if self.sec_array is not None:
-            self.sec_array = self.sec_array[rb: re, cb: ce]
+            self.sec_array = None
+            print('\033[0;33m[WARNING]\033[0m Must reperforme SEC process')
         if apply_down:
             for key, value in self.replica.items():
                 value.cut(rb, re, cb, ce)
