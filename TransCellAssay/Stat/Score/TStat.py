@@ -60,7 +60,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
         else:
             raise TypeError('Take only plate')
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        print(e)
 
 
 def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
@@ -77,82 +77,76 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
     :param verbose: be verbose or not
     :return: score data
     """
-    try:
-        if isinstance(plate, TCA.Plate):
-            ttest_score = np.zeros(plate.platemap.platemap.shape)
+    ttest_score = np.zeros(plate.platemap.platemap.shape)
 
-            # # replace 0 with NaN
-            ttest_score[ttest_score == 0] = np.NaN
+    # # replace 0 with NaN
+    ttest_score[ttest_score == 0] = np.NaN
 
-            nb_rep = len(plate.replica)
+    nb_rep = len(plate.replica)
 
-            neg_value = []
-            neg_position = plate.platemap.get_coord(neg_control)
-            if not neg_position:
-                raise Exception("Not Well for control")
+    neg_value = []
+    neg_position = plate.platemap.search_coord(neg_control)
+    if not neg_position:
+        raise Exception("Not Well for control")
 
-            for key, value in plate.replica.items():
-                # # remove skipped Wells
-                if len(value.skip_well) > 0:
-                    valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
-                else:
-                    valid_neg_position = neg_position
-                for neg in valid_neg_position:
-                    try:
-                        if sec_data:
-                            neg_value.append(value.sec_array[neg[0]][neg[1]])
-                        else:
-                            neg_value.append(value.array[neg[0]][neg[1]])
-                    except Exception:
-                        raise Exception("Your desired datatype are not available")
-            nb_neg_wells = len(neg_value)
-            mean_neg = np.nanmean(neg_value)
-            var_neg = np.nanvar(neg_value)
-
-            # search rep value for ith well
-            for i in range(ttest_score.shape[0]):
-                for j in range(ttest_score.shape[1]):
-                    well_value = []
-                    for key, value in plate.replica.items():
-                        if (i, j) in value.skip_well:
-                            continue
-                        try:
-                            if sec_data:
-                                well_value.append(value.sec_array[i][j])
-                            else:
-                                well_value.append(value.array[i][j])
-                        except Exception:
-                            raise Exception("Your desired datatype are not available")
-                    mean_rep = np.nanmean(well_value)
-                    var_rep = np.nanvar(well_value)
-
-                    # # performed unpaired t-test
-                    if variance == 'unequal':
-                        ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt(
-                            (var_rep / nb_rep) + (var_neg / nb_neg_wells))
-                    elif variance == 'equal':
-                        ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * (
-                            (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * (
-                            (1 / nb_rep) * (1 / nb_neg_wells)))
-                    else:
-                        raise ValueError('Variance attribut must be unequal or equal.')
-
-            # # replace NaN with 0
-            ttest_score = np.nan_to_num(ttest_score)
-
-            if verbose:
-                print("Unpaired t-test :")
-                print("Systematic Error Corrected Data : ", sec_data)
-                print("Data type : ", plate.datatype)
-                print("variance parameter : ", variance)
-                print("t-test score :")
-                print(ttest_score)
-                print("")
-            return ttest_score
+    for key, value in plate.replica.items():
+        # # remove skipped Wells
+        if len(value.skip_well) > 0:
+            valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
         else:
-            raise TypeError('Take only plate')
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+            valid_neg_position = neg_position
+        for neg in valid_neg_position:
+            try:
+                if sec_data:
+                    neg_value.append(value.sec_array[neg[0]][neg[1]])
+                else:
+                    neg_value.append(value.array[neg[0]][neg[1]])
+            except Exception:
+                raise Exception("Your desired datatype are not available")
+    nb_neg_wells = len(neg_value)
+    mean_neg = np.nanmean(neg_value)
+    var_neg = np.nanvar(neg_value)
+
+    # search rep value for ith well
+    for i in range(ttest_score.shape[0]):
+        for j in range(ttest_score.shape[1]):
+            well_value = []
+            for key, value in plate.replica.items():
+                if (i, j) in value.skip_well:
+                    continue
+                try:
+                    if sec_data:
+                        well_value.append(value.sec_array[i][j])
+                    else:
+                        well_value.append(value.array[i][j])
+                except Exception:
+                    raise Exception("Your desired datatype are not available")
+            mean_rep = np.nanmean(well_value)
+            var_rep = np.nanvar(well_value)
+
+            # # performed unpaired t-test
+            if variance == 'unequal':
+                ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt(
+                    (var_rep / nb_rep) + (var_neg / nb_neg_wells))
+            elif variance == 'equal':
+                ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * (
+                    (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * (
+                                                                        (1 / nb_rep) * (1 / nb_neg_wells)))
+            else:
+                raise ValueError('Variance attribut must be unequal or equal.')
+
+    # # replace NaN with 0
+    ttest_score = np.nan_to_num(ttest_score)
+
+    if verbose:
+        print("Unpaired t-test :")
+        print("Systematic Error Corrected Data : ", sec_data)
+        print("Data type : ", plate.datatype)
+        print("variance parameter : ", variance)
+        print("t-test score :")
+        print(ttest_score)
+        print("")
+    return ttest_score
 
 
 def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
@@ -164,65 +158,59 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
     :param verbose: be verbose or not
     :return: score data
     """
-    try:
-        if isinstance(plate, TCA.Plate):
-            ttest_score = np.zeros(plate.platemap.platemap.shape)
+    ttest_score = np.zeros(plate.platemap.platemap.shape)
 
-            # # replace 0 with NaN
-            ttest_score[ttest_score == 0] = np.NaN
+    # # replace 0 with NaN
+    ttest_score[ttest_score == 0] = np.NaN
 
-            neg_position = plate.platemap.get_coord(neg_control)
-            if not neg_position:
-                raise Exception("Not Well for control")
+    neg_position = plate.platemap.search_coord(neg_control)
+    if not neg_position:
+        raise Exception("Not Well for control")
 
-            # search neg control value
-            def _search_neg_data(replicat, neg_pos):
-                # # remove skipped Wells
-                if len(value.skip_well) > 0:
-                    valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
-                else:
-                    valid_neg_pos = neg_pos
-                neg_value = []
-                for neg_i in valid_neg_pos:
-                    try:
-                        if sec_data:
-                            well_value = replicat.sec_array[neg_i[0]][neg_i[1]]
-                        else:
-                            well_value = replicat.array[neg_i[0]][neg_i[1]]
-                        neg_value.append(well_value)
-                    except Exception:
-                        raise Exception("Your desired datatype are not available")
-                return np.nanmedian(neg_value)
-
-            for i in range(ttest_score.shape[0]):
-                for j in range(ttest_score.shape[1]):
-                    well_value = []
-                    for key, value in plate.replica.items():
-                        if (i, j) in value.skip_well:
-                            continue
-                        neg_median = _search_neg_data(value, neg_position)
-                        try:
-                            if sec_data:
-                                well_value.append(value.sec_array[i][j] - neg_median)
-                            else:
-                                well_value.append(value.array[i][j] - neg_median)
-                        except Exception:
-                            raise Exception("Your desired datatype are not available")
-                    ttest_score[i][j] = np.nanmean(well_value) / (
-                        np.nanstd(well_value) / np.sqrt(len(plate.replica)))
-
-            # # replace NaN with 0
-            ttest_score = np.nan_to_num(ttest_score)
-
-            if verbose:
-                print("Paired t-test :")
-                print("Systematic Error Corrected Data : ", sec_data)
-                print("Data type : ", plate.datatype)
-                print("t-test score :")
-                print(ttest_score)
-                print("")
-            return ttest_score
+    # search neg control value
+    def _search_neg_data(replicat, neg_pos):
+        # # remove skipped Wells
+        if len(value.skip_well) > 0:
+            valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
         else:
-            raise TypeError('Take only plate')
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+            valid_neg_pos = neg_pos
+        neg_value = []
+        for neg_i in valid_neg_pos:
+            try:
+                if sec_data:
+                    well_value = replicat.sec_array[neg_i[0]][neg_i[1]]
+                else:
+                    well_value = replicat.array[neg_i[0]][neg_i[1]]
+                neg_value.append(well_value)
+            except Exception:
+                raise Exception("Your desired datatype are not available")
+        return np.nanmedian(neg_value)
+
+    for i in range(ttest_score.shape[0]):
+        for j in range(ttest_score.shape[1]):
+            well_value = []
+            for key, value in plate.replica.items():
+                if (i, j) in value.skip_well:
+                    continue
+                neg_median = _search_neg_data(value, neg_position)
+                try:
+                    if sec_data:
+                        well_value.append(value.sec_array[i][j] - neg_median)
+                    else:
+                        well_value.append(value.array[i][j] - neg_median)
+                except Exception:
+                    raise Exception("Your desired datatype are not available")
+            ttest_score[i][j] = np.nanmean(well_value) / (
+                np.nanstd(well_value) / np.sqrt(len(plate.replica)))
+
+    # # replace NaN with 0
+    ttest_score = np.nan_to_num(ttest_score)
+
+    if verbose:
+        print("Paired t-test :")
+        print("Systematic Error Corrected Data : ", sec_data)
+        print("Data type : ", plate.datatype)
+        print("t-test score :")
+        print(ttest_score)
+        print("")
+    return ttest_score

@@ -29,29 +29,26 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
     :param verbose: print or not result
     :return: return np ndarray with result
     """
-    try:
-        if isinstance(plate, TCA.Plate):
-            print('\033[0;32m[INFO]\033[0m Performe Rank product')
-            rk_pdt = plate.platemap.platemap.values.flatten().reshape(size, 1)
-            for key, value in plate.replica.items():
-                if secdata:
-                    rank = __get_data_rank(value.sec_array, method=rank_method)
-                else:
-                    rank = __get_data_rank(value.array, method=rank_method)
-                rk_pdt = np.append(rk_pdt, rank.flatten().reshape(size, 1), axis=1)
+    if isinstance(plate, TCA.Plate):
+        print('\033[0;32m[INFO]\033[0m Performe Rank product')
+        rk_pdt = plate.platemap.platemap.values.flatten().reshape(size, 1)
+        for key, value in plate.replica.items():
+            if secdata:
+                rank = __get_data_rank(value.sec_array, method=rank_method)
+            else:
+                rank = __get_data_rank(value.array, method=rank_method)
+            rk_pdt = np.append(rk_pdt, rank.flatten().reshape(size, 1), axis=1)
 
-            if mean_method is 'mean':
-                rk_pdt = np.append(rk_pdt, np.mean(rk_pdt[:, 1:], axis=1).reshape(size, 1), axis=1)
-            elif mean_method is 'median':
-                rk_pdt = np.append(rk_pdt, np.median(rk_pdt[:, 1:], axis=1).reshape(size, 1), axis=1)
+        if mean_method is 'mean':
+            rk_pdt = np.append(rk_pdt, np.mean(rk_pdt[:, 1:], axis=1).reshape(size, 1), axis=1)
+        elif mean_method is 'median':
+            rk_pdt = np.append(rk_pdt, np.median(rk_pdt[:, 1:], axis=1).reshape(size, 1), axis=1)
 
-            if verbose:
-                print(rk_pdt)
-            return rk_pdt
-        else:
-            raise TypeError('Provide a plate')
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        if verbose:
+            print(rk_pdt)
+        return rk_pdt
+    else:
+        raise TypeError('Provide a plate')
 
 
 def __get_data_rank(array, method="average"):

@@ -36,32 +36,25 @@ class RawData(object):
         if isinstance(path_or_file, str):
             self.__CACHING_gbdata = None
             self.__CACHING_gbdata_key = None
-            try:
+            if os.path.isfile(path_or_file):
                 self.df = pd.read_csv(path_or_file, engine='c')
-                print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
-            except Exception:
-                try:
-                    self.df = pd.read_csv(path_or_file, decimal=",", sep=";", engine='c')
-                    print('\033[0;32m[INFO]\033[0m Reading %s File' % path_or_file)
-                except Exception as e:
-                    raise IOError(e)
+                print('\033[0;32m[INFO]\033[0m Reading RawData %s File' % path_or_file)
+            else:
+                raise IOError('File don\'t exist')
         elif isinstance(path_or_file, TCA.InputFile):
             if path_or_file.dataframe is not None:
                 self.df = path_or_file.dataframe
             else:
                 raise ValueError('Empty Input File')
         else:
-            print("\033[0;31m[ERROR]\033[0m")
+            raise TypeError('Input types not handled')
 
     def get_channel_list(self):
         """
         Get all channels/component in list
         :return: list of channel/component
         """
-        try:
-            return self.df.columns.tolist()
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.df.columns.tolist()
 
     def get_raw_data(self, channel=None, well=None, well_idx=False):
         """
@@ -71,47 +64,41 @@ class RawData(object):
         :param well_idx: add or not well id
         :return: raw data in pandas dataframe
         """
-        try:
-            if well_idx:
-                if not isinstance(channel, list):
-                    channel = [channel]
-                channel.insert(0, 'Well')
-            data = None
-            if well is not None:
-                if not isinstance(well, list):
-                    well = [well]
-                datagp = self.get_groupby_data()
+        if well_idx:
+            if not isinstance(channel, list):
+                channel = [channel]
+            channel.insert(0, 'Well')
+        data = None
+        if well is not None:
+            if not isinstance(well, list):
+                well = [well]
+            datagp = self.get_groupby_data()
 
-            if channel is not None:
-                if well is not None:
-                    for i in well:
-                        if data is None:
-                            data = datagp.get_group(i)[channel]
-                        data = data.append(datagp.get_group(i)[channel])
-                    return data
-                else:
-                    return self.df[channel]
+        if channel is not None:
+            if well is not None:
+                for i in well:
+                    if data is None:
+                        data = datagp.get_group(i)[channel]
+                    data = data.append(datagp.get_group(i)[channel])
+                return data
             else:
-                if well is not None:
-                    for i in well:
-                        if data is None:
-                            data = datagp.get_group(i)
-                        data = data.append(datagp.get_group(i))
-                    return data
-                else:
-                    return self.df
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+                return self.df[channel]
+        else:
+            if well is not None:
+                for i in well:
+                    if data is None:
+                        data = datagp.get_group(i)
+                    data = data.append(datagp.get_group(i))
+                return data
+            else:
+                return self.df
 
     def get_unique_well(self):
         """
         return all unique wells
         :return:
         """
-        try:
-            return self.df.Well.unique()
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.df.Well.unique()
 
     def df_to_array(self, chan):
         """
@@ -119,20 +106,17 @@ class RawData(object):
         :param chan:
         :return:
         """
-        try:
-            print("\033[0;33m[INFO/WARNING]\033[0m Only to use with 1Data/Well Raw data")
-            size = len(self.df)
-            if size <= 96:
-                array = np.zeros((8, 12))
-            elif size <= 384:
-                array = np.zeros((16, 24))
-            elif size > 384:
-                raise NotImplementedError('MAX 384 Well plate are not implemented')
-            for i in range(size):
-                array[self.df['Row'][i]][self.df['Column'][i]] = self.df[chan][i]
-            return array
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        print("\033[0;33m[INFO/WARNING]\033[0m Only to use with 1Data/Well Raw data")
+        size = len(self.df)
+        if size <= 96:
+            array = np.zeros((8, 12))
+        elif size <= 384:
+            array = np.zeros((16, 24))
+        elif size > 384:
+            raise NotImplementedError('MAX 384 Well plate are not implemented')
+        for i in range(size):
+            array[self.df['Row'][i]][self.df['Column'][i]] = self.df[chan][i]
+        return array
 
     def compute_matrix(self, channel, type_mean='mean'):
         """
@@ -141,26 +125,23 @@ class RawData(object):
         :param type_mean:
         :return:
         """
-        try:
-            gbdata = self.get_groupby_data()
-            if type_mean is 'median':
-                tmp = gbdata.median()
-            elif type_mean is 'mean':
-                tmp = gbdata.mean()
-            channel = tmp[channel]
-            dict_pos_mean = channel.to_dict()  # # dict : key = pos and item are mean
-            if len(dict_pos_mean) <= 96:
-                data = np.zeros((8, 12))
-            elif len(dict_pos_mean) <= 384:
-                data = np.zeros((16, 24))
-            elif len(dict_pos_mean) > 384:
-                raise NotImplementedError('MAX 384 Well plate are not implemented')
-            for key, elem in dict_pos_mean.items():
-                pos = TCA.get_opposite_well_format(key)
-                data[pos[0]][pos[1]] = elem
-            return data
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        gbdata = self.get_groupby_data()
+        if type_mean is 'median':
+            tmp = gbdata.median()
+        elif type_mean is 'mean':
+            tmp = gbdata.mean()
+        channel = tmp[channel]
+        dict_pos_mean = channel.to_dict()  # # dict : key = pos and item are mean
+        if len(dict_pos_mean) <= 96:
+            data = np.zeros((8, 12))
+        elif len(dict_pos_mean) <= 384:
+            data = np.zeros((16, 24))
+        elif len(dict_pos_mean) > 384:
+            raise NotImplementedError('MAX 384 Well plate are not implemented')
+        for key, elem in dict_pos_mean.items():
+            pos = TCA.get_opposite_well_format(key)
+            data[pos[0]][pos[1]] = elem
+        return data
 
     def get_groupby_data(self, key='Well'):
         """
@@ -168,18 +149,15 @@ class RawData(object):
         :param key:
         :return:
         """
-        try:
-            if self.__CACHING_gbdata is not None:
-                if key is self.__CACHING_gbdata_key:
-                    return self.__CACHING_gbdata
-                else:
-                    self.__new_caching(key)
-                    return self.__CACHING_gbdata
+        if self.__CACHING_gbdata is not None:
+            if key is self.__CACHING_gbdata_key:
+                return self.__CACHING_gbdata
             else:
                 self.__new_caching(key)
                 return self.__CACHING_gbdata
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        else:
+            self.__new_caching(key)
+            return self.__CACHING_gbdata
 
     def __new_caching(self, key):
         self.__CACHING_gbdata = self.df.groupby(key)
@@ -191,15 +169,12 @@ class RawData(object):
         :param name: Give name to file
         :param path: Where to write .csv file
         """
-        try:
-            if not os.path.isdir(path):
-                os.mkdir(path)
-            if name is not None:
-                self.__write_raw_data(os.path.join(path, name)+'.csv')
-            else:
-                raise Exception("Writing Raw data problem")
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        if name is not None:
+            self.__write_raw_data(os.path.join(path, name)+'.csv')
+        else:
+            raise Exception("Writing Raw data problem")
 
     def __write_raw_data(self, filepath):
         self.df.to_csv(path=os.path.join(filepath) + ".csv", index=False)
@@ -210,22 +185,13 @@ class RawData(object):
         Remove some data for saving memory
         :param only_caching: remove only cache
         """
-        try:
-            self.__CACHING_gbdata = None
-            self.__CACHING_gbdata_key = None
-            if not only_caching:
-                self.df = None
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        self.__CACHING_gbdata = None
+        self.__CACHING_gbdata_key = None
+        if not only_caching:
+            self.df = None
 
     def __repr__(self):
-        try:
-            return "\n Raw Data head : \n" + repr(self.df.head())
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return "\n Raw Data head : \n" + repr(self.df.head())
 
     def __str__(self):
-        try:
-            return self.__repr__()
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.__repr__()

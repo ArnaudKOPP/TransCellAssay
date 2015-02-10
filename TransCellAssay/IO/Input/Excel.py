@@ -29,7 +29,7 @@ class EXCEL(InputFile):
         Load excel file
         :param fpath:
         """
-        try:
+        if os.path.isfile(fpath):
             xls = pd.ExcelFile(fpath)
             columns_name = xls.sheet_names
             measures = filter(lambda x: 'Cell measures' in x, columns_name)
@@ -43,7 +43,6 @@ class EXCEL(InputFile):
                 else:
                     data = data.append(pd.read_excel(fpath, i))
                 data.fillna(0)
-
             self.dataframe = data
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        else:
+            raise IOError('File don\'t exist')

@@ -68,20 +68,14 @@ class Replica(object):
         Set data in replicat
         :param input_file: csv file
         """
-        try:
-            self.rawdata = TCA.RawData(input_file)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        self.rawdata = TCA.RawData(input_file)
 
     def get_channel_list(self):
         """
         Get all channels/component in list
         :return: list of channel/component
         """
-        try:
-            return self.rawdata.get_channel_list
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.rawdata.get_channel_list
 
     def set_data_overide(self, array, array_type='median'):
         """
@@ -91,20 +85,17 @@ class Replica(object):
         :param array_type: median or mean data
         """
         __valide_datatype = ['median', 'mean']
-        try:
-            if isinstance(array, np.ndarray):
-                if array_type not in __valide_datatype:
-                    raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
-                print("\033[0;33m[WARNING]\033[0m Manual overide")
-                self.array = array
-                if array_type == 'median':
-                    self.datatype = array_type
-                else:
-                    self.datatype = array_type
+        if isinstance(array, np.ndarray):
+            if array_type not in __valide_datatype:
+                raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
+            print("\033[0;33m[WARNING]\033[0m Manual overide")
+            self.array = array
+            if array_type == 'median':
+                self.datatype = array_type
             else:
-                raise AttributeError("Must provided numpy ndarray")
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+                self.datatype = array_type
+        else:
+            raise AttributeError("Must provided numpy ndarray")
 
     def set_name(self, info):
         """
@@ -112,68 +103,53 @@ class Replica(object):
         :param info: info on replicat
         :return:
         """
-        try:
-            self.name = info
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        self.name = info
 
     def get_name(self):
         """
         return name from replicat
         :return: info
         """
-        try:
-            return self.name
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.name
 
     def set_skip_well(self, to_skip):
         """
         Set the well to skip in neg or pos control
         :param to_skip: list of well to skip (1,3) or B3
         """
-        try:
-            well_list = list()
-            for elem in to_skip:
-                if isinstance(elem, tuple):
-                    well_list.append(elem)
-                elif isinstance(elem, str):
-                    well_list.append(TCA.get_opposite_well_format(elem))
-                else:
-                    pass
-            self.skip_well = well_list
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        well_list = list()
+        for elem in to_skip:
+            if isinstance(elem, tuple):
+                well_list.append(elem)
+            elif isinstance(elem, str):
+                well_list.append(TCA.get_opposite_well_format(elem))
+            else:
+                pass
+        self.skip_well = well_list
 
     def get_skip_well(self):
         """
         Set the well to skip in neg or pos control
         """
-        try:
-            return self.skip_well
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.skip_well
 
     def get_valid_well(self, to_check):
         """
         :type to_check: list to check if all well are not to skip
         """
-        try:
-            if len(self.skip_well) < 1:
-                return to_check
-            if len(to_check) > 0:
-                # type check
-                elem = to_check[0]
-                if isinstance(elem, tuple):
-                    tmp = [x for x in to_check if x not in self.skip_well]
-                    return tmp
-                if isinstance(elem, str):
-                    tmp = [x for x in to_check if TCA.get_opposite_well_format(x) not in self.skip_well]
-                    return tmp
-            else:
-                raise ValueError('Empty List')
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        if len(self.skip_well) < 1:
+            return to_check
+        if len(to_check) > 0:
+            # type check
+            elem = to_check[0]
+            if isinstance(elem, tuple):
+                tmp = [x for x in to_check if x not in self.skip_well]
+                return tmp
+            if isinstance(elem, str):
+                tmp = [x for x in to_check if TCA.get_opposite_well_format(x) not in self.skip_well]
+                return tmp
+        else:
+            raise ValueError('Empty List')
 
     def get_raw_data(self, channel=None, well=None, well_idx=False):
         """
@@ -183,10 +159,7 @@ class Replica(object):
         :param well_idx: add or not well id
         :return: raw data in pandas dataframe
         """
-        try:
-            return self.rawdata.get_raw_data(channel=channel, well=well, well_idx=well_idx)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.rawdata.get_raw_data(channel=channel, well=well, well_idx=well_idx)
 
     def compute_data_for_channel(self, channel):
         """
@@ -194,22 +167,19 @@ class Replica(object):
         :param channel: which channel to keep in matrix
         :return:
         """
-        try:
-            if self.array is not None:
-                if self._array_channel is not channel:
-                    print('\033[0;33m[WARNING]\033[0m Overwriting previous channel data from {} to {}'.format(
-                        self._array_channel, channel))
-            if not self.isNormalized:
-                print('\033[0;33m[WARNING]\033[0m Data are not normalized for replicat : ', self.name)
+        if self.array is not None:
+            if self._array_channel is not channel:
+                print('\033[0;33m[WARNING]\033[0m Overwriting previous channel data from {} to {}'.format(
+                    self._array_channel, channel))
+        if not self.isNormalized:
+            print('\033[0;33m[WARNING]\033[0m Data are not normalized for replicat : ', self.name)
 
-            if self.datatype == 'median':
-                self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
-                self._array_channel = channel
-            else:
-                self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
-                self._array_channel = channel
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        if self.datatype == 'median':
+            self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
+            self._array_channel = channel
+        else:
+            self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
+            self._array_channel = channel
 
     def get_data_array(self, channel, sec=False):
         """
@@ -218,21 +188,18 @@ class Replica(object):
         :param sec: want Systematic Error Corrected data ? default=False
         :return: compute data in matrix form
         """
-        try:
-            if sec:
-                if self.sec_array is None:
-                    raise ValueError('Launch Systematic Error Correction before')
-                else:
-                    return self.sec_array
-            if self.array is None:
-                self.compute_data_for_channel(channel)
-            if channel is self._array_channel:
-                return self.array
+        if sec:
+            if self.sec_array is None:
+                raise ValueError('Launch Systematic Error Correction before')
             else:
-                self.compute_data_for_channel(channel)
-                return self.array
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+                return self.sec_array
+        if self.array is None:
+            self.compute_data_for_channel(channel)
+        if channel is self._array_channel:
+            return self.array
+        else:
+            self.compute_data_for_channel(channel)
+            return self.array
 
     def cut(self, rb, re, cb, ce):
         """
@@ -254,7 +221,7 @@ class Replica(object):
         self._cb = cb
         self._ce = ce
 
-    def normalization(self, channel, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
+    def __normalization(self, channel, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """
         Performed normalization on data
         :param channel; which channel to normalize
@@ -264,32 +231,29 @@ class Replica(object):
         :param neg: negative control
         :param skipping_wells: skip defined wells, use it with poc and npi
         """
-        try:
-            if not self.isNormalized:
-                if skipping_wells:
-                    self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=channel,
-                                                                         method=method, log2_transf=log,
-                                                                         neg_control=[x for x in neg if (
-                                                                             TCA.get_opposite_well_format(
-                                                                                 x) not in self.skip_well)],
-                                                                         pos_control=[x for x in pos if (
-                                                                             TCA.get_opposite_well_format(
-                                                                                 x) not in self.skip_well)])
-                else:
-                    self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=channel,
-                                                                         method=method,
-                                                                         log2_transf=log,
-                                                                         neg_control=neg,
-                                                                         pos_control=pos)
-                self.isNormalized = True
-                self.compute_data_for_channel(channel)
-                print(
-                    '\033[0;32m[INFO]\033[0m Raw Data normalization processing for replicat {} on channel {}'.format(
-                        self.name, channel))
+        if not self.isNormalized:
+            if skipping_wells:
+                self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=channel,
+                                                                     method=method, log2_transf=log,
+                                                                     neg_control=[x for x in neg if (
+                                                                         TCA.get_opposite_well_format(
+                                                                             x) not in self.skip_well)],
+                                                                     pos_control=[x for x in pos if (
+                                                                         TCA.get_opposite_well_format(
+                                                                             x) not in self.skip_well)])
             else:
-                print("\033[0;33m[WARNING]\033[0m Data are already normalized, do nothing")
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+                self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=channel,
+                                                                     method=method,
+                                                                     log2_transf=log,
+                                                                     neg_control=neg,
+                                                                     pos_control=pos)
+            self.isNormalized = True
+            self.compute_data_for_channel(channel)
+            print(
+                '\033[0;32m[INFO]\033[0m Raw Data normalization processing for replicat {} on channel {}'.format(
+                    self.name, channel))
+        else:
+            print("\033[0;33m[WARNING]\033[0m Data are already normalized, do nothing")
 
     def normalization_channels(self, channels, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """
@@ -301,19 +265,16 @@ class Replica(object):
         :param log:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
         """
-        try:
-            if isinstance(channels, str):
-                self.normalization(channel=channels, method=method, log=log, neg=neg, pos=pos,
-                                   skipping_wells=skipping_wells)
-            elif isinstance(channels, list):
-                for chan in channels:
-                    self.normalization(channel=chan, method=method, log=log, neg=neg, pos=pos,
-                                       skipping_wells=skipping_wells)
-                    self.isNormalized = True
-                print("\033[0;33m[WARNING]\033[0m Choose your channels that you want to work with plate.compute_data_"
-                      "from_replicat or replica.compute_data_for_channel")
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        if isinstance(channels, str):
+            self.__normalization(channel=channels, method=method, log=log, neg=neg, pos=pos,
+                                 skipping_wells=skipping_wells)
+        elif isinstance(channels, list):
+            for chan in channels:
+                self.__normalization(channel=chan, method=method, log=log, neg=neg, pos=pos,
+                                     skipping_wells=skipping_wells)
+                self.isNormalized = True
+            print("\033[0;33m[WARNING]\033[0m Choose your channels that you want to work with plate.compute_data_"
+                  "from_replicat or replica.compute_data_for_channel")
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=True,
                                     max_iterations=100, alpha=0.05, epsilon=0.01):
@@ -332,82 +293,56 @@ class Replica(object):
         :param max_iterations: maximum iterations loop, default = 100
         :param epsilon: epsilon parameters for PMP
         """
-        try:
-            __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
+        __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
 
-            if algorithm not in __valid_sec_algo:
-                raise ValueError('Algorithm is not good choose : {}'.format(__valid_sec_algo))
+        if algorithm not in __valid_sec_algo:
+            raise ValueError('Algorithm is not good choose : {}'.format(__valid_sec_algo))
 
-            if self.array is None:
-                raise ValueError("Use first : compute_data_for_channel")
+        if self.array is None:
+            raise ValueError("Use first : compute_data_for_channel")
 
-            else:
-                if self.isSpatialNormalized:
-                    print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
+        else:
+            if self.isSpatialNormalized:
+                print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
 
-                print('\033[0;32m[INFO]\033[0m Systematic Error Correction processing : {} -> replica {}'.
-                      format(algorithm, self.name))
+            print('\033[0;32m[INFO]\033[0m Systematic Error Correction processing : {} -> replica {}'.
+                  format(algorithm, self.name))
 
-                if algorithm == 'Bscore':
-                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
-                                                                   max_iterations=max_iterations,
-                                                                   verbose=verbose)
-                    if save:
-                        self.sec_array = resid
-                        self.isSpatialNormalized = True
-
-                if algorithm == 'BZscore':
-                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
-                                                                      max_iterations=max_iterations,
-                                                                      verbose=verbose)
-                    if save:
-                        self.sec_array = resid
-                        self.isSpatialNormalized = True
-
-                if algorithm == 'PMP':
-                    corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
-                                                                   verbose=verbose, alpha=alpha, epsilon=epsilon)
-                    if save:
-                        self.sec_array = corrected_data_array
-                        self.isSpatialNormalized = True
-
-                if algorithm == 'MEA':
-                    corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha)
-                    if save:
-                        self.sec_array = corrected_data_array
-                        self.isSpatialNormalized = True
-
-                if algorithm == 'DiffusionModel':
-                    corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
+            if algorithm == 'Bscore':
+                ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
+                                                               max_iterations=max_iterations,
                                                                verbose=verbose)
-                    if save:
-                        self.sec_array = corrected_data_array
-                        self.isSpatialNormalized = True
+                if save:
+                    self.sec_array = resid
+                    self.isSpatialNormalized = True
 
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            if algorithm == 'BZscore':
+                ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
+                                                                  max_iterations=max_iterations,
+                                                                  verbose=verbose)
+                if save:
+                    self.sec_array = resid
+                    self.isSpatialNormalized = True
 
-    @staticmethod
-    def write_pickle(path):
-        """
-        Write pickle object
-        :param path: where to save
-        """
-        try:
-            print(path)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            if algorithm == 'PMP':
+                corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
+                                                               verbose=verbose, alpha=alpha, epsilon=epsilon)
+                if save:
+                    self.sec_array = corrected_data_array
+                    self.isSpatialNormalized = True
 
-    @staticmethod
-    def load_pickle(path):
-        """
-        read pickle object
-        :param path: where to read
-        """
-        try:
-            print(path)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            if algorithm == 'MEA':
+                corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha)
+                if save:
+                    self.sec_array = corrected_data_array
+                    self.isSpatialNormalized = True
+
+            if algorithm == 'DiffusionModel':
+                corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
+                                                           verbose=verbose)
+                if save:
+                    self.sec_array = corrected_data_array
+                    self.isSpatialNormalized = True
 
     def save_raw_data(self, path, name=None):
         """
@@ -415,6 +350,8 @@ class Replica(object):
         :param name: Give name to file
         :param path: Where to write .csv file
         """
+        if name is None:
+            name = self.name+".csv"
         self.rawdata.save_raw_data(path=path, name=name)
 
     def save_memory(self, only_cache=True):
@@ -422,30 +359,21 @@ class Replica(object):
         Save memory by deleting Raw Data that use a lot of memory
         :param only_cache: Remove only cache or all
         """
-        try:
-            self.rawdata.save_memory(only_cache=only_cache)
-            if DEBUG:
-                print('\033[0;32m[INFO]\033[0m Saving memory')
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        self.rawdata.save_memory(only_cache=only_cache)
+        if DEBUG:
+            print('\033[0;32m[INFO]\033[0m Saving memory')
 
     def __repr__(self):
         """
         Definition for the representation
         """
-        try:
-            return ("\n Replicat : " + repr(self.name) +
-                    repr(self.rawdata) +
-                    "\n Data normalized ? : " + repr(self.isNormalized) +
-                    "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return ("\n Replicat : " + repr(self.name) +
+                repr(self.rawdata) +
+                "\n Data normalized ? : " + repr(self.isNormalized) +
+                "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
 
     def __str__(self):
         """
         Definition for the print
         """
-        try:
-            return self.__repr__()
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.__repr__()

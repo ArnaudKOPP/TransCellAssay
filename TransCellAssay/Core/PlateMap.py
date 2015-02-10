@@ -13,6 +13,7 @@ E
 ..
 """
 
+import os
 import pandas as pd
 import numpy as np
 from TransCellAssay import Utils as Utils
@@ -55,91 +56,66 @@ class PlateMap(object):
         Read csv with first row as column name and first column as row name
         :param platemap_file: csv file with platemap
         """
-        try:
+        if os.path.isfile(platemap_file):
             print('\033[0;32m[INFO]\033[0m Reading PlateMap %s File' % platemap_file)
             self.platemap = pd.read_csv(platemap_file, index_col=0)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        else:
+            raise IOError('File don\'t exist')
 
-    def get_platemap(self):
-        """
-        Return platemap
-        :return: platemap (dataframe)
-        """
-        try:
-            return self.platemap
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
-    def get_shape(self):
+    def shape(self):
         """
         get the shape of platemap, so we can determine number of well
         :return: shape of platemap
         """
-        try:
-            return self.platemap.shape
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.platemap.shape
 
-    def get_coord(self, to_search):
+    def search_coord(self, to_search):
         """
         Search position of the gene and return coord
         :param to_search: gene to search
         :return: list of coord
         """
-        try:
-            list_coord = [x for x in zip(*np.where(self.platemap.values == to_search))]
-            if len(list_coord) < 1:
-                raise AttributeError('This gene don\'t exist: %s' % to_search)
-            return list_coord
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        list_coord = [x for x in zip(*np.where(self.platemap.values == to_search))]
+        if len(list_coord) < 1:
+            raise AttributeError('This gene don\'t exist: %s' % to_search)
+        return list_coord
 
-    def get_well(self, to_search):
+    def search_well(self, to_search):
         """
         Search position of the gene and return Well (list if multiple)
         :param to_search: gene to search
         :return: list of Well
         """
-        try:
-            list_well = [Utils.get_opposite_well_format(x) for x in zip(*np.where(self.platemap.values == to_search))]
-            if len(list_well) < 1:
-                raise AttributeError('This gene don\'t exist: %s' % to_search)
-            return list_well
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        list_well = [Utils.get_opposite_well_format(x) for x in zip(*np.where(self.platemap.values == to_search))]
+        if len(list_well) < 1:
+            raise AttributeError('This gene don\'t exist: %s' % to_search)
+        return list_well
 
     def as_dict(self):
         """
         Return Platemap as a dict
         :return: dataframe
         """
-        try:
-            mat = self.platemap.as_matrix()  # # transform PS dataframe into numpy matrix
-            size = mat.shape  # # get shape of matrix
-            row = size[0]
-            col = size[1]
-            map_as_dict = collections.OrderedDict()
-            for r in range(row):
-                for c in range(col):
-                    pos = (r, c)
-                    genename = mat[r][c]
-                    if not genename == "":  # # check if empty well
-                        well = Utils.get_opposite_well_format(pos)
-                        map_as_dict[well] = genename
-            return map_as_dict
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        mat = self.platemap.as_matrix()  # # transform PS dataframe into numpy matrix
+        size = mat.shape  # # get shape of matrix
+        row = size[0]
+        col = size[1]
+        map_as_dict = collections.OrderedDict()
+        for r in range(row):
+            for c in range(col):
+                pos = (r, c)
+                genename = mat[r][c]
+                if not genename == "":  # # check if empty well
+                    well = Utils.get_opposite_well_format(pos)
+                    map_as_dict[well] = genename
+        return map_as_dict
 
     def as_matrix(self):
         """
         Return PS as numpy array
         :return: numpy array
         """
-        try:
-            return self.platemap.as_matrix()
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.platemap.as_matrix()
 
     def cut(self, rb, re, cb, ce):
         """
@@ -166,32 +142,23 @@ class PlateMap(object):
         :param position: A1 or (0, 0)
         :return: string geneName of platesetup
         """
-        try:
-            # # for (0, 0) format
-            if isinstance(position, tuple):
-                return self.platemap.iloc[position[0], position[1]]
-            # # for 'A1' format
-            elif isinstance(position, str):
-                return self.platemap.loc[[position[0]], [position[1:]]]
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        # # for (0, 0) format
+        if isinstance(position, tuple):
+            return self.platemap.iloc[position[0], position[1]]
+        # # for 'A1' format
+        elif isinstance(position, str):
+            return self.platemap.loc[[position[0]], [position[1:]]]
 
     def __repr__(self):
         """
         Definition for the representation
         :return:
         """
-        try:
-            return "PlateMap: \n" + repr(self.platemap) + "\n"
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return "PlateMap: \n" + repr(self.platemap) + "\n"
 
     def __str__(self):
         """
         Definition for the print
         :return:
         """
-        try:
-            return self.__repr__()
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.__repr__()

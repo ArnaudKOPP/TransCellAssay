@@ -33,31 +33,28 @@ def independance(plate, neg, channel, equal_var=True):
     :param equal_var: equal variance or not
     :return: numpy array with result
     """
-    try:
-        if not isinstance(plate, TCA.Plate):
-            raise TypeError('Need a Plate Object')
-        else:
-            if len(plate.replica) > 1:
-                raise NotImplementedError('Implemented only for one replicat for the moment')
+    if not isinstance(plate, TCA.Plate):
+        raise TypeError('Need a Plate Object')
+    else:
+        if len(plate.replica) > 1:
+            raise NotImplementedError('Implemented only for one replicat for the moment')
 
-        shape = plate.platemap.platemap.get_shape()
-        size = shape[0] * shape[1]
-        result_array = np.zeros(size, dtype=[('GeneName', object), ('T-Statistic', float),
-                                             ('Two-tailed P-Value', float)])
+    shape = plate.platemap.platemap.shape()
+    size = shape[0] * shape[1]
+    result_array = np.zeros(size, dtype=[('GeneName', object), ('T-Statistic', float),
+                                         ('Two-tailed P-Value', float)])
 
-        for key, value in plate.replica.items():
-            neg_well = value.get_valid_well(neg)
-            neg_data = value.get_raw_data(channel=channel, well=neg_well)
-            cpt = 0
-            for i in range(shape[0]):
-                for j in range(shape[1]):
-                    test = value.get_raw_data(channel=channel, well=TCA.get_opposite_well_format((i, j)))
-                    res = stats.ttest_ind(neg_data, test, equal_var=equal_var)
-                    result_array['GeneName'][cpt] = plate.platemap.values[i][j]
-                    result_array['T-Statistic'][cpt] = res[0]
-                    result_array['Two-Tailed P-Value'][cpt] = res[1]
-                cpt += 1
+    for key, value in plate.replica.items():
+        neg_well = value.get_valid_well(neg)
+        neg_data = value.get_raw_data(channel=channel, well=neg_well)
+        cpt = 0
+        for i in range(shape[0]):
+            for j in range(shape[1]):
+                test = value.get_raw_data(channel=channel, well=TCA.get_opposite_well_format((i, j)))
+                res = stats.ttest_ind(neg_data, test, equal_var=equal_var)
+                result_array['GeneName'][cpt] = plate.platemap.values[i][j]
+                result_array['T-Statistic'][cpt] = res[0]
+                result_array['Two-Tailed P-Value'][cpt] = res[1]
+            cpt += 1
 
-        return result_array
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+    return result_array

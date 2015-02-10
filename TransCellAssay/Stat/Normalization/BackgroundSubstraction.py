@@ -47,7 +47,7 @@ class BackgroundSubstraction():
                 else:
                     raise TypeError('Accept only plate or list of plate')
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def __process(self):
         """

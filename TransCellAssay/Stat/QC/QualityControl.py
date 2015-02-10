@@ -98,8 +98,8 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
             if plate._is_cutted:
                 raise NotImplementedError('Plate was cutted, for avoiding undesired effect, plate analysis cannot '
                                           'be performed')
-            neg_well = plate.platemap.get_coord(cneg)
-            pos_well = plate.platemap.get_coord(cpos)
+            neg_well = plate.platemap.search_coord(cneg)
+            pos_well = plate.platemap.search_coord(cpos)
 
             qc_data_array = pd.DataFrame()
 
@@ -118,7 +118,7 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
 
             return qc_data_array
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        print(e)
 
 
 def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,
@@ -199,7 +199,7 @@ def replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False, 
                 print(qc_data_array)
             return qc_data_array
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        print(e)
 
 
 def __get_data_control_array(array, c_ref):

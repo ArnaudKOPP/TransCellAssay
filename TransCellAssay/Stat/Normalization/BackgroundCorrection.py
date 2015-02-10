@@ -44,7 +44,7 @@ class BackgroundCorrection():
                 else:
                     raise TypeError('Accept only plate or list of plate')
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def background_correction(self, apply="Plate", verbose=False):
         """
@@ -57,7 +57,7 @@ class BackgroundCorrection():
             self.__background_surface_analysis()
             self.__apply_background_elimination()
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def __background_evaluation(self, apply_on='Plate', verbose=False, control_well=None):
         """
@@ -106,7 +106,7 @@ class BackgroundCorrection():
                 print(self.BackgroundModel)
                 print("")
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def __background_surface_analysis(self, plot=False):
         """
@@ -117,7 +117,7 @@ class BackgroundCorrection():
         try:
             return 0
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def __apply_background_elimination(self, apply_on, control_well=None):
         """
@@ -153,4 +153,4 @@ class BackgroundCorrection():
             else:
                 raise AttributeError("Apply strategy only on plate or replicat")
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)

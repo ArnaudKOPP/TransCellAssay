@@ -54,7 +54,7 @@ class WellCorrection():
                 else:
                     raise TypeError('Accept only plate or list of plate')
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def well_correction(self, approx="lst", apply_on='replicat', verbose=False):
         """
@@ -67,7 +67,7 @@ class WellCorrection():
             self.__apply_approx()
             self.__apply_zscore()
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def __apply_approx(self, approx="lst", apply_on='replicat', verbose=False):
         """
@@ -103,7 +103,7 @@ class WellCorrection():
             else:
                 raise AttributeError("Apply strategy only on plate or replicat")
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def __apply_zscore(self, data):
         """
@@ -115,7 +115,7 @@ class WellCorrection():
             datax = (data - np.mean(data)) / np.std(data)
             return datax
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def __compute_approximation(self, data_y, approx="lst", verbose=False):
         """
@@ -158,4 +158,4 @@ class WellCorrection():
                 ys = s(xs)
                 return ys
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)

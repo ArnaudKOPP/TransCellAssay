@@ -110,7 +110,7 @@ class DiffusionModel(object):
                 self.Mask[0][j] = 1
                 self.Mask[self.Array.shape[0] + 1][j] = 1
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def diffusion_laplacian_function(self, input_arr, output, width, height):
         """
@@ -147,7 +147,7 @@ class DiffusionModel(object):
 
             return output
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def find_iterations_for_best_match(self, plate):
         """
@@ -184,7 +184,7 @@ class DiffusionModel(object):
                     dist = currentdist
             return bestiter
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def find_best_shift_mult_coeff(self, input_plate, idxdiff):
         """
@@ -222,7 +222,7 @@ class DiffusionModel(object):
 
             return shiftmult
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def correct_the_plate(self, input_plate, idxdiff, shift, multcoeff):
         """
@@ -240,7 +240,7 @@ class DiffusionModel(object):
                     corrected_plate[X][Y] = input_plate[X][Y] / (self.DiffusionMaps[idxdiff][X][Y] * multcoeff + shift)
             return corrected_plate
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def compute_diffusion_maps(self, max_iterations=100):
         """
@@ -280,4 +280,4 @@ class DiffusionModel(object):
                 self.DiffusionMapsStdev.append(np.nanmean(valuelist))
                 currentmap = nextmap.copy()
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)

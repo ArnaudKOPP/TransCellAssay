@@ -35,7 +35,6 @@ def kl(p, q):
     """
     p = np.asarray(p, dtype=np.float)
     q = np.asarray(q, dtype=np.float)
-
     return np.nansum(np.where(p != 0, p * np.log(p / q), 0))
 
 
@@ -47,12 +46,9 @@ def mad(arr):
     :param arr: numpy array value
     :return: return mad
     """
-    try:
-        # arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
-        med = np.nanmedian(arr)
-        return 1.4826 * np.nanmedian(np.absolute(arr - med))
-    except Exception as e:
-        print(e)
+    # arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
+    med = np.nanmedian(arr)
+    return 1.4826 * np.nanmedian(np.absolute(arr - med))
 
 
 def ssmd(array1, array2):
@@ -65,11 +61,8 @@ def ssmd(array1, array2):
     :param array2: Must be equivalent of positive
     :return: SSMD Value
     """
-    try:
-        ssmd = (np.mean(array2) - np.mean(array1)) / (np.sqrt(np.abs(np.std(array2) ** 2 - np.std(array1) ** 2)))
-        return ssmd
-    except Exception as e:
-        print(e)
+    ssmd = (np.mean(array2) - np.mean(array1)) / (np.sqrt(np.abs(np.std(array2) ** 2 - np.std(array1) ** 2)))
+    return ssmd
 
 
 def mann_whitney(array1, array2):
@@ -79,13 +72,9 @@ def mann_whitney(array1, array2):
     :param array2:
     :return:
     """
-    try:
-        import scipy.stats
-
-        u, prob = scipy.stats.mannwhitneyu(array1, array2)
-        return u, prob
-    except Exception as e:
-        print(e)
+    import scipy.stats
+    u, prob = scipy.stats.mannwhitneyu(array1, array2)
+    return u, prob
 
 
 def wilcoxon_rank_sum(array1, array2):
@@ -95,13 +84,9 @@ def wilcoxon_rank_sum(array1, array2):
     :param array2:
     :return:
     """
-    try:
-        import scipy.stats
-
-        z, p = scipy.stats.ranksums(array1, array2)
-        return z, p
-    except Exception as e:
-        print(e)
+    import scipy.stats
+    z, p = scipy.stats.ranksums(array1, array2)
+    return z, p
 
 
 def adjustpvalues(pvalues, method='fdr', n=None):
@@ -172,40 +157,31 @@ def anderson_darling_test(array):
     :param array:
     :return: return value
     """
-    try:
-        mean1 = np.nanmean(array)
-        std = np.nanstd(array)
-        norm = np.zeros(array.shape)
+    mean1 = np.nanmean(array)
+    std = np.nanstd(array)
+    norm = np.zeros(array.shape)
 
-        for i in range(0, len(array) - 1, 1):
-            norm[i] = (array[i] - mean1) / std
+    for i in range(0, len(array) - 1, 1):
+        norm[i] = (array[i] - mean1) / std
 
-        a = __asquare(norm)
-        return a
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+    a = __asquare(norm)
+    return a
 
 
 def __asquare(data):
-    try:
-        mean1 = np.nanmean(data)
-        varianceb = np.sqrt(2 * np.nanvar(data))
-        err = 0
-        cpt = 0
-        for i in range(0, len(data) - 1, 1):
-            cpt += 1
-            err += ((2 * cpt - 1) * np.log(__cdf(data[i], mean1, varianceb)) + np.log(
-                1 - __cdf(data[len(data - 1 - i)], mean1, varianceb)))
-        a = -len(data) - err / len(data)
+    mean1 = np.nanmean(data)
+    varianceb = np.sqrt(2 * np.nanvar(data))
+    err = 0
+    cpt = 0
+    for i in range(0, len(data) - 1, 1):
+        cpt += 1
+        err += ((2 * cpt - 1) * np.log(__cdf(data[i], mean1, varianceb)) + np.log(
+            1 - __cdf(data[len(data - 1 - i)], mean1, varianceb)))
+    a = -len(data) - err / len(data)
 
-        return a
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+    return a
 
 
 def __cdf(y, mu, varb):
-    try:
-        res = 0.5 * (1 + scipy.stats.norm.cdf((y - mu) / varb))
-        return res
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+    res = 0.5 * (1 + scipy.stats.norm.cdf((y - mu) / varb))
+    return res

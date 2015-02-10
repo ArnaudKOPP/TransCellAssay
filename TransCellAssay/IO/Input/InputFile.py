@@ -41,15 +41,12 @@ class InputFile(object):
         self.dataframe = self.dataframe.replace({'Row': {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H',
                                                          8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M', 13: 'N', 14: 'O',
                                                          15: 'P'}})
-        try:
-            # # insert Well columns
-            self.dataframe.insert(0, "Well", 0)
-            # # put Well value from row and col columns
-            self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x['Row'], x['Column'] + 1), axis=1)
-            remove = ['Row', 'Column']
-            self.dataframe = self.dataframe.drop(remove, axis=1)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        # # insert Well columns
+        self.dataframe.insert(0, "Well", 0)
+        # # put Well value from row and col columns
+        self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x['Row'], x['Column'] + 1), axis=1)
+        remove = ['Row', 'Column']
+        self.dataframe = self.dataframe.drop(remove, axis=1)
 
     def get_col(self):
         """
@@ -87,12 +84,12 @@ class InputFile(object):
         :return:
         """
 
-        def str_to_flt(x):
+        def __str_to_flt(x):
             return float(x)
 
         # # change , to . in float
         for chan in self.get_col():
-            self.dataframe[chan].apply(str_to_flt)
+            self.dataframe[chan].apply(__str_to_flt)
             if self.dataframe[chan].dtypes == 'object':
                 self.dataframe[chan] = self.dataframe[chan].str.replace(",", ".")
 
@@ -103,15 +100,12 @@ class InputFile(object):
         :param path: Directory where to save file
         :param frmt: format of data, csv by default
         """
-        try:
-            fname = os.path.join(path, name)
-            if frmt is 'csv':
-                fname += '.csv'
-                self.dataframe.to_csv(fname, index=False, index_label=False)
-            else:
-                raise NotImplementedError('Only csv for the moment')
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        fname = os.path.join(path, name)
+        if frmt is 'csv':
+            fname += '.csv'
+            self.dataframe.to_csv(fname, index=False, index_label=False)
+        else:
+            raise NotImplementedError('Only csv for the moment')
 
     def df_to_array(self, channel, size=None):
         """
@@ -120,23 +114,20 @@ class InputFile(object):
         :param size: size/len of data 96 , 384 or 1526
         :return: numpy array
         """
-        try:
-            if self.is1Datawell:
-                if self.dataframe is not None:
-                    if size is None:
-                        size = len(self.dataframe)
-                    if size == 96:
-                        array = np.zeros((8, 12))
-                    elif size == 384:
-                        array = np.zeros((16, 24))
-                    else:
-                        raise NotImplementedError('1526 not yet implemented')
-                    for i in range(size):
-                        array[self.dataframe['Row'][i]][self.dataframe['Column'][i]] = self.dataframe[channel][i]
-                    return array
+        if self.is1Datawell:
+            if self.dataframe is not None:
+                if size is None:
+                    size = len(self.dataframe)
+                if size == 96:
+                    array = np.zeros((8, 12))
+                elif size == 384:
+                    array = np.zeros((16, 24))
                 else:
-                    raise Exception('Empty raw data')
+                    raise NotImplementedError('1526 not yet implemented')
+                for i in range(size):
+                    array[self.dataframe['Row'][i]][self.dataframe['Column'][i]] = self.dataframe[channel][i]
+                return array
             else:
-                raise Exception('Not applicable on this data type')
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+                raise Exception('Empty raw data')
+        else:
+            raise Exception('Not applicable on this data type')

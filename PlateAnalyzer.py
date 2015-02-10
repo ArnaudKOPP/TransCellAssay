@@ -218,8 +218,8 @@ def plate_analyzis(plateid):
         # analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
 
         # TCA.feature_scaling(plaque, __CHANNEL__, mean_scaling=True)
-        plaque.normalization(__CHANNEL__, method='PercentOfControl', log=False, neg=plaque.platemap.get_well(__NEG__),
-                             pos=plaque.platemap.get_well(__POS__), skipping_wells=True)
+        plaque.normalization(__CHANNEL__, method='PercentOfControl', log=False, neg=plaque.platemap.search_well(__NEG__),
+                             pos=plaque.platemap.search_well(__POS__), skipping_wells=True)
 
         plaque.compute_data_from_replicat(__CHANNEL__)
         # for key, value in plaque.replicat.items():

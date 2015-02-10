@@ -46,7 +46,6 @@ class Plate(object):
         Constructor
         """
         self.replica = collections.OrderedDict()
-        self._meta_info = {}
         self.name = name
 
         self.platemap = TCA.Core.PlateMap()
@@ -73,36 +72,19 @@ class Plate(object):
         self._cb = None
         self._ce = None
 
-    def print_meta_info(self):
-        """
-        Print all data contains in MetaInfo for Plate object
-        :return: print some output
-        """
-        try:
-            for keys, values in self._meta_info.items():
-                print(keys, values)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
     def set_plate_name(self, name):
         """
         Set Name for plate
         :param name:
         """
-        try:
-            self.name = name
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        self.name = name
 
     def get_plate_name(self):
         """
         Get Name of plate
         :return: Name of plate
         """
-        try:
-            return self.name
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.name
 
     def set_data(self, array, array_type):
         """
@@ -112,31 +94,25 @@ class Plate(object):
         :param array_type: median or mean data
         """
         __valide_datatype = ['median', 'mean']
-        try:
-            if isinstance(array, np.ndarray):
-                if array_type not in __valide_datatype:
-                    raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
-                self.array = array
-                if array_type == 'median':
-                    self.datatype = array_type
-                else:
-                    self.datatype = array_type
+        if isinstance(array, np.ndarray):
+            if array_type not in __valide_datatype:
+                raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
+            self.array = array
+            if array_type == 'median':
+                self.datatype = array_type
             else:
-                raise AttributeError("Must provied numpy ndarray")
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+                self.datatype = array_type
+        else:
+            raise AttributeError("Must provied numpy ndarray")
 
     def add_replicat(self, replicat):
         """
         Add replicat object to plate
         :param replicat: Give a replicat object
         """
-        try:
-            assert isinstance(replicat, TCA.Core.Replica)
-            name = replicat.name
-            self.replica[name] = replicat
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        assert isinstance(replicat, TCA.Core.Replica)
+        name = replicat.name
+        self.replica[name] = replicat
 
     def get_replicat(self, name):
         """
@@ -144,47 +120,35 @@ class Plate(object):
         :param name: string : key of replicat in dict
         :return: Replicat object
         """
-        try:
-            return self.replica[name]
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.replica[name]
 
     def get_all_replicat(self):
         """
         Get all replicat from plate
         :return: dict of replicat
         """
-        try:
-            return self.replica
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.replica
 
     def set_skip_well(self, to_skip):
         """
         Set the well to skip in neg or pos control
         :param to_skip: list of well to skip (1,3) or B3
         """
-        try:
-            well_list = list()
-            for elem in to_skip:
-                if isinstance(elem, tuple):
-                    well_list.append(elem)
-                elif isinstance(elem, str):
-                    well_list.append(TCA.get_opposite_well_format(elem))
-                else:
-                    pass
-            self.skip_well = well_list
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        well_list = list()
+        for elem in to_skip:
+            if isinstance(elem, tuple):
+                well_list.append(elem)
+            elif isinstance(elem, str):
+                well_list.append(TCA.get_opposite_well_format(elem))
+            else:
+                pass
+        self.skip_well = well_list
 
     def get_skip_well(self):
         """
         get the well to skip in neg or pos control
         """
-        try:
-            return self.skip_well
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.skip_well
 
     def check_data_consistency(self, remove=False):
         """
@@ -192,59 +156,33 @@ class Plate(object):
         :param remove: remove or not replicat with data error
         :return: 0 if error, 1 if data good
         """
-        try:
-            from itertools import chain
+        from itertools import chain
 
-            # Collect the input lists for use with chain below
-            all_lists = []
-            name = []
-            for key, value in self.replica.items():
-                all_lists.append(list(value.rawdata.get_unique_well()))
-                name.append(key)
+        # Collect the input lists for use with chain below
+        all_lists = []
+        name = []
+        for key, value in self.replica.items():
+            all_lists.append(list(value.rawdata.get_unique_well()))
+            name.append(key)
 
-            for A, B in zip(all_lists, name):
-                # Combine all the lists into one
-                super_list = list(chain(*all_lists))
-                # Get the unique items remaining in the combined list
-                super_set = set(super_list)
-                # Compute the unique items in this list and print them
-                uniques = super_set - set(A)
-                if len(uniques) > 0:
-                    print("\033[0;33m !!!!! [WARNING] !!!!! \033[0m")
-                    print("Missing Well in Raw Data replicat ", B, " : ", sorted(uniques))
-                    print("Missing Value can insert ERROR in further Analyzis")
-                    if remove:
-                        del self.replica[B]
-                        print(B, "Will be removed ---->")
-                    else:
-                        print("----> Can be removed with appropriate parameters : remove True or False")
-                    return 0
-
-            return 1
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
-    def add_info(self, key, value):
-        """
-        Add Info into the dict
-        :param key: key of info
-        :param value: text for info
-        """
-        try:
-            self._meta_info.pop(key, value)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
-    def get_info(self, key):
-        """
-        Get desired info with key
-        :param key: key of info
-        :return: info value from key
-        """
-        try:
-            return self._meta_info[key]
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m ", e)
+        for A, B in zip(all_lists, name):
+            # Combine all the lists into one
+            super_list = list(chain(*all_lists))
+            # Get the unique items remaining in the combined list
+            super_set = set(super_list)
+            # Compute the unique items in this list and print them
+            uniques = super_set - set(A)
+            if len(uniques) > 0:
+                print("\033[0;33m !!!!! [WARNING] !!!!! \033[0m")
+                print("Missing Well in Raw Data replicat ", B, " : ", sorted(uniques))
+                print("Missing Value can insert ERROR in further Analyzis")
+                if remove:
+                    del self.replica[B]
+                    print(B, "Will be removed ---->")
+                else:
+                    print("----> Can be removed with appropriate parameters : remove True or False")
+                return 0
+        return 1
 
     def get_raw_data(self, replicat=None, channel=None, well=None, well_idx=False):
         """
@@ -257,55 +195,43 @@ class Plate(object):
         :return: dict with data
         """
         data = {}
-        try:
-            if replicat is not None:
-                for key, value in self.replica.items():
-                    data[value.get_rep_name()] = value.get_raw_data(channel=channel, well=well, well_idx=well_idx)
-            else:
-                for rep in replicat:
-                    data[self.replica[rep].get_rep_name()] = rep.get_raw_data(channel=channel, well=well,
-                                                                              well_idx=well_idx)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        if replicat is not None:
+            for key, value in self.replica.items():
+                data[value.get_rep_name()] = value.get_raw_data(channel=channel, well=well, well_idx=well_idx)
+        else:
+            for rep in replicat:
+                data[self.replica[rep].get_rep_name()] = rep.get_raw_data(channel=channel, well=well,
+                                                                          well_idx=well_idx)
 
     def add_platemap(self, platemap):
         """
         Add the platemap to the plate
         :param platemap:
         """
-        try:
-            assert isinstance(platemap, TCA.Core.PlateMap)
-            self.platemap = platemap
-        except Exception as e:
-            print(e)
+        assert isinstance(platemap, TCA.Core.PlateMap)
+        self.platemap = platemap
 
     def get_platemap(self):
         """
         Get the platemap from the plate
         :return: platemap
         """
-        try:
-            return self.platemap
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.platemap
 
     def compute_all_channels_from_replicat(self):
         """
         compute all component mean from all replicat for each well
         :return: dataframe
         """
-        try:
-            df = None
-            for key, rep in self.replica.items():
-                assert isinstance(rep, TCA.Replica)
-                tmp = rep.rawdata.get_groupby_data()
-                if df is None:
-                    df = tmp.median()
-                else:
-                    df += tmp.median()
-            return df / len(self.replica)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        df = None
+        for key, rep in self.replica.items():
+            assert isinstance(rep, TCA.Replica)
+            tmp = rep.rawdata.get_groupby_data()
+            if df is None:
+                df = tmp.median()
+            else:
+                df += tmp.median()
+        return df / len(self.replica)
 
     def compute_data_from_replicat(self, channel, use_sec_data=False, forced_update=False):
         """
@@ -315,29 +241,26 @@ class Plate(object):
         :param use_sec_data: use or not sec data from replicat
         :param channel: which channel to have into sum up data
         """
-        try:
-            tmp_array = np.zeros(self.platemap.platemap.shape)
-            i = 0
+        tmp_array = np.zeros(self.platemap.platemap.shape)
+        i = 0
 
-            for key, replicat in self.replica.items():
-                i += 1
-                if self.array is None:
-                    replicat.compute_data_for_channel(channel)
-                if forced_update:
-                    replicat.compute_data_for_channel(channel)
-
-                if not use_sec_data:
-                    tmp_array = tmp_array + replicat.array
-                else:
-                    tmp_array = tmp_array + replicat.sec_array
+        for key, replicat in self.replica.items():
+            i += 1
+            if self.array is None:
+                replicat.compute_data_for_channel(channel)
+            if forced_update:
+                replicat.compute_data_for_channel(channel)
 
             if not use_sec_data:
-                self.array = tmp_array / i
+                tmp_array = tmp_array + replicat.array
             else:
-                self.sec_array = tmp_array / i
-                self.isSpatialNormalized = True
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+                tmp_array = tmp_array + replicat.sec_array
+
+        if not use_sec_data:
+            self.array = tmp_array / i
+        else:
+            self.sec_array = tmp_array / i
+            self.isSpatialNormalized = True
 
     def cut(self, rb, re, cb, ce, apply_down=True):
         """
@@ -366,7 +289,7 @@ class Plate(object):
         self._cb = cb
         self._ce = ce
 
-    def normalization(self, channel, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
+    def __normalization(self, channel, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """
         Apply Well correction on all replicat data
         call function like from replicat object
@@ -377,14 +300,11 @@ class Plate(object):
         :param log:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
         """
-        try:
-            for key, value in self.replica.items():
-                value.normalization(channel=channel, method=method, log=log, neg=neg, pos=pos,
-                                    skipping_wells=skipping_wells)
-            self.isNormalized = True
-            self.compute_data_from_replicat(channel, forced_update=True)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        for key, value in self.replica.items():
+            value.normalization_channels(channels=channel, method=method, log=log, neg=neg, pos=pos,
+                                         skipping_wells=skipping_wells)
+        self.isNormalized = True
+        self.compute_data_from_replicat(channel, forced_update=True)
 
     def normalization_channels(self, channels, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
         """
@@ -405,7 +325,7 @@ class Plate(object):
             except Exception as e:
                 print("\033[0;31m[ERROR]\033[0m", e)
         else:
-            self.normalization(channels, method, log, neg, pos, skipping_wells)
+            self.__normalization(channels, method, log, neg, pos, skipping_wells)
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
                                     save=True, max_iterations=100, alpha=0.05, epsilon=0.01):
@@ -422,138 +342,100 @@ class Plate(object):
         :param alpha: alpha for TTest
         :param epsilon: epsilon parameters for PMP
         """
-        try:
-            __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
+        __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
 
-            if algorithm not in __valid_sec_algo:
-                raise ValueError('Algorithm is not good choose : {}'.format(__valid_sec_algo))
+        if algorithm not in __valid_sec_algo:
+            raise ValueError('Algorithm is not good choose : {}'.format(__valid_sec_algo))
 
-            if apply_down:
-                for key, value in self.replica.items():
-                    value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
-                                                      max_iterations=max_iterations, alpha=alpha, epsilon=epsilon)
-                self.compute_data_from_replicat(channel=None, use_sec_data=True)
-                return
+        if apply_down:
+            for key, value in self.replica.items():
+                value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
+                                                  max_iterations=max_iterations, alpha=alpha, epsilon=epsilon)
+            self.compute_data_from_replicat(channel=None, use_sec_data=True)
+            return
 
-            if self.array is None:
-                raise ValueError("Use first : compute_data_from_replicat")
-            else:
-                if self.isSpatialNormalized:
-                    print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
-                print('\033[0;32m[INFO]\033[0m Systematic Error Correction processing : {}'.format(algorithm))
-                if algorithm == 'Bscore':
-                    ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
-                                                                   max_iterations=max_iterations,
-                                                                   verbose=verbose)
-                    if save:
-                        self.sec_array = resid
-                        self.isSpatialNormalized = True
-                if algorithm == 'BZscore':
-                    ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
-                                                                      max_iterations=max_iterations,
-                                                                      verbose=verbose)
-                    if save:
-                        self.sec_array = resid
-                        self.isSpatialNormalized = True
-
-                if algorithm == 'PMP':
-                    corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
-                                                                   alpha=alpha, verbose=verbose, epsilon=epsilon)
-                    if save:
-                        self.sec_array = corrected_data_array
-                        self.isSpatialNormalized = True
-
-                if algorithm == 'MEA':
-                    corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha)
-                    if save:
-                        self.sec_array = corrected_data_array
-                        self.isSpatialNormalized = True
-
-                if algorithm == 'DiffusionModel':
-                    corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
+        if self.array is None:
+            raise ValueError("Use first : compute_data_from_replicat")
+        else:
+            if self.isSpatialNormalized:
+                print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
+            print('\033[0;32m[INFO]\033[0m Systematic Error Correction processing : {}'.format(algorithm))
+            if algorithm == 'Bscore':
+                ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
+                                                               max_iterations=max_iterations,
                                                                verbose=verbose)
-                    if save:
-                        self.sec_array = corrected_data_array
-                        self.isSpatialNormalized = True
+                if save:
+                    self.sec_array = resid
+                    self.isSpatialNormalized = True
+            if algorithm == 'BZscore':
+                ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
+                                                                  max_iterations=max_iterations,
+                                                                  verbose=verbose)
+                if save:
+                    self.sec_array = resid
+                    self.isSpatialNormalized = True
 
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            if algorithm == 'PMP':
+                corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
+                                                               alpha=alpha, verbose=verbose, epsilon=epsilon)
+                if save:
+                    self.sec_array = corrected_data_array
+                    self.isSpatialNormalized = True
+
+            if algorithm == 'MEA':
+                corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha)
+                if save:
+                    self.sec_array = corrected_data_array
+                    self.isSpatialNormalized = True
+
+            if algorithm == 'DiffusionModel':
+                corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
+                                                           verbose=verbose)
+                if save:
+                    self.sec_array = corrected_data_array
+                    self.isSpatialNormalized = True
 
     def save_raw_data(self, path):
         """
         Save normalized raw data
         :param path: path where to save raw data
         """
-        try:
-            if not os.path.isdir(path):
-                os.mkdir(path)
-            for key, value in self.replica.items():
-                value.save_raw_data(path)
-        except Exception as e:
-            print(e)
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        for key, value in self.replica.items():
+            value.save_raw_data(path)
 
     def save_memory(self, only_cache=True):
         """
         Save memory by deleting Raw Data
         :param only_cache: Remove only cache
         """
-        try:
-            for key, value in self.replica.items():
-                value.save_memory(only_cache=only_cache)
-        except Exception as e:
-            print(e)
-
-    @staticmethod
-    def write_pickle(path):
-        """
-        Write pickle object
-        :param path: where to save
-        """
-        try:
-            print(path)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
-
-    @staticmethod
-    def load_pickle(path):
-        """
-        read pickle object
-        :param path: where to read
-        """
-        try:
-            print(path)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        for key, value in self.replica.items():
+            value.save_memory(only_cache=only_cache)
 
     def __sub__(self, id_rep):
         """
         Remove replicat from plate, use - operator
         :param id_rep: replica id to remove from plate
         """
-        try:
-            del self.replica[id_rep]
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        del self.replica[id_rep]
 
     def __add__(self, id_rep):
         """
         Add replicat to plate, use + operator
         :param id_rep: replica id that is added
         """
-        try:
-            if isinstance(id_rep, TCA.Core.Replica):
-                name = id_rep.name
-                self.replica[name] = id_rep
-            elif isinstance(id_rep, TCA.Core.PlateMap):
-                self.platemap = id_rep
-            elif isinstance(id_rep, list):
-                for elem in id_rep:
-                    assert isinstance(elem, TCA.Core.Replica)
-                    self.replica[elem.name] = elem
-            else:
-                raise AttributeError("Unsupported Type")
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        if isinstance(id_rep, TCA.Core.Replica):
+            name = id_rep.name
+            self.replica[name] = id_rep
+        elif isinstance(id_rep, TCA.Core.PlateMap):
+            self.platemap = id_rep
+        elif isinstance(id_rep, list):
+            for elem in id_rep:
+                assert isinstance(elem, TCA.Core.Replica)
+                self.replica[elem.name] = elem
+        else:
+            raise AttributeError("Unsupported Type")
 
     def __getitem__(self, key):
         """
@@ -561,10 +443,7 @@ class Plate(object):
         :param key:
         :return: return replicat
         """
-        try:
-            return self.replica[key]
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.replica[key]
 
     def __setitem__(self, key, value):
         """
@@ -572,43 +451,31 @@ class Plate(object):
         :param key: name of replicat
         :param value: replicat object
         """
-        try:
-            if not isinstance(value, TCA.Replica):
-                raise AttributeError("\033[0;31m[ERROR]\033[0m Unsupported Type")
-            else:
-                self.replica[key] = value
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        if not isinstance(value, TCA.Replica):
+            raise AttributeError("Unsupported Type")
+        else:
+            self.replica[key] = value
 
     def __len__(self):
         """
         Get len /number of replicat inside Plate, use len(object)
         :return: number of replicat
         """
-        try:
-            return len(self.replica)
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return len(self.replica)
 
     def __repr__(self):
         """
         Definition for the representation
         """
-        try:
-            return (
-                "\n Plate : " + repr(self.name) +
-                "\n PlateMap : \n" + repr(self.platemap) +
-                "\n Data normalized ? " + repr(self.isNormalized) +
-                "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
-                "\n Replicat List : \n" + repr(self.replica))
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return (
+            "\n Plate : " + repr(self.name) +
+            "\n PlateMap : \n" + repr(self.platemap) +
+            "\n Data normalized ? " + repr(self.isNormalized) +
+            "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
+            "\n Replicat List : \n" + repr(self.replica))
 
     def __str__(self):
         """
         Definition for the print
         """
-        try:
-            return self.__repr__()
-        except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+        return self.__repr__()

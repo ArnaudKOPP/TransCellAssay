@@ -52,7 +52,7 @@ def plate_feature_scaling(plate, channel, mean_scaling=False):
         else:
             raise TypeError('Take a plate object in input')
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        print(e)
 
 
 def __df_scaling(rawdata, min_val, max_val, channel, mean=False):
@@ -65,10 +65,13 @@ def __df_scaling(rawdata, min_val, max_val, channel, mean=False):
     :param mean: bool
     :return: normalized raw data
     """
-    rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - min(min_val)) / (max(max_val) - min(min_val))
-    if mean:
-        rawdata.df.loc[:, channel] *= (sum(max_val) / len(max_val))
-    return rawdata
+    try:
+        rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - min(min_val)) / (max(max_val) - min(min_val))
+        if mean:
+            rawdata.df.loc[:, channel] *= (sum(max_val) / len(max_val))
+        return rawdata
+    except Exception as e:
+        print(e)
 
 
 def rawdata_variability_normalization(obj, channel, method=None, log2_transf=True, neg_control=None, pos_control=None):
@@ -108,28 +111,31 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
         else:
             raise TypeError("Don't take this object, only plate, replica or raw data")
     except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        print(e)
 
 
 def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None, pos_control=None):
     """
     Function that picked up functions for normalize raw data
     """
-    if log2_transf:
-        rawdata = __log2_transformation(rawdata, channel)
-    if method == 'Zscore':
-        rawdata = __zscore_(rawdata, channel)
-    if method == 'RobustZscore':
-        rawdata = __robustzscore(rawdata, channel)
-    if method == 'PercentOfSample':
-        rawdata = __percentofsample(rawdata, channel)
-    if method == 'RobustPercentOfSample':
-        rawdata = __robustpercentofsample(rawdata, channel)
-    if method == 'PercentOfControl':
-        rawdata = __percentofcontrol(rawdata, channel, neg_control, pos_control)
-    if method == 'NormalizedPercentInhibition':
-        rawdata = __normalizedpercentinhibition(rawdata, channel, neg_control, pos_control)
-    return rawdata
+    try:
+        if log2_transf:
+            rawdata = __log2_transformation(rawdata, channel)
+        if method == 'Zscore':
+            rawdata = __zscore_(rawdata, channel)
+        if method == 'RobustZscore':
+            rawdata = __robustzscore(rawdata, channel)
+        if method == 'PercentOfSample':
+            rawdata = __percentofsample(rawdata, channel)
+        if method == 'RobustPercentOfSample':
+            rawdata = __robustpercentofsample(rawdata, channel)
+        if method == 'PercentOfControl':
+            rawdata = __percentofcontrol(rawdata, channel, neg_control, pos_control)
+        if method == 'NormalizedPercentInhibition':
+            rawdata = __normalizedpercentinhibition(rawdata, channel, neg_control, pos_control)
+        return rawdata
+    except Exception as e:
+        print(e)
 
 
 def __log2_transformation(rawdata, channel):

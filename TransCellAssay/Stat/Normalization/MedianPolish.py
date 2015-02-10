@@ -42,64 +42,61 @@ def median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbo
     :param verbose: print some info
     :return: corrected array
     """
-    try:
-        if isinstance(array, np.ndarray):
-            tbl_org = array
-            tbl = tbl_org.copy()
+    if isinstance(array, np.ndarray):
+        tbl_org = array
+        tbl = tbl_org.copy()
 
-            grand_effect = 0
-            median_row_effects = 0
-            median_col_effects = 0
-            row_effects = np.zeros(shape=tbl.shape[0])
-            col_effects = np.zeros(shape=tbl.shape[1])
+        grand_effect = 0
+        median_row_effects = 0
+        median_col_effects = 0
+        row_effects = np.zeros(shape=tbl.shape[0])
+        col_effects = np.zeros(shape=tbl.shape[1])
 
-            for i in range(max_iterations):
-                if method == 'median':
-                    row_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
-                    row_effects += row_medians
-                    median_row_effects = np.median(row_effects)
-                elif method == 'average':
-                    row_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
-                    row_effects += row_medians
-                    median_row_effects = np.mean(row_effects)
-                grand_effect += median_row_effects
-                row_effects -= median_row_effects
-                tbl -= row_medians[:, np.newaxis]
+        for i in range(max_iterations):
+            if method == 'median':
+                row_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
+                row_effects += row_medians
+                median_row_effects = np.median(row_effects)
+            elif method == 'average':
+                row_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
+                row_effects += row_medians
+                median_row_effects = np.mean(row_effects)
+            grand_effect += median_row_effects
+            row_effects -= median_row_effects
+            tbl -= row_medians[:, np.newaxis]
 
-                if method == 'median':
-                    col_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
-                    col_effects += col_medians
-                    median_col_effects = np.median(col_effects)
-                elif method == 'average':
-                    col_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
-                    col_effects += col_medians
-                    median_col_effects = np.mean(col_effects)
+            if method == 'median':
+                col_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
+                col_effects += col_medians
+                median_col_effects = np.median(col_effects)
+            elif method == 'average':
+                col_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
+                col_effects += col_medians
+                median_col_effects = np.mean(col_effects)
 
-                tbl -= col_medians
+            tbl -= col_medians
 
-                grand_effect += median_col_effects
-            # become Bscore
-            MAD = mad(tbl.flatten())
-            tbl = tbl / (MAD)
+            grand_effect += median_col_effects
+        # become Bscore
+        MAD = mad(tbl.flatten())
+        tbl = tbl / (MAD)
 
-            if verbose:
-                print("Bscore :  ")
-                print("Method used :", method)
-                print("Max Iteration : ", max_iterations)
-                print("grand effect = ", grand_effect)
-                print("column effects = ", col_effects)
-                print("row effects = ", row_effects)
-                print("-----Table of Residuals-------")
-                print(tbl)
-                print("-----Original Table-------")
-                print(tbl_org)
-                print("")
+        if verbose:
+            print("Bscore :  ")
+            print("Method used :", method)
+            print("Max Iteration : ", max_iterations)
+            print("grand effect = ", grand_effect)
+            print("column effects = ", col_effects)
+            print("row effects = ", row_effects)
+            print("-----Table of Residuals-------")
+            print(tbl)
+            print("-----Original Table-------")
+            print(tbl_org)
+            print("")
 
-            return grand_effect, col_effects, row_effects, tbl, tbl_org
-        else:
-            raise TypeError('Expected the argument to be a numpy.ndarray.')
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        return grand_effect, col_effects, row_effects, tbl, tbl_org
+    else:
+        raise TypeError('Expected the argument to be a numpy.ndarray.')
 
 
 def bz_median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
@@ -116,64 +113,61 @@ def bz_median_polish(array, max_iterations=100, method='median', trimmed=0.0, ve
     :param verbose: print some info
     :return: corrected array
     """
-    try:
-        if isinstance(array, np.ndarray):
-            tbl_org = array
-            tbl = tbl_org.copy()
+    if isinstance(array, np.ndarray):
+        tbl_org = array
+        tbl = tbl_org.copy()
 
-            grand_effect = 0
-            median_row_effects = 0
-            median_col_effects = 0
-            row_effects = np.zeros(shape=tbl.shape[0])
-            col_effects = np.zeros(shape=tbl.shape[1])
+        grand_effect = 0
+        median_row_effects = 0
+        median_col_effects = 0
+        row_effects = np.zeros(shape=tbl.shape[0])
+        col_effects = np.zeros(shape=tbl.shape[1])
 
-            for i in range(max_iterations):
-                if method == 'median':
-                    row_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
-                    row_effects += row_medians
-                    median_row_effects = np.median(row_effects)
-                elif method == 'average':
-                    row_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
-                    row_effects += row_medians
-                    median_row_effects = np.mean(row_effects)
-                grand_effect += median_row_effects
-                row_effects -= median_row_effects
-                tbl -= row_medians[:, np.newaxis]
+        for i in range(max_iterations):
+            if method == 'median':
+                row_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
+                row_effects += row_medians
+                median_row_effects = np.median(row_effects)
+            elif method == 'average':
+                row_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
+                row_effects += row_medians
+                median_row_effects = np.mean(row_effects)
+            grand_effect += median_row_effects
+            row_effects -= median_row_effects
+            tbl -= row_medians[:, np.newaxis]
 
-                if method == 'median':
-                    col_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
-                    col_effects += col_medians
-                    median_col_effects = np.median(col_effects)
-                elif method == 'average':
-                    col_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
-                    col_effects += col_medians
-                    median_col_effects = np.mean(col_effects)
+            if method == 'median':
+                col_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
+                col_effects += col_medians
+                median_col_effects = np.median(col_effects)
+            elif method == 'average':
+                col_medians = np.mean(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=0), axis=0)
+                col_effects += col_medians
+                median_col_effects = np.mean(col_effects)
 
-                tbl -= col_medians
+            tbl -= col_medians
 
-                grand_effect += median_col_effects
+            grand_effect += median_col_effects
 
-            # become BZscore
-            for i in range(tbl.shape[0]):
-                for j in range(tbl.shape[1]):
-                    if not tbl[i][j] == np.NaN:
-                        tbl[i][j] = (tbl[i][j] - np.mean(tbl.flatten()) / np.std(tbl.flatten()))
+        # become BZscore
+        for i in range(tbl.shape[0]):
+            for j in range(tbl.shape[1]):
+                if not tbl[i][j] == np.NaN:
+                    tbl[i][j] = (tbl[i][j] - np.mean(tbl.flatten()) / np.std(tbl.flatten()))
 
-            if verbose:
-                print("BZscore:  ")
-                print("Method used :", method)
-                print("Max Iteration : ", max_iterations)
-                print("grand effect = ", grand_effect)
-                print("column effects = ", col_effects)
-                print("row effects = ", row_effects)
-                print("-----Table of Residuals-------")
-                print(tbl)
-                print("-----Original Table-------")
-                print(tbl_org)
-                print("")
+        if verbose:
+            print("BZscore:  ")
+            print("Method used :", method)
+            print("Max Iteration : ", max_iterations)
+            print("grand effect = ", grand_effect)
+            print("column effects = ", col_effects)
+            print("row effects = ", row_effects)
+            print("-----Table of Residuals-------")
+            print(tbl)
+            print("-----Original Table-------")
+            print(tbl_org)
+            print("")
 
-            return grand_effect, col_effects, row_effects, tbl, tbl_org
-        else:
-            raise TypeError('Expected the argument to be a numpy.ndarray.')
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        return grand_effect, col_effects, row_effects, tbl, tbl_org
+    else:
+        raise TypeError('Expected the argument to be a numpy.ndarray.')

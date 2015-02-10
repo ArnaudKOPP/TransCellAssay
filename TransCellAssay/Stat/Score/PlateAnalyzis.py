@@ -29,119 +29,116 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
     :param percent: use percent for threshold, if false, it will be a real value
     :return: return result
     """
-    try:
-        if isinstance(plate, TCA.Plate):
-            if plate._is_cutted:
-                raise NotImplementedError('Plate was cutted, for avoiding undesired effect, plate analysis cannot '
-                                          'be performed')
-            print('\033[0;32m[INFO]\033[0m Performe plate analysis : {}'.format(plate.name))
-            platemap = plate.get_platemap()
-            size = platemap.get_shape()
-            result = Result(size=(size[0] * size[1]))
-            x = platemap.as_dict()
-            result.init_gene_well(x)
+    if not isinstance(plate, TCA.Plate):
+        raise TypeError("Input Plate Object")
+    else:
+        if plate._is_cutted:
+            raise NotImplementedError('Plate was cutted, for avoiding undesired effect, plate analysis cannot '
+                                      'be performed')
+        print('\033[0;32m[INFO]\033[0m Performe plate analysis : {}'.format(plate.name))
+        platemap = plate.get_platemap()
+        size = platemap.shape()
+        result = Result(size=(size[0] * size[1]))
+        x = platemap.as_dict()
+        result.init_gene_well(x)
 
-            neg_well = plate.platemap.get_well(neg)
-            pos_well = plate.platemap.get_well(pos)
+        neg_well = plate.platemap.search_well(neg)
+        pos_well = plate.platemap.search_well(pos)
 
-            cell_count_tmp = {}
-            mean = {}
-            median = {}
-            dict_percent_cell_tmp = {}
-            dict_percent_sd_cell = {}
+        cell_count_tmp = {}
+        mean = {}
+        median = {}
+        dict_percent_cell_tmp = {}
+        dict_percent_sd_cell = {}
 
-            # # iterate over replicat
-            for k, replica in plate.replica.items():
-                # # cell count
-                datagb = replica.rawdata.get_groupby_data()
-                cellcount = datagb.Well.count().to_dict()
-                for key, value in cellcount.items():
-                    try:
-                        cell_count_tmp.setdefault(key, []).append(value)
-                    except KeyError:
-                        pass
+        # # iterate over replicat
+        for k, replica in plate.replica.items():
+            # # cell count
+            datagb = replica.rawdata.get_groupby_data()
+            cellcount = datagb.Well.count().to_dict()
+            for key, value in cellcount.items():
+                try:
+                    cell_count_tmp.setdefault(key, []).append(value)
+                except KeyError:
+                    pass
 
-                # # positive Cell
-                # # threshold value for control
-                if percent:
-                    data_control = replica.get_raw_data(channel=channel, well=neg_well)
-                    threshold_value = np.percentile(data_control, threshold)
-                else:
-                    threshold_value = threshold
-
-                # # variability
-                well_list = replica.rawdata.get_unique_well()
-                # iterate on well
-                for well in well_list:
-                    xdata = datagb.get_group(well)[channel]
-                    mean.setdefault(well, []).append(np.mean(xdata.values))
-                    median.setdefault(well, []).append(np.median(xdata.values))
-                    len_total = len(xdata.values)
-                    len_thres = len(np.extract(xdata.values > threshold_value, xdata.values))
-                    # # include in dict key is the position and value is a %
-                    dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
-
-            # # Cell count and std
-            sdvalue = {}
-            for key, value in cell_count_tmp.items():
-                sdvalue[key] = np.std(value)
-            meancountlist = [(i, sum(v) / len(v)) for i, v in cell_count_tmp.items()]
-            meancount = dict(meancountlist)  # # convert to dict
-
-            result.add_data(meancount, 'CellsCount')
-            result.add_data(sdvalue, 'SDCellsCount')
-
-            # # toxicity index
-            max_cell = max(meancount.values())
-            min_cell = min(meancount.values())
-            txidx = {}
-            for key, item in meancount.items():
-                txidx[key] = (max_cell - item) / (max_cell - min_cell)
-
-            # # viability index
-            neg_val = [meancount[x] for x in neg_well]
-            pos_val = [meancount[x] for x in pos_well]
-            viability = {}
-            for key, item in meancount.items():
-                viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
-                    np.mean(neg_val) - np.mean(pos_val))
-
-            result.add_data(txidx, 'Toxicity')
-            result.add_data(viability, 'Viability')
+            # # positive Cell
+            # # threshold value for control
+            if percent:
+                data_control = replica.get_raw_data(channel=channel, well=neg_well)
+                threshold_value = np.percentile(data_control, threshold)
+            else:
+                threshold_value = threshold
 
             # # variability
-            std = [(i, np.std(v)) for i, v in mean.items()]
-            stdm = [(i, np.std(v)) for i, v in median.items()]
-            std = dict(std)
-            stdm = dict(stdm)
+            well_list = replica.rawdata.get_unique_well()
+            # iterate on well
+            for well in well_list:
+                xdata = datagb.get_group(well)[channel]
+                mean.setdefault(well, []).append(np.mean(xdata.values))
+                median.setdefault(well, []).append(np.median(xdata.values))
+                len_total = len(xdata.values)
+                len_thres = len(np.extract(xdata.values > threshold_value, xdata.values))
+                # # include in dict key is the position and value is a %
+                dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
 
-            mean = [(i, sum(v) / len(v)) for i, v in mean.items()]
-            median = [(i, sum(v) / len(v)) for i, v in median.items()]
-            mean = dict(mean)
-            median = dict(median)
+        # # Cell count and std
+        sdvalue = {}
+        for key, value in cell_count_tmp.items():
+            sdvalue[key] = np.std(value)
+        meancountlist = [(i, sum(v) / len(v)) for i, v in cell_count_tmp.items()]
+        meancount = dict(meancountlist)  # # convert to dict
 
-            result.add_data(mean, 'Mean')
-            result.add_data(median, 'Median')
-            result.add_data(std, 'Std')
-            result.add_data(stdm, 'Stdm')
+        result.add_data(meancount, 'CellsCount')
+        result.add_data(sdvalue, 'SDCellsCount')
 
-            # # positive cell
-            # determine the mean of replicat
-            dict_percent_celllist = [(i, sum(v) / len(v)) for i, v in dict_percent_cell_tmp.items()]
-            dict_percent_cell = dict(dict_percent_celllist)
+        # # toxicity index
+        max_cell = max(meancount.values())
+        min_cell = min(meancount.values())
+        txidx = {}
+        for key, item in meancount.items():
+            txidx[key] = (max_cell - item) / (max_cell - min_cell)
 
-            # determine the standart deviation of % Cells
-            for key, value in dict_percent_cell_tmp.items():
-                dict_percent_sd_cell[key] = np.std(value)
+        # # viability index
+        neg_val = [meancount[x] for x in neg_well]
+        pos_val = [meancount[x] for x in pos_well]
+        viability = {}
+        for key, item in meancount.items():
+            viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
+                np.mean(neg_val) - np.mean(pos_val))
 
-            result.add_data(dict_percent_cell, 'PositiveCells')
-            result.add_data(dict_percent_sd_cell, 'SDPositiveCells')
+        result.add_data(txidx, 'Toxicity')
+        result.add_data(viability, 'Viability')
 
-            return result
-        else:
-            raise TypeError("Input Plate Object")
-    except Exception as e:
-        print("\033[0;31m[ERROR]\033[0m", e)
+        # # variability
+        std = [(i, np.std(v)) for i, v in mean.items()]
+        stdm = [(i, np.std(v)) for i, v in median.items()]
+        std = dict(std)
+        stdm = dict(stdm)
+
+        mean = [(i, sum(v) / len(v)) for i, v in mean.items()]
+        median = [(i, sum(v) / len(v)) for i, v in median.items()]
+        mean = dict(mean)
+        median = dict(median)
+
+        result.add_data(mean, 'Mean')
+        result.add_data(median, 'Median')
+        result.add_data(std, 'Std')
+        result.add_data(stdm, 'Stdm')
+
+        # # positive cell
+        # determine the mean of replicat
+        dict_percent_celllist = [(i, sum(v) / len(v)) for i, v in dict_percent_cell_tmp.items()]
+        dict_percent_cell = dict(dict_percent_celllist)
+
+        # determine the standart deviation of % Cells
+        for key, value in dict_percent_cell_tmp.items():
+            dict_percent_sd_cell[key] = np.std(value)
+
+        result.add_data(dict_percent_cell, 'PositiveCells')
+        result.add_data(dict_percent_sd_cell, 'SDPositiveCells')
+
+        return result
 
 
 class Result(object):
@@ -180,7 +177,7 @@ class Result(object):
                 self._genepos_genename[k] = i
                 i += 1
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def add_data(self, datadict, col):
         """
@@ -193,7 +190,7 @@ class Result(object):
             for item, value in datadict.items():
                 self.values[col][self._genepos_genename[item]] = value
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def write(self, file_path, frmt='csv'):
         """
@@ -216,7 +213,7 @@ class Result(object):
                 else:
                     raise IOError("Can't save data in xlsx format")
             except Exception as e:
-                print('\033[0;31m[ERROR]\033[0m Error in saving results data :', e)
+                print('Error in saving results data :', e)
 
     def __repr__(self):
         """
@@ -226,7 +223,7 @@ class Result(object):
         try:
             return "Result of single Cell properties: \n" + repr(pd.DataFrame(self.values))
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
 
     def __str__(self):
         """
@@ -236,4 +233,4 @@ class Result(object):
         try:
             return self.__repr__()
         except Exception as e:
-            print("\033[0;31m[ERROR]\033[0m", e)
+            print(e)
