@@ -79,9 +79,6 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
     """
     ttest_score = np.zeros(plate.platemap.platemap.shape)
 
-    # # replace 0 with NaN
-    ttest_score[ttest_score == 0] = np.NaN
-
     nb_rep = len(plate.replica)
 
     neg_value = []
@@ -104,7 +101,7 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
             except Exception:
                 raise Exception("Your desired datatype are not available")
     nb_neg_wells = len(neg_value)
-    mean_neg = np.nanmean(neg_value)
+    mean_neg = np.mean(neg_value)
     var_neg = np.nanvar(neg_value)
 
     # search rep value for ith well
@@ -121,7 +118,7 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
                         well_value.append(value.array[i][j])
                 except Exception:
                     raise Exception("Your desired datatype are not available")
-            mean_rep = np.nanmean(well_value)
+            mean_rep = np.mean(well_value)
             var_rep = np.nanvar(well_value)
 
             # # performed unpaired t-test
@@ -134,9 +131,6 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
                                                                         (1 / nb_rep) * (1 / nb_neg_wells)))
             else:
                 raise ValueError('Variance attribut must be unequal or equal.')
-
-    # # replace NaN with 0
-    ttest_score = np.nan_to_num(ttest_score)
 
     if verbose:
         print("Unpaired t-test :")
@@ -160,9 +154,6 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
     """
     ttest_score = np.zeros(plate.platemap.platemap.shape)
 
-    # # replace 0 with NaN
-    ttest_score[ttest_score == 0] = np.NaN
-
     neg_position = plate.platemap.search_coord(neg_control)
     if not neg_position:
         raise Exception("Not Well for control")
@@ -184,7 +175,7 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                 neg_value.append(well_value)
             except Exception:
                 raise Exception("Your desired datatype are not available")
-        return np.nanmedian(neg_value)
+        return np.median(neg_value)
 
     for i in range(ttest_score.shape[0]):
         for j in range(ttest_score.shape[1]):
@@ -200,11 +191,8 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                         well_value.append(value.array[i][j] - neg_median)
                 except Exception:
                     raise Exception("Your desired datatype are not available")
-            ttest_score[i][j] = np.nanmean(well_value) / (
+            ttest_score[i][j] = np.mean(well_value) / (
                 np.nanstd(well_value) / np.sqrt(len(plate.replica)))
-
-    # # replace NaN with 0
-    ttest_score = np.nan_to_num(ttest_score)
 
     if verbose:
         print("Paired t-test :")

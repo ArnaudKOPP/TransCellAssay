@@ -13,7 +13,7 @@ method-of-moment(MM) method or the uniformy minimal variance unbiased estimate(U
 is highly recommended.
 
 In a screen with replicats:
-For the paired case, a measured value for an siRNA is paired with a median value of a negative reference in the same
+For the paired case, a measured value for an siRNA is paired with a medianan value of a negative reference in the same
 plate. The mean and variability of the difference of all these pairs accross all plates are used to calculate SSMD.
 For the unpaired case, all the measured value of an siRNA are formed as a group and all the measured value of a negative
 reference in the whole screen are formed as another group. The means and variability of these two separate groups are
@@ -96,9 +96,6 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbo
     """
     ssmd = np.zeros(plate.platemap.platemap.shape)
 
-    # # replace 0 with NaN
-    ssmd[ssmd == 0] = np.NaN
-
     nb_rep = len(plate.replica)
     rep_value = []
     neg_value = []
@@ -122,7 +119,7 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbo
             except Exception:
                 raise Exception("Your desired datatype are not available")
     nb_neg_wells = len(neg_value)
-    mean_neg = np.nanmean(neg_value)
+    mean_neg = np.mean(neg_value)
     var_neg = np.nanvar(neg_value)
 
     k = 2 * (scipy.special.gamma(
@@ -142,7 +139,7 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbo
                 except Exception:
                     raise Exception("Your desired datatype are not available")
                 rep_value.append(well_value)
-            mean_rep = np.nanmean(rep_value)
+            mean_rep = np.mean(rep_value)
             var_rep = np.nanvar(rep_value)
 
             # # performed unpaired t-test
@@ -153,9 +150,6 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbo
                     (2 / k) * ((nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg))
             else:
                 raise ValueError('Variance attribut must be unequal or equal.')
-
-    # # replace NaN with 0
-    ssmd = np.nan_to_num(ssmd)
 
     if verbose:
         print("Unpaired SSMD :")
@@ -180,9 +174,6 @@ def __unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verb
     """
     ssmd = np.zeros(plate.platemap.platemap.shape)
 
-    # # replace 0 with NaN
-    ssmd[ssmd == 0] = np.NaN
-
     nb_rep = len(plate.replica)
     rep_value = []
     neg_value = []
@@ -206,7 +197,7 @@ def __unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verb
             except Exception:
                 raise Exception("Your desired datatype are not available")
     nb_neg_wells = len(neg_value)
-    median_neg = np.nanmedian(neg_value)
+    medianan_neg = np.median(neg_value)
     var_neg = np.nanvar(neg_value)
 
     k = 2 * (scipy.special.gamma(
@@ -226,20 +217,17 @@ def __unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verb
                 except Exception:
                     raise Exception("Your desired datatype are not available")
                 rep_value.append(well_value)
-            median_rep = np.nanmedian(rep_value)
+            medianan_rep = np.median(rep_value)
             var_rep = np.nanvar(rep_value)
 
             # # performed unpaired t-test
             if variance == 'unequal':
-                ssmd[i][j] = (median_rep - median_neg) / np.sqrt(var_rep + var_neg)
+                ssmd[i][j] = (medianan_rep - medianan_neg) / np.sqrt(var_rep + var_neg)
             elif variance == 'equal':
-                ssmd[i][j] = (median_rep - median_neg) / np.sqrt(
+                ssmd[i][j] = (medianan_rep - medianan_neg) / np.sqrt(
                     (2 / k) * ((nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg))
             else:
                 raise ValueError('Variance attribut must be unequal or equal.')
-
-    # # replace NaN with 0
-    ssmd = np.nan_to_num(ssmd)
 
     if verbose:
         print("Unpaired SSMDr :")
@@ -264,9 +252,6 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
     """
     ssmd = np.zeros(plate.platemap.platemap.shape)
 
-    # # replace 0 with NaN
-    ssmd[ssmd == 0] = np.NaN
-
     neg_position = plate.platemap.search_coord(neg_control)
     if not neg_position:
         raise Exception("Not Well for control")
@@ -288,7 +273,7 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                 neg_value.append(well_value)
             except Exception:
                 raise Exception("Your desired datatype are not available")
-        return np.nanmedian(neg_value)
+        return np.median(neg_value)
 
     x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
         (len(plate.replica) - 2) / 2)) * np.sqrt(2 / (len(plate.replica) - 1))
@@ -300,20 +285,17 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                 for key, value in plate.replica.items():
                     if (i, j) in value.skip_well:
                         continue
-                    neg_median = _search_neg_data(value, neg_position)
+                    neg_medianan = _search_neg_data(value, neg_position)
                     if sec_data:
-                        well_value.append(value.sec_array[i][j] - neg_median)
+                        well_value.append(value.sec_array[i][j] - neg_medianan)
                     else:
-                        well_value.append(value.array[i][j] - neg_median)
+                        well_value.append(value.array[i][j] - neg_medianan)
                 if method == 'UMVUE':
-                    ssmd[i][j] = x * (np.nanmean(well_value) / np.nanstd(well_value))
+                    ssmd[i][j] = x * (np.mean(well_value) / np.nanstd(well_value))
                 elif method == 'MM':
-                    ssmd[i][j] = np.nanmean(well_value) / np.nanstd(well_value)
+                    ssmd[i][j] = np.mean(well_value) / np.nanstd(well_value)
                 else:
                     raise ValueError('Method must me UMVUE or MM')
-
-        # # replace NaN with 0
-        ssmd = np.nan_to_num(ssmd)
 
         if verbose:
             print("Paired SSMD :")
@@ -340,9 +322,6 @@ def __paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fa
     """
     ssmdr = np.zeros(plate.platemap.platemap.shape)
 
-    # # replace 0 with NaN
-    ssmdr[ssmdr == 0] = np.NaN
-
     neg_position = plate.platemap.search_coord(neg_control)
     if not neg_position:
         raise Exception("Not Well for control")
@@ -364,7 +343,7 @@ def __paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fa
                 neg_value.append(well_value)
             except Exception:
                 raise Exception("Your desired datatype are not available")
-        return np.nanmedian(neg_value)
+        return np.median(neg_value)
 
     x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
         (len(plate.replica) - 2) / 2)) * np.sqrt(2 / (len(plate.replica) - 1))
@@ -376,20 +355,17 @@ def __paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fa
                 for key, value in plate.replica.items():
                     if (i, j) in value.skip_well:
                         continue
-                    neg_median = _search_neg_data(value, neg_position)
+                    neg_medianan = _search_neg_data(value, neg_position)
                     if sec_data:
-                        well_value.append(value.sec_array[i][j] - neg_median)
+                        well_value.append(value.sec_array[i][j] - neg_medianan)
                     else:
-                        well_value.append(value.array[i][j] - neg_median)
+                        well_value.append(value.array[i][j] - neg_medianan)
                 if method == 'UMVUE':
-                    ssmdr[i][j] = x * (np.nanmedian(well_value) / mad(well_value))
+                    ssmdr[i][j] = x * (np.median(well_value) / mad(well_value))
                 elif method == 'MM':
-                    ssmdr[i][j] = np.nanmedian(well_value) / mad(well_value)
+                    ssmdr[i][j] = np.median(well_value) / mad(well_value)
                 else:
                     raise ValueError('Method must me UMVUE or MM')
-
-        # # replace NaN with 0
-        ssmdr = np.nan_to_num(ssmdr)
 
         if verbose:
             print("Paired SSMDr :")
@@ -418,9 +394,6 @@ def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
     ps = plate.platemap
     ssmd = np.zeros(ps.platemap.shape)
 
-    # # replace 0 with NaN
-    ssmd[ssmd == 0] = np.NaN
-
     neg_well = ps.search_coord(neg_control)
     # # remove skipped Wells
     if len(plate.skip_well) > 0:
@@ -448,16 +421,13 @@ def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
         raise ValueError('Insuficient negative data')
 
     if method == 'MM':
-        ssmd = (data - np.nanmean(neg_data)) / (np.sqrt(2) * np.nanstd(neg_data))
+        ssmd = (data - np.mean(neg_data)) / (np.sqrt(2) * np.nanstd(neg_data))
     elif method == 'UMVUE':
         k = 2 * (scipy.special.gamma(
             ((len(neg_data) - 1) / 2) / scipy.special.gamma((len(neg_data) - 2) / 2))) ** 2
-        ssmd = (data - np.nanmean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.nanstd(neg_data))
+        ssmd = (data - np.mean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.nanstd(neg_data))
     else:
         raise ValueError('Method must be MM or UMVUE')
-
-    # # replace NaN with 0
-    ssmd = np.nan_to_num(ssmd)
 
     if verbose:
         print('SSMD without replicat, or inplate data from plate')
@@ -484,9 +454,6 @@ def __ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
     ps = plate.platemap
     ssmdr = np.zeros(ps.platemap.shape)
 
-    # # replace 0 with NaN
-    ssmdr[ssmdr == 0] = np.NaN
-
     neg_well = ps.search_coord(neg_control)
     # # remove skipped Wells
     if len(plate.skip_well) > 0:
@@ -514,16 +481,13 @@ def __ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
         raise ValueError('Insuficient negative data')
 
     if method == 'MM':
-        ssmdr = (data - np.nanmedian(neg_data)) / (np.sqrt(2) * mad(neg_data))
+        ssmdr = (data - np.median(neg_data)) / (np.sqrt(2) * mad(neg_data))
     elif method == 'UMVUE':
         k = 2 * (scipy.special.gamma(
             ((len(neg_data) - 1) / 2) / scipy.special.gamma((len(neg_data) - 2) / 2))) ** 2
-        ssmdr = (data - np.nanmedian(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * mad(neg_data))
+        ssmdr = (data - np.median(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * mad(neg_data))
     else:
         raise ValueError('Method must be MM or UMVUE')
-
-    # # replace NaN with 0
-    ssmdr = np.nan_to_num(ssmdr)
 
     if verbose:
         print('SSMDr without replicat')
