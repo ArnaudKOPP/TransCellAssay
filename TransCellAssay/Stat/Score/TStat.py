@@ -48,7 +48,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
             # if no neg was provided raise AttributeError
             if neg_control is None:
                 raise ValueError('Must provided negative control')
-            print('\033[0;32m[INFO]\033[0m Performe T-Stat')
+            print('\033[0;32m[INFO]\033[0m Perform T-Stat')
             if len(plate) > 1:
                 if paired:
                     score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose)
@@ -56,7 +56,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
                     score = __unpaired_tstat_score(plate, neg_control, variance=variance, sec_data=sec_data,
                                                    verbose=verbose)
             else:
-                raise ValueError("T-Test need at least two replicat")
+                raise ValueError("T-Stat need at least two replicat")
             return score
         else:
             raise TypeError('Take only plate')
@@ -114,17 +114,16 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
                     (var_rep / nb_rep) + (var_neg / nb_neg_wells))
             elif variance == 'equal':
                 ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * (
-                    (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * (
-                                                                        (1 / nb_rep) * (1 / nb_neg_wells)))
+                    (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * ((1 / nb_rep) * (1 / nb_neg_wells)))
             else:
                 raise ValueError('Variance attribut must be unequal or equal.')
 
     if verbose:
-        print("Unpaired t-test :")
+        print("Unpaired t-stat :")
         print("Systematic Error Corrected Data : ", sec_data)
         print("Data type : ", plate.datatype)
         print("variance parameter : ", variance)
-        print("t-test score :")
+        print("t-stat score :")
         print(ttest_score)
         print("")
     return ttest_score
@@ -163,10 +162,10 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                 np.std(well_value) / np.sqrt(len(plate.replica)))
 
     if verbose:
-        print("Paired t-test :")
+        print("Paired t-stat :")
         print("Systematic Error Corrected Data : ", sec_data)
         print("Data type : ", plate.datatype)
-        print("t-test score :")
+        print("t-stat score :")
         print(ttest_score)
         print("")
     return ttest_score

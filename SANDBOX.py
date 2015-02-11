@@ -18,7 +18,7 @@ import TransCellAssay as TCA
 
 
 def do_384():
-    plate_nb = '3'
+    plate_nb = '2'
     plaque = TCA.Core.Plate(name='Plate' + plate_nb)
     platemap = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/HDV/RawdataClean/Pl"+plate_nb+"PP.csv")
     plaque + platemap
@@ -63,12 +63,12 @@ def do_384():
     # print(ana)
     # ana.write("/home/arnaud/Desktop/HDV/RawdataClean/Percentvalue"+plate_nb+".csv")
 
-    # plaque.normalization_channels(channels=channel,
-    #                               method='Zscore',
-    #                               neg=platemap.search_well(neg),
-    #                               pos=platemap.search_well(pos))
+    plaque.normalization_channels(channels=channel,
+                                  method='Zscore',
+                                  neg=platemap.search_well(neg),
+                                  pos=platemap.search_well(pos))
 
-    plaque.compute_data_from_replicat(channel=channel)
+    # plaque.compute_data_from_replicat(channel=channel)
     plaque.cut(1, 15, 1, 23, apply_down=True)
     print(platemap)
     # plaque.compute_data_from_replicat(channel=channel)
