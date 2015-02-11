@@ -84,6 +84,26 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
         print(e)
 
 
+def __search_unpaired_data(plate, ref, sec_data):
+    assert isinstance(plate, TCA.Plate)
+    neg_value = []
+    for key, value in plate.replica.items():
+        # # remove skipped Wells
+        if len(value.skip_well) > 0:
+            valid_neg_position = [x for x in ref if (x not in value.skip_well)]
+        else:
+            valid_neg_position = ref
+        for neg in valid_neg_position:
+            try:
+                if sec_data:
+                    neg_value.append(value.sec_array[neg[0]][neg[1]])
+                else:
+                    neg_value.append(value.array[neg[0]][neg[1]])
+            except Exception:
+                raise Exception("Your desired datatype are not available")
+    return neg_value
+
+
 def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
     """
     performed unpaired SSMD for plate with replicat
@@ -96,51 +116,35 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbo
     """
     ssmd = np.zeros(plate.platemap.platemap.shape)
 
-    nb_rep = len(plate.replica)
-    rep_value = []
-    neg_value = []
     neg_position = plate.platemap.search_coord(neg_control)
     if not neg_position:
         raise Exception("Not Well for control")
 
-    # search neg control data
-    for key, value in plate.replica.items():
-        # # remove skipped Wells
-        if len(value.skip_well) > 0:
-            valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
-        else:
-            valid_neg_position = neg_position
-        for neg in valid_neg_position:
-            try:
-                if sec_data:
-                    neg_value.append(value.sec_array[neg[0]][neg[1]])
-                else:
-                    neg_value.append(value.array[neg[0]][neg[1]])
-            except Exception:
-                raise Exception("Your desired datatype are not available")
+    nb_rep = len(plate.replica)
+    neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+
     nb_neg_wells = len(neg_value)
     mean_neg = np.mean(neg_value)
-    var_neg = np.nanvar(neg_value)
+    var_neg = np.var(neg_value)
 
     k = 2 * (scipy.special.gamma(
         ((len(neg_value) - 1) / 2) / scipy.special.gamma((len(neg_value) - 2) / 2))) ** 2
     # search rep value for ith well
     for i in range(ssmd.shape[0]):
         for j in range(ssmd.shape[1]):
-            well_value = 0
+            well_value = []
             for key, value in plate.replica.items():
                 if (i, j) in value.skip_well:
                     continue
                 try:
                     if sec_data:
-                        well_value = value.sec_array[i][j]
+                        well_value.append(value.sec_array[i][j])
                     else:
-                        well_value = value.array[i][j]
+                        well_value.append(value.array[i][j])
                 except Exception:
                     raise Exception("Your desired datatype are not available")
-                rep_value.append(well_value)
-            mean_rep = np.mean(rep_value)
-            var_rep = np.nanvar(rep_value)
+            mean_rep = np.mean(well_value)
+            var_rep = np.var(well_value)
 
             # # performed unpaired t-test
             if variance == 'unequal':
@@ -174,57 +178,41 @@ def __unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verb
     """
     ssmd = np.zeros(plate.platemap.platemap.shape)
 
-    nb_rep = len(plate.replica)
-    rep_value = []
-    neg_value = []
     neg_position = plate.platemap.search_coord(neg_control)
     if not neg_position:
         raise Exception("Not Well for control")
 
-    # search neg control data
-    for key, value in plate.replica.items():
-        # # remove skipped Wells
-        if len(value.skip_well) > 0:
-            valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
-        else:
-            valid_neg_position = neg_position
-        for neg in valid_neg_position:
-            try:
-                if sec_data:
-                    neg_value.append(value.sec_array[neg[0]][neg[1]])
-                else:
-                    neg_value.append(value.array[neg[0]][neg[1]])
-            except Exception:
-                raise Exception("Your desired datatype are not available")
+    nb_rep = len(plate.replica)
+    neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+
     nb_neg_wells = len(neg_value)
-    medianan_neg = np.median(neg_value)
-    var_neg = np.nanvar(neg_value)
+    median_neg = np.median(neg_value)
+    var_neg = np.var(neg_value)
 
     k = 2 * (scipy.special.gamma(
         ((len(neg_value) - 1) / 2) / scipy.special.gamma((len(neg_value) - 2) / 2))) ** 2
     # search rep value for ith well
     for i in range(ssmd.shape[0]):
         for j in range(ssmd.shape[1]):
-            well_value = 0
+            well_value = []
             for key, value in plate.replica.items():
                 if (i, j) in value.skip_well:
                     continue
                 try:
                     if sec_data:
-                        well_value = value.sec_array[i][j]
+                        well_value.append(value.sec_array[i][j])
                     else:
-                        well_value = value.array[i][j]
+                        well_value.append(value.array[i][j])
                 except Exception:
                     raise Exception("Your desired datatype are not available")
-                rep_value.append(well_value)
-            medianan_rep = np.median(rep_value)
-            var_rep = np.nanvar(rep_value)
+            median_rep = np.median(well_value)
+            var_rep = np.var(well_value)
 
             # # performed unpaired t-test
             if variance == 'unequal':
-                ssmd[i][j] = (medianan_rep - medianan_neg) / np.sqrt(var_rep + var_neg)
+                ssmd[i][j] = (median_rep - median_neg) / np.sqrt(var_rep + var_neg)
             elif variance == 'equal':
-                ssmd[i][j] = (medianan_rep - medianan_neg) / np.sqrt(
+                ssmd[i][j] = (median_rep - median_neg) / np.sqrt(
                     (2 / k) * ((nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg))
             else:
                 raise ValueError('Variance attribut must be unequal or equal.')
@@ -238,6 +226,26 @@ def __unpaired_ssmdr(plate, neg_control, variance='unequal', sec_data=True, verb
         print(ssmd)
         print("")
     return ssmd
+
+
+def __search_paired_data(replica, ref, sec_data):
+    assert isinstance(replica, TCA.Replica)
+    # # remove skipped Wells
+    if len(replica.skip_well) > 0:
+        valid_neg_pos = [x for x in ref if (x not in replica.skip_well)]
+    else:
+        valid_neg_pos = ref
+    neg_value = []
+    for neg_i in valid_neg_pos:
+        try:
+            if sec_data:
+                well_value = replica.sec_array[neg_i[0]][neg_i[1]]
+            else:
+                well_value = replica.array[neg_i[0]][neg_i[1]]
+            neg_value.append(well_value)
+        except Exception:
+            raise Exception("Your desired datatype are not available")
+    return np.median(neg_value)
 
 
 def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
@@ -256,25 +264,6 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
     if not neg_position:
         raise Exception("Not Well for control")
 
-    # search neg control value
-    def _search_neg_data(replicat, neg_pos):
-        # # remove skipped Wells
-        if len(value.skip_well) > 0:
-            valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
-        else:
-            valid_neg_pos = neg_pos
-        neg_value = []
-        for neg_i in valid_neg_pos:
-            try:
-                if sec_data:
-                    well_value = replicat.sec_array[neg_i[0]][neg_i[1]]
-                else:
-                    well_value = replicat.array[neg_i[0]][neg_i[1]]
-                neg_value.append(well_value)
-            except Exception:
-                raise Exception("Your desired datatype are not available")
-        return np.median(neg_value)
-
     x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
         (len(plate.replica) - 2) / 2)) * np.sqrt(2 / (len(plate.replica) - 1))
 
@@ -285,11 +274,11 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                 for key, value in plate.replica.items():
                     if (i, j) in value.skip_well:
                         continue
-                    neg_medianan = _search_neg_data(value, neg_position)
+                    neg_median = __search_paired_data(value, neg_position, sec_data)
                     if sec_data:
-                        well_value.append(value.sec_array[i][j] - neg_medianan)
+                        well_value.append(value.sec_array[i][j] - neg_median)
                     else:
-                        well_value.append(value.array[i][j] - neg_medianan)
+                        well_value.append(value.array[i][j] - neg_median)
                 if method == 'UMVUE':
                     ssmd[i][j] = x * (np.mean(well_value) / np.nanstd(well_value))
                 elif method == 'MM':
@@ -326,25 +315,6 @@ def __paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fa
     if not neg_position:
         raise Exception("Not Well for control")
 
-    # search neg control value
-    def _search_neg_data(replicat, neg_pos):
-        # # remove skipped Wells
-        if len(value.skip_well) > 0:
-            valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
-        else:
-            valid_neg_pos = neg_pos
-        neg_value = []
-        for neg_i in valid_neg_pos:
-            try:
-                if sec_data:
-                    well_value = replicat.sec_array[neg_i[0]][neg_i[1]]
-                else:
-                    well_value = replicat.array[neg_i[0]][neg_i[1]]
-                neg_value.append(well_value)
-            except Exception:
-                raise Exception("Your desired datatype are not available")
-        return np.median(neg_value)
-
     x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
         (len(plate.replica) - 2) / 2)) * np.sqrt(2 / (len(plate.replica) - 1))
 
@@ -355,11 +325,11 @@ def __paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fa
                 for key, value in plate.replica.items():
                     if (i, j) in value.skip_well:
                         continue
-                    neg_medianan = _search_neg_data(value, neg_position)
+                    neg_median = __search_paired_data(value, neg_position, sec_data)
                     if sec_data:
-                        well_value.append(value.sec_array[i][j] - neg_medianan)
+                        well_value.append(value.sec_array[i][j] - neg_median)
                     else:
-                        well_value.append(value.array[i][j] - neg_medianan)
+                        well_value.append(value.array[i][j] - neg_median)
                 if method == 'UMVUE':
                     ssmdr[i][j] = x * (np.median(well_value) / mad(well_value))
                 elif method == 'MM':

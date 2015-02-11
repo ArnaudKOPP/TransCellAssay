@@ -17,6 +17,7 @@ may be greater than the cutoff value.
 
 import numpy as np
 import TransCellAssay as TCA
+from TransCellAssay.Stat.Score.SSMD import __search_paired_data, __search_unpaired_data
 
 
 __author__ = "Arnaud KOPP"
@@ -79,30 +80,16 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
     """
     ttest_score = np.zeros(plate.platemap.platemap.shape)
 
-    nb_rep = len(plate.replica)
-
-    neg_value = []
     neg_position = plate.platemap.search_coord(neg_control)
     if not neg_position:
         raise Exception("Not Well for control")
 
-    for key, value in plate.replica.items():
-        # # remove skipped Wells
-        if len(value.skip_well) > 0:
-            valid_neg_position = [x for x in neg_position if (x not in value.skip_well)]
-        else:
-            valid_neg_position = neg_position
-        for neg in valid_neg_position:
-            try:
-                if sec_data:
-                    neg_value.append(value.sec_array[neg[0]][neg[1]])
-                else:
-                    neg_value.append(value.array[neg[0]][neg[1]])
-            except Exception:
-                raise Exception("Your desired datatype are not available")
+    nb_rep = len(plate.replica)
+    neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+
     nb_neg_wells = len(neg_value)
     mean_neg = np.mean(neg_value)
-    var_neg = np.nanvar(neg_value)
+    var_neg = np.var(neg_value)
 
     # search rep value for ith well
     for i in range(ttest_score.shape[0]):
@@ -119,7 +106,7 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
                 except Exception:
                     raise Exception("Your desired datatype are not available")
             mean_rep = np.mean(well_value)
-            var_rep = np.nanvar(well_value)
+            var_rep = np.var(well_value)
 
             # # performed unpaired t-test
             if variance == 'unequal':
@@ -158,32 +145,13 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
     if not neg_position:
         raise Exception("Not Well for control")
 
-    # search neg control value
-    def _search_neg_data(replicat, neg_pos):
-        # # remove skipped Wells
-        if len(value.skip_well) > 0:
-            valid_neg_pos = [x for x in neg_pos if (x not in value.skip_well)]
-        else:
-            valid_neg_pos = neg_pos
-        neg_value = []
-        for neg_i in valid_neg_pos:
-            try:
-                if sec_data:
-                    well_value = replicat.sec_array[neg_i[0]][neg_i[1]]
-                else:
-                    well_value = replicat.array[neg_i[0]][neg_i[1]]
-                neg_value.append(well_value)
-            except Exception:
-                raise Exception("Your desired datatype are not available")
-        return np.median(neg_value)
-
     for i in range(ttest_score.shape[0]):
         for j in range(ttest_score.shape[1]):
             well_value = []
             for key, value in plate.replica.items():
                 if (i, j) in value.skip_well:
                     continue
-                neg_median = _search_neg_data(value, neg_position)
+                neg_median = __search_paired_data(value, neg_position, sec_data)
                 try:
                     if sec_data:
                         well_value.append(value.sec_array[i][j] - neg_median)
