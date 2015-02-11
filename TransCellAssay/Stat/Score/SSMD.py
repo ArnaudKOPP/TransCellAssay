@@ -13,7 +13,7 @@ method-of-moment(MM) method or the uniformy minimal variance unbiased estimate(U
 is highly recommended.
 
 In a screen with replicats:
-For the paired case, a measured value for an siRNA is paired with a medianan value of a negative reference in the same
+For the paired case, a measured value for an siRNA is paired with a median value of a negative reference in the same
 plate. The mean and variability of the difference of all these pairs accross all plates are used to calculate SSMD.
 For the unpaired case, all the measured value of an siRNA are formed as a group and all the measured value of a negative
 reference in the whole screen are formed as another group. The means and variability of these two separate groups are
@@ -245,7 +245,7 @@ def __search_paired_data(replica, ref, sec_data):
             neg_value.append(well_value)
         except Exception:
             raise Exception("Your desired datatype are not available")
-    return np.median(neg_value)
+    return neg_value
 
 
 def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
@@ -274,15 +274,15 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                 for key, value in plate.replica.items():
                     if (i, j) in value.skip_well:
                         continue
-                    neg_median = __search_paired_data(value, neg_position, sec_data)
+                    neg_mean = np.mean(__search_paired_data(value, neg_position, sec_data))
                     if sec_data:
-                        well_value.append(value.sec_array[i][j] - neg_median)
+                        well_value.append(value.sec_array[i][j] - neg_mean)
                     else:
-                        well_value.append(value.array[i][j] - neg_median)
+                        well_value.append(value.array[i][j] - neg_mean)
                 if method == 'UMVUE':
-                    ssmd[i][j] = x * (np.mean(well_value) / np.nanstd(well_value))
+                    ssmd[i][j] = x * (np.mean(well_value) / np.std(well_value))
                 elif method == 'MM':
-                    ssmd[i][j] = np.mean(well_value) / np.nanstd(well_value)
+                    ssmd[i][j] = np.mean(well_value) / np.std(well_value)
                 else:
                     raise ValueError('Method must me UMVUE or MM')
 
@@ -318,6 +318,8 @@ def __paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fa
     x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
         (len(plate.replica) - 2) / 2)) * np.sqrt(2 / (len(plate.replica) - 1))
 
+    print(x)
+
     try:
         for i in range(ssmdr.shape[0]):
             for j in range(ssmdr.shape[1]):
@@ -325,7 +327,7 @@ def __paired_ssmdr(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fa
                 for key, value in plate.replica.items():
                     if (i, j) in value.skip_well:
                         continue
-                    neg_median = __search_paired_data(value, neg_position, sec_data)
+                    neg_median = np.median(__search_paired_data(value, neg_position, sec_data))
                     if sec_data:
                         well_value.append(value.sec_array[i][j] - neg_median)
                     else:
@@ -391,11 +393,11 @@ def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False):
         raise ValueError('Insuficient negative data')
 
     if method == 'MM':
-        ssmd = (data - np.mean(neg_data)) / (np.sqrt(2) * np.nanstd(neg_data))
+        ssmd = (data - np.mean(neg_data)) / (np.sqrt(2) * np.std(neg_data))
     elif method == 'UMVUE':
         k = 2 * (scipy.special.gamma(
             ((len(neg_data) - 1) / 2) / scipy.special.gamma((len(neg_data) - 2) / 2))) ** 2
-        ssmd = (data - np.mean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.nanstd(neg_data))
+        ssmd = (data - np.mean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.std(neg_data))
     else:
         raise ValueError('Method must be MM or UMVUE')
 

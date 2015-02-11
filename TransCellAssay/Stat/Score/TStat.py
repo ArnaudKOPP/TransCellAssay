@@ -151,7 +151,7 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
             for key, value in plate.replica.items():
                 if (i, j) in value.skip_well:
                     continue
-                neg_median = __search_paired_data(value, neg_position, sec_data)
+                neg_median = np.median(__search_paired_data(value, neg_position, sec_data))
                 try:
                     if sec_data:
                         well_value.append(value.sec_array[i][j] - neg_median)
@@ -160,7 +160,7 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                 except Exception:
                     raise Exception("Your desired datatype are not available")
             ttest_score[i][j] = np.mean(well_value) / (
-                np.nanstd(well_value) / np.sqrt(len(plate.replica)))
+                np.std(well_value) / np.sqrt(len(plate.replica)))
 
     if verbose:
         print("Paired t-test :")

@@ -18,7 +18,7 @@ import TransCellAssay as TCA
 
 
 def do_384():
-    plate_nb = '2'
+    plate_nb = '3'
     plaque = TCA.Core.Plate(name='Plate' + plate_nb)
     platemap = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/HDV/RawdataClean/Pl"+plate_nb+"PP.csv")
     plaque + platemap
