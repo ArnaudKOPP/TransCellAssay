@@ -58,6 +58,8 @@ def __get_data_rank(array, method="average"):
     :param method: average (default, min, max, dense or ordinal
     :return: return rank in same shape as array input
     """
+    if method not in ['average', 'min', 'max', 'dense', 'ordinal']:
+        raise ValueError('Wrong rank method')
     org_shape = array.shape
     rank_matrix = rankdata(array, method=method)
     return rank_matrix.reshape(org_shape)
