@@ -331,7 +331,8 @@ class Plate(object):
             self.__normalization(channels, method, log, neg, pos, skipping_wells)
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
-                                    save=True, max_iterations=100, alpha=0.05, epsilon=0.01):
+                                    save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=None,
+                                    skip_row=None):
         """
         Apply a spatial normalization for remove edge effect
         Resulting matrix are save in plate object if save = True
@@ -344,6 +345,8 @@ class Plate(object):
         :param max_iterations: max iterations for all technics
         :param alpha: alpha for TTest
         :param epsilon: epsilon parameters for PMP
+        :param skip_col: index of col to skip in MEA or PMP
+        :param skip_row: index of row to skip in MEA or PMP
         """
         __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
 
@@ -380,13 +383,15 @@ class Plate(object):
 
             if algorithm == 'PMP':
                 corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
-                                                               alpha=alpha, verbose=verbose, epsilon=epsilon)
+                                                               alpha=alpha, verbose=verbose, epsilon=epsilon,
+                                                               skip_col=skip_col, skip_row=skip_row)
                 if save:
                     self.sec_array = corrected_data_array
                     self.isSpatialNormalized = True
 
             if algorithm == 'MEA':
-                corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha)
+                corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha,
+                                                                  skip_col=skip_col, skip_row=skip_row)
                 if save:
                     self.sec_array = corrected_data_array
                     self.isSpatialNormalized = True

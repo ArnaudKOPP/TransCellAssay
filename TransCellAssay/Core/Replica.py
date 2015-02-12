@@ -277,7 +277,7 @@ class Replica(object):
                   "from_replicat or replica.compute_data_for_channel")
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=True,
-                                    max_iterations=100, alpha=0.05, epsilon=0.01):
+                                    max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=None, skip_row=None):
         """
         Apply a spatial normalization for remove edge effect
         The Bscore method showed a more stable behavior than MEA and PMP only when the number of rows and columns
@@ -292,6 +292,8 @@ class Replica(object):
         :param save: save the result into self.SECData, default = False
         :param max_iterations: maximum iterations loop, default = 100
         :param epsilon: epsilon parameters for PMP
+        :param skip_col: index of col to skip in MEA or PMP
+        :param skip_row: index of row to skip in MEA or PMP
         """
         __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
 
@@ -326,13 +328,15 @@ class Replica(object):
 
             if algorithm == 'PMP':
                 corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
-                                                               verbose=verbose, alpha=alpha, epsilon=epsilon)
+                                                               verbose=verbose, alpha=alpha, epsilon=epsilon,
+                                                               skip_col=skip_col, skip_row=skip_row)
                 if save:
                     self.sec_array = corrected_data_array
                     self.isSpatialNormalized = True
 
             if algorithm == 'MEA':
-                corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha)
+                corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha,
+                                                                  skip_col=skip_col, skip_row=skip_row)
                 if save:
                     self.sec_array = corrected_data_array
                     self.isSpatialNormalized = True

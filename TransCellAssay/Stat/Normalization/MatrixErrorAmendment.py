@@ -22,13 +22,15 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
+def matrix_error_amendmend(input_array, verbose=False, alpha=0.05, skip_col=None, skip_row=None):
     """
     Implementation of Matrix Error Amendment , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
     :param alpha: alpha for TTrest
     :param verbose: print or not result
     :param input_array: numpy ndarray represent data
+    :param skip_col: index of col to skip
+    :param skip_row: index of row to skip
     :return: normalized array
     """
     if isinstance(input_array, np.ndarray):
@@ -50,6 +52,11 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05):
                                       equal_var=False)
             if prob < alpha:
                 ncols.append(col)
+
+        if skip_row is not None:
+            nrows = [x for x in nrows if (x not in skip_row)]
+        if skip_col is not None:
+            ncols = [x for x in ncols if (x not in skip_col)]
 
         # exit if not row or col affected
         n = nrows.__len__() + ncols.__len__()
