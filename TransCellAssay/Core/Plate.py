@@ -331,8 +331,8 @@ class Plate(object):
             self.__normalization(channels, method, log, neg, pos, skipping_wells)
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
-                                    save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=None,
-                                    skip_row=None):
+                                    save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
+                                    skip_row=[]):
         """
         Apply a spatial normalization for remove edge effect
         Resulting matrix are save in plate object if save = True
@@ -356,7 +356,8 @@ class Plate(object):
         if apply_down:
             for key, value in self.replica.items():
                 value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
-                                                  max_iterations=max_iterations, alpha=alpha, epsilon=epsilon)
+                                                  max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
+                                                  skip_col=skip_col, skip_row=skip_row)
             self.compute_data_from_replicat(channel=None, use_sec_data=True)
             return
 

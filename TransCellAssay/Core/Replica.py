@@ -277,7 +277,7 @@ class Replica(object):
                   "from_replicat or replica.compute_data_for_channel")
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=True,
-                                    max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=None, skip_row=None):
+                                    max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[], skip_row=[]):
         """
         Apply a spatial normalization for remove edge effect
         The Bscore method showed a more stable behavior than MEA and PMP only when the number of rows and columns

@@ -5,10 +5,7 @@ UNIVERSAL ANALYSIS PIPELINE THAT USE TransCellAssay Toolbox
 """
 
 import os
-import sys
 import time
-from argparse import ArgumentParser
-from argparse import RawDescriptionHelpFormatter
 import numpy as np
 import TransCellAssay as TCA
 import pandas as pd
@@ -22,121 +19,6 @@ __version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
-
-DEBUG = 1
-
-
-class CLIError(Exception):
-    """Generic exception to raise and log different fatal errors."""
-
-    def __init__(self, msg):
-        super(CLIError).__init__(type(self))
-        self.msg = "E: %s" % msg
-
-    def __str__(self):
-        return self.msg
-
-    def __unicode__(self):
-        return self.msg
-
-
-def main(argv=None):
-    """Command line options."""
-    if argv is None:
-        argv = sys.argv
-    else:
-        sys.argv.extend(argv)
-
-    program_name = os.path.basename(sys.argv[0])
-    program_shortdesc = __import__('__main__').__doc__
-    program_license = """%s
-
-      Copyright 2014 KOPP. All rights reserved.
-      Distributed on an "AS IS" basis without warranties
-      or conditions of any kind, either express or implied.
-      VERSION = %s
-
-    USAGE
-    """ % (program_shortdesc, str(__version__))
-
-    try:
-        # Setup argument parser
-        parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument("-i", "--inputdir", dest="input", action="store", required=True,
-                            help="Input path of data file")
-        parser.add_argument("-o", "--outputdir", dest="output", action="store",
-                            help="Output path for result file")
-        parser.add_argument("-a", "--nbplate", dest="nbplate", type=int, action="store", required=True,
-                            help="Number of Plate")
-        parser.add_argument("-r", "--nbrep", dest="nbrep", default=3, type=int, action="store",
-                            help="Number of replicat per plate (default: %(default)s)")
-        parser.add_argument("-f", "--chan", dest="chan", action="store", type=str, required=True,
-                            help="channel to analyze in simple mode")
-        parser.add_argument("-s", "--thres", dest="thres", default=50, type=int, action="store",
-                            help="Threshold for determining positive cells (default: %(default)s)")
-        parser.add_argument("-n", "--neg", dest="neg", action="store", type=str, required=True,
-                            help="Negative Control")
-        parser.add_argument("-p", "--pos", dest="pos", action="store", type=str, required=True,
-                            help="Positive Control")
-        parser.add_argument("-t", "--tox", dest="tox", action="store", type=str,
-                            help="Toxic Control")
-        parser.add_argument("-v", "--verbose", dest="verbose", default=False, type=bool, action="store",
-                            help="Print pipeline (default: %(default)s)")
-        parser.add_argument("-j", "--process", dest="process", default=mp.cpu_count(), action="store", type=int,
-                            help="Number of process to use (default: %(default)s)")
-
-        input_args = parser.parse_args()
-        global __INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __THRESHOLD__, __CHANNEL__, __NEG__, __POS__, __TOX__, __VERBOSE__, __PROCESS__
-        __INPUT__ = input_args.input
-        __NBPLATE__ = input_args.nbplate
-        __NBREP__ = input_args.nbrep
-        __THRESHOLD__ = input_args.thres
-        __CHANNEL__ = input_args.chan
-        __NEG__ = input_args.neg
-        __POS__ = input_args.pos
-        __VERBOSE__ = input_args.verbose
-        __PROCESS__ = input_args.process
-
-        if input_args.output is None:
-            __OUTPUT__ = os.path.join(__INPUT__, "Analyze/")
-            if os.path.exists(__OUTPUT__):
-                print('\033[0;33m[WARNING] !!!! PREVIOUS ANALYSIS WILL BE ERASE !!!!\033[0m')
-        else:
-            __OUTPUT__ = input_args.output
-
-        if not os.path.exists(__OUTPUT__):
-            os.makedirs(__OUTPUT__)
-
-        if input_args.tox is None:
-            __TOX__ = __POS__
-        else:
-            __TOX__ = input_args.tox
-
-        print(__INPUT__)
-
-        # # write txt file for saving parameters
-        file = open(os.path.join(__OUTPUT__, 'Analyse_Parameters.txt'), 'w')
-        file.write("INPUT : " + str(__INPUT__) + "\n")
-        file.write("OUTPUT : " + str(__OUTPUT__) + "\n")
-        file.write("NBPLATE : " + str(__NBPLATE__) + "\n")
-        file.write("NBREP : " + str(__NBREP__) + "\n")
-        file.write("CHANNEL : " + str(__CHANNEL__) + "\n")
-        file.write("THRESHOLD : " + str(__THRESHOLD__) + "\n")
-        file.write("NEG : " + str(__NEG__) + "\n")
-        file.write("POS : " + str(__POS__) + "\n")
-        file.write("TOX : " + str(__TOX__) + "\n")
-        file.close()
-
-    except KeyboardInterrupt:
-        # ## handle keyboard interrupt ###
-        return 0
-    except Exception as e:
-        if DEBUG:
-            raise e
-        indent = len(program_name) * " "
-        sys.stderr.write(program_name + ": " + repr(e) + "\n")
-        sys.stderr.write(indent + "  for help use --help")
-        return 2
 
 
 def plate_analyzis(plateid):
@@ -154,8 +36,8 @@ def plate_analyzis(plateid):
         print('created:', created.name, created._identity, 'running on :', current.name, current._identity,
               "for analyzis of ", plaque.name)
 
-        print(__INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __THRESHOLD__, __CHANNEL__, __NEG__, __POS__, __TOX__,
-              __VERBOSE__, __PROCESS__)
+        print(__INPUT__, __OUTPUT__, __NBPLATE__, __NBREP__, __THRES__, __CHAN__, __NEG__, __POS__, __TOX__,
+              __VERB__, __PROC__)
 
         output_data_plate_dir = os.path.join(__OUTPUT__, plaque.name)
         if not os.path.exists(output_data_plate_dir):
@@ -218,15 +100,15 @@ def plate_analyzis(plateid):
         # analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
 
         # TCA.feature_scaling(plaque, __CHANNEL__, mean_scaling=True)
-        plaque.normalization(__CHANNEL__, method='PercentOfControl', log=False, neg=plaque.platemap.search_well(__NEG__),
+        plaque.normalization(__CHAN__, method='PercentOfControl', log=False, neg=plaque.platemap.search_well(__NEG__),
                              pos=plaque.platemap.search_well(__POS__), skipping_wells=True)
 
-        plaque.compute_data_from_replicat(__CHANNEL__)
+        plaque.compute_data_from_replicat(__CHAN__)
         # for key, value in plaque.replicat.items():
         #     np.savetxt(fname=os.path.join(output_data_plate_dir, str(value.name)) + ".csv", X=value.Data, delimiter=",",
         #                fmt='%1.4f')
 
-        TCA.plate_quality_control(plaque, channel=__CHANNEL__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
+        TCA.plate_quality_control(plaque, channel=__CHAN__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
                                   skipping_wells=True, use_raw_data=False, verbose=False, dirpath=output_data_plate_dir)
 
         # plaque.compute_data_from_replicat(__CHANNEL__)
@@ -280,14 +162,51 @@ def plate_analyzis(plateid):
         print("\033[0;31m[ERROR]\033[0m", e)
         return 0
 
+__INPUT__ = ""
+__OUTPUT__ = ""
+__NBPLATE__ = 1
+__NBREP__ = 3
+__THRES__ = 50
+__CHAN__ = ""
+__NEG__ = ""
+__POS__ = ""
+__TOX__ = None
+__VERB__ = True
+__PROC__ = 4
 
-if __name__ == "__main__":
-    time_start = time.time()
-    main()
-    # # Do process with multiprocessing
-    pool = mp.Pool(processes=__PROCESS__)
-    results = pool.map_async(plate_analyzis, range(1, __NBPLATE__ + 1))
-    print(results.get())
-    print("1 for sucess, 0 for fail")
-    time_stop = time.time()
-    print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))
+if __OUTPUT__ is None:
+    __OUTPUT__ = os.path.join(__INPUT__, "Analyze/")
+    if os.path.exists(__OUTPUT__):
+        print('\033[0;33m[WARNING] !!!! PREVIOUS ANALYSIS WILL BE ERASE !!!!\033[0m')
+
+if not os.path.exists(__OUTPUT__):
+    os.makedirs(__OUTPUT__)
+
+if __TOX__ is None:
+    __TOX__ = __POS__
+
+
+print(__INPUT__)
+
+# # write txt file for saving parameters
+file = open(os.path.join(__OUTPUT__, 'Analyse_Parameters.txt'), 'w')
+file.write("INPUT : " + str(__INPUT__) + "\n")
+file.write("OUTPUT : " + str(__OUTPUT__) + "\n")
+file.write("NBPLATE : " + str(__NBPLATE__) + "\n")
+file.write("NBREP : " + str(__NBREP__) + "\n")
+file.write("CHANNEL : " + str(__CHAN__) + "\n")
+file.write("THRESHOLD : " + str(__THRES__) + "\n")
+file.write("NEG : " + str(__NEG__) + "\n")
+file.write("POS : " + str(__POS__) + "\n")
+file.write("TOX : " + str(__TOX__) + "\n")
+file.close()
+
+
+time_start = time.time()
+# # Do process with multiprocessing
+pool = mp.Pool(processes=__PROC__)
+results = pool.map_async(plate_analyzis, range(1, __NBPLATE__ + 1))
+print(results.get())
+print("1 for sucess, 0 for fail")
+time_stop = time.time()
+print("\033[0;32mTOTAL EXECUTION TIME  {0:f}s \033[0m".format(float(time_stop - time_start)))

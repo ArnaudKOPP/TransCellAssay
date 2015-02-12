@@ -22,7 +22,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def matrix_error_amendmend(input_array, verbose=False, alpha=0.05, skip_col=None, skip_row=None):
+def matrix_error_amendmend(input_array, verbose=False, alpha=0.05, skip_col=[], skip_row=[]):
     """
     Implementation of Matrix Error Amendment , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
@@ -53,10 +53,8 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05, skip_col=None
             if prob < alpha:
                 ncols.append(col)
 
-        if skip_row is not None:
-            nrows = [x for x in nrows if (x not in skip_row)]
-        if skip_col is not None:
-            ncols = [x for x in ncols if (x not in skip_col)]
+        nrows = [x for x in nrows if x not in skip_row]
+        ncols = [x for x in ncols if x not in skip_col]
 
         # exit if not row or col affected
         n = nrows.__len__() + ncols.__len__()
