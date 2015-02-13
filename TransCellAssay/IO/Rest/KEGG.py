@@ -732,8 +732,8 @@ def KEGGParser(res):
             return output
 
         if line.startswith(" "):
-            output.setdefault(last_idx, []).append(line.split())
+            output.setdefault(last_idx, []).append(line.strip())
         else:
             last_idx = line.split()[0]
-            output[last_idx] = [line.split()[1:]]
+            output[last_idx] = [line[10:].strip()]
     return output

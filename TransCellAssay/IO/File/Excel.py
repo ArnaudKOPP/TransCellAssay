@@ -2,7 +2,7 @@
 """
 Librarie for easy play with HTS excel data file (InCELL 1000)
 """
-from TransCellAssay.IO.Input.InputFile import InputFile
+from TransCellAssay.IO.File.InputFile import InputFile
 import os
 import pandas as pd
 

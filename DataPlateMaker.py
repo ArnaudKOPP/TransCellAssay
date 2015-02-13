@@ -144,7 +144,7 @@ USAGE
         # # Setup argument parser
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument("-i", "--inputFileDirectory", dest="input", action="store",
-                            help="Input path of csv data file ", required=True)
+                            help="File path of csv data file ", required=True)
         parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
                             help="Output path of xlsx file", required=True)
 

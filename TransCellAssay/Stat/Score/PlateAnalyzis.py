@@ -30,7 +30,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
     :return: return result
     """
     if not isinstance(plate, TCA.Plate):
-        raise TypeError("Input Plate Object")
+        raise TypeError("File Plate Object")
     else:
         if plate._is_cutted:
             raise NotImplementedError('Plate was cutted, for avoiding undesired effect, plate analysis cannot '
