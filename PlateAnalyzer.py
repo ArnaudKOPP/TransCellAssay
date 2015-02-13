@@ -89,64 +89,66 @@ def plate_analyzis(plateid):
             # plaque + TCA.Core.Replicat(name="rep" + str(i), data=array, single=False, skip=to_skip_HMT[(plateid, i)])
             plaque + TCA.Core.Replicat(name="rep" + str(i), data=array, single=False)
             """
-            file = os.path.join(__INPUT__, "toulouse pl " + str(plateid) + "." + str(i) + ".csv")
+            file = os.path.join(__INPUT__, "Pl" + str(plateid) + "rep_" + str(i) + ".csv")
             if os.path.isfile(file):
-                plaque + TCA.Core.Replica(name="rep" + str(i), data=file, skip=to_skip[(plateid, i)], datatype='mean')
+                plaque + TCA.Core.Replica(name="rep" + str(i), data=file, datatype='mean')
         # # BEGIN ANALYZIS HERE
 
         __SIZE__ = 96
-
-        # analyse = TCA.plate_analysis(plaque, [__CHANNEL__], __NEG__, __POS__, threshold=__THRESHOLD__)
-        # analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
+        try:
+            analyse = TCA.plate_analysis(plaque, __CHAN__, __NEG__, __POS__, threshold=__THRES__)
+            analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
+        except:
+            pass
 
         # TCA.feature_scaling(plaque, __CHANNEL__, mean_scaling=True)
-        plaque.normalization(__CHAN__, method='PercentOfControl', log=False, neg=plaque.platemap.search_well(__NEG__),
-                             pos=plaque.platemap.search_well(__POS__), skipping_wells=True)
+        plaque.normalization_channels(__CHAN__, method='Zscore', log=True, neg=plaque.platemap.search_well(__NEG__),
+                                      pos=plaque.platemap.search_well(__POS__), skipping_wells=True)
 
-        plaque.compute_data_from_replicat(__CHAN__)
         # for key, value in plaque.replicat.items():
         #     np.savetxt(fname=os.path.join(output_data_plate_dir, str(value.name)) + ".csv", X=value.Data, delimiter=",",
         #                fmt='%1.4f')
 
-        TCA.plate_quality_control(plaque, channel=__CHAN__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
-                                  skipping_wells=True, use_raw_data=False, verbose=False, dirpath=output_data_plate_dir)
-
-        # plaque.compute_data_from_replicat(__CHANNEL__)
+        try:
+            TCA.plate_quality_control(plaque, channel=__CHAN__, cneg=__NEG__, cpos=__POS__, sedt=False, sec_data=False,
+                                      skipping_wells=True, use_raw_data=False, verbose=False,
+                                      dirpath=output_data_plate_dir)
+        except:
+            pass
 
         # plaque.check_data_consistency()
 
-        # plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False)
+        plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, skip_col=[0, 11])
 
-        # plaque.compute_data_from_replicat(__CHANNEL__, use_sec_data=True)
-        # # For multiple Replicat Workflow
-        # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
-        #                              verbose=False)
-        # ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
-        #                              variance="equal", verbose=False)
-        # ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=True, sec_data=True,
-        #                              verbose=False)
-        # ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=True, sec_data=True,
-        #                              method='MM', verbose=False)
-        # tstat1 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, variance='equal', sec_data=True,
-        #                                verbose=False)
-        # tstat2 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, sec_data=True, verbose=False)
-        # tstat3 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=True, sec_data=True, verbose=False)
+        # For multiple Replicat Workflow
+        ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
+                                     verbose=False)
+        ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=True, sec_data=True,
+                                     variance="equal", verbose=False)
+        ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=True, sec_data=True,
+                                     verbose=False)
+        ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=True, sec_data=True,
+                                     method='MM', verbose=False)
+        tstat1 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, variance='equal', sec_data=True,
+                                       verbose=False)
+        tstat2 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, sec_data=True, verbose=False)
+        tstat3 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=True, sec_data=True, verbose=False)
 
-        # gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-        # final_array = np.append(gene, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
+        gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
+        final_array = np.append(gene, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
+        final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
 
-        # to_save = pd.DataFrame(final_array)
-        # to_save.to_csv(os.path.join(output_data_plate_dir, "ssmd_tstat.csv"), index=False, header=False)
+        to_save = pd.DataFrame(final_array)
+        to_save.to_csv(os.path.join(output_data_plate_dir, "ssmd_tstat.csv"), index=False, header=False)
         #
         # rank = TCA.rank_product(plaque, secdata=True)
         # to_save = pd.DataFrame(rank)
@@ -162,16 +164,16 @@ def plate_analyzis(plateid):
         print("\033[0;31m[ERROR]\033[0m", e)
         return 0
 
-__INPUT__ = ""
-__OUTPUT__ = ""
-__NBPLATE__ = 1
+__INPUT__ = "/home/arnaud/Desktop/ANTAGOMIR_MIMIC/antagomir"
+__OUTPUT__ = "/home/arnaud/Desktop/ANTAGOMIR_MIMIC/TCA_MIMIC_ANTAGO/antagomir"
+__NBPLATE__ = 26
 __NBREP__ = 3
 __THRES__ = 50
-__CHAN__ = ""
-__NEG__ = ""
-__POS__ = ""
+__CHAN__ = "Nuc Intensity"
+__NEG__ = "NT"
+__POS__ = "SINV C"
 __TOX__ = None
-__VERB__ = True
+__VERB__ = False
 __PROC__ = 4
 
 if __OUTPUT__ is None:

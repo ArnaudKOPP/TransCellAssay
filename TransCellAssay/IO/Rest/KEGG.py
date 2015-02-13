@@ -136,6 +136,7 @@ __status__ = "Dev"
 from TransCellAssay.IO.Rest.Service import REST
 from functools import reduce
 import webbrowser
+import collections
 
 
 class KEGG(REST):
@@ -292,7 +293,8 @@ class KEGG(REST):
         _valid_databases = ["pathway", "module", "ko", "genome", "compound", "glycan", "reaction", "rpair",
                             "rclass", "enzyme", "disease", "drug", "dgroup", "environ", "genes", "ligand"]
 
-        if database not in _valid_databases:
+        isOrg = self.is_organism(database)
+        if database not in _valid_databases and isOrg is False:
             raise ValueError('Database provided not available for this operation')
 
         _valid_options = ['formula', "exact_mass", "mol_weight"]
@@ -363,21 +365,6 @@ class KEGG(REST):
 
         note:: if the second argument is a dbentries, target and dbentries
         cannot be swapped.
-
-        # conversion from NCBI GeneID to KEGG ID for E. coli genes
-        conv("eco","ncbi-geneid")
-        # inverse of the above example
-        conv("eco","ncbi-geneid")
-        #conversion from KEGG ID to NCBI GI
-        conv("ncbi-gi","hsa:10458+ece:Z5100")
-        To make it clear by taking another example, you can either convert an
-        entire database to another (e.g., from uniprot to KEGG Id all human gene
-        IDs)::
-        uniprot_ids, kegg_ids = s.conv("hsa", "uniprot")
-        or a subset by providing a valid **dbentries**::
-        s.conv("hsa","up:Q9BV86+")
-        .. warning:: dbentries are not check and are supposed to be correct.
-        See :meth:`check_idbentries` to help you checking a dbentries.
         """
 
         isorg = self.is_organism(target)
@@ -644,49 +631,6 @@ class KEGG(REST):
                 matches.append(i)
         return [definitions[i] for i in matches]
 
-    def get_pathway_by_gene(self, gene, organism):
-        """
-        Search for pathways that contain a specific gene
-        :param str gene: a valid gene Id
-        :param str organism: a valid organism (e.g., hsa)
-        :return: list of pathway Ids that contain the gene
-        ::
-            s.get_pathway_by_gene("7535", "hsa")
-            ['path:hsa04064', 'path:hsa04650', 'path:hsa04660', 'path:hsa05340']
-        """
-        p = KEGGParser(verbose=False)
-        p.organism = organism
-        res = self.get(":".join([organism, gene]))
-        dic = p.parse(res)
-        if 'pathway' in dic.keys():
-            return dic['pathway']
-        else:
-            print("No pathway found ?")
-
-    def _old_get_pathway_by_gene(self, gene, organism):
-        matches = []
-        p = KEGGParser()
-        # using existing buffered list if same organism are used
-        if self.organism == organism:
-            ids = self.pathwayIds
-        else:
-            p.organism = organism
-            ids = p.pathwayIds
-
-        for i, Id in enumerate(ids):
-            print("scanning %s (%s/%s)" % (Id, i, len(ids)))
-            if Id not in self._buffer.keys():
-                res = p.get(Id)
-                self._buffer[Id] = res
-            else:
-                res = self._buffer[Id]
-
-            parsed = p.parse(res)
-            if 'gene' in parsed.keys() and gene in parsed['gene']:
-                print("Found %s in pathway Ids %s" % (gene, Id))
-                matches.append(Id)
-        return matches
-
     def parse_kgml_pathway(self, pathways_id, res=None):
         """
         Parse the pathway in KGML format and returns a dictionary (relations and entries)
@@ -751,466 +695,45 @@ class KEGG(REST):
         # we need to map back to KEgg IDs...
         return output
 
-    def pathway2sif(self, pathway_od, uniprot=True):
-        """
-        Extract protein-protein interaction from KEGG pathway to a SIF format
-        .. warning:: experimental Not tested on all pathway. should be move to
-            another package such as cellnopt
-        :param str pathway_od: a valid pathway Id
-        :param bool uniprot: convert to uniprot Id or not (default is True)
-        :return: a list of relations (A 1 B) for activation and (A -1 B) for
-            inhibitions
-        This is longish due to the conversion from KEGGIds to UniProt.
-        This method can be useful to provide prior knowledge network to software
-        such as CellNOpt (see http://www.cellnopt.org)
-        """
-        res = self.parse_kgml_pathway(pathway_od)
-        sif = []
-        for rel in res['relations']:
-            # types can be PPrel (protein-protein interaction only
-            if rel['link'] != 'PPrel':
-                continue
-            if rel['name'] == 'activation':
-                Id1 = rel['entry1']
-                Id2 = rel['entry2']
-                name1 = res['entries'][[x['id'] for x in res['entries']].index(Id1)]['name']
-                name2 = res['entries'][[x['id'] for x in res['entries']].index(Id2)]['name']
-                type1 = res['entries'][[x['id'] for x in res['entries']].index(Id1)]['type']
-                type2 = res['entries'][[x['id'] for x in res['entries']].index(Id2)]['type']
-                # print("names:", rel, name1, name2)
-                # print(type1, type2)
-                if type1 != 'gene' or type2 != 'gene':
-                    continue
-                if uniprot:
-                    try:
-                        # FIXME  sometimes, there are more than one name
-                        name1 = name1.split()[0]
-                        name2 = name2.split()[0]
-                        name1 = self.conv("uniprot", name1)[name1]
-                        name2 = self.conv("uniprot", name2)[name2]
-                    except Exception:
-                        print(name1)
-                        print(name2)
-                        raise Exception
-                # print(name1, 1, name2)
-                sif.append([name1, 1, name2])
-            elif rel['name'] == 'inhibition':
-                Id1 = rel['entry1']
-                Id2 = rel['entry2']
-                name1 = res['entries'][[x['id'] for x in res['entries']].index(Id1)]['name']
-                name2 = res['entries'][[x['id'] for x in res['entries']].index(Id2)]['name']
-                type1 = res['entries'][[x['id'] for x in res['entries']].index(Id1)]['type']
-                type2 = res['entries'][[x['id'] for x in res['entries']].index(Id2)]['type']
-                # print("names:", rel, name1, name2)
-                # print(type1, type2)
-                if type1 != 'gene' or type2 != 'gene':
-                    continue
-                if uniprot:
-                    name1 = name1.split()[0]
-                    name2 = name2.split()[0]
-                    name1 = self.conv("uniprot", name1)[name1]
-                    name2 = self.conv("uniprot", name2)[name2]
-                # print(name1, -1, name2)
-                sif.append([name1, -1, name2])
-            else:
-                pass
-                # print("#", rel['entry1'], rel['name'], rel['entry2'])
-
-        return sif
-
     def __str__(self):
         txt = self.info()
         return txt
 
 
-class KEGGParser(KEGG):
+def KEGGParser(res):
     """
-    This is an extension of the :class:`KEGG` class to ease parsing of dbentries
-    This class provides a generic method :meth:`parse` that will read the output
-    of a dbentry returned by :meth:`KEGG.get` and converts it into a dictionary ready to use.
-    The :meth:`parse` method is a dispatcher so you do not have to worry about the
-    type of entry you are using. It can be a pathway, a gene, a compound...
-    ::
-        s = KEGGParser()
-        # Retrieve a KEGG entry
-        res = s.get("hsa04150")
-        # parse it
-        d = s.parse(res)
-    As a pedagogical example, you can then further process this dictionary. Here below, we convert
-    the gene Ids found in the pathway into UniProt Ids::
-        # Get the KEGG Ids in the pathway
-        kegg_geneIds = [x for x in d['gene']]
-        # Convert them
-        db_up, db_kegg = s.conv("hsa", "uniprot")
-        # Get the corresponding uniprot Ids
-        indices = [db_kegg.index("hsa:%s" % x ) for x in kegg_geneIds]
-        uniprot_geneIds = [db_up[x] for x in indices]
-    However, you could also have done it simply as follows::
-        kegg_geneIds = [x for x in d['gene']]
-        uprot_geneIds = [s.parse(s.get("hsa:"+str(e)))['dblinks']["UniProt:"] for e in d['gene']]
+    A dispatcher to parse all outputs returned by :meth:`KEGG.get`
 
-    .. seealso:: http://www.kegg.jp/kegg/rest/dbentry.html
+    ENTRY       26153             CDS       T01001
+    NAME        KIF26A
+    DEFINITION  kinesin family member 26A
+    ORTHOLOGY   K10404  kinesin family member 26
+    ORGANISM    hsa  Homo sapiens (human)
+    POSITION    14q32.33
+    MOTIF       Pfam: Kinesin
+    DBLINKS     NCBI-GI: 150170699
+                NCBI-GeneID: 26153
+                OMIM: 613231
+                HGNC: 20226
+                Ensembl: ENSG00000066735
+                Vega: OTTHUMG00000154986
+                UniProt: Q9ULI4
+    AASEQ       1882
+
+
+    :param str res: output of a KEGG.get
+    :return: a dictionary
     """
+    output = collections.OrderedDict()
+    lines = res.split("\n")
+    last_idx = None
+    for line in lines:
+        if line.startswith("///"):
+            return output
 
-    def __init__(self, verbose=False):
-        super(KEGGParser, self).__init__(verbose=verbose)
-
-    def parse(self, res):
-        """
-        A dispatcher to parse all outputs returned by :meth:`KEGG.get`
-        :param str res: output of a :meth:`KEGG.get`.
-        :return: a dictionary
-
-        res = s.get("md:hsa_M00554")
-        d = s.parse(res)
-        """
-        global dbentry
-        entry = res.split("\n")[0].split()[0]
-        if entry == "ENTRY":
-            dbentry = res.split("\n")[0].split(None, 2)[2]
-
-        if "Pathway" in dbentry and "Module" not in dbentry:
-            parser = self.parse_pathway(res)
-        elif dbentry.lower() == "pathway   module":
-            parser = self.parse_module(res)
-        elif "Drug" in dbentry:  # can be Drug or "Mixture Drug"
-            parser = self.parse_drug(res)
-        elif "Disease" in dbentry:
-            parser = self.parse_disease(res)
-        elif "Environ" in dbentry:
-            parser = self.parse_environ(res)
-        elif "Orthology" in dbentry:
-            parser = self.parse_orthology(res)
-        elif "KO" in dbentry:
-            parser = self.parse_orthology(res)
-        elif "Genome" in dbentry:
-            parser = self.parse_genome(res)
-        elif "gene" in dbentry:
-            parser = self.parse_gene(res)
-        elif "CDS" in dbentry:
-            parser = self.parse_gene(res)
-        elif "Compound" in dbentry:
-            parser = self.parse_compound(res)
-        elif "Glycan" in dbentry:
-            parser = self.parse_glycan(res)
-        elif "Reaction" in dbentry:
-            parser = self.parse_reaction(res)
-        elif "RPair" in dbentry:
-            parser = self.parse_rpair(res)
-        elif "RClass" in dbentry:
-            parser = self.parse_rclass(res)
-        elif "Enzyme" in dbentry:
-            parser = self.parse_enzyme(res)
-        elif "tRNA" in dbentry:
-            parser = self.parse_trna(res)
+        if line.startswith(" "):
+            output.setdefault(last_idx, []).append(line.split())
         else:
-            raise NotImplementedError("Entry %s not yet implemented" % dbentry)
-        return parser
-
-    def parse_trna(self, res):
-        """
-        parse a tRNA entry
-        :param res:
-        """
-        flatfile = ["ENTRY", "NAME", "DEFINITION", "ORTHOLOGY", "ORGANISM", "PATHWAY",
-                    "CLASS", "POSITION", "DBLINKS", "NTSEQ"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_drug(self, res):
-        """
-        Parses a drug entry
-
-        :param res:
-        res = s.get("dr:D00001")
-        d = s.parseDrug(res)
-        """
-        flatfile = ["ENTRY", "NAME", "PRODUCTS", "FORMULA", "EXACT_MASS",
-                    "MOL_WEIGHT", "COMPONENT", "SEQUENCE", "SOURCE", "ACTIVITY",
-                    "REMARK", "COMMENT", "TARGET", "METABOLISM", "INTERACTION",
-                    "PATHWAY", "STR_MAP", "BRITE", "DBLINKS", "ATOM", "BOND", "BRACKET"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_pathway(self, res):
-        """
-        Parses a pathway entry
-
-        :param res:
-        res = s.get("path:hsa10584")
-        d = s.parsePathway(res)
-        """
-        flatfile = ["ENTRY", "NAME", "DESCRIPTION", "CLASS", "PATHWAY_MAP",
-                    "MODULE", "DISEASE", "DRUG", "DBLINKS", "ORGANISM", "ORTHOLOGY",
-                    "GENE", "ENZYME", "REACTION", "COMPOUND", "REFERENCE",
-                    "REL_PATHWAY", "KO_PATHWAY"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_module(self, res):
-        """
-        Parses a module entry
-        :param res:
-        :
-        res = s.get("md:hsa_M00554")
-        d = s.parseModule(res)
-        """
-        flatfile = ["ENTRY", "NAME", "DEFINITION", "PATHWAY",
-                    "ORTHOLOGY", "CLASS", "BRITE", "ORGANISM", "GENE", "REACTION",
-                    "COMPOUND", "COMMENT", "DBLINKS", "REFERENCE", "REF_MODULE"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_disease(self, res):
-        """
-        Parses a disease entry
-
-        :param res:
-        res = s.get("ds:H00001")
-        d = s.parseDisease(res)
-        """
-        flatfile = ["ENTRY", "NAME", "DESCRIPTION", "CATEGORY", "PATHWAY", "GENE",
-                    "ENV_FACTOR", "MARKER", "DRUG", "COMMENT", "DBLINKS", "REFERENCE"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_environ(self, res):
-        """
-        Parses a environ entry
-
-        :param res:
-        res = s.get("ev:E00001")
-        d = s.parseEnviron(res)
-        """
-        flatfile = ['ENTRY', "NAME", "CATEGORY", "COMPONENT", "SOURCE",
-                    "REMARK", "COMMENT", "BRITE", "DBLINKS"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_orthology(self, res):
-        """
-        Parses Orthology entry
-
-        :param res:
-        res = s.get("ko:K00001")
-        d = s.parseOrthology(res)
-        note:: in other case genes key is "gene". Here it is "genes".
-        """
-        flatfile = ['ENTRY', "NAME", "DEFINITION", "PATHWAY", "MODULE",
-                    "DISEASE", "BRITE", "DBLINKS", "GENES", "REFERENCE"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_genome(self, res):
-        """
-        Parses a Genome entry
-
-        :param res:
-        res = s.get('genome:T00001')
-        d = s.parseGenome(res)
-        """
-
-        flatfile = ["ENTRY", "NAME", "DEFINITION", "ANNOTATION", "TAXONOMY",
-                    "DATA_SOURCE", "ORIGINAL_DB", "KEYWORDS", "DISEASE", "COMMENT",
-                    "CHROMOSOME", "PLASMID", "STATISTICS", "REFERENCE"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_gene(self, res):
-        """
-        Parses a gene entry
-
-        :param res:
-        res = s.get("hsa:1525")
-        d = s.parseGene(res)
-        """
-
-        flatfile = ["ENTRY", "NAME", "DEFINITION", "ORTHOLOGY", "ORGANISM",
-                    "PATHWAY", "MODULE", "DISEASE", "DRUG_TARGET", "CLASS", "MOTIF", "DBLINKS",
-                    "STRUCTURE", "POSITION", "AASEQ", "NTSEQ"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_compound(self, res):
-        """
-        Parses a compound entry
-
-        :param res:
-        s.get("cpd:C00001")
-        d = s.parseCompound(res)
-        """
-        flatfile = ["ENTRY", "NAME", "FORMULA", "EXACT_MASS", "MOL_WEIGHT",
-                    "SEQUENCE", "REMARK", "COMMENT", "REACTION", "PATHWAY", "ENZYME", "BRITE",
-                    "REFERENCE", "DBLINKS", "ATOM", "BOND", "BRACKET"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_glycan(self, res):
-        """
-        Parses a glycan entry
-
-        :param res:
-        res = s.get("gl:G00001")
-        d = s.parseGlycan(res)
-        """
-        flatfile = ["ENTRY", "NAME", "COMPOSITION", "MASS", "CLASS", "REMARK",
-                    "COMMENT", "REACTION", "PATHWAY", "ENZYME", "ORTHOLOGY",
-                    "REFERENCE", "DBLINKS", "NODE", "EDGE", "BRACKET"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_reaction(self, res):
-        """
-        Parses a reaction entry
-
-        :param res:
-        res = s.get("rn:R00001")
-        d = s.parseReaction(res)
-        """
-        flatfile = ["ENTRY", "NAME", "DEFINITION", "EQUATION", "REMARK",
-                    "COMMENT", "RPAIR", "ENZYME", "PATHWAY", "ORTHOLOGY", "REFERENCE"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_rpair(self, res):
-        """
-        Parses a rpair entry
-
-        :param res:
-        res = s.get("rp:RP00001")
-        d = s.parseRpair(res)
-
-        """
-        flatfile = ["ENTRY", "NAME", "COMPOUND", "TYPE", "RDM", "RCLASS",
-                    "RELATEDPAIR", "REACTION", "Enzyme  ENZYME", "ALIGN", "ENTRY1", "ENTRY2"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_rclass(self, res):
-        """
-        Parses a rclass entry
-
-        :param res:
-        res = s.get("rc:RC00001")
-        d = s.parseRclass(res)
-
-        """
-        flatfile = ["ENTRY", "DEFINITION", "RPAIR", "REACTION",
-                    "ENZYME", "PATHWAY", "ORTHOLOGY"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    def parse_enzyme(self, res):
-        """
-        Parses an enzyme entry
-
-        :param res:
-        res = s.get('ec:1.1.1.1')
-        d = s.parseEnzyme(res)
-        """
-        flatfile = ["ENTRY", "NAME", "CLASS", "SYSNAME", "REACTION", "ALL_REAC",
-                    "SUBSTRATE", "PRODUCT", "COMMENT", "PATHWAY", "ORTHOLOGY", "GENES",
-                    "REFERENCE"]
-        parser = self._parse(res, flatfile)
-        return parser
-
-    @staticmethod
-    def _parse(res, flatfile):
-        """
-        Reaction is currently a dictionary if more than one line maybe we
-        want a list instead.
-        """
-        output = {}
-        lines = res.split("\n")
-
-        # scanning res and searching for flatfile keywords; keep track of
-        # current one. Should be an entry first.
-        current = None
-        countref = 1  # reference counter for reference without a value
-        for line in lines:
-            line = line.strip()
-            if line == "///" or len(line) == 0:
-                continue
-
-            if len(line.split()) >= 2:  # split each line to search for the first term
-                key, text = line.split(None, 1)
-            else:
-                key = line
-
-            # REFERENCES are dealt with in the else
-            if key in flatfile and key not in ["REFERENCE", "AUTHORS", "TITLE", "JOURNAL"]:
-                # store the first appearance of a key
-                output[key.lower()] = line.split(key)[1].strip()
-                current = key.lower()  # keep track of the current key
-            else:
-                # There are many instances of referneces that are followed
-                # by authors/title/journal triplet
-                if key == "REFERENCE":
-                    current = key.lower()
-                    if current not in output.keys():
-                        # the first time, we create a dictionary
-                        output[current] = {}
-
-                # Sometimes, we want to create a dictionary. For instance, genes
-                # but in other cases  we just want to append the text (e.g.
-                # remarks)
-                if current in ["gene", "reference", "rel_pathway", "orthology",
-                               "pathway", "reaction", "compound", "dblinks", "marker"]:
-                    if isinstance(output[current], dict) is False:
-                        # The item may be of different length. In the gene case, we
-                        # want to provide a list of dictionaries with key being the
-                        # gene id but in some other cases,
-                        try:
-                            key, value = output[current].split(" ", 1)
-                        except:
-                            value = output[current]
-                        output[current] = {key: value}
-                    mode = "dict"
-                else:
-                    if isinstance(output[current], list) is False:
-                        value = output[current]
-                        output[current] = [value]
-                    mode = "append"
-
-                # For references only
-                if current == "reference":
-                    try:
-                        key, value = line.strip().split(" ", 1)
-                    except:
-                        key = line.strip()
-                        countref += 1
-                        value = str(countref)
-                    if key.upper() in ["AUTHORS", "TITLE", "JOURNAL"]:
-                        output[current][pubmed][key] = value
-                    elif key.upper() == "REFERENCE":
-                        pubmed = value.strip()
-                        if pubmed in output[current].keys():
-                            pubmed += "_" + str(countref)
-                            countref += 1
-                        output[current][pubmed] = {}
-                else:  # and all others
-                    if mode == "dict":
-                        try:
-                            key, value = line.strip().split(" ", 1)
-                        except:  # needed in INTERACTION case (DRUG)
-                            key = line.strip()
-                            value = ""
-                        output[current][key.strip()] = value.strip()
-                    else:
-                        output[current].append(line)
-
-        # some cleanup
-        if "ntseq" in output.keys():
-            data = output['ntseq']
-            output['ntseq'] = {data[0]: reduce(lambda x, y: x + y, data[1:])}
-        if "aaseq" in output.keys():
-            data = output['aaseq']
-            output['aaseq'] = {data[0]: reduce(lambda x, y: x + y, data[1:])}
-        if "dblinks" in output.keys():
-            try:
-                data = output['dblinks']
-                output['dblinks'] = {k[0:-1]: v for k, v in output['dblinks'].items()}
-            except:
-                pass
-
-        return output
+            last_idx = line.split()[0]
+            output[last_idx] = [line.split()[1:]]
+    return output
