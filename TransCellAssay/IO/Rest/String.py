@@ -3,6 +3,11 @@
 String-db REST services
 Website : www.http://string-db.org
 REST Documentation : http://string-db.org/help/index.jsp?topic=/org.string-db.docs/api.html
+
+# ### String REST TEST
+    # from TransCellAssay.IO.Rest.String import String
+    # string = String(identity='kopp@igbmc.fr')
+
 """
 
 __author__ = "Arnaud KOPP"

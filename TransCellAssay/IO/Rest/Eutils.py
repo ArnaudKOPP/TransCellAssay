@@ -18,6 +18,23 @@ Interface to the EUtils web Service.
 
        -- from http://www.ncbi.nlm.nih.gov/books/NBK25497/, March 2013
 
+# ### Eutils REST TEST
+    # from TransCellAssay.IO.Rest.Eutils import EUtils, EUtilsParser
+    # eutils = EUtils(email='kopp@igbmc.fr', verbose=True)
+    #
+    # db = eutils.available_databases
+    # print(db)
+    #
+    # einfo = eutils.EInfo(db='bioproject', retmode='json')
+    # import json
+    # print(json.dumps(einfo, indent=4, separators=(',', ': ')))
+    #
+    # einfo = eutils.EInfo(db='protein')
+    # print(EUtilsParser(einfo))
+    #
+    # esearch = eutils.ESearch(db='protein', term='human', retmax=5)
+    # print(esearch)
+
 """
 
 __author__ = "Arnaud KOPP"

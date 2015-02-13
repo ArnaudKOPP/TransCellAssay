@@ -16,6 +16,17 @@ Interface to the ArrayExpress web Service.
 
         -- ArrayExpress home page, Jan 2013
 
+# ### Array Express REST TEST
+    # from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
+    # ae = ArrayExpress(verbose=True)
+    # res = ae.queryExperiments(species="Homo sapiens", ef="organism_part", efv="liver")
+    # print(res)
+    # res = ae.retrieveExperiment("E-MEXP-31")
+    # print(res)
+
+    # res = ae.queryExperiments(array="A-AFFY-33", species="Homo Sapiens", sortby="releasedate")
+    # print(res)
+
 """
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"

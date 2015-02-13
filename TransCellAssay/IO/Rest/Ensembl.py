@@ -17,6 +17,20 @@ Interface to Ensembl web service
 
         -- From Ensembl web site, Oct 2014
 
+# ### Ensembl REST TEST
+    # from TransCellAssay.IO.Rest.Ensembl import Ensembl
+    # s = Ensembl(verbose=True)
+    # print(s.get_info_rest())
+    # print(s.get_info_ping())
+    # print(s.get_info_software())
+    # print(s.get_info_species())
+    # print(s.get_archive("AT3G52430"))
+    # print(s.post_archive(["AT3G52430", "AT1G01160"]))
+    # print(s.get_gene_family_information_by_id('MF_01687'))
+    # print(s.get_info_analysis('arabidopsis_thaliana'))
+    # print(s.get_info_assembly('arabidopsis_thaliana'))
+    # print(s.get_info_assembly_by_region('arabidopsis_thaliana', region=1))
+    # print(s.get_info_compara_methods())
 
 """
 

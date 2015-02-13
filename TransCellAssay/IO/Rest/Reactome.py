@@ -10,6 +10,43 @@ small molecule databases, PubMed, and Gene Ontology
 
 URL: http://www.reactome.org/ReactomeGWT/entrypoint.html
 REST: http://reactomews.oicr.on.ca:8080/ReactomeRESTfulAPI/ReactomeRESTFulAPI.html
+
+    # from TransCellAssay.IO.Rest.Reactome import Reactome, ReactomeAnalysis
+    # r = Reactome()
+    # print(r.front_page_items("homo sapiens"))
+    # print(r.get_list_pathways())
+    # print(r.get_species())
+    # print(r.biopax_exporter(109581))
+    # res = r.highlight_pathway_diagram("68875", genes="CDC2", frmt='PDF')
+    # f = open("reactome.pdf", "w")
+    # f.write(res)
+    # f.close()
+    # res = r.list_by_query("Pathway", name='Apoptosis')
+    # identifiers = [x['dbId'] for x in res]
+    # print(identifiers)
+    # print(r.pathway_hierarchy("homo sapiens"))
+    # print(r.pathway_participantes(109581))
+    # print(r.pathway_complexes(109581))
+    # print(r.query_by_id("Pathway", "109581"))
+    # print(r.query_by_ids("Pathway", "CDC2"))
+    # print(r.query_pathway_for_entities(170075))
+    # print(r.query_hit_pathways('CDC2'))
+    # print(r.query_hit_pathways(['CDC2']))
+    # print(r.species_list())
+    # print(r.SBML_exporter(109581))
+    # ra = ReactomeAnalysis()
+    # res = ra.identifiers('TP53')
+    # import json
+    # print(json.dumps(res, indent=4, separators=(',', ': ')))
+
+    # res = ra.identifier(170075)
+    # import json
+    # print(json.dumps(res, indent=4, separators=(',', ': ')))
+
+    # res = ra.species(48895)
+    # import json
+    # print(json.dumps(res, indent=4, separators=(',', ': ')))
+
 """
 
 __author__ = "Arnaud KOPP"

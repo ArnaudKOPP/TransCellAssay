@@ -57,6 +57,21 @@ format	                        string	    “tab2”	    “tab1”,”tab2,”e
 translate	                    boolean	    FALSE	    true,false	                                                    If 'true', the rest service will show a small snippet above your results detailing how your input parameters were translated for use in returning your data. This is helpful in troubleshooting why you may or may not be getting back the results expected. For example, if you enter a typo for a field such as “searchNamez”, no result will be translated, and thus this parameter will be ignored.
 
 
+# #### Biogrid REST TEST
+
+    # from TransCellAssay.IO.Rest.Biogrid import Biogrid
+    # b = Biogrid(acceskey="dc589cabccb374194e060d3586b31349")
+    # print(b.get_biogrid_version())
+    # print(b._supported_organism_list())
+    # print(b.SupportedOrganismId)
+    # print(b.SupportedOrganismId["9606"])
+    # res = b.interaction(geneList="31623", searchbiogridids="true", includeInteractors="true", caca="grzefg")
+    # print(res)
+    # import pandas as pd
+    # from io import StringIO
+    # data = pd.read_table(StringIO(res), header=None)
+    # print(data)
+
 """
 
 __author__ = "Arnaud KOPP"

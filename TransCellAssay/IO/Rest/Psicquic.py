@@ -106,6 +106,25 @@ param           Interaction parameters. Only true or
                 false, just to be able to filter
                 interaction having parameters available     Yes             param:true
 =============== =========================================== =============== ======================
+
+# #### Psicquic REST TEST
+
+    # from TransCellAssay.IO.Rest.Psicquic import PSICQUIC
+    # p = PSICQUIC()
+    # p.print_status(full=True)
+    # print(p.activeDBs)
+    # p.retrieve("intact", "brca2", "tab27")
+    # p.retrieve("intact", "zap70", "xml25")
+    # p.retrieve("matrixdb", "*", "xml25")
+    # print(p.retrieve("string", "species:10090", firstresult=0, maxresults=100, output="tab25"))
+    # print(p.retrieve("biogrid", "ZAP70"))
+    # print(p.retrieve("biogrid", "ZAP70 AND species:10090"))
+    # res = p.retrieve("intact", "zap70")
+    # for x in res:
+    #     print(x)
+    # print(p.get_db_properties('intact'))
+    # print(p.retrive_all("ZAP70 AND species:9606"))
+
 """
 
 __author__ = "Arnaud KOPP"

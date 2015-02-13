@@ -2,6 +2,13 @@
 """
 Encore REST services
 REST Documentation : https://www.encodeproject.org/help/rest-api/
+
+# ### Encode REST TEST
+    # from TransCellAssay.IO.Rest.Encode import Encode
+    # encode = Encode()
+    # response = encode.biosample('ENCBS000AAA')
+    # encode.show_response(response)
+
 """
 
 __author__ = "Arnaud KOPP"

@@ -19,6 +19,27 @@ to all the BioModel service.
 
         -- from BioMart March 2013
 
+# ### Biomart REST TEST
+    # from TransCellAssay.IO.Rest.Biomart import BioMart
+    # s = BioMart(verbose=True)
+    # portal = s.registry()
+    # print(json.dumps(portal, indent=4, separators=(',', ':')))
+    # res, marts = s.available_marts()
+    # marts = json.dumps(marts, indent=4, separators=(',', ':'))
+    # print(marts)
+    #
+    # res, dataset = s.datasets_for_marts('gene_ensembl_config')
+    # datasets = json.dumps(dataset, indent=4, separators=(',', ':'))
+    # print(datasets)
+    #
+    # res, attribut = s.attributs_for_datasets(datasets='hsapiens_gene_ensembl', config='gene_ensembl_config')
+    # attribut = json.dumps(attribut, indent=4, separators=(',', ':'))
+    # print(attribut)
+    #
+    # res, filter = s.filter_for_datasets(datasets='hsapiens_gene_ensembl', config='gene_ensembl_config')
+    # filter = json.dumps(filter, indent=4, separators=(',', ':'))
+    # print(filter)
+
 """
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
