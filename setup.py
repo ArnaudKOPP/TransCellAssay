@@ -4,7 +4,7 @@ from distutils.core import setup
 setup(
     name='TransCellAssay',
     version='1.0',
-    packages=['Core', 'Utils', 'Stat', 'IO'],
+    packages=['Core', 'Utils', 'Stat', 'IO', 'Omics'],
     install_requires=['pandas', 'numpy', 'scipy', 'scikit-learn', 'matplotlib', 'seaborn', 'xlsxwriter',
                       'beautifulsoup4', 'requests'],
     url='https://github.com/ArnaudKOPP/TransCellAssay',

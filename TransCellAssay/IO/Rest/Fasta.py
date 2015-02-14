@@ -9,7 +9,6 @@ __email__ = "kopp.arnaud@gmail.com"
 
 from collections import OrderedDict
 import pandas as pd
-import pylab
 
 
 class MultiFASTA(object):
@@ -96,9 +95,13 @@ class MultiFASTA(object):
 
         :param kargs:
         """
-        self.df.Size.hist(**kargs)
-        pylab.title("Histogram length of the sequences")
-        pylab.xlabel("Length")
+        try:
+            import pylab
+            self.df.Size.hist(**kargs)
+            pylab.title("Histogram length of the sequences")
+            pylab.xlabel("Length")
+        except:
+            pass
 
 
 class FASTA(object):

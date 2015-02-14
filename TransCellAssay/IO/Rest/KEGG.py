@@ -134,7 +134,6 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
-from functools import reduce
 import webbrowser
 import collections
 

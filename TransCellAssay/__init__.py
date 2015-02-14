@@ -8,5 +8,6 @@ from TransCellAssay.Core import *
 from TransCellAssay.IO import *
 from TransCellAssay.Stat import *
 from TransCellAssay.Utils import *
+from TransCellAssay.Omics import *
 
-__all__ = ['Core', 'IO', 'Stat', 'Utils']
+__all__ = ['Core', 'IO', 'Stat', 'Utils', 'Omics']
