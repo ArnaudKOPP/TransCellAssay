@@ -83,7 +83,7 @@ USAGE
         except:
             os.mkdir(output)
         for root, dirs, filenames in os.walk(input_dir):
-            if "Legend.xml" in filenames:
+            if "Plate.csv" in filenames:
                 try:
                     well = pd.read_csv((root + "/Plate.csv"))
                 except:
@@ -99,7 +99,7 @@ USAGE
                 file.load(fpath=os.path.join(root, "Cell.csv"))
 
                 # # create well
-                file.format_data()
+                file.format_well_format()
                 file.remove_col()
                 file.remove_nan()
                 outputfilename = barcode

@@ -4,6 +4,7 @@ Basic Class for manipulating data into dataframe
 """
 import numpy as np
 import os
+import re
 
 
 __author__ = "Arnaud KOPP"
@@ -26,6 +27,7 @@ class InputFile(object):
     def __init__(self):
         self.dataframe = None
         self.is1Datawell = False
+        self.__col = None
 
     def load(self, fpath):
         """
@@ -34,7 +36,7 @@ class InputFile(object):
         """
         raise NotImplementedError
 
-    def format_data(self):
+    def format_well_format(self):
         """
         Format data
         """
@@ -52,13 +54,15 @@ class InputFile(object):
         """
         Get all Columns
         """
-        return self.dataframe.columns()
+        if self.__col is None:
+            self.__col = self.dataframe.columns()
+        return self.__col
 
     def remove_col(self):
         """
         Remove useless col
         """
-        col_in_df = self.dataframe.columns
+        col_in_df = self.get_col()
         # columns that we can remove because useless
         useless = [u'Barcode', u'PlateID', u'UPD', u'TimePoint', u'TimeInterval', u'FieldID', u'CellID',
                    u'Left', u'Top', u'Height', u'Width', u'FieldIndex', u'CellNum', "FieldNumber", "CellNumber", "X",
@@ -78,11 +82,29 @@ class InputFile(object):
         """
         self.dataframe = self.dataframe.dropna(axis=0)
 
-    def formatting(self):
+    def rename_col(self, colname, newcolname):
+        """
+        Rename a column name
+        :param colname:
+        :param newcolname:
+        """
+        if colname in self.get_col():
+            self.dataframe = self.dataframe.rename(columns={str(colname): str(newcolname)})
+        else:
+            print('Not in dataframe {}'.format(colname))
+
+    def formatting(self, cp_format=False):
         """
         Format string into float
+        :param cp_format: if cell profiler output, then apply a formatting of well
         :return:
         """
+
+        def __cp_well_format(x):
+            """
+            format from F05 to F5
+            """
+            return re.sub('(0)(?<!$)', '', x)
 
         def __str_to_flt(x):
             return float(x)
@@ -92,6 +114,9 @@ class InputFile(object):
             self.dataframe[chan].apply(__str_to_flt)
             if self.dataframe[chan].dtypes == 'object':
                 self.dataframe[chan] = self.dataframe[chan].str.replace(",", ".")
+
+        if cp_format:
+            self.dataframe['Well'].apply(__cp_well_format())
 
     def write_raw_data(self, path, name, frmt='csv'):
         """
