@@ -21,6 +21,7 @@ __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
 import webbrowser
+# TODO using param from requests is not a got idea, it's not working
 
 
 class String(REST):
@@ -85,7 +86,7 @@ class String(REST):
         if isinstance(identifier, list):
             params = {'identifiers': []}
             for elem in identifier:
-                params['identifiers'].append(str(elem)+'%0D')
+                params.setdefault('identifiers', []).append(elem)
         else:
             params = {'identifier': str(identifier)}
         return params
@@ -183,20 +184,22 @@ class String(REST):
 
         return res
 
-    def interactors(self, identifier, **kwargs):
+    def interactors(self, identifier, format='psi-mi',**kwargs):
         """
         List of interaction partners for the query items
         :param identifier:
         :param kwargs:
+        :param format: psi-mi or psi_mi_tab
         :return: :raise ValueError:
         """
         __valid_param = ['limit', 'required_score', 'additional_network_nodes']
-        __valide_netw_fl = ['evidence', 'confidence', 'actions']
+        __valid_netw_fl = ['evidence', 'confidence', 'actions']
+        __valid_frmt = ['psi-mi', 'psi-mi-tab']
 
         if isinstance(identifier, list):
-            query = 'api/psi-mi/interactorsList'
+            query = 'api/'+str(format)+'/interactorsList'
         else:
-            query = 'api/psi-mi/interactors'
+            query = 'api/'+str(format)+'/interactors'
 
         params = self.__get_indentifiers_param(identifier)
         params['caller_identity'] = self._identity
@@ -204,30 +207,32 @@ class String(REST):
         for key, value in kwargs.items():
             if key in __valid_param:
                 if key is 'additional_network_nodes':
-                    if value in __valide_netw_fl:
+                    if value in __valid_netw_fl:
                         params[key] = value
                     else:
-                        raise ValueError('additional_network_nodes error value, must be :', __valide_netw_fl)
+                        raise ValueError('additional_network_nodes error value, must be :', __valid_netw_fl)
                 else:
                     params[key] = value
         res = self.http_get(query, frmt="xml", params=params)
 
         return res
 
-    def interactions(self, identifier, **kwargs):
+    def interactions(self, identifier, format='psi-mi', **kwargs):
         """
         Interaction network
         :param identifier:
         :param kwargs:
+        :param format: psi-mi or psi_mi_tab
         :return: :raise ValueError:
         """
         __valid_param = ['limit', 'required_score', 'additional_network_nodes']
-        __valide_netw_fl = ['evidence', 'confidence', 'actions']
+        __valid_netw_fl = ['evidence', 'confidence', 'actions']
+        __valid_frmt = ['psi-mi', 'psi-mi-tab']
 
         if isinstance(identifier, list):
-            query = 'api/psi-mi/interactionsList'
+            query = 'api/'+str(format)+'/interactionsList'
         else:
-            query = 'api/psi-mi/interactions'
+            query = 'api/'+str(format)+'/interactions'
 
         params = self.__get_indentifiers_param(identifier)
         params['caller_identity'] = self._identity
@@ -235,10 +240,10 @@ class String(REST):
         for key, value in kwargs.items():
             if key in __valid_param:
                 if key is 'additional_network_nodes':
-                    if value in __valide_netw_fl:
+                    if value in __valid_netw_fl:
                         params[key] = value
                     else:
-                        raise ValueError('additional_network_nodes error value, must be :', __valide_netw_fl)
+                        raise ValueError('additional_network_nodes error value, must be :', __valid_netw_fl)
                 else:
                     params[key] = value
 
@@ -246,7 +251,7 @@ class String(REST):
 
         return res
 
-    def network(self, identifier, file, **kwargs):
+    def network(self, identifier, file,  **kwargs):
         """
         Network image for the query items
         :param identifier:
@@ -277,8 +282,12 @@ class String(REST):
 
         res = self.http_get(query, frmt="txt", params=params)
 
-        if self._verbose:
-            print('\033[0;32m[INFO]\033[0m Writing image @ :{}'.format(file))
-        f = open(file, "w")
-        f.write(res)
-        f.close()
+        # TODO don't work
+        try:
+            if self._verbose:
+                print('\033[0;32m[INFO]\033[0m Writing image :{}'.format(file))
+            f = open(file, "wb")
+            f.write(res)
+            f.close()
+        except:
+            pass

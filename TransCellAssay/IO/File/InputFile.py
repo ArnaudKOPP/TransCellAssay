@@ -116,7 +116,7 @@ class InputFile(object):
                 self.dataframe[chan] = self.dataframe[chan].str.replace(",", ".")
 
         if cp_format:
-            self.dataframe['Well'].apply(__cp_well_format())
+            self.dataframe['Well'] = self.dataframe['Well'].apply(__cp_well_format())
 
     def write_raw_data(self, path, name, frmt='csv'):
         """

@@ -644,7 +644,7 @@ class KEGG(REST):
             set([x['name'] for x in res['relations']])
             res['relations'][-1]
             {'entry1': u'15',
-             'entry2': u'13',
+             'entry2': u'13',F
              'link': u'PPrel',
              'name': u'phosphorylation',
              'value': u'+p'}
@@ -655,7 +655,6 @@ class KEGG(REST):
         .. seealso:: `KEGG API <http://www.kegg.jp/kegg/xml/docs/>`_
         """
         output = {'relations': [], 'entries': []}
-        # Fixing bug #24 assembla
         if res is None:
             res = self.easyXML(self.get(pathways_id, "kgml"))
         else:

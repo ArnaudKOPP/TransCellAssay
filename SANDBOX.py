@@ -301,11 +301,14 @@ def rest():
             # res = k.find("hsa", gene)
             # print(res)
             des = k.get(":".join(["hsa", gene]))
-            print(des)
+            # print(des)
 
             res = KEGGParser(des)
             # print(res['PATHWAY'])
-            print(json.dumps(res, indent=4))
+            # print(json.dumps(res, indent=4))
+
+            path = k.get(res['PATHWAY'][0].split()[0], "kgml")
+            print(path)
 
         except:
             pass
