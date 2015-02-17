@@ -21,7 +21,6 @@ __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
 import webbrowser
-# TODO using param from requests is not a got idea, it's not working
 
 
 class String(REST):
@@ -67,7 +66,6 @@ class String(REST):
                 List of parameters and values
                 -------------------------------------------------------------------------------------------------------
                 identifier	                required parameter for single item, e.g. DRD1_HUMAN
-                identifiers	                required parameter for multiple items, e.g.DRD1_HUMAN%0DDRD2_HUMAN
                 format	                    For resolve requests: only-ids get the list of only the STRING identifiers
                                                 (full by default) For abstract requests: use colon pmids for alternative
                                                 shapes of the pubmed identifier
@@ -83,12 +81,7 @@ class String(REST):
 
     @staticmethod
     def __get_indentifiers_param(identifier):
-        if isinstance(identifier, list):
-            params = {'identifiers': []}
-            for elem in identifier:
-                params.setdefault('identifiers', []).append(elem)
-        else:
-            params = {'identifier': str(identifier)}
+        params = {'identifier': str(identifier)}
         return params
 
     def resolve(self, identifier, **kwargs):
@@ -101,10 +94,7 @@ class String(REST):
         __valid_param = ['species', 'format']
         __valid_frmt = ['full', 'only_ids']
 
-        if isinstance(identifier, list):
-            query = 'api/json/resolveList'
-        else:
-            query = 'api/json/resolve'
+        query = 'api/json/resolve'
 
         params = self.__get_indentifiers_param(identifier)
         params['caller_identity'] = self._identity
@@ -132,10 +122,7 @@ class String(REST):
         __valid_param = ['format', 'limit']
         __valid_frmt = ['colon', 'pmids']
 
-        if isinstance(identifier, list):
-            query = 'api/tsv/abstractsList'
-        else:
-            query = 'api/tsv/abstracts'
+        query = 'api/tsv/abstracts'
 
         params = self.__get_indentifiers_param(identifier)
         params['caller_identity'] = self._identity
@@ -163,10 +150,7 @@ class String(REST):
         __valid_param = ['limit', 'required_score', 'additional_network_nodes']
         __valide_netw_fl = ['evidence', 'confidence', 'actions']
 
-        if isinstance(identifier, list):
-            query = 'api/tsv/actionsList'
-        else:
-            query = 'api/tsv/actions'
+        query = 'api/tsv/actions'
 
         params = self.__get_indentifiers_param(identifier)
         params['caller_identity'] = self._identity
@@ -184,22 +168,19 @@ class String(REST):
 
         return res
 
-    def interactors(self, identifier, format='psi-mi',**kwargs):
+    def interactors(self, identifier, format='psi-mi', **kwargs):
         """
         List of interaction partners for the query items
         :param identifier:
         :param kwargs:
-        :param format: psi-mi or psi_mi_tab
+        :param format: psi-mi or psi-mi-tab
         :return: :raise ValueError:
         """
         __valid_param = ['limit', 'required_score', 'additional_network_nodes']
         __valid_netw_fl = ['evidence', 'confidence', 'actions']
         __valid_frmt = ['psi-mi', 'psi-mi-tab']
 
-        if isinstance(identifier, list):
-            query = 'api/'+str(format)+'/interactorsList'
-        else:
-            query = 'api/'+str(format)+'/interactors'
+        query = 'api/'+str(format)+'/interactors'
 
         params = self.__get_indentifiers_param(identifier)
         params['caller_identity'] = self._identity
@@ -222,17 +203,14 @@ class String(REST):
         Interaction network
         :param identifier:
         :param kwargs:
-        :param format: psi-mi or psi_mi_tab
+        :param format: psi-mi or psi-mi-tab
         :return: :raise ValueError:
         """
         __valid_param = ['limit', 'required_score', 'additional_network_nodes']
         __valid_netw_fl = ['evidence', 'confidence', 'actions']
         __valid_frmt = ['psi-mi', 'psi-mi-tab']
 
-        if isinstance(identifier, list):
-            query = 'api/'+str(format)+'/interactionsList'
-        else:
-            query = 'api/'+str(format)+'/interactions'
+        query = 'api/'+str(format)+'/interactions'
 
         params = self.__get_indentifiers_param(identifier)
         params['caller_identity'] = self._identity
@@ -262,10 +240,7 @@ class String(REST):
         __valid_param = ['limit', 'required_score', 'additional_network_nodes']
         __valide_netw_fl = ['evidence', 'confidence', 'actions']
 
-        if isinstance(identifier, list):
-            query = 'api/image/networkList'
-        else:
-            query = 'api/image/network'
+        query = 'api/image/network'
 
         params = self.__get_indentifiers_param(identifier)
         params['caller_identity'] = self._identity
