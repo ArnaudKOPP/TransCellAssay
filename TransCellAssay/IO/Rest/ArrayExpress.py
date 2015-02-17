@@ -16,6 +16,23 @@ Interface to the ArrayExpress web Service.
 
         -- ArrayExpress home page, Jan 2013
 
+accession 	    Experiment primary or secondary accession
+array 	        Array design accession or name
+ef 	            Experimental factor, the name of the main variable under study in an experiment. E.g. if the factor is
+                "sex" in a human study, the researchers would be comparing between male and female samples, and "sex"
+                is not merely an  attribute the samples happen to have. Has EFO expansion.
+efv 	        The value of an experimental factor. E.g. The values for "genotype" factor can be "wild type genotype",
+                "p53-/-". Has EFO expansion.
+expdesign 	    Experiment design type, related to the questions being addressed by the study, e.g. "time series design"
+                 "stimulus or stress design", "genetic modification design". Has EFO expansion.
+exptype 	    Experiment type, related to the assay technology used. Has EFO expansion.
+gxa 	        Presence ("true") /absence ("false") of an ArrayExpress experiment in the Expression Atlas.
+pmid 	        PubMed identifier
+sa 	            Sample attribute values, e.g. "male", "liver". Has EFO expansion.
+species 	    Species of the samples. Can use common name (e.g. "mouse") or binomial nomenclature/Latin names (e.g.
+                "Mus musculus"). Has EFO expansion.
+
+
 # ### Array Express REST TEST
     # from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
     # ae = ArrayExpress(verbose=True)
@@ -81,7 +98,6 @@ class ArrayExpress(REST):
         len(res.getchildren())
         1487
 
-
     If you know what you are looking for, you can give the experiment name::
 
         res = s.retrieveExperiment("E-MEXP-31")
@@ -92,7 +108,6 @@ class ArrayExpress(REST):
 
     Using the same example, you can retrieve the names of the files related to
     the experiment::
-
 
         files = [x.getchildren() for x in exp.getchildren() if x.tag == "files"]
         [x.get("name") for x in files[0]]
@@ -105,9 +120,7 @@ class ArrayExpress(REST):
 
         s.retrieveFile("E-MEXP-31", "E-MEXP-31.idf.txt")
 
-
     You can get json file instead of XML by setting the format to "json"::
-
         a.format = "json"
     """
 
@@ -200,36 +213,7 @@ class ArrayExpress(REST):
     def queryFiles(self, **kargs):
         """
         Retrieve a list of files associated with a set of experiments
-
-        The following parameters are used to search for experiments/files:
-
-        :param str accession: experiment primary or secondary accession e.g. E-MEXP-31
-        :param str array: array design accession or name e.g., A-AFFY-33
-        :param str ef: Experimental factor, the name of the main variables in an
-            experiment. (e.g., CellType)
-        :param str efv:  Experimental factor value. Has EFO expansion. (e.g.,
-            HeLa)
-        :param str expdesign: Experiment design type  (e.g., "dose+response")
-        :param str exptype:  Experiment type. Has EFO expansion. (e.g.,
-            "RNA-seq")
-        :param str gxa: Presence in the Gene Expression Atlas. Only value is gxa=true.
-        :param str keywords: e.g. "cancer+breast"
-        :param str pmid: PubMed identifier (e.g., 16553887)
-        :param str sa: Sample attribute values. Has EFO expansion. fibroblast
-        :param str species: Species of the samples.Has EFO expansion. (e.g., "homo+sapiens")
-        :param bool wholewords:
-
-        The following parameters can filter the experiments:
-
-        :param str directsub: only experiments directly submitted to
-            ArrayExpress (true) or only imported from GEO databae (false)
-
-
-        The following parameters can sort the results:
-
-        :param str sortby: sorting by grouping (can be accession, name, assays, species, releasedata,
-            fgem, raw, atlas)
-        :param str sortorder: sorting by orderering. Can be either ascending or descending (default)
+        :param kargs:
 
             from ArrayExpress import ArrayExpress
             s = ArrayExpress()
