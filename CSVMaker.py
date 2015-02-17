@@ -94,16 +94,22 @@ USAGE
 
                 barcode = well['PlateId/Barcode'][0]
 
-                # # read
-                file = TCA.CSV()
-                file.load(fpath=os.path.join(root, "Cell.csv"))
+                try:
+                    # # read
+                    file = TCA.CSV()
+                    file.load(fpath=os.path.join(root, "Cell.csv"))
 
-                # # create well
-                file.format_well_format()
-                file.remove_col()
-                file.remove_nan()
-                outputfilename = barcode
-                file.write_raw_data(path=output, name=outputfilename)
+                    # # create well
+                    file.format_well_format()
+                    try:
+                        file.remove_col()
+                        file.remove_nan()
+                    except:
+                        pass
+                    outputfilename = barcode
+                    file.write_raw_data(path=output, name=outputfilename)
+                except Exception as e:
+                    print(e)
         print("\n*********** END ***********\n")
     except KeyboardInterrupt:
         # ## handle keyboard interrupt ###
