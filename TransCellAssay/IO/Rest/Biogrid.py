@@ -125,7 +125,7 @@ class Biogrid(REST):
         :return:
         """
         url = "interactions/"
-        params = {'acceskey': self.AccesKey}
+        params = {'accesskey': self.AccesKey}
         if kwargs is not None:
             for key, value in kwargs.items():
                 if key.lower() in self._valid_parameters:
@@ -143,7 +143,7 @@ class Biogrid(REST):
         :return:
         """
         url = "version/"
-        params = {'acceskey': self.AccesKey}
+        params = {'accesskey': self.AccesKey}
         res = self.http_get(url, frmt='xml', params=params)
         return res
 
@@ -153,7 +153,7 @@ class Biogrid(REST):
         :return:
         """
         url = "organisms/"
-        params = {'acceskey': self.AccesKey}
+        params = {'accesskey': self.AccesKey}
         if json:
             params['format'] = 'json'
             res = self.http_get(url, params=params)
