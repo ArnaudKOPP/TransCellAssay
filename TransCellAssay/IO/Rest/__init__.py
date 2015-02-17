@@ -13,3 +13,8 @@ from TransCellAssay.IO.Rest.String import String
 from TransCellAssay.IO.Rest.Uniprot import UniProt
 from TransCellAssay.IO.Rest.ArrayExpress import ArrayExpress
 from TransCellAssay.IO.Rest.Biomart import BioMart
+from TransCellAssay.IO.Rest.Intact import Intact
+from TransCellAssay.IO.Rest.BioDBnet import BioDBnet
+from TransCellAssay.IO.Rest.TogoWS import TogoWS
+from TransCellAssay.IO.Rest.QuickGo import QuickGO
+from TransCellAssay.IO.Rest.Biomart import BioMart, BioMartQuery

@@ -35,11 +35,55 @@ class TogoWS(REST):
         except:
             pass
 
-    def EntryRetrieval(self):
-        raise NotImplementedError
+    @staticmethod
+    def EntryDBField(db):
+        """
+        Search Fields for specified database
+        :param db: entry database
+        :return: list of fields
+        """
+        flds = requests.get("http://togows.dbcls.jp/entry/"+str(db)+"?fields").text.replace('\n', '\t').split('\t')
+        return flds
 
-    def DatabaseSearch(self):
-        raise NotImplementedError
+    @staticmethod
+    def EntryDBFormat(db):
+        """
+        Search format for specified database
+        :param db: entry database
+        :return: list of format
+        """
+        frmt = requests.get("http://togows.dbcls.jp/entry/"+str(db)+"?formats").text.replace('\n', '\t').split('\t')
+        return frmt
+
+    def EntryRetrieval(self, database, query, field=None, format=None):
+        if database not in self.valid_entry_db:
+            raise ValueError('Not valid Database')
+
+        query = "entry/"+str(database)+"/"+str(query)
+
+        if field is not None:
+            query += "/"+str(field)
+
+        if format is not None:
+            query += "."+str(format)
+
+        res = self.http_get(query, frmt='txt')
+        return res
+
+    def DatabaseSearch(self, database, query):
+        """
+        Search on multiple databse
+        :param database: database to seach
+        :param query: word for search
+        :return:
+        """
+        if database not in self.valid_search_db:
+            raise ValueError('Not valid Database')
+
+        query = "search/"+str(database)+"/"+str(query)
+
+        res = self.http_get(query, frmt='txt')
+        return res
 
     def DataFormatConversion(self):
         raise NotImplementedError

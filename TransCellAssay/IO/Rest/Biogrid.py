@@ -170,7 +170,7 @@ class Biogrid(REST):
         return tab
 
 
-class BiogridParser():
+class BiogridParser(object):
     """
     Class for parsing result from Biogrid requests
 
@@ -188,3 +188,9 @@ class BiogridParser():
                              "Experimental System Type", "Author", "Pubmed Id", "NCBI Tax Id A", "NCBI Tax Id B",
                              "Interaction Throughput", "Quantitative Score", "Post Translational Modification",
                              "Phenotypes", "Qualifications", "Tags", "Source Database"]
+
+    def __repr__(self):
+        return repr(self.Data.head())
+
+    def __str__(self):
+        return self.__repr__()
