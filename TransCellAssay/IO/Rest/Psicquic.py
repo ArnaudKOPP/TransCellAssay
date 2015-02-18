@@ -573,7 +573,6 @@ class PSICQUIC(REST):
                 raise ValueError("database %s not in active databases" % x)
 
         for name in databases:
-            print("\033[0;32m[INFO]\033[0m Querying %s" % name)
             try:
                 res = self.retrieve(service=name, query=query, methods=methods, output=output, firstresult=firstresult,
                                     maxresults=maxresults, compressed=compressed)
@@ -583,13 +582,9 @@ class PSICQUIC(REST):
                     import copy
 
                     results[name] = copy.copy(res)
+                print("\033[0;32m[INFO]\033[0m Found %s in %s" % (len(results[name]), name))
             except RestServiceError:
                 pass
-        for name in databases:
-            try:
-                print("\033[0;32m[INFO]\033[0m Found %s in %s" % (len(results[name]), name))
-            except KeyError:
-                print('\033[0;33m[WARNING]\033[0m %s failed' % name)
         return results
 
     def count_interaction(self, query):
