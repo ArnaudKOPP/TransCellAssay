@@ -292,27 +292,30 @@ def go():
 
 
 def rest():
-    from TransCellAssay.IO.Rest.KEGG import KEGG, KEGGParser
-    k = KEGG(verbose=True)
-    # target = ["NXF1", "ALAS2", "GPI", "EIF4A3", "RRM2", "RAD51L3", "KIF26A", "CDC5L", "ABCC3", "ATP1B2"]
-    target = ["NXF1"]
-    for gene in target:
-        try:
-            # res = k.find("hsa", gene)
-            # print(res)
-            des = k.get(":".join(["hsa", gene]))
-            # print(des)
+    # k = TCA.KEGG(verbose=True)
+    # # target = ["NXF1", "ALAS2", "GPI", "EIF4A3", "RRM2", "RAD51L3", "KIF26A", "CDC5L", "ABCC3", "ATP1B2"]
+    # target = ["NXF1"]
+    # for gene in target:
+    #     try:
+    #         # res = k.find("hsa", gene)
+    #         # print(res)
+    #         des = k.get(":".join(["hsa", gene]))
+    #         # print(des)
+    #
+    #         # res = TCA.KEGGParser(des)
+    #         # print(res['PATHWAY'])
+    #         # print(json.dumps(res, indent=4))
+    #
+    #         # path = k.get(res['PATHWAY'][0].split()[0], "kgml")
+    #         # print(path)
+    #
+    #     except:
+    #         pass
 
-            res = KEGGParser(des)
-            # print(res['PATHWAY'])
-            # print(json.dumps(res, indent=4))
-
-            path = k.get(res['PATHWAY'][0].split()[0], "kgml")
-            print(path)
-
-        except:
-            pass
-
+    psi = TCA.PSICQUIC(verbose=False)
+    psi.TIMEOUT = 10
+    psi.RETRIES = 1
+    psi.retrieve_all('NXF1')
 
 rest()
 
