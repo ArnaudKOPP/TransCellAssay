@@ -136,7 +136,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
-from TransCellAssay.IO.Rest.Service import REST, check_param_in_list
+from TransCellAssay.IO.Rest.Service import REST, check_param_in_list, RestServiceError
 from TransCellAssay.IO.Rest.Uniprot import UniProt
 
 
@@ -573,17 +573,23 @@ class PSICQUIC(REST):
                 raise ValueError("database %s not in active databases" % x)
 
         for name in databases:
-            print("\033[0;33m[WARNING]\033[0m Querying %s" % name)
-            res = self.retrieve(service=name, query=query, methods=methods, output=output, firstresult=firstresult,
-                                maxresults=maxresults, compressed=compressed)
-            if output.startswith("tab25"):
-                results[name] = [x for x in res if x != [""]]
-            else:
-                import copy
+            print("\033[0;32m[INFO]\033[0m Querying %s" % name)
+            try:
+                res = self.retrieve(service=name, query=query, methods=methods, output=output, firstresult=firstresult,
+                                    maxresults=maxresults, compressed=compressed)
+                if output.startswith("tab25"):
+                    results[name] = [x for x in res if x != [""]]
+                else:
+                    import copy
 
-                results[name] = copy.copy(res)
+                    results[name] = copy.copy(res)
+            except RestServiceError:
+                pass
         for name in databases:
-            print("Found %s in %s" % (len(results[name]), name))
+            try:
+                print("\033[0;32m[INFO]\033[0m Found %s in %s" % (len(results[name]), name))
+            except KeyError:
+                print('\033[0;33m[WARNING]\033[0m %s failed' % name)
         return results
 
     def count_interaction(self, query):
