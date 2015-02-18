@@ -28,6 +28,7 @@ from urllib.request import urlopen
 import requests  # replacement for urllib2 (2-3 times faster)
 from requests.models import Response
 import logging
+log = logging.getLogger(__name__)
 
 
 class RestServiceError(Exception):
@@ -57,7 +58,7 @@ class Service(object):
         503: "Service not available (the server is being updated, try again later)"
     }
 
-    def __init__(self, name, url=None, verbose=False, request_per_sec=3):
+    def __init__(self, name, url=None, request_per_sec=3):
         """
         :param name: a name for this service
         :param url: its URL
@@ -71,20 +72,6 @@ class Service(object):
             but again, if you send too many requests at the same, your future
             requests may be restricted.
         """
-        if verbose:
-            logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
-                                datefmt='%m/%d/%Y %I:%M:%S')
-            # for silent requests and urllib3
-            logging.getLogger('requests').setLevel(logging.WARNING)
-            logging.getLogger('urllib3').setLevel(logging.CRITICAL)
-        else:
-            logging.basicConfig(level=logging.WARNING, format='%(asctime)s %(levelname)-8s %(message)s',
-                                datefmt='%m/%d/%Y %I:%M:%S')
-            # for silent requests and urllib3
-            logging.getLogger('requests').setLevel(logging.ERROR)
-            logging.getLogger('urllib3').setLevel(logging.CRITICAL)
-
-        self._verbose = verbose
         self._request_per_sec = request_per_sec
         self.url = url
         self._timeout = 30
@@ -93,7 +80,7 @@ class Service(object):
             if self.url is not None:
                 urlopen(self.url)
         except Exception:
-            logging.warning("The URL (%s) provided cannot be reached." % self.url)
+            log.warning("The URL (%s) provided cannot be reached." % self.url)
         self.name = name
 
     def _get_url(self):
@@ -185,9 +172,9 @@ class REST(Service):
         'yaml': 'text/x-yaml'
     }
 
-    def __init__(self, name, url=None, verbose=True):
-        super(REST, self).__init__(name, url, verbose=verbose)
-        logging.info("Initialising %s service (REST)" % self.name)
+    def __init__(self, name, url=None):
+        super(REST, self).__init__(name, url)
+        log.info("Initialising %s service (REST)" % self.name)
         self._session = None
         self.last_response = None
 
@@ -203,7 +190,7 @@ class REST(Service):
         Creates a normal session using HTTPAdapter
         max retries is defined in the :attr:`MAX_RETRIES`
         """
-        logging.debug("Create http session")
+        log.debug("Create http session")
         self._session = requests.session()
         adapter = requests.adapters.HTTPAdapter(max_retries=self._max_retries)
         self._session.mount('http://', adapter)
@@ -250,9 +237,9 @@ class REST(Service):
         :param query: suffix that will be appended to the main url attribute.
         """
         if isinstance(query, list):
-            logging.debug("Running http get (call for a list)")
+            log.debug("Running http get (call for a list)")
             return [self.__get_one(key, frmt, params=params, **kargs) for key in query]
-        logging.debug("Running http get (single call mode)")
+        log.debug("Running http get (single call mode)")
         return self.__get_one(query, frmt, params=params, **kargs)
 
     def __get_one(self, query, frmt='json', params={}, **kargs):
@@ -277,12 +264,12 @@ class REST(Service):
 
             res = self.session.get(url, **kargs)
 
-            logging.debug("Targeted URL :%s" % res.url)
+            log.debug("Targeted URL :%s" % res.url)
 
             if res.status_code != 200:
                 mes = ("Requests Status is not OK => {0} : {1}".format(res.status_code, self.response_codes[
                     res.status_code]))
-                logging.error(mes)
+                log.error(mes)
                 raise RestServiceError(mes)
 
             # For avoid too many requests
@@ -297,7 +284,7 @@ class REST(Service):
                 pass
             return res
         except Exception as e:
-            logging.error(e)
+            log.error(e)
             raise RestServiceError("Issue while Your current timeout is {0}. ".format(self._timeout))
 
     def http_post(self, query, params=None, data=None, frmt='xml', headers=None, files=None, **kargs):
@@ -345,13 +332,13 @@ class REST(Service):
             url = '%s/%s' % (self.url, query)
 
         try:
-            logging.debug("Targeted URL :%s" % url)
+            log.debug("Targeted URL :%s" % url)
             res = self.session.post(url, **kargs)
 
             if res.status_code != 200:
                 mes = ("Requests Status is not OK => {0} : {1}".format(res.status_code, self.response_codes[
                     res.status_code]))
-                logging.error(mes)
+                log.error(mes)
                 raise RestServiceError(mes)
 
             # For avoid too many requests
@@ -364,7 +351,7 @@ class REST(Service):
             except:
                 return res
         except Exception as e:
-            logging.error(e)
+            log.error(e)
             raise RestServiceError("Issue while Your current timeout is {0}. ".format(self._timeout))
 
     @staticmethod

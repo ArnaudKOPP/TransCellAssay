@@ -7,6 +7,8 @@ import pandas as pd
 import numpy as np
 import os
 import json
+import logging
+
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -311,8 +313,11 @@ def rest():
     #
     #     except:
     #         pass
-
-    psi = TCA.PSICQUIC(verbose=False)
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S')
+    logging.getLogger('requests').setLevel(logging.CRITICAL)
+    logging.getLogger('urllib3').setLevel(logging.CRITICAL)
+    psi = TCA.PSICQUIC()
     psi.TIMEOUT = 10
     psi.RETRIES = 1
     psi.retrieve_all('NXF1')
