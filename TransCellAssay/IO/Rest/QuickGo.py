@@ -13,6 +13,8 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST, check_param_in_list
+import logging
+log = logging.getLogger(__name__)
 
 
 class QuickGO(REST):
@@ -52,12 +54,11 @@ class QuickGO(REST):
                   'ref', 'with', 'proteinTaxon', 'date', 'from', 'splice', 'proteinName', 'proteinSynonym',
                   'proteinType', 'proteinTaxonName', 'originalTermID', 'originalGOName']
 
-    def __init__(self, verbose=False):
+    def __init__(self):
         """
-        :param bool verbose: print informative messages.
-
+        init
         """
-        super(QuickGO, self).__init__(url="http://www.ebi.ac.uk/QuickGO", name="quickGO", verbose=verbose)
+        super(QuickGO, self).__init__(url="http://www.ebi.ac.uk/QuickGO", name="quickGO")
 
     def Term(self, goid, frmt="oboxml"):
         """

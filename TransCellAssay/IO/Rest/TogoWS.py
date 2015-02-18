@@ -14,6 +14,8 @@ __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
 import requests
+import logging
+log = logging.getLogger(__name__)
 
 
 class TogoWS(REST):
@@ -21,13 +23,13 @@ class TogoWS(REST):
     TogoWS rest service
     """
 
-    def __init__(self, verbose=False):
+    def __init__(self):
         """
         **Constructor** TogoWS
 
         :param verbose: set to False to prevent informative messages
         """
-        super(TogoWS, self).__init__(name="TogoWS", url="http://togows.dbcls.jp", verbose=verbose)
+        super(TogoWS, self).__init__(name="TogoWS", url="http://togows.dbcls.jp")
         try:
             self.valid_entry_db = requests.get("http://togows.dbcls.jp/entry/").text.replace('\n', '\t').split('\t')
             self.valid_search_db = requests.get("http://togows.dbcls.jp/search/").text.replace('\n', '\t').split('\t')

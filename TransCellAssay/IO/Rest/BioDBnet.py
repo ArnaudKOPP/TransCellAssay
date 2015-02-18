@@ -13,6 +13,8 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
+import logging
+log = logging.getLogger(__name__)
 
 
 class BioDBnet(REST):
@@ -20,11 +22,9 @@ class BioDBnet(REST):
     BioDBnet rest service
     """
 
-    def __init__(self, verbose=False, frmt='json'):
+    def __init__(self, frmt='json'):
         """
         **Constructor** bioDbnet
-
-        :param verbose: set to False to prevent informative messages
         :param frmt: json or xml
         """
         if frmt is 'json':
@@ -32,9 +32,7 @@ class BioDBnet(REST):
         else:
             __url = "http://biodbnet.abcc.ncifcrf.gov/webServices/rest.php/biodbnetRestApi"
 
-        super(BioDBnet, self).__init__(name="BioDBnet",
-                                       url=__url,
-                                       verbose=verbose)
+        super(BioDBnet, self).__init__(name="BioDBnet", url=__url)
 
     def getInputs(self):
         """

@@ -14,6 +14,8 @@ __status__ = "Dev"
 
 
 from TransCellAssay.IO.Rest.Service import REST, check_param_in_list
+import logging
+log = logging.getLogger(__name__)
 
 
 class Intact(REST):
@@ -27,13 +29,11 @@ class Intact(REST):
 
     _url = "http://www.ebi.ac.uk/intact/complex-ws"
 
-    def __init__(self, verbose=False):
+    def __init__(self):
         """
         **Constructor** Intact
-
-        :param verbose: set to False to prevent informative messages
         """
-        super(Intact, self).__init__(name="Intact", url=Intact._url, verbose=verbose)
+        super(Intact, self).__init__(name="Intact", url=Intact._url)
 
     def search(self, query, frmt='json', facets=None, number=None, filters=None):
         """

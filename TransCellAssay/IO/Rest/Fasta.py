@@ -9,6 +9,8 @@ __email__ = "kopp.arnaud@gmail.com"
 
 from collections import OrderedDict
 import pandas as pd
+import logging
+log = logging.getLogger(__name__)
 
 
 class MultiFASTA(object):

@@ -87,6 +87,8 @@ from TransCellAssay.IO.Rest.Service import REST
 import webbrowser
 import pandas as pd
 from io import StringIO
+import logging
+log = logging.getLogger(__name__)
 
 
 class Biogrid(REST):
@@ -100,15 +102,14 @@ class Biogrid(REST):
                                              "pubmedList", "excludePubmeds", "htpThreshold", "throughputTag", "taxId",
                                              "includeHeader", "translate"]]
 
-    def __init__(self, acceskey=None, verbose=False):
-        super(Biogrid, self).__init__(name="Biogrid", url="http://webservice.thebiogrid.org", verbose=verbose)
+    def __init__(self, acceskey=None):
+        super(Biogrid, self).__init__(name="Biogrid", url="http://webservice.thebiogrid.org")
         if acceskey is not None:
             self.AccesKey = acceskey
         else:
             webbrowser.open("http://webservice.thebiogrid.org/")
             raise ValueError('Get access Key for this service, (url open)')
         self.SupportedOrganismId = self.__supported_organism_list(json=True)
-        self._verbose = verbose
 
     def get_valid_parameters(self):
         """

@@ -21,6 +21,8 @@ __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
 import webbrowser
+import logging
+log = logging.getLogger(__name__)
 
 
 class String(REST):
@@ -28,17 +30,16 @@ class String(REST):
     Class for doing REST requests to String-db
     """
 
-    def __init__(self, identity, verbose=False, alternative_db=False, sister_db=False):
-        self._verbose = verbose
+    def __init__(self, identity,  alternative_db=False, sister_db=False):
         self._identity = identity
         if alternative_db and sister_db:
             raise ValueError('Choose one DB')
         if alternative_db and not sister_db:
-            super(String, self).__init__(name="String", url="http://string.embl.de/", verbose=verbose)
+            super(String, self).__init__(name="String", url="http://string.embl.de/")
         if sister_db and not alternative_db:
-            super(String, self).__init__(name="String", url="http://stitch.embl.de/", verbose=verbose)
+            super(String, self).__init__(name="String", url="http://stitch.embl.de/")
         if not alternative_db and not sister_db:
-            super(String, self).__init__(name="String", url="http://string-db.org/", verbose=verbose)
+            super(String, self).__init__(name="String", url="http://string-db.org/")
 
     @staticmethod
     def print_doc_requests():
@@ -259,8 +260,7 @@ class String(REST):
 
         # TODO don't work
         try:
-            if self._verbose:
-                print('\033[0;32m[INFO]\033[0m Writing image :{}'.format(file))
+            log.info('Writing image :{}'.format(file))
             f = open(file, "wb")
             f.write(res)
             f.close()

@@ -55,6 +55,8 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST, check_param_in_list
+import logging
+log = logging.getLogger(__name__)
 
 
 class ArrayExpress(REST):
@@ -124,14 +126,11 @@ class ArrayExpress(REST):
         a.format = "json"
     """
 
-    def __init__(self, verbose=False):
-        """.. rubric:: Constructor
-
-        :param bool verbose: prints informative messages
-
+    def __init__(self):
         """
-        super(ArrayExpress, self).__init__(name="ArrayExpress",
-                                           url="http://www.ebi.ac.uk/arrayexpress", verbose=verbose)
+        init
+        """
+        super(ArrayExpress, self).__init__(name="ArrayExpress", url="http://www.ebi.ac.uk/arrayexpress")
         self.easyXMLConversion = True
         self._format = "json"
         self.version = "v2"

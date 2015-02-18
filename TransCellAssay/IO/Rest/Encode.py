@@ -22,15 +22,16 @@ __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
 import json
+import logging
+log = logging.getLogger(__name__)
 
 
 class Encode(REST):
     """
     Class for doing REST requests to Encode
     """
-    def __init__(self, verbose=False):
-        super(Encode, self).__init__(name="Encode", url="https://www.encodeproject.org/", verbose=verbose)
-        self._verbose = verbose
+    def __init__(self):
+        super(Encode, self).__init__(name="Encode", url="https://www.encodeproject.org/")
         # Force return from the server in JSON format
         self.HEADERS = {'accept': 'application/json'}
 

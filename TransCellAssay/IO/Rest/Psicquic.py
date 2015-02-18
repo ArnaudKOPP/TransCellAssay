@@ -219,7 +219,6 @@ class PSICQUIC(REST):
     def __init__(self):
         """
         Constructor
-        :param bool verbose: print informative messages
 
         import PSICQUIC
         s = PSICQUIC()
@@ -227,7 +226,7 @@ class PSICQUIC(REST):
         super(PSICQUIC, self).__init__("PSICQUIC", url='http://www.ebi.ac.uk/Tools/webservices/psicquic')
         self._registry = None
         try:
-            self.uniprot = UniProt(verbose=False)
+            self.uniprot = UniProt()
         except:
             print("\033[0;33m[WARNING]\033[0m UniProt service can't be initialised, needed for some parts")
         self.buffer = {}
@@ -915,7 +914,7 @@ class AppsPPI(object):
     """
 
     def __init__(self, verbose=False):
-        self.psicquic = PSICQUIC(verbose=False)
+        self.psicquic = PSICQUIC()
         self.verbose = verbose
         self.counter = None
         self.relevant_interactions = None
@@ -936,7 +935,7 @@ class AppsPPI(object):
         """
         # self.results_query = self.psicquic.queryAll("ZAP70 AND species:9606")
         print("Requests sent to psicquic. Can take a while, please be patient...")
-        self.results_query = self.psicquic.query_all(query, databases)
+        self.results_query = self.psicquic.retrieve_all(query, databases)
         self.interactions = self.psicquic.convert_all(self.results_query)
         self.interactions = self.psicquic.post_cleaning_all(self.interactions,
                                                             flatten=False, verbose=self.verbose)

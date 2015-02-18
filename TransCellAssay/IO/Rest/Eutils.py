@@ -48,6 +48,8 @@ __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST, check_param_in_list
 import webbrowser
+import logging
+log = logging.getLogger(__name__)
 
 
 class EUtils(REST):
@@ -65,10 +67,9 @@ class EUtils(REST):
 
     """
 
-    def __init__(self, verbose=False, email="unknown"):
+    def __init__(self, email="unknown"):
         url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-        super(EUtils, self).__init__(url=url, name="EUtils", verbose=verbose)
-        self._verbose = verbose
+        super(EUtils, self).__init__(url=url, name="EUtils")
         warning = """
 
         NCBI recommends that users post no more than three URL requests per second.
@@ -89,7 +90,7 @@ class EUtils(REST):
         self.tool = "TransCellAssay"
         self.email = email
         if self.email == "unknown":
-            print('\033[0;33m[WARNING]\033[0m', warning)
+            log.warning(str(warning))
 
     def get_databases(self):
         if self.databases is None:

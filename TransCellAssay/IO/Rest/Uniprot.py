@@ -43,6 +43,8 @@ from TransCellAssay.Utils.Utils import reporthook
 import gzip
 import os
 from TransCellAssay.IO.Rest.Fasta import FASTA
+import logging
+log = logging.getLogger(__name__)
 
 
 class UniProt(REST):
@@ -175,15 +177,12 @@ class UniProt(REST):
                       'protein names', 'reviewed', 'score', 'sequence', '3d', 'subcellular locations', 'taxonomy',
                       'tools', 'version', 'virus hosts', 'lineage-id', 'sequence-modified', 'proteome']
 
-    def __init__(self, user="TransCellAssayUser", verbose=False):
+    def __init__(self, user="TransCellAssayUser"):
         """
         **Constructor**
-
-        :param verbose: set to False to prevent informative messages
         """
-        super(UniProt, self).__init__(name="UniProt", url=UniProt._url, verbose=verbose)
+        super(UniProt, self).__init__(name="UniProt", url=UniProt._url)
         self.TIMEOUT = 100
-        self._verbose = verbose
         self.__uniprot_flt_file = None
         self.__headers = {'User-Agent': str(user)}
 

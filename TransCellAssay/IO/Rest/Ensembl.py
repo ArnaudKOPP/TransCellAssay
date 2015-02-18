@@ -44,6 +44,8 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST, check_param_in_list, tolist, to_json
+import logging
+log = logging.getLogger(__name__)
 
 
 class Ensembl(REST):
@@ -57,17 +59,16 @@ class Ensembl(REST):
 
     """
 
-    def __init__(self, verbose=False, requests_per_sec=15):
+    def __init__(self, requests_per_sec=15):
         """
         INIT REST object for ensembl
 
         :param verbose: set to False to prevent informative messages
         :param requests_per_sec: number of requests per sec (max)
         """
-        super(Ensembl, self).__init__(name="Ensembl", url='http://rest.ensemblgenomes.org', verbose=verbose)
+        super(Ensembl, self).__init__(name="Ensembl", url='http://rest.ensemblgenomes.org')
         self._request_per_sec = requests_per_sec
         self.callback = None  # use in all methods
-        self._verbose = verbose
 
     @staticmethod
     def __check_frmt(frmt, values=[]):

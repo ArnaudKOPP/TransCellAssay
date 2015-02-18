@@ -59,6 +59,8 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST, list2string, check_param_in_list
+import logging
+log = logging.getLogger(__name__)
 
 
 class Reactome(REST):
@@ -68,10 +70,8 @@ class Reactome(REST):
 
     _url = "http://reactomews.oicr.on.ca:8080/ReactomeRESTfulAPI/RESTfulWS"
 
-    def __init__(self, verbose=True):
-        super(Reactome, self).__init__("Reactome", url=Reactome._url, verbose="ERROR")
-        self.debugLevel = verbose
-        self._verbose = verbose
+    def __init__(self):
+        super(Reactome, self).__init__("Reactome", url=Reactome._url)
         # buffer
         self._list_pathways = None
 
@@ -353,9 +353,8 @@ class ReactomeAnalysis(REST):
     http://www.reactome.org/AnalysisService/
     """
 
-    def __init__(self, verbose=True):
-        super(ReactomeAnalysis, self).__init__("Reactome Analysis", url="http://www.reactome.org:80/AnalysisService",
-                                               verbose=verbose)
+    def __init__(self):
+        super(ReactomeAnalysis, self).__init__("Reactome Analysis", url="http://www.reactome.org:80/AnalysisService")
         print("\033[0;33m[WARNING]\033[0m Class in development. Some methods are already working but those required "
               "POST do not. Coming soon ")
 

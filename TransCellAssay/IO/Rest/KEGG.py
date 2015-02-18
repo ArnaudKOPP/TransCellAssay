@@ -136,6 +136,8 @@ __status__ = "Dev"
 from TransCellAssay.IO.Rest.Service import REST
 import webbrowser
 import collections
+import logging
+log = logging.getLogger(__name__)
 
 
 class KEGG(REST):
@@ -148,8 +150,8 @@ class KEGG(REST):
 
     """
 
-    def __init__(self, verbose=False):
-        super(KEGG, self).__init__(name="KEGG", url="http://rest.kegg.jp", verbose=verbose)
+    def __init__(self):
+        super(KEGG, self).__init__(name="KEGG", url="http://rest.kegg.jp")
         self.easyXMLConversion = False
         self._organism = None
         self._organisms = None
@@ -161,7 +163,6 @@ class KEGG(REST):
         self._reaction = None
         self._brite = None
         self._buffer = {}
-        self._verbose = verbose
 
     def __getattr__(self, req):
         if req.endswith("Ids"):

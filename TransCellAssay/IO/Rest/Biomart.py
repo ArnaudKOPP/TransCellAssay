@@ -51,6 +51,8 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 from TransCellAssay.IO.Rest.Service import REST
+import logging
+log = logging.getLogger(__name__)
 
 
 class BioMart(REST):
@@ -60,14 +62,14 @@ class BioMart(REST):
     note:: the biomart sevice is slow so please be patient...
     """
 
-    def __init__(self, verbose=False):
+    def __init__(self):
         """
         By default, the URL used for the biomart service is::
             http://central.biomart.org
         Server are frequenlty down and slow
         """
         url = "http://central.biomart.org"
-        super(BioMart, self).__init__("BioMart", url=url, verbose=verbose)
+        super(BioMart, self).__init__("BioMart", url=url)
         self.marts_lst = None
 
     def registry(self, frmt='json'):
