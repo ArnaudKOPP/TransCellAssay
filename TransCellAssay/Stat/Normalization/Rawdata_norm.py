@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 import TransCellAssay as TCA
 from TransCellAssay.Utils.Stat import mad
+import logging
+log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
@@ -99,12 +101,10 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
         if isinstance(obj, TCA.Plate):
             for key, value in obj.replica.items():
                 value.rawdata.df = __rd_norm(value.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
-            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing for plate {} on channel {}'.format
-                  (obj.name, channel))
+            log.info('Raw Data normalization processing for plate {} on channel {}'.format(obj.name, channel))
         elif isinstance(obj, TCA.Replica):
             obj.rawdata.df = __rd_norm(obj.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
-            print('\033[0;32m[INFO]\033[0m Raw Data normalization processing for replica {} on channel {}'.format
-                  (obj.name, channel))
+            log.info('Raw Data normalization processing for replica {} on channel {}'.format(obj.name, channel))
         elif isinstance(obj, TCA.RawData):
             obj = __rd_norm(obj, channel, method, log2_transf, neg_control, pos_control)
             return obj

@@ -17,6 +17,8 @@ trimmed mean : cut the outside limit default = 0.0 so its equivalent to the 'sta
 import numpy as np
 from scipy import stats
 from TransCellAssay.Utils.Stat import mad
+import logging
+log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
@@ -53,6 +55,7 @@ def median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbo
         col_effects = np.zeros(shape=tbl.shape[1])
 
         for i in range(max_iterations):
+            log.debug('Median Polish : iteration %s' % i)
             if method == 'median':
                 row_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                 row_effects += row_medians
@@ -124,6 +127,7 @@ def bz_median_polish(array, max_iterations=100, method='median', trimmed=0.0, ve
         col_effects = np.zeros(shape=tbl.shape[1])
 
         for i in range(max_iterations):
+            log.debug('BZ Median Polish : iteration %s' % i)
             if method == 'median':
                 row_medians = np.median(stats.mstats.trim(tbl, (trimmed, 1 - trimmed), axis=1), axis=1)
                 row_effects += row_medians

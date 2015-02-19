@@ -14,6 +14,8 @@ estimates determined in previous step for each row and col.
 
 import numpy as np
 from scipy import stats
+import logging
+log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
@@ -66,7 +68,7 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
         # exit if not row or col affected
         n = nrows.__len__() + ncols.__len__()
         if n == 0:
-            print('\033[0;33m[INFO]\033[0m No Systematics Error detected')
+            log.info('PMP : No Systematics Error detected')
             return input_array
 
         mu = 0
@@ -84,6 +86,7 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
         loop = 1
         converge = 0.0
         while True:
+            log.debug('PMP iteration : %s' % loop)
             diff = 0.0
             converge = 0.0
             for i in nrows:

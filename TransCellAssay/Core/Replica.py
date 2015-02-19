@@ -211,6 +211,7 @@ class Replica(object):
         """
         if self._is_cutted:
             raise AttributeError('Already cutted')
+        log.info('Cutting operation on replica : {0} (param {1}:{2},{3}:{4})'.format(self.name, rb, re, cb, ce))
         if self.array is not None:
             self.array = self.array[rb: re, cb: ce]
         if self.sec_array is not None:
@@ -294,10 +295,12 @@ class Replica(object):
         __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
 
         if algorithm not in __valid_sec_algo:
-            raise ValueError('Algorithm is not good choose : {}'.format(__valid_sec_algo))
+            log.error('Algorithm is not good choose : {}'.format(__valid_sec_algo))
+            raise ValueError()
 
         if self.array is None:
-            raise ValueError("Use first : compute_data_for_channel")
+            log.error("Use first : compute_data_for_channel")
+            raise ValueError()
 
         else:
             if self.isSpatialNormalized:

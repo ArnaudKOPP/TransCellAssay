@@ -55,6 +55,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
 
         # # iterate over replicat
         for k, replica in plate.replica.items():
+            log.debug("PlateAnalysis : iteration on rep %s" % replica.name)
             # # cell count
             datagb = replica.rawdata.get_groupby_data()
             cellcount = datagb.Well.count().to_dict()

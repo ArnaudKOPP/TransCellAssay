@@ -9,6 +9,8 @@ screening run based on the generated model.
 
 import numpy as np
 import sys
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"

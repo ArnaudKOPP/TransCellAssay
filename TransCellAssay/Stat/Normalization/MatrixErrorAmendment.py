@@ -9,7 +9,8 @@ the error estimates determinted in previous step.
 
 import numpy as np
 from scipy import stats
-
+import logging
+log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
@@ -59,7 +60,7 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05, skip_col=[], 
         # exit if not row or col affected
         n = nrows.__len__() + ncols.__len__()
         if n == 0:
-            print('\033[0;32m[INFO]\033[0m No Systematics Error detected')
+            log.info('MEA : No Systematics Error detected')
             return input_array
 
         mu = 0

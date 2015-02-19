@@ -275,8 +275,7 @@ class Plate(object):
         """
         if self._is_cutted:
             raise AttributeError('Already cutted')
-        log.warning("Cutting operation cannot be reverted, so plate Analysis and some other function may not be "
-                    "functionnal anymore")
+        log.warning("Cutting operation performed on plate %s" % self.name)
         if self.array is not None:
             self.array = self.array[rb: re, cb: ce]
         else:
@@ -354,7 +353,8 @@ class Plate(object):
         __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
 
         if algorithm not in __valid_sec_algo:
-            raise ValueError('Algorithm is not good choose : {}'.format(__valid_sec_algo))
+            log.error('Algorithm is not good choose : {}'.format(__valid_sec_algo))
+            raise ValueError()
 
         if apply_down:
             for key, value in self.replica.items():
@@ -365,7 +365,8 @@ class Plate(object):
             return
 
         if self.array is None:
-            raise ValueError("Use first : compute_data_from_replicat")
+            log.error("Use first : compute_data_from_replicat")
+            raise ValueError()
         else:
             if self.isSpatialNormalized:
                 log.warning('SEC already performed -> overwriting previous sec data')
