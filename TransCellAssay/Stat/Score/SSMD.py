@@ -24,6 +24,8 @@ import numpy as np
 import scipy.special
 import TransCellAssay as TCA
 from TransCellAssay.Utils.Stat import mad
+import logging
+log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
@@ -57,7 +59,7 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
         if isinstance(plate, TCA.Plate):
             if neg_control is None:
                 raise ValueError('Must provided negative control')
-            print('\033[0;32m[INFO]\033[0m Perform SSMD')
+            log.info('Perform SSMD on plate : {}'.format(plate.name))
             if len(plate) > 1 and not inplate_data:
                 if not paired:
                     if robust_version:

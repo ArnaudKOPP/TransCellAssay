@@ -18,6 +18,8 @@ import pandas as pd
 import numpy as np
 from TransCellAssay import Utils as Utils
 import collections
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -57,7 +59,7 @@ class PlateMap(object):
         :param platemap_file: csv file with platemap
         """
         if os.path.isfile(platemap_file):
-            print('\033[0;32m[INFO]\033[0m Reading PlateMap %s File' % platemap_file)
+            log.info('Reading PlateMap %s File' % platemap_file)
             self.platemap = pd.read_csv(platemap_file, index_col=0)
         else:
             raise IOError('File don\'t exist')

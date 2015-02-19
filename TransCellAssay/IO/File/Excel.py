@@ -5,6 +5,8 @@ Librarie for easy play with HTS excel data file (InCELL 1000)
 from TransCellAssay.IO.File.InputFile import InputFile
 import os
 import pandas as pd
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -44,5 +46,6 @@ class EXCEL(InputFile):
                     data = data.append(pd.read_excel(fpath, i))
                 data.fillna(0)
             self.dataframe = data
+            log.info('Reading %s File' % fpath)
         else:
             raise IOError('File don\'t exist')

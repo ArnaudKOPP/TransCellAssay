@@ -6,6 +6,8 @@ Librarie for easy play with HTS csv data file (HCS explorer output style)
 import os
 import pandas as pd
 from TransCellAssay.IO.File.InputFile import InputFile
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -32,6 +34,6 @@ class CSV(InputFile):
         """
         if os.path.isfile(fpath):
             self.dataframe = pd.read_csv(fpath, engine='c')
-            print('\033[0;32m[INFO]\033[0m Reading %s File' % fpath)
+            log.info('Reading %s File' % fpath)
         else:
             raise IOError('File don\'t exist')

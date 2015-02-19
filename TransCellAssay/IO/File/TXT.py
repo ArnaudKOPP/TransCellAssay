@@ -5,6 +5,8 @@ Librarie for easy play with HTS txt data file (HCS explorer output style)
 import os
 from TransCellAssay.IO.File.InputFile import InputFile
 import pandas as pd
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -30,6 +32,6 @@ class TXT(InputFile):
         """
         if os.path.isfile(fpath):
             self.dataframe = pd.read_table(fpath, engine='c')
-            print('\033[0;32m[INFO]\033[0m Reading %s File' % fpath)
+            log.info('Reading %s File' % fpath)
         else:
             raise IOError('File don\'t exist')

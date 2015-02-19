@@ -18,6 +18,8 @@ may be greater than the cutoff value.
 import numpy as np
 import TransCellAssay as TCA
 from TransCellAssay.Stat.Score.SSMD import __search_paired_data, __search_unpaired_data
+import logging
+log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
@@ -48,7 +50,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
             # if no neg was provided raise AttributeError
             if neg_control is None:
                 raise ValueError('Must provided negative control')
-            print('\033[0;32m[INFO]\033[0m Perform T-Stat')
+            log.info('Perform T-Stat on plate : {}'.format(plate.name))
             if len(plate) > 1:
                 if paired:
                     score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose)
@@ -61,7 +63,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
         else:
             raise TypeError('Take only plate')
     except Exception as e:
-        print(e)
+        log.error(e)
 
 
 def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False):

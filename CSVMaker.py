@@ -13,6 +13,8 @@ from argparse import RawDescriptionHelpFormatter
 import time
 import pandas as pd
 import TransCellAssay as TCA
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"

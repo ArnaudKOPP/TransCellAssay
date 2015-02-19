@@ -9,7 +9,7 @@ import os
 import json
 import logging
 
-
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
@@ -62,7 +62,7 @@ def HDV():
 
     # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
     ana = TCA.plate_analysis(plaque, channel, neg, pos)
-    print(ana)
+    # print(ana)
     # ana.write("/home/arnaud/Desktop/HDV/RawdataClean/Percentvalue"+plate_nb+".csv")
 
     plaque.normalization_channels(channels=channel,
@@ -72,7 +72,7 @@ def HDV():
 
     # plaque.compute_data_from_replicat(channel=channel)
     plaque.cut(1, 15, 1, 23, apply_down=True)
-    print(platemap)
+    # print(platemap)
     # plaque.compute_data_from_replicat(channel=channel)
 
     # # Keep only neg or pos in 3D plot
@@ -82,7 +82,7 @@ def HDV():
     # TCA.plot_plate_3d(test1_pos)
 
     alpha = 0.1
-    verbose = True
+    verbose = False
     try:
         TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
         TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
@@ -157,7 +157,7 @@ def HDV():
     # TCA.boxplot_by_wells(plaque['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['B5', 'B6'], plate=plaque, channel=channel)
 
-# HDV()
+HDV()
 
 
 def HCV():
@@ -313,8 +313,6 @@ def rest():
     #
     #     except:
     #         pass
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
-                        datefmt='%m/%d/%Y %I:%M:%S')
     logging.getLogger('requests').setLevel(logging.CRITICAL)
     logging.getLogger('urllib3').setLevel(logging.CRITICAL)
     psi = TCA.PSICQUIC()
@@ -322,6 +320,6 @@ def rest():
     psi.RETRIES = 1
     psi.retrieve_all('NXF1')
 
-rest()
+# rest()
 
 print('FINISH')

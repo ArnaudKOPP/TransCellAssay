@@ -16,6 +16,8 @@ __status__ = "Production"
 import TransCellAssay as TCA
 from scipy.stats import rankdata
 import numpy as np
+import logging
+log = logging.getLogger(__name__)
 
 
 def rank_product(plate, secdata=False, mean_method="mean", rank_method="average", size=96, verbose=False):
@@ -30,7 +32,7 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
     :return: return np ndarray with result
     """
     if isinstance(plate, TCA.Plate):
-        print('\033[0;32m[INFO]\033[0m Performe Rank product')
+        log.info('Perform Rank product on plate {}'.format(plate.name))
         rk_pdt = plate.platemap.platemap.values.flatten().reshape(size, 1)
         for key, value in plate.replica.items():
             if secdata:

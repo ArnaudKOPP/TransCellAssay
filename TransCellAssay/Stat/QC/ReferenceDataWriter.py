@@ -9,6 +9,8 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 import TransCellAssay as TCA
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -27,11 +29,11 @@ class ReferenceDataWriter(object):
 
     def __init__(self, plate, channels, ref, filepath=None):
         if filepath is None:
-            print('\033[0;33m[WARNING]\033[0m file path not provided, default will be used')
+            log.warning('File path not provided, default will be used')
             self._writer = pd.ExcelWriter("ReferenceDataWriter.xlsx")
         else:
             self._writer = pd.ExcelWriter(filepath)
-            print('\033[0;32m[INFO]\033[0m Writing xlsx :', filepath)
+            log.info('Writing xlsx :', filepath)
         self._save_reference(plate, ref=ref, channels=channels)
 
     def _save_reference(self, plate, channels, ref):
@@ -46,7 +48,7 @@ class ReferenceDataWriter(object):
         for channel in channels:
             if channel not in plate.platemap.get_channel_list():
                 raise ValueError('Wrong Channel')
-            print('\033[0;32m[INFO]\033[0m Computation for channel :', channel)
+            log.debug('Computation for channel :', channel)
             plt_name_index = []
             df = pd.DataFrame()
             i = 1
@@ -66,7 +68,7 @@ class ReferenceDataWriter(object):
             try:
                 well_ref[ref] = plate.platemap.search_coord(ref)
             except KeyError:
-                print('\033[0;31m[ERROR]\033[0m Some Reference are non existing : ABORT')
+                log.erroe('Some Reference are non existing : ABORT')
                 return 0
 
         plate_ref_data = None

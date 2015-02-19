@@ -15,6 +15,8 @@ import pandas as pd
 import os
 import numpy as np
 import TransCellAssay as TCA
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -38,7 +40,7 @@ class RawData(object):
             self.__CACHING_gbdata_key = None
             if os.path.isfile(path_or_file):
                 self.df = pd.read_csv(path_or_file, engine='c')
-                print('\033[0;32m[INFO]\033[0m Reading RawData %s File' % path_or_file)
+                log.info('Reading RawData %s File' % path_or_file)
             else:
                 raise IOError('File don\'t exist')
         elif isinstance(path_or_file, TCA.InputFile):
@@ -110,7 +112,7 @@ class RawData(object):
         :param chan:
         :return:
         """
-        print("\033[0;33m[INFO/WARNING]\033[0m Only to use with 1Data/Well Raw data")
+        log.warning("Only to use with 1Data/Well Raw data")
         size = len(self.df)
         if size <= 96:
             array = np.zeros((8, 12))
@@ -182,7 +184,7 @@ class RawData(object):
 
     def __write_raw_data(self, filepath):
         self.df.to_csv(path=os.path.join(filepath) + ".csv", index=False)
-        print('\033[0;32m[INFO]\033[0m Writing File : {}'.format(filepath))
+        log.info('Writing File : {}'.format(filepath))
 
     def save_memory(self, only_caching=True):
         """

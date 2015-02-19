@@ -13,6 +13,8 @@ reject the null hypothesis of equal averages.
 from scipy import stats
 import TransCellAssay as TCA
 import numpy as np
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"

@@ -5,6 +5,8 @@ Basic Class for manipulating data into dataframe
 import numpy as np
 import os
 import re
+import logging
+log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
@@ -73,7 +75,7 @@ class InputFile(object):
                 self.dataframe = self.dataframe.drop(col, axis=1)
             except:
                 if col in col_in_df:
-                    print("\033[0;33m[INFO/WARNING]\033[0m Column {} impossible to remove".format(col))
+                    log.warning("Column {} impossible to remove".format(col))
 
     def remove_nan(self):
         """
@@ -91,7 +93,7 @@ class InputFile(object):
         if colname in self.get_col():
             self.dataframe = self.dataframe.rename(columns={str(colname): str(newcolname)})
         else:
-            print('Not in dataframe {}'.format(colname))
+            log.warning('Not in dataframe {}'.format(colname))
 
     def formatting(self, cp_format=False):
         """
@@ -129,6 +131,7 @@ class InputFile(object):
         if frmt is 'csv':
             fname += '.csv'
             self.dataframe.to_csv(fname, index=False, index_label=False)
+            log.info("Write raw data %s" % fname)
         else:
             raise NotImplementedError('Only csv for the moment')
 

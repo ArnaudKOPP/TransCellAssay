@@ -7,6 +7,8 @@ import numpy as np
 import TransCellAssay as TCA
 import os
 import collections
+import logging
+log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
@@ -273,15 +275,15 @@ class Plate(object):
         """
         if self._is_cutted:
             raise AttributeError('Already cutted')
-        print("\033[0;33m[WARNING]\033[0m Cutting operation cannot be reverted, so plate Analysis and "
-              "some other function may not be functionnal anymore")
+        log.warning("Cutting operation cannot be reverted, so plate Analysis and some other function may not be "
+                    "functionnal anymore")
         if self.array is not None:
             self.array = self.array[rb: re, cb: ce]
         else:
             raise AttributeError('array is empty')
         if self.sec_array is not None:
             self.sec_array = None
-            print('\033[0;33m[WARNING]\033[0m Must reperforme SEC process')
+            log.warning('Must reperforme SEC process')
         if apply_down:
             for key, value in self.replica.items():
                 value.cut(rb, re, cb, ce)
@@ -292,7 +294,7 @@ class Plate(object):
         self._cb = cb
         self._ce = ce
 
-    def __normalization(self, channel, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
+    def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False):
         """
         Apply Well correction on all replicat data
         call function like from replicat object
@@ -300,35 +302,35 @@ class Plate(object):
         :param neg: negative control
         :param channel: channel to normalize
         :param method: which method to perform
-        :param log:  Performed log2 Transformation
+        :param log_t:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
         """
         for key, value in self.replica.items():
-            value.normalization_channels(channels=channel, method=method, log=log, neg=neg, pos=pos,
+            value.normalization_channels(channels=channel, method=method, log_t=log_t, neg=neg, pos=pos,
                                          skipping_wells=skipping_wells)
         self.isNormalized = True
         self.compute_data_from_replicat(channel, forced_update=True)
 
-    def normalization_channels(self, channels, method='Zscore', log=True, neg=None, pos=None, skipping_wells=False):
+    def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False):
         """
         Apply multi channels normalization
         :param pos: positive control
         :param neg: negative control
         :param channels: channel to normalize
         :param method: which method to perform
-        :param log:  Performed log2 Transformation
+        :param log_t:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
         """
         if isinstance(channels, list):
             try:
                 for key, value in self.replica.items():
-                    value.normalization_channels(channels=channels, method=method, log=log, neg=neg, pos=pos,
+                    value.normalization_channels(channels=channels, method=method, log_t=log_t, neg=neg, pos=pos,
                                                  skipping_wells=skipping_wells)
                 self.isNormalized = True
             except Exception as e:
-                print("\033[0;31m[ERROR]\033[0m", e)
+                log.error(e)
         else:
-            self.__normalization(channels, method, log, neg, pos, skipping_wells)
+            self.__normalization(channels, method, log_t, neg, pos, skipping_wells)
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
                                     save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
@@ -348,6 +350,7 @@ class Plate(object):
         :param skip_col: index of col to skip in MEA or PMP
         :param skip_row: index of row to skip in MEA or PMP
         """
+        global corrected_data_array
         __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
 
         if algorithm not in __valid_sec_algo:
@@ -365,44 +368,33 @@ class Plate(object):
             raise ValueError("Use first : compute_data_from_replicat")
         else:
             if self.isSpatialNormalized:
-                print('\033[0;33m[WARNING]\033[0m SEC already performed -> overwriting previous sec data')
-            print('\033[0;32m[INFO]\033[0m Systematic Error Correction processing : {}'.format(algorithm))
+                log.warning('SEC already performed -> overwriting previous sec data')
+            log.info('Systematic Error Correction processing : {}'.format(algorithm))
             if algorithm == 'Bscore':
-                ge, ce, re, resid, tbl_org = TCA.median_polish(self.array.copy(), method=method,
-                                                               max_iterations=max_iterations,
-                                                               verbose=verbose)
-                if save:
-                    self.sec_array = resid
-                    self.isSpatialNormalized = True
+                ge, ce, re, corrected_data_array, tbl_org = TCA.median_polish(self.array.copy(), method=method,
+                                                                              max_iterations=max_iterations,
+                                                                              verbose=verbose)
+
             if algorithm == 'BZscore':
-                ge, ce, re, resid, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
-                                                                  max_iterations=max_iterations,
-                                                                  verbose=verbose)
-                if save:
-                    self.sec_array = resid
-                    self.isSpatialNormalized = True
+                ge, ce, re, corrected_data_array, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
+                                                                                 max_iterations=max_iterations,
+                                                                                 verbose=verbose)
 
             if algorithm == 'PMP':
                 corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
                                                                alpha=alpha, verbose=verbose, epsilon=epsilon,
                                                                skip_col=skip_col, skip_row=skip_row)
-                if save:
-                    self.sec_array = corrected_data_array
-                    self.isSpatialNormalized = True
 
             if algorithm == 'MEA':
                 corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha,
                                                                   skip_col=skip_col, skip_row=skip_row)
-                if save:
-                    self.sec_array = corrected_data_array
-                    self.isSpatialNormalized = True
 
             if algorithm == 'DiffusionModel':
                 corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
                                                            verbose=verbose)
-                if save:
-                    self.sec_array = corrected_data_array
-                    self.isSpatialNormalized = True
+            if save:
+                self.sec_array = corrected_data_array
+                self.isSpatialNormalized = True
 
     def save_raw_data(self, path):
         """

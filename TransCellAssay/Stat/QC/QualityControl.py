@@ -63,6 +63,8 @@ import os
 import numpy as np
 import pandas as pd
 import TransCellAssay as TCA
+import logging
+log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
@@ -95,13 +97,13 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
         raise TypeError("Need A Plate")
     else:
         if plate._is_cutted:
-            print('\033[0;31m[ERROR]\033[0m Plate was cutted, plate analysis cannot be performed : ABORT')
+            log.error('Plate was cutted, plate analysis cannot be performed : ABORT')
             return 0
         try:
             neg_well = plate.platemap.search_coord(cneg)
             pos_well = plate.platemap.search_coord(cpos)
         except KeyError:
-            print('\033[0;31m[ERROR]\033[0m Some Reference are non existing : ABORT')
+            log.error('Some Reference are non existing : ABORT')
             return 0
 
         qc_data_array = pd.DataFrame()
@@ -154,7 +156,7 @@ def __replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False
             negdata = __get_data_control_array(replicat.array, c_ref=valid_neg_well)
             posdata = __get_data_control_array(replicat.array, c_ref=valid_pos_well)
         else:
-            print('\033[0;33m[WARNING]\033[0m 1data/well not available, using instead Raw Data')
+            log.warning('1data/well not available, using instead Raw Data')
             negdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
             posdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
     else:
@@ -162,7 +164,7 @@ def __replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False
             negdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_neg_well)
             posdata = __get_data_control(replicat.rawdata, channel=channel, c_ref=valid_pos_well)
         else:
-            print('\033[0;33m[WARNING]\033[0m Raw Data not available, using instead 1data/well ')
+            log.warning('Raw Data not available, using instead 1data/well ')
             negdata = __get_data_control_array(replicat.array, c_ref=valid_neg_well)
             posdata = __get_data_control_array(replicat.array, c_ref=valid_pos_well)
 

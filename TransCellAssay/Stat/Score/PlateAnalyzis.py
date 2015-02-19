@@ -7,6 +7,8 @@ Compute Cells Count, percent of positive Cells, viability and toxicity per Wells
 import TransCellAssay as TCA
 import numpy as np
 import pandas as pd
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -33,9 +35,9 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
         raise TypeError("File Plate Object")
     else:
         if plate._is_cutted:
-            raise NotImplementedError('Plate was cutted, for avoiding undesired effect, plate analysis cannot '
-                                      'be performed')
-        print('\033[0;32m[INFO]\033[0m Performe plate analysis : {}'.format(plate.name))
+            log.error('Plate was cutted, for avoiding undesired effect, plate analysis cannot be performed')
+            raise NotImplementedError()
+        log.info('Perform plate analysis : {}'.format(plate.name))
         platemap = plate.get_platemap()
         size = platemap.shape()
         result = Result(size=(size[0] * size[1]))
@@ -204,16 +206,18 @@ class Result(object):
             elif frmt is 'xlsx':
                 pd.DataFrame(self.values).to_excel(file_path, sheet_name='Single Cell properties result', index=False,
                                                    header=True)
-            print('\033[0;32m[INFO]\033[0m writing : {}'.format(file_path))
+            log.info('Writing : {}'.format(file_path))
         except:
             try:
                 if frmt is 'csv':
                     np.savetxt(fname=file_path, X=self.values, delimiter=';')
-                    print('\033[0;32m[INFO]\033[0m writing : {}'.format(file_path))
+                    log.info('Writing : {}'.format(file_path))
                 else:
-                    raise IOError("Can't save data in xlsx format")
+                    log.error("Can't save data in xlsx format")
+                    raise IOError()
             except Exception as e:
-                print('Error in saving results data :', e)
+                log.error('Error in saving results data :', e)
+                raise IOError()
 
     def __repr__(self):
         """
