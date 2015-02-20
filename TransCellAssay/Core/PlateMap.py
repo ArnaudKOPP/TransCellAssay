@@ -130,6 +130,7 @@ class PlateMap(object):
         """
         if self._is_cutted:
             raise AttributeError('Already cutted')
+        log.debug('Cutting operation on platemap (param {0}:{1},{2}:{3})'.format(rb, re, cb, ce))
         self.platemap = self.platemap.iloc[rb: re, cb: ce]
         self._is_cutted = True
         self._rb = rb

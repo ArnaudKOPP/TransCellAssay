@@ -37,6 +37,7 @@ def plate_feature_scaling(plate, channel, mean_scaling=False):
     """
     try:
         if isinstance(plate, TCA.Plate):
+            log.debug('Perform feature scaling on {}'.format(plate.name))
             min_lst = []
             max_lst = []
 
@@ -89,7 +90,7 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
     """
     try:
         __valid_method = ['Zscore', 'RobustZscore', 'PercentOfSample', 'RobustPercentOfSample', 'PercentOfControl',
-                          'NormalizedPercentInhibition', None]
+                          'NormalizedPercentInhibition', 'BackgroundSubstraction', None]
 
         if method not in __valid_method:
             raise ValueError("Method don't exist, choose : {}".format(__valid_method))
@@ -133,6 +134,8 @@ def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None,
             rawdata = __percentofcontrol(rawdata, channel, neg_control, pos_control)
         if method == 'NormalizedPercentInhibition':
             rawdata = __normalizedpercentinhibition(rawdata, channel, neg_control, pos_control)
+        if method == 'BackgroundSubstraction':
+            rawdata = __backgroundsubstraction(rawdata, channel)
         return rawdata
     except Exception as e:
         print(e)
@@ -145,6 +148,7 @@ def __log2_transformation(rawdata, channel):
     :param channel: channel to apply
     :return: transformed rawdata
     """
+    log.debug('Perform Log2 transformation')
     rawdata.df.loc[:] = rawdata.df[rawdata.df[channel] > 0]
     rawdata.df.loc[:, channel] = np.log2(rawdata.df[channel])
     return rawdata
@@ -157,6 +161,7 @@ def __zscore_(rawdata, channel):
     :param channel: channel to apply
     :return: transformed rawdata
     """
+    log.debug('Perform Zscore')
     rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - np.mean(rawdata.df[channel])) / np.std(rawdata.df[channel])
     return rawdata
 
@@ -168,6 +173,7 @@ def __robustzscore(rawdata, channel):
     :param channel: channel to apply
     :return: transformed rawdata
     """
+    log.debug('Perform robustZscore')
     rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - np.median(rawdata.df[channel])) / mad(rawdata.df[channel])
     return rawdata
 
@@ -179,6 +185,7 @@ def __percentofsample(rawdata, channel):
     :param channel: channel to apply
     :return: transformed rawdata
     """
+    log.debug('Perform PercentofSample')
     rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] / np.mean(rawdata.df[channel])) * 100
     return rawdata
 
@@ -190,6 +197,7 @@ def __robustpercentofsample(rawdata, channel):
     :param channel: channel to apply
     :return: transformed rawdata
     """
+    log.debug('Perform robustPercentofSample')
     rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] / np.median(rawdata.df[channel])) * 100
     return rawdata
 
@@ -203,6 +211,7 @@ def __percentofcontrol(rawdata, channel, neg=None, pos=None):
     :param pos: pos reference if neg is not provided
     :return: return raw data
     """
+    log.debug('Perform PercentofControl')
     if neg is None:
         if pos is None:
             raise AttributeError("Need Negative or Positive control")
@@ -226,6 +235,7 @@ def __normalizedpercentinhibition(rawdata, channel, neg=None, pos=None):
     :param pos: pos reference
     :return: return normalized raw data
     """
+    log.debug('Perform NormalizedPercentInhibition')
     if neg is None:
         if pos is None:
             raise AttributeError("Need Negative and Positive control")
@@ -234,6 +244,26 @@ def __normalizedpercentinhibition(rawdata, channel, neg=None, pos=None):
     pos_data = __get_data_by_wells(rawdata, channel=channel, wells=pos)
     rawdata.df.loc[:, channel] = ((np.mean(pos_data) - rawdata.df[channel]) / (np.mean(pos_data) - np.mean(neg_data))) * 100
     return rawdata
+
+
+def __backgroundsubstraction(rawdata, channel):
+    """
+    Apply a background substraction by removing median of well on each wells
+    :param rawdata:
+    :param channel:
+    :return:
+    """
+    try:
+        log.debug('Perform BackgroundSubstraction')
+        for well in rawdata.get_unique_well():
+            well_data = rawdata.get_group(well, channel)
+            median = np.median(well_data)
+            log.debug('{0}  Median substracted : {1}'.format(well, median))
+            rawdata.df.loc[rawdata.df['Well'] == str(well), channel] = well_data - median
+        rawdata.df.loc[rawdata.df[channel] < 0, channel] = 0
+        return rawdata
+    except Exception as e:
+        print(e)
 
 
 def __get_data_by_wells(rawdata, channel, wells):
@@ -245,6 +275,7 @@ def __get_data_by_wells(rawdata, channel, wells):
     datagp = rawdata.get_groupby_data()
     data = pd.DataFrame()
     for i in wells:
+        log.debug(i)
         if data.empty:
             data = datagp.get_group(i)[channel]
         data = data.append(datagp.get_group(i)[channel])

@@ -172,7 +172,7 @@ class Replica(object):
                 log.warning('Overwriting previous channel data from {} to {}'.format(
                     self._array_channel, channel))
         if not self.isNormalized:
-            log.warning('Data are not normalized for replicat : ', self.name)
+            log.warning('Data are not normalized for replicat : {}'.format(self.name))
 
         if self.datatype == 'median':
             self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
@@ -211,7 +211,7 @@ class Replica(object):
         """
         if self._is_cutted:
             raise AttributeError('Already cutted')
-        log.info('Cutting operation on replica : {0} (param {1}:{2},{3}:{4})'.format(self.name, rb, re, cb, ce))
+        log.debug('Cutting operation on replica : {0} (param {1}:{2},{3}:{4})'.format(self.name, rb, re, cb, ce))
         if self.array is not None:
             self.array = self.array[rb: re, cb: ce]
         if self.sec_array is not None:
@@ -233,6 +233,7 @@ class Replica(object):
         :param skipping_wells: skip defined wells, use it with poc and npi
         """
         if not self.isNormalized:
+            log.debug('Raw Data normalization processing for replicat {} on channel {}'.format(self.name, channel))
             if skipping_wells:
                 negative = [x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)]
                 positive = [x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)]
@@ -247,7 +248,6 @@ class Replica(object):
                                                                  pos_control=positive)
             self.isNormalized = True
             self.compute_data_for_channel(channel)
-            log.info('Raw Data normalization processing for replicat {} on channel {}'.format(self.name, channel))
         else:
             log.warning("Data are already normalized, do nothing")
 
@@ -306,7 +306,7 @@ class Replica(object):
             if self.isSpatialNormalized:
                 log.warning('SEC already performed -> overwriting previous sec data')
 
-            log.info('Systematic Error Correction processing : {} -> replica {}'.format(algorithm, self.name))
+            log.debug('Systematic Error Correction processing : {} -> replica {}'.format(algorithm, self.name))
 
             if algorithm == 'Bscore':
                 ge, ce, re, corrected_data_array, tbl_org = TCA.median_polish(self.array.copy(), method=method,

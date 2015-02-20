@@ -37,7 +37,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
         if plate._is_cutted:
             log.error('Plate was cutted, for avoiding undesired effect, plate analysis cannot be performed')
             raise NotImplementedError()
-        log.info('Perform plate analysis : {}'.format(plate.name))
+        log.info('Perform plate analysis for {0} on channel {1}'.format(plate.name, channel))
         platemap = plate.get_platemap()
         size = platemap.shape()
         result = Result(size=(size[0] * size[1]))

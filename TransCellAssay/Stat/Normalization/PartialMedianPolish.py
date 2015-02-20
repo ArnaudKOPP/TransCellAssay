@@ -78,7 +78,12 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
                 for col in range(shape[1]):
                     if col not in ncols:
                         mu += input_array[row][col]
-        mu /= ((shape[0] - len(nrows)) * (shape[1] - len(ncols)))
+
+        try:
+            mu /= ((shape[0] - len(nrows)) * (shape[1] - len(ncols)))
+        except:
+            log.debug('PMP : set Mu to 0 (divided by zero)')
+            pass
 
         rmu = [0] * shape[0]
         cmu = [0] * shape[1]

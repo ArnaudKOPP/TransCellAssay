@@ -38,9 +38,11 @@ class InputFile(object):
         """
         raise NotImplementedError
 
-    def format_well_format(self):
+    def format_well_format(self, row='Row', col='Column'):
         """
         Format data
+        :param col: column name for col id
+        :param row: column name for row id
         """
         self.dataframe = self.dataframe.replace({'Row': {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H',
                                                          8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M', 13: 'N', 14: 'O',
@@ -48,8 +50,8 @@ class InputFile(object):
         # # insert Well columns
         self.dataframe.insert(0, "Well", 0)
         # # put Well value from row and col columns
-        self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x['Row'], x['Column'] + 1), axis=1)
-        remove = ['Row', 'Column']
+        self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x[row], x[col] + 1), axis=1)
+        remove = [row, col]
         self.dataframe = self.dataframe.drop(remove, axis=1)
 
     def get_col(self):
@@ -64,25 +66,25 @@ class InputFile(object):
         """
         Remove useless col
         """
-        col_in_df = self.get_col()
         # columns that we can remove because useless
-        useless = [u'Barcode', u'PlateID', u'UPD', u'TimePoint', u'TimeInterval', u'FieldID', u'CellID',
-                   u'Left', u'Top', u'Height', u'Width', u'FieldIndex', u'CellNum', "FieldNumber", "CellNumber", "X",
-                   "Y", "Z", "Width", "Height", "PixelSizeX", "PixelSizeY", "PixelSizeZ", 'Status', 'Zposition',
-                   'ValidObjectCount', 'PlateNumber']
+        useless = ['PlateNumber', 'FieldNumber', 'CellNumber', 'X', 'Y', 'Z', 'Width', 'Height', 'PixelSizeX',
+                   'PixelSizeY', 'PixelSizeZ']
         for col in useless:
             try:
-                self.dataframe = self.dataframe.drop(col, axis=1)
+                self.dataframe = self.dataframe.drop([col], axis=1)
             except:
-                if col in col_in_df:
-                    log.warning("Column {} impossible to remove".format(col))
+                log.warning("Column {} impossible to remove".format(col))
 
     def remove_nan(self):
         """
         Remove NaN in dataframe
         :return:
         """
-        self.dataframe = self.dataframe.dropna(axis=0)
+        try:
+            self.dataframe = self.dataframe.dropna(axis=0)
+            log.debug('Remove Nan on data')
+        except:
+            pass
 
     def rename_col(self, colname, newcolname):
         """
@@ -92,6 +94,7 @@ class InputFile(object):
         """
         if colname in self.get_col():
             self.dataframe = self.dataframe.rename(columns={str(colname): str(newcolname)})
+            log.debug('Rename colunm {0} to {1}'.format(colname, newcolname))
         else:
             log.warning('Not in dataframe {}'.format(colname))
 

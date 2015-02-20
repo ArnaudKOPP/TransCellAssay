@@ -309,7 +309,7 @@ class REST(Service):
         if headers is None:
             headers = {'User-Agent': self.get_user_agent(), 'Accept': self.content_types[frmt]}
 
-        print("Running http_post (single call mode)")
+        log.debug("Running http post (single call mode)")
         kargs.update({'query': query})
         kargs.update({'headers': headers})
         kargs.update({'files': files})

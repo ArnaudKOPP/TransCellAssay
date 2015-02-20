@@ -136,15 +136,15 @@ class RawData(object):
             tmp = gbdata.median()
         elif type_mean is 'mean':
             tmp = gbdata.mean()
-        channel = tmp[channel]
-        dict_pos_mean = channel.to_dict()  # # dict : key = pos and item are mean
-        if len(dict_pos_mean) <= 96:
+        channel_val = tmp[channel]
+        position_value_dict = channel_val.to_dict()  # # dict : key = pos and item are mean
+        if len(position_value_dict) <= 96:
             data = np.zeros((8, 12))
-        elif len(dict_pos_mean) <= 384:
+        elif len(position_value_dict) <= 384:
             data = np.zeros((16, 24))
-        elif len(dict_pos_mean) > 384:
+        elif len(position_value_dict) > 384:
             raise NotImplementedError('MAX 384 Well plate are not implemented')
-        for key, elem in dict_pos_mean.items():
+        for key, elem in position_value_dict.items():
             pos = TCA.get_opposite_well_format(key)
             data[pos[0]][pos[1]] = elem
         return data
@@ -165,9 +165,22 @@ class RawData(object):
             self.__new_caching(key)
             return self.__CACHING_gbdata
 
-    def __new_caching(self, key):
+    def __new_caching(self, key='Well'):
         self.__CACHING_gbdata = self.df.groupby(key)
         self.__CACHING_gbdata_key = key
+
+    def get_group(self, key, channel):
+        """
+        Get all data for a well
+        :param channel:
+        :param key:
+        :return:
+        """
+        if self.__CACHING_gbdata is None:
+            self.__new_caching()
+            return self.__CACHING_gbdata.get_group(key)[channel]
+        else:
+            return self.__CACHING_gbdata.get_group(key)[channel]
 
     def save_raw_data(self, path, name=None):
         """

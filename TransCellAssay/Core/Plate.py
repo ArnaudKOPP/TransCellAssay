@@ -320,6 +320,7 @@ class Plate(object):
         :param log_t:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
         """
+        log.info("Raw data normalization on {0} with {1} method".format(self.name, method))
         if isinstance(channels, list):
             try:
                 for key, value in self.replica.items():
@@ -355,7 +356,7 @@ class Plate(object):
         if algorithm not in __valid_sec_algo:
             log.error('Algorithm is not good choose : {}'.format(__valid_sec_algo))
             raise ValueError()
-
+        log.info('Systematic Error Correction processing {} : {}'.format(self.name, algorithm))
         if apply_down:
             for key, value in self.replica.items():
                 value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
@@ -370,7 +371,6 @@ class Plate(object):
         else:
             if self.isSpatialNormalized:
                 log.warning('SEC already performed -> overwriting previous sec data')
-            log.info('Systematic Error Correction processing : {}'.format(algorithm))
             if algorithm == 'Bscore':
                 ge, ce, re, corrected_data_array, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                               max_iterations=max_iterations,

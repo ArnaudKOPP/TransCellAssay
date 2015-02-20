@@ -110,6 +110,7 @@ USAGE
                         pass
                     outputfilename = barcode
                     file.write_raw_data(path=output, name=outputfilename)
+                    print("********************************************")
                 except Exception as e:
                     print(e)
         print("\n*********** END ***********\n")

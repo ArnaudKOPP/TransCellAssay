@@ -19,6 +19,8 @@ import pandas as pd
 import urllib.request
 from TransCellAssay.Utils.Utils import reporthook
 from TransCellAssay.Utils.Stat import adjustpvalues
+import logging
+log = logging.getLogger(__name__)
 
 typedef_tag, term_tag = "[Typedef]", "[Term]"
 
@@ -31,6 +33,7 @@ class OBOreader(object):
         try:
             self._handle = open(obo_file)
         except IOError:
+            log.info("Download ontologies")
             urllib.request.urlretrieve(
                 "http://www.berkeleybop.org/ontologies/go/go.obo", "go.obo", reporthook)
             print('')  # add this for begin @ new line (it's ugly)
@@ -213,7 +216,7 @@ class GOtree(object):
         load obo file into obo reader
         :param obo_file:
         """
-        print("\033[0;32m[INFO]\033[0m Load obo file ", obo_file)
+        log.info("Load obo file ", obo_file)
         obo_reader = OBOreader(obo_file)
         for rec in obo_reader:
             self.go_Term[rec.id] = rec
@@ -221,7 +224,7 @@ class GOtree(object):
                 self.go_Term[alt] = rec
 
         self.populate_terms()
-        print("\033[0;32m[INFO]\033[0m All GO nodes imported : ", len(self.go_Term))
+        log.info("All GO nodes imported : ", len(self.go_Term))
 
     def populate_terms(self):
         """
@@ -315,7 +318,7 @@ class GOtree(object):
         :param association:
         """
         bad_terms = set()
-        print("\033[0;32m[INFO]\033[0m Update association")
+        log.info("Update association")
         for key, terms in association.association.items():
             parents = set()
             for term in terms:
@@ -346,7 +349,7 @@ class Association(object):
         self._load_association_file(file)
 
     def _load_association_file(self, file):
-        print("\033[0;32m[INFO]\033[0m Load association file")
+        log.info("Load association file")
         try:
             assoc = pd.read_csv(file)
             assoc = assoc.dropna(axis=0)
@@ -360,7 +363,7 @@ class Association(object):
                 print(e)
 
     def _make_association(self, assoc_data_frame):
-        print("\033[0;32m[INFO]\033[0m Making association ...")
+        log.info("Making association ...")
         datagp = assoc_data_frame.groupby('id')
         for gene in assoc_data_frame.id.unique():
             go = datagp.get_group(gene)['go_id']
@@ -503,7 +506,7 @@ class EnrichmentStudy(object):
         :param compare:
         :return:
         """
-        print('\033[0;32m[INFO]\033[0m Load study and population')
+        log.info('Load study and population')
         pop = set(_.strip() for _ in open(pop_fn) if _.strip())
         study = frozenset(_.strip() for _ in open(study_fn) if _.strip())
         # some times the pop is a second group to compare, rather than the
@@ -514,8 +517,8 @@ class EnrichmentStudy(object):
             pop |= study
             pop -= common
             study -= common
-            print("removed ", len(common), " overlapping items")
-            print("Set 1: {0}, Set 2: {1}".format(len(study), len(pop)))
+            log.debug("removed ", len(common), " overlapping items")
+            log.debug("Set 1: {0}, Set 2: {1}".format(len(study), len(pop)))
         return study, pop
 
     @staticmethod

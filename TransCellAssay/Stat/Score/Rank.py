@@ -20,7 +20,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def rank_product(plate, secdata=False, mean_method="mean", rank_method="average", size=96, verbose=False):
+def rank_product(plate, secdata=False, mean_method="mean", rank_method="average", size=96):
     """
     Compute the rank product of plate with replicat data
     :param plate: plate object
@@ -35,6 +35,7 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
         log.info('Perform Rank product on plate {}'.format(plate.name))
         rk_pdt = plate.platemap.platemap.values.flatten().reshape(size, 1)
         for key, value in plate.replica.items():
+            log.debug('Rank : iteration on %s' % value.name)
             if secdata:
                 rank = __get_data_rank(value.sec_array, method=rank_method)
             else:
@@ -46,8 +47,6 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
         elif mean_method is 'median':
             rk_pdt = np.append(rk_pdt, np.median(rk_pdt[:, 1:], axis=1).reshape(size, 1), axis=1)
 
-        if verbose:
-            print(rk_pdt)
         return rk_pdt
     else:
         raise TypeError('Provide a plate')
