@@ -293,7 +293,8 @@ class Plate(object):
         self._cb = cb
         self._ce = ce
 
-    def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False):
+    def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
+                        threshold=None):
         """
         Apply Well correction on all replicat data
         call function like from replicat object
@@ -303,14 +304,16 @@ class Plate(object):
         :param method: which method to perform
         :param log_t:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
+        :param threshold: used in background substraction (median is 50) you can set as you want
         """
         for key, value in self.replica.items():
             value.normalization_channels(channels=channel, method=method, log_t=log_t, neg=neg, pos=pos,
-                                         skipping_wells=skipping_wells)
+                                         skipping_wells=skipping_wells, threshold=threshold)
         self.isNormalized = True
         self.compute_data_from_replicat(channel, forced_update=True)
 
-    def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False):
+    def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
+                               threshold=None):
         """
         Apply multi channels normalization
         :param pos: positive control
@@ -319,18 +322,19 @@ class Plate(object):
         :param method: which method to perform
         :param log_t:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
+        :param threshold: used in background substraction (median is 50) you can set as you want
         """
         log.info("Raw data normalization on {0} with {1} method".format(self.name, method))
         if isinstance(channels, list):
             try:
                 for key, value in self.replica.items():
                     value.normalization_channels(channels=channels, method=method, log_t=log_t, neg=neg, pos=pos,
-                                                 skipping_wells=skipping_wells)
+                                                 skipping_wells=skipping_wells, threshold=threshold)
                 self.isNormalized = True
             except Exception as e:
                 log.error(e)
         else:
-            self.__normalization(channels, method, log_t, neg, pos, skipping_wells)
+            self.__normalization(channels, method, log_t, neg, pos, skipping_wells, threshold=threshold)
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
                                     save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],

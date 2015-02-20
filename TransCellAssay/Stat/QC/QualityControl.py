@@ -108,6 +108,8 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
 
         qc_data_array = pd.DataFrame()
 
+        log.info('Perform quality control on {}'.format(plate.name))
+
         for key, value in plate.replica.items():
             qc_data_array = qc_data_array.append(
                 __replicat_quality_control(value, channel=channel, neg_well=neg_well, pos_well=pos_well,
@@ -149,6 +151,8 @@ def __replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False
     else:
         valid_neg_well = [TCA.get_opposite_well_format(x) for x in neg_well]
         valid_pos_well = [TCA.get_opposite_well_format(x) for x in pos_well]
+
+    log.debug('Perform quality control on {}'.format(replicat.name))
 
     # # get Data
     if not use_raw_data:
@@ -206,15 +210,12 @@ def __get_data_control_array(array, c_ref):
     :param c_ref: ref in well format (A1)
     :return: 1d array with data from desired Wells
     """
-    if not isinstance(array, np.ndarray):
-        raise TypeError("Invalide data Format")
-    else:
-        data = list()
-        for i in c_ref:
-            if isinstance(i, str):
-                i = TCA.get_opposite_well_format(i)
-            data.append(array[i[0]][i[1]])
-        return data
+    data = list()
+    for i in c_ref:
+        if isinstance(i, str):
+            i = TCA.get_opposite_well_format(i)
+        data.append(array[i[0]][i[1]])
+    return data
 
 
 def __get_data_control(data, channel, c_ref):
@@ -225,17 +226,14 @@ def __get_data_control(data, channel, c_ref):
     :param c_ref: a control ref list that we want to search, list of well in this format : A1
     :return: 1D array with data from desired Wells
     """
-    if not isinstance(data, TCA.RawData):
-        raise TypeError("Invalide data Format")
-    else:
-        datax = pd.DataFrame()
-        for i in c_ref:
-            if isinstance(i, tuple):
-                i = TCA.get_opposite_well_format(i)
-            if datax.empty:
-                datax = data.get_raw_data(channel=channel, well=i, well_idx=False)
-            datax = data.get_raw_data(channel=channel, well=i, well_idx=False)
-        return datax
+    datax = pd.DataFrame()
+    for i in c_ref:
+        if isinstance(i, tuple):
+            i = TCA.get_opposite_well_format(i)
+        if datax.empty:
+            datax = data.get_raw_data(channel=channel, well=i)
+        datax = datax.append(data.get_raw_data(channel=channel, well=i))
+    return datax
 
 
 def __avr(cneg, cpos):

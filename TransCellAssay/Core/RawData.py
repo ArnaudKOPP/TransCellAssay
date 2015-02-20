@@ -66,37 +66,48 @@ class RawData(object):
         :param well_idx: add or not well id
         :return: raw data in pandas dataframe
         """
+
+        # # add well to columns that we want
         if well_idx:
             if not isinstance(channel, list):
                 channel = [channel]
             channel.insert(0, 'Well')
+
+        # # init a empty df
         data = None
+
+        # # if well not a list -> become a list
         if well is not None:
             if not isinstance(well, list):
                 well = [well]
                 if well not in self.get_unique_well():
                     raise ValueError('Wrong Well')
-            datagp = self.get_groupby_data()
 
+        # # Grab data
         if channel is not None:
+            # # check valid channel
             if channel not in self.get_channel_list():
                 raise ValueError('Wrong Channel')
             if well is not None:
                 for i in well:
                     if data is None:
-                        data = datagp.get_group(i)[channel]
-                    data = data.append(datagp.get_group(i)[channel])
+                        data = self.__get_group(i, channel)
+                    data = data.append(self.__get_group(i, channel))
+                    # # return wells data for channel
                 return data
             else:
+                # # return channel data for all well
                 return self.df[channel]
         else:
             if well is not None:
                 for i in well:
                     if data is None:
-                        data = datagp.get_group(i)
-                    data = data.append(datagp.get_group(i))
+                        data = self.__get_group(i)
+                    data = data.append(self.__get_group(i))
+                    # # return wells data for all channel
                 return data
             else:
+                # # return all data
                 return self.df
 
     def get_unique_well(self):
@@ -169,7 +180,7 @@ class RawData(object):
         self.__CACHING_gbdata = self.df.groupby(key)
         self.__CACHING_gbdata_key = key
 
-    def get_group(self, key, channel):
+    def __get_group(self, key, channel=None):
         """
         Get all data for a well
         :param channel:
@@ -178,9 +189,10 @@ class RawData(object):
         """
         if self.__CACHING_gbdata is None:
             self.__new_caching()
+        if channel is not None:
             return self.__CACHING_gbdata.get_group(key)[channel]
         else:
-            return self.__CACHING_gbdata.get_group(key)[channel]
+            return self.__CACHING_gbdata.get_group(key)
 
     def save_raw_data(self, path, name=None):
         """

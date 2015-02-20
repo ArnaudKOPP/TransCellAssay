@@ -150,7 +150,7 @@ __NEG__ = 'Neg i'
 __POS__ = 'SiNTCP i'
 __TOX__ = None
 __VERB__ = False
-__PROC__ = 1
+__PROC__ = 4
 
 if __OUTPUT__ is None:
     __OUTPUT__ = os.path.join(__INPUT__, "Analyze/")

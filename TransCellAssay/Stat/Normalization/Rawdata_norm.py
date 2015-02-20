@@ -77,7 +77,8 @@ def __df_scaling(rawdata, min_val, max_val, channel, mean=False):
         print(e)
 
 
-def rawdata_variability_normalization(obj, channel, method=None, log2_transf=True, neg_control=None, pos_control=None):
+def rawdata_variability_normalization(obj, channel, method=None, log2_transf=True, neg_control=None, pos_control=None,
+                                      threshold=None):
     """
     Take a dataframe from replicat object and apply desired strategy of variability normalization
     :param obj: pd.dataframe to normalize
@@ -86,6 +87,7 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
     :param log2_transf: apply log2 transformation
     :param neg_control: list of well for negative control A1 A2 ...
     :param pos_control: list of well for positive control A1 A2 ...
+    :param threshold: used in background substraction (median is 50) you can set as you want
     :return: normalized data
     """
     try:
@@ -101,13 +103,15 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
 
         if isinstance(obj, TCA.Plate):
             for key, value in obj.replica.items():
-                value.rawdata.df = __rd_norm(value.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
+                value.rawdata.df = __rd_norm(value.rawdata.df, channel, method, log2_transf, neg_control, pos_control,
+                                             threshold)
             log.info('Raw Data normalization processing for plate {} on channel {}'.format(obj.name, channel))
         elif isinstance(obj, TCA.Replica):
-            obj.rawdata.df = __rd_norm(obj.rawdata.df, channel, method, log2_transf, neg_control, pos_control)
+            obj.rawdata.df = __rd_norm(obj.rawdata.df, channel, method, log2_transf, neg_control, pos_control,
+                                       threshold)
             log.info('Raw Data normalization processing for replica {} on channel {}'.format(obj.name, channel))
         elif isinstance(obj, TCA.RawData):
-            obj = __rd_norm(obj, channel, method, log2_transf, neg_control, pos_control)
+            obj = __rd_norm(obj, channel, method, log2_transf, neg_control, pos_control, threshold)
             return obj
         else:
             raise TypeError("Don't take this object, only plate, replica or raw data")
@@ -115,7 +119,7 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
         print(e)
 
 
-def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None, pos_control=None):
+def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None, pos_control=None, threshold=None):
     """
     Function that picked up functions for normalize raw data
     """
@@ -135,7 +139,7 @@ def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None,
         if method == 'NormalizedPercentInhibition':
             rawdata = __normalizedpercentinhibition(rawdata, channel, neg_control, pos_control)
         if method == 'BackgroundSubstraction':
-            rawdata = __backgroundsubstraction(rawdata, channel)
+            rawdata = __backgroundsubstraction(rawdata, channel, threshold)
         return rawdata
     except Exception as e:
         print(e)
@@ -246,24 +250,23 @@ def __normalizedpercentinhibition(rawdata, channel, neg=None, pos=None):
     return rawdata
 
 
-def __backgroundsubstraction(rawdata, channel):
+def __backgroundsubstraction(rawdata, channel, threshold):
     """
     Apply a background substraction by removing median of well on each wells
-    :param rawdata:
-    :param channel:
-    :return:
+    :param rawdata: rawdata object
+    :param channel: which channel to apply
+    :return: return normalized raw data
     """
-    try:
-        log.debug('Perform BackgroundSubstraction')
-        for well in rawdata.get_unique_well():
-            well_data = rawdata.get_group(well, channel)
-            median = np.median(well_data)
-            log.debug('{0}  Median substracted : {1}'.format(well, median))
-            rawdata.df.loc[rawdata.df['Well'] == str(well), channel] = well_data - median
-        rawdata.df.loc[rawdata.df[channel] < 0, channel] = 0
-        return rawdata
-    except Exception as e:
-        print(e)
+    for well in rawdata.get_unique_well():
+        well_data = rawdata.get_groupby_data().get_group(well)[channel]
+        if threshold is not None:
+            background = np.percentile(well_data, threshold)
+        else:
+            background = np.median(well_data)
+        log.debug('{0}  Median substracted : {1}'.format(well, background))
+        rawdata.df.loc[rawdata.df['Well'] == str(well), channel] = well_data - background
+    rawdata.df.loc[rawdata.df[channel] < 0, channel] = 0
+    return rawdata
 
 
 def __get_data_by_wells(rawdata, channel, wells):
@@ -277,6 +280,6 @@ def __get_data_by_wells(rawdata, channel, wells):
     for i in wells:
         log.debug(i)
         if data.empty:
-            data = datagp.get_group(i)[channel]
-        data = data.append(datagp.get_group(i)[channel])
+            data = datagp.__get_group(i)[channel]
+        data = data.append(datagp.__get_group(i)[channel])
     return data

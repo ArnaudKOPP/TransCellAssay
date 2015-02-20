@@ -222,7 +222,8 @@ class Replica(object):
         self._cb = cb
         self._ce = ce
 
-    def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False):
+    def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
+                        threshold=None):
         """
         Performed normalization on data
         :param channel; which channel to normalize
@@ -231,6 +232,7 @@ class Replica(object):
         :param pos: postive control
         :param neg: negative control
         :param skipping_wells: skip defined wells, use it with poc and npi
+        :param threshold: used in background substraction (median is 50) you can set as you want
         """
         if not self.isNormalized:
             log.debug('Raw Data normalization processing for replicat {} on channel {}'.format(self.name, channel))
@@ -245,13 +247,15 @@ class Replica(object):
                                                                  method=method,
                                                                  log2_transf=log_t,
                                                                  neg_control=negative,
-                                                                 pos_control=positive)
+                                                                 pos_control=positive,
+                                                                 threshold=threshold)
             self.isNormalized = True
             self.compute_data_for_channel(channel)
         else:
             log.warning("Data are already normalized, do nothing")
 
-    def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False):
+    def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
+                               threshold=None):
         """
         Apply a normalization method to multiple
         :param pos: positive control
@@ -260,14 +264,15 @@ class Replica(object):
         :param method: which method to perform
         :param log_t:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
+        :param threshold: used in background substraction (median is 50) you can set as you want
         """
         if isinstance(channels, str):
             self.__normalization(channel=channels, method=method, log_t=log_t, neg=neg, pos=pos,
-                                 skipping_wells=skipping_wells)
+                                 skipping_wells=skipping_wells, threshold=threshold)
         elif isinstance(channels, list):
             for chan in channels:
                 self.__normalization(channel=chan, method=method, log_t=log_t, neg=neg, pos=pos,
-                                     skipping_wells=skipping_wells)
+                                     skipping_wells=skipping_wells, threshold=threshold)
                 self.isNormalized = True
             log.warning("Choose your channels that you want to work with plate.compute_data_from_replicat or "
                         "replica.compute_data_for_channel")

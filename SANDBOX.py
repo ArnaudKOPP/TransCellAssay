@@ -21,7 +21,7 @@ import TransCellAssay as TCA
 
 
 def HDV():
-    plate_nb = '15'
+    plate_nb = '19'
     plaque = TCA.Core.Plate(name='Plate' + plate_nb)
     platemap = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/HDV/batch2/clean/Pl"+plate_nb+"PP.csv")
     plaque + platemap
@@ -55,15 +55,15 @@ def HDV():
     pos = 'SiNTCP i'
 
     # plaque.check_data_consistency()
-    # TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=True, verbose=True)
+    TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=True, verbose=True)
     # TCA.ReferenceDataWriter(plaque,
     #                         filepath='/home/arnaud/Desktop/test.xlsx',
     #                         ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'],
     #                         channels=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
 
-    # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
+    ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
     # ana = TCA.plate_analysis(plaque, channel, neg, pos)
-    # print(ana)
+    print(ana)
     # ana.write("/home/arnaud/Desktop/HDV/RawdataClean/Percentvalue"+plate_nb+".csv")
 
     plaque.normalization_channels(channels=channel,
@@ -147,7 +147,7 @@ def HDV():
     # to_save = pd.DataFrame(final_array)
     # to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
 
-    # TCA.plate_heatmap_p(plaque, both=True)
+    TCA.plate_heatmap_p(plaque, both=True)
     # TCA.plot_wells(plaque, neg=neg, pos=pos)
     # TCA.plot_plate_3d(plaque['rep1'].sec_array, surf=True)
     # TCA.plot_plate_3d(plaque.sec_array)
