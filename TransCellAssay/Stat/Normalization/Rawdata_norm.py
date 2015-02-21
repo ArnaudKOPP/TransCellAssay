@@ -140,6 +140,7 @@ def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None,
             rawdata = __normalizedpercentinhibition(rawdata, channel, neg_control, pos_control)
         if method == 'BackgroundSubstraction':
             rawdata = __backgroundsubstraction(rawdata, channel, threshold)
+            rawdata.df.loc[rawdata.df[channel] < 0, channel] = 0
         return rawdata
     except Exception as e:
         print(e)
@@ -265,7 +266,6 @@ def __backgroundsubstraction(rawdata, channel, threshold):
             background = np.median(well_data)
         log.debug('{0}  Median substracted : {1}'.format(well, background))
         rawdata.df.loc[rawdata.df['Well'] == str(well), channel] = well_data - background
-    rawdata.df.loc[rawdata.df[channel] < 0, channel] = 0
     return rawdata
 
 
