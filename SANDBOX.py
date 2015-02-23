@@ -21,7 +21,7 @@ import TransCellAssay as TCA
 
 
 def HDV():
-    plate_nb = '19'
+    plate_nb = '15'
     plaque = TCA.Core.Plate(name='Plate' + plate_nb)
     platemap = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/HDV/batch2/clean/Pl"+plate_nb+"PP.csv")
     plaque + platemap
@@ -205,7 +205,7 @@ def HCV():
 
     plaque.normalization_channels(channels=channel,
                                   method='Zscore',
-                                  log=True,
+                                  log_t=True,
                                   neg=platemap.search_well(neg),
                                   pos=platemap.search_well(pos))
     print(platemap)
@@ -294,34 +294,5 @@ def go():
 
 # go()
 
-
-def rest():
-    # k = TCA.KEGG(verbose=True)
-    # # target = ["NXF1", "ALAS2", "GPI", "EIF4A3", "RRM2", "RAD51L3", "KIF26A", "CDC5L", "ABCC3", "ATP1B2"]
-    # target = ["NXF1"]
-    # for gene in target:
-    #     try:
-    #         # res = k.find("hsa", gene)
-    #         # print(res)
-    #         des = k.get(":".join(["hsa", gene]))
-    #         # print(des)
-    #
-    #         # res = TCA.KEGGParser(des)
-    #         # print(res['PATHWAY'])
-    #         # print(json.dumps(res, indent=4))
-    #
-    #         # path = k.get(res['PATHWAY'][0].split()[0], "kgml")
-    #         # print(path)
-    #
-    #     except:
-    #         pass
-    logging.getLogger('requests').setLevel(logging.CRITICAL)
-    logging.getLogger('urllib3').setLevel(logging.CRITICAL)
-    psi = TCA.PSICQUIC()
-    psi.TIMEOUT = 10
-    psi.RETRIES = 1
-    psi.retrieve_all('NXF1')
-
-# rest()
 
 print('FINISH')

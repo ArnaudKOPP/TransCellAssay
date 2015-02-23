@@ -13,6 +13,8 @@ from argparse import RawDescriptionHelpFormatter
 import time
 import pandas as pd
 import xlsxwriter
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -177,6 +179,8 @@ USAGE
                 nbrow = well['NumberOfRows'][0]
                 nbcol = well['NumberOfColumns'][0]
 
+                logging.info('Work on {}'.format(barcode))
+
                 if nbrow * nbcol > 96:
                     size = 396
                 else:
@@ -204,6 +208,8 @@ USAGE
                     if chan in skip:
                         continue
 
+                    logging.debug('Work on {} channel'.format(chan))
+
                     if data[chan].dtypes == 'object':
                         data[chan] = data[chan].str.replace(",", ".")
                     data[chan].apply(format)
@@ -225,6 +231,8 @@ USAGE
                         list_sheets[i].write_number(row, col, val)
                     i += 1
                 workbook.close()
+
+                logging.info('Finish {}'.format(barcode))
 
         print("DONE")
 
