@@ -13,7 +13,7 @@ on 96 and 384 Well plate with acceptable performance (1536 on plate for further 
 * Systematic Error Detection Test
 * Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and basic background Correction/Well Correction
 * Scoring (SSMD, T-Statistics, Rank product, single cell properties)
-* GO enrichment, PPI, KEGG, STRING, Biogrid, ... 
+* GO enrichment
 
 ##Python Module Dependencies
 
@@ -22,8 +22,7 @@ on 96 and 384 Well plate with acceptable performance (1536 on plate for further 
 * Numpy 
 * Scipy 
 * Matplotlib, seaborn
-* Scikit-learn 
-* requests, beautifulsoup4 for REST part
+* Scikit-learn
 
 Python package in most recent version is a must
 
@@ -50,3 +49,4 @@ This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons
 * Dose Response Analysis
 * Phenotypic Response
 * 1536 Well Plate (big depend on format writing in export of data)
+* PPI, KEGG, STRING, Biogrid, ... 

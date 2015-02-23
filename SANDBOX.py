@@ -6,7 +6,6 @@ For testing module in actual dev
 import pandas as pd
 import numpy as np
 import os
-import json
 import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
