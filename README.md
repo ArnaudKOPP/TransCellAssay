@@ -13,7 +13,6 @@ on 96 and 384 Well plate with acceptable performance (1536 on plate for further 
 * Systematic Error Detection Test
 * Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and basic background Correction/Well Correction
 * Scoring (SSMD, T-Statistics, Rank product, single cell properties)
-* GO enrichment
 
 ##Python Module Dependencies
 
@@ -44,9 +43,6 @@ This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons
 
 * Machine Learning like clustering or classification of hit
 * Bayesian Inference (FDR...)
-* PP-interaction
-* RNA-seq data from multiple cell lines
 * Dose Response Analysis
 * Phenotypic Response
 * 1536 Well Plate (big depend on format writing in export of data)
-* PPI, KEGG, STRING, Biogrid, ... 
