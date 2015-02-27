@@ -1,7 +1,8 @@
 # coding=utf-8
 """
-Librarie for easy play with HTS txt data file (HCS explorer output style)
+Librarie for easy play with HTS txt data file
 """
+
 import os
 from TransCellAssay.IO.File.InputFile import InputFile
 import pandas as pd
@@ -22,16 +23,23 @@ class TXT(InputFile):
     """
     Class for load TXT file (similar to csv)
     """
+
     def __init__(self):
         super(TXT, self).__init__()
 
-    def load(self, fpath):
+    def load(self, fpath, sep='\t', **kwargs):
         """
         Load csv file
         :param fpath:
         """
         if os.path.isfile(fpath):
-            self.dataframe = pd.read_table(fpath, engine='c')
-            log.info('Reading %s File' % fpath)
+            try:
+                self.dataframe = pd.read_table(fpath, engine='c', **kwargs)
+                log.info('Reading %s File' % fpath)
+            except Exception as e:
+                log.error(e)
+                pass
         else:
-            raise IOError('File don\'t exist')
+            msg = 'File don\'t exist'
+            log.error(msg)
+            raise IOError(msg)

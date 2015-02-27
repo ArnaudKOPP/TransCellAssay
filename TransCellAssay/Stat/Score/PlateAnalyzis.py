@@ -34,6 +34,10 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
     if not isinstance(plate, TCA.Plate):
         raise TypeError("File Plate Object")
     else:
+        if threshold >= 100 and percent:
+            log.warning('Threshold cannot be > 100 with percent')
+            percent = False
+
         if plate._is_cutted:
             log.error('Plate was cutted, for avoiding undesired effect, plate analysis cannot be performed')
             raise NotImplementedError()

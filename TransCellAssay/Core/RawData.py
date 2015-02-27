@@ -35,21 +35,23 @@ class RawData(object):
     """
 
     def __init__(self, path_or_file):
+        self.__CACHING_gbdata = None
+        self.__CACHING_gbdata_key = None
+
         if isinstance(path_or_file, str):
-            self.__CACHING_gbdata = None
-            self.__CACHING_gbdata_key = None
             if os.path.isfile(path_or_file):
                 self.df = pd.read_csv(path_or_file, engine='c')
                 log.info('Reading RawData %s File' % path_or_file)
             else:
                 raise IOError('File don\'t exist')
+
         elif isinstance(path_or_file, TCA.InputFile):
             if path_or_file.dataframe is not None:
                 self.df = path_or_file.dataframe
             else:
                 raise ValueError('Empty Input File')
         else:
-            raise TypeError('Input types not handled')
+            raise NotImplementedError('Input types not handled')
 
     def get_channel_list(self):
         """

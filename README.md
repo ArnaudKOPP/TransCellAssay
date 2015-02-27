@@ -27,11 +27,7 @@ Python package in most recent version is a must
 
 ##CONTACT 
  
-kopp@igbmc.fr  
-
-##Contributions 
- 
-If you find it useful, fork the repository, improve it and request a pull.
+kopp@igbmc.fr
 
 ##License
 
@@ -42,7 +38,8 @@ This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons
 ##Further developpment
 
 * Machine Learning like clustering or classification of hit
-* Bayesian Inference (FDR...)
+* Bayesian Inference 
 * Dose Response Analysis
 * Phenotypic Response
 * 1536 Well Plate (big depend on format writing in export of data)
+* hdf5 support

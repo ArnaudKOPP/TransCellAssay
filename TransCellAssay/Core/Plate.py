@@ -28,7 +28,7 @@ class Plate(object):
 
     self.replica = {}  # Dict that contain all replicat, key are name and value are replicat object
     self.name = None  # Name of Plate
-    self.platemap = ScreenPlateReplicatPS.PlateMap()  # Plate Setup object
+    self.platemap = TransCellAssay.Core..PlateMap()  # Plate Setup object
     self.threshold = None  # Threeshold for considering Cell as positive
     self._control_position = ((0, 11), (0, 23))  # column where control is positionned in plate (default pos)
     self._neg = None  # Name of negative control
@@ -338,7 +338,7 @@ class Plate(object):
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
                                     save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
-                                    skip_row=[]):
+                                    skip_row=[], trimmed=0.0):
         """
         Apply a spatial normalization for remove edge effect
         Resulting matrix are save in plate object if save = True
@@ -353,6 +353,7 @@ class Plate(object):
         :param epsilon: epsilon parameters for PMP
         :param skip_col: index of col to skip in MEA or PMP
         :param skip_row: index of row to skip in MEA or PMP
+        :param trimmed: Bscore only for average method only, trimmed the data with specified value, default is 0.0
         """
         global corrected_data_array
         __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
@@ -365,7 +366,7 @@ class Plate(object):
             for key, value in self.replica.items():
                 value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
                                                   max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
-                                                  skip_col=skip_col, skip_row=skip_row)
+                                                  skip_col=skip_col, skip_row=skip_row, trimmed=trimmed)
             self.compute_data_from_replicat(channel=None, use_sec_data=True)
             return
 
@@ -378,11 +379,13 @@ class Plate(object):
             if algorithm == 'Bscore':
                 ge, ce, re, corrected_data_array, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                               max_iterations=max_iterations,
+                                                                              trimmed=trimmed,
                                                                               verbose=verbose)
 
             if algorithm == 'BZscore':
                 ge, ce, re, corrected_data_array, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
                                                                                  max_iterations=max_iterations,
+                                                                                 trimmed=trimmed,
                                                                                  verbose=verbose)
 
             if algorithm == 'PMP':

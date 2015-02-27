@@ -2,12 +2,12 @@
 """
 Basic Class for manipulating data into dataframe
 """
+
 import numpy as np
 import os
 import re
 import logging
 log = logging.getLogger(__name__)
-
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -16,9 +16,7 @@ __license__ = "CC BY-NC-ND 4.0 License"
 __version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Dev"
-
-DEBUG = 1
+__status__ = "Production"
 
 
 class InputFile(object):
@@ -135,8 +133,12 @@ class InputFile(object):
             fname += '.csv'
             self.dataframe.to_csv(fname, index=False, index_label=False)
             log.info("Write raw data %s" % fname)
+        elif frmt is 'txt':
+            fname += '.txt'
+            self.dataframe.to_csv(fname, sep='\t', index=False, index_label=False)
+            log.info("Write raw data %s" % fname)
         else:
-            raise NotImplementedError('Only csv for the moment')
+            raise NotImplementedError('Format not supported for the moment')
 
     def df_to_array(self, channel, size=None):
         """

@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Librarie for easy play with HTS csv data file (HCS explorer output style)
+Librarie for easy play with HTS csv data file
 """
 
 import os
@@ -27,13 +27,19 @@ class CSV(InputFile):
     def __init__(self):
         super(CSV, self).__init__()
 
-    def load(self, fpath):
+    def load(self, fpath, sep=',', **kwargs):
         """
         Load csv file
         :param fpath:
         """
         if os.path.isfile(fpath):
-            self.dataframe = pd.read_csv(fpath, engine='c')
-            log.info('Reading %s File' % fpath)
+            try:
+                self.dataframe = pd.read_csv(fpath, engine='c', **kwargs)
+                log.info('Reading %s File' % fpath)
+            except Exception as e:
+                log.error(e)
+                pass
         else:
-            raise IOError('File don\'t exist')
+            msg = 'File don\'t exist'
+            log.error(msg)
+            raise IOError(msg)

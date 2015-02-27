@@ -83,7 +83,7 @@ def HDV():
     # TCA.plot_plate_3d(test1_pos)
 
     alpha = 0.1
-    verbose = True
+    verbose = False
     # try:
     #     TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
     #     TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
@@ -146,7 +146,7 @@ def HDV():
     # to_save = pd.DataFrame(final_array)
     # to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
 
-    TCA.plate_heatmap(plaque, both=False)
+    TCA.plate_heatmap_p(plaque, both=False)
     # TCA.plot_wells(plaque, neg=neg, pos=pos)
     # TCA.plot_plate_3d(plaque['rep1'].sec_array, surf=True)
     # TCA.plot_plate_3d(plaque.sec_array)

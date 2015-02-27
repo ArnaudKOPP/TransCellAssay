@@ -278,7 +278,8 @@ class Replica(object):
                         "replica.compute_data_for_channel")
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=True,
-                                    max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[], skip_row=[]):
+                                    max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[], skip_row=[],
+                                    trimmed=0.0):
         """
         Apply a spatial normalization for remove edge effect
         The Bscore method showed a more stable behavior than MEA and PMP only when the number of rows and columns
@@ -295,6 +296,7 @@ class Replica(object):
         :param epsilon: epsilon parameters for PMP
         :param skip_col: index of col to skip in MEA or PMP
         :param skip_row: index of row to skip in MEA or PMP
+        :param trimmed: Bscore only for average method only, trimmed the data with specified value, default is 0.0
         """
         global corrected_data_array
         __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
@@ -316,11 +318,13 @@ class Replica(object):
             if algorithm == 'Bscore':
                 ge, ce, re, corrected_data_array, tbl_org = TCA.median_polish(self.array.copy(), method=method,
                                                                               max_iterations=max_iterations,
+                                                                              trimmed=trimmed,
                                                                               verbose=verbose)
 
             if algorithm == 'BZscore':
                 ge, ce, re, corrected_data_array, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
                                                                                  max_iterations=max_iterations,
+                                                                                 trimmed=trimmed,
                                                                                  verbose=verbose)
 
             if algorithm == 'PMP':
