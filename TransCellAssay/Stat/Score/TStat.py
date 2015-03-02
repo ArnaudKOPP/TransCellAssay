@@ -11,13 +11,14 @@ used to calculate the t stat.
 A large and positive T statistics indicates that three activity readings are consistently higher than the threshold
 value µ by a large margin, giving a high degree of confidence that the compound i is highly potent inhibitor. On the
 other hand, inconsistency among the three readings, reflected by a small t statistic and high p value as a result of the
-large standart deviation, weakens one's belief that the compound i is truly active even when the average of tripilcates
+large standart deviation, weakens one's belief that the compound i is truly active even when the average of triplicates
 may be greater than the cutoff value.
 """
 
 import numpy as np
 import TransCellAssay as TCA
 from TransCellAssay.Stat.Score.SSMD import __search_paired_data, __search_unpaired_data
+from TransCellAssay.Utils.Stat import mad
 import logging
 log = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_data=True, verbose=False):
+def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_data=True, verbose=False, robust=True):
     """
     Performed t-stat on plate object
     unpaired is for plate with replicat without great variance between them
@@ -53,10 +54,10 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
             log.info('Perform T-Stat on plate : {}'.format(plate.name))
             if len(plate) > 1:
                 if paired:
-                    score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose)
+                    score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose, robust=robust)
                 else:
                     score = __unpaired_tstat_score(plate, neg_control, variance=variance, sec_data=sec_data,
-                                                   verbose=verbose)
+                                                   verbose=verbose, robust=robust)
             else:
                 raise ValueError("T-Stat need at least two replicat")
             return score
@@ -66,7 +67,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
         log.error(e)
 
 
-def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False):
+def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False, robust=True):
     """
     performed unpaired t-stat score
 
@@ -90,7 +91,11 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
     neg_value = __search_unpaired_data(plate, neg_position, sec_data)
 
     nb_neg_wells = len(neg_value)
-    mean_neg = np.mean(neg_value)
+
+    if robust:
+        mean_neg = np.median(neg_value)
+    else:
+        mean_neg = np.mean(neg_value)
     var_neg = np.var(neg_value)
 
     # search rep value for ith well
@@ -107,16 +112,20 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
                         well_value.append(value.array[i][j])
                 except Exception:
                     raise Exception("Your desired datatype are not available")
-            mean_rep = np.mean(well_value)
+
+            if robust:
+                mean_rep = np.median(well_value)
+            else:
+                mean_rep = np.mean(well_value)
             var_rep = np.var(well_value)
 
             # # performed unpaired t-test
             if variance == 'unequal':
                 ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt(
-                    (var_rep / nb_rep) + (var_neg / nb_neg_wells))
+                    (var_rep**2 / nb_rep) + (var_neg**2 / nb_neg_wells))
             elif variance == 'equal':
                 ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * (
-                    (nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg) * ((1 / nb_rep) * (1 / nb_neg_wells)))
+                    (nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
             else:
                 raise ValueError('Variance attribut must be unequal or equal.')
 
@@ -125,13 +134,14 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
         print("Systematic Error Corrected Data : ", sec_data)
         print("Data type : ", plate.datatype)
         print("variance parameter : ", variance)
+        print("Robust version : ", robust)
         print("t-stat score :")
         print(ttest_score)
         print("")
     return ttest_score
 
 
-def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
+def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False, robust=True):
     """
     performed paired t-stat score
     :param plate: Plate Object to analyze
@@ -160,13 +170,16 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False):
                         well_value.append(value.array[i][j] - neg_median)
                 except Exception:
                     raise Exception("Your desired datatype are not available")
-            ttest_score[i][j] = np.mean(well_value) / (
-                np.std(well_value) / np.sqrt(len(plate.replica)))
+            if robust:
+                ttest_score[i][j] = np.median(well_value) / (mad(well_value) / np.sqrt(len(plate.replica)))
+            else:
+                ttest_score[i][j] = np.mean(well_value) / (np.std(well_value) / np.sqrt(len(plate.replica)))
 
     if verbose:
         print("Paired t-stat :")
         print("Systematic Error Corrected Data : ", sec_data)
         print("Data type : ", plate.datatype)
+        print("Robust version : ", robust)
         print("t-stat score :")
         print(ttest_score)
         print("")

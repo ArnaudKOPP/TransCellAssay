@@ -136,8 +136,11 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbo
         mean_median_neg = np.mean(neg_value)
     var_neg = np.var(neg_value)
 
-    k = 2 * (scipy.special.gamma(
-        ((len(neg_value) - 1) / 2) / scipy.special.gamma((len(neg_value) - 2) / 2))) ** 2
+    # k = 2 * (scipy.special.gamma(((len(plate.replica) + len(neg_value) - 2) / 2) /
+    #                              scipy.special.gamma((len(plate.replica) + len(neg_value) - 3) / 2))) ** 2
+
+    k = len(plate.replica) + len(neg_value) - 3.48
+
     # search rep value for ith well
     for i in range(ssmd.shape[0]):
         for j in range(ssmd.shape[1]):
@@ -152,17 +155,17 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbo
                         well_value.append(value.array[i][j])
                 except Exception:
                     raise Exception("Your desired datatype are not available")
-            mean_rep = np.mean(well_value)
+            if robust:
+                mean_rep = np.median(well_value)
+            else:
+                mean_rep = np.mean(well_value)
             var_rep = np.var(well_value)
 
-            # # performed unpaired t-test
             if variance == 'unequal':
-                ssmd[i][j] = (mean_rep - mean_median_neg) / np.sqrt(var_rep + var_neg)
+                ssmd[i][j] = (mean_rep - mean_median_neg) / np.sqrt(var_rep**2 + var_neg**2)
             elif variance == 'equal':
                 ssmd[i][j] = (mean_rep - mean_median_neg) / np.sqrt(
-                    (2 / k) * ((nb_rep - 1) * var_rep + (nb_neg_wells - 1) * var_neg))
-            else:
-                raise ValueError('Variance attribut must be unequal or equal.')
+                    (2 / k) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2))
 
     if verbose:
         print("Unpaired SSMD :")
