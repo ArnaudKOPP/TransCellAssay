@@ -107,34 +107,27 @@ def HDV():
     # TCA.rank_product(plaque, secdata=True)
 
     sec = False
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec, verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec, variance="equal",
-                         verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec, verbose=verbose)
-    TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec, method='MM',
-                         verbose=verbose)
-    TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=sec, verbose=verbose)
-    TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=sec, verbose=verbose)
-    TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=sec, verbose=verbose)
+    ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec,
+                                 verbose=verbose)
+    ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec,
+                                 variance="equal", verbose=verbose)
+    ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec,
+                                 verbose=verbose)
+    ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec, method='MM',
+                                 verbose=verbose)
+    tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=sec,
+                                   verbose=verbose)
+    tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=sec, verbose=verbose)
+    tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=sec, verbose=verbose)
 
-    __SIZE__ = 384
-    # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
-    #                              verbose=verbose)
-    # ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
-    #                              variance="equal", verbose=verbose)
-    # ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
-    #                              verbose=verbose)
-    # ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
-    #                              method='MM', verbose=verbose)
-    # tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=True,
-    #                                verbose=verbose)
-    # tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=True, verbose=verbose)
-    # tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
-    # gene = plaque.PlateMap.platemap.values.flatten().reshape(__SIZE__, 1)
-    # final_array = np.append(gene, plaque.Data.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(__SIZE__, 1), axis=1)
+    # __SIZE__ = len(platemap.platemap.values.flatten())
+    #
+    # gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
+    # final_array = np.append(gene, np.repeat([str(plaque.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
@@ -142,11 +135,13 @@ def HDV():
     # final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
+    #
+    # print(pd.DataFrame(final_array))
 
     # to_save = pd.DataFrame(final_array)
     # to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
 
-    TCA.plate_heatmap_p(plaque, both=False)
+    # TCA.plate_heatmap_p(plaque, both=False)
     # TCA.plot_wells(plaque, neg=neg, pos=pos)
     # TCA.plot_plate_3d(plaque['rep1'].sec_array, surf=True)
     # TCA.plot_plate_3d(plaque.sec_array)
@@ -235,31 +230,35 @@ def HCV():
     TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=sec, verbose=verbose)
     TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=sec, verbose=verbose)
 
-    __SIZE__ = 96
-    # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=True,
-    #                              verbose=verbose)
-    # ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
-    #                              variance="equal", verbose=verbose)
-    # ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
-    #                              verbose=verbose)
-    # ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=True,
-    #                              method='MM', verbose=verbose)
-    # tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=True,
-    #                                verbose=verbose)
-    # tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=True, verbose=verbose)
-    # tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=True, verbose=verbose)
-    # gene = plaque.PlateMap.platemap.values.flatten().reshape(__SIZE__, 1)
-    # final_array = np.append(gene, plaque.Data.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque['rep1'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque['rep2'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque['rep3'].Data.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
+    sec = False
+    ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec,
+                                 verbose=verbose)
+    ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec,
+                                 variance="equal", verbose=verbose)
+    ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec,
+                                 verbose=verbose)
+    ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec, method='MM',
+                                 verbose=verbose)
+    tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=sec,
+                                   verbose=verbose)
+    tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=sec, verbose=verbose)
+    tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=sec, verbose=verbose)
+
+    __SIZE__ = len(platemap.platemap.values.flatten())
+
+    gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
+    final_array = np.append(gene, np.repeat([str(plaque.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
 
     # to_save = pd.DataFrame(final_array)
     # to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
@@ -277,21 +276,6 @@ def HCV():
     # TCA.plot_distribution(wells=['B5', 'B6'], plate=plaque, channel=channel)
 
 # HCV()
-
-
-def go():
-    """
-    Go Enrichment testing
-    """
-    import TransCellAssay as TCA
-    enrichment = TCA.EnrichmentStudy(study="/home/arnaud/Desktop/TEMP/study.txt",
-                                     pop="/home/arnaud/Desktop/TEMP/pop.txt",
-                                     assoc="/home/arnaud/Desktop/TEMP/assoc.csv",
-                                     compare=False)
-    result = enrichment.to_dataframe()
-    print(pd.DataFrame(result))
-
-# go()
 
 
 print('FINISH')

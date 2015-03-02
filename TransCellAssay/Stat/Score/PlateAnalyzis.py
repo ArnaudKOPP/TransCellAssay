@@ -42,11 +42,17 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             log.error('Plate was cutted, for avoiding undesired effect, plate analysis cannot be performed')
             raise NotImplementedError()
         log.info('Perform plate analysis for {0} on channel {1}'.format(plate.name, channel))
+
         platemap = plate.get_platemap()
+
         size = platemap.shape()
-        result = Result(size=(size[0] * size[1]))
+        __SIZE__ = (size[0] * size[1])
+
+        result = Result(size=__SIZE__)
         x = platemap.as_dict()
+
         result.init_gene_well(x)
+        result.values['Plate'] = np.repeat([plate.name], __SIZE__)
 
         neg_well = plate.platemap.search_well(neg)
         pos_well = plate.platemap.search_well(pos)
@@ -162,8 +168,8 @@ class Result(object):
         """
         if size is None:
             size = 96
-        self.values = np.zeros(size, dtype=[('GeneName', object), ('Well', object), ('CellsCount', float),
-                                            ('SDCellsCount', float), ('PositiveCells', float),
+        self.values = np.zeros(size, dtype=[('Plate', object), ('GeneName', object), ('Well', object),
+                                            ('CellsCount', float), ('SDCellsCount', float), ('PositiveCells', float),
                                             ('SDPositiveCells', float), ('Mean', float), ('Std', float),
                                             ('Median', float), ('Stdm', float), ('Viability', float),
                                             ('Toxicity', float)])

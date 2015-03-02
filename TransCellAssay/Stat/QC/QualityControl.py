@@ -143,7 +143,8 @@ def __replicat_quality_control(replicat, channel, neg_well, pos_well, sedt=False
     """
     if not use_raw_data:
         if replicat.array is None:
-            raise Exception("Compute_data_from_replicat First")
+            log.error('Data not available, use raw data instead')
+            use_raw_data = True
 
     if skipping_wells:
         valid_neg_well = replicat.get_valid_well(neg_well)
