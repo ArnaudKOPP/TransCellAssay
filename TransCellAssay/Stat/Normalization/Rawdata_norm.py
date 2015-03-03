@@ -278,8 +278,7 @@ def __get_data_by_wells(rawdata, channel, wells):
     datagp = rawdata.get_groupby_data()
     data = pd.DataFrame()
     for i in wells:
-        log.debug(i)
         if data.empty:
-            data = datagp.__get_group(i)[channel]
-        data = data.append(datagp.__get_group(i)[channel])
+            data = datagp.get_group(i)[channel]
+        data = data.append(datagp.get_group(i)[channel])
     return data

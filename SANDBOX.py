@@ -19,39 +19,32 @@ np.set_printoptions(suppress=True, precision=4)
 import TransCellAssay as TCA
 
 
-def HDV():
-    plate_nb = '15'
+def HDV(plate_nb):
+    path = '/home/arnaud/Desktop/HDV/batch1/clean/'
+
     plaque = TCA.Core.Plate(name='Plate' + plate_nb)
-    platemap = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/HDV/batch2/clean/Pl"+plate_nb+"PP.csv")
+    platemap = TCA.Core.PlateMap(platemap=path+"Pl"+plate_nb+"PP.csv")
     plaque + platemap
-    try:
-        file = "/home/arnaud/Desktop/HDV/batch2/clean/HDV_" + plate_nb + ".1.csv"
-        if os.path.isfile(file):
-            plaque + TCA.Core.Replica(name="rep1",
-                                      data=file,
-                                      datatype='mean')
-    except:
-        pass
-    try:
-        file = "/home/arnaud/Desktop/HDV/batch2/clean/HDV_" + plate_nb + ".2.csv"
-        if os.path.isfile(file):
-            plaque + TCA.Core.Replica(name="rep2",
-                                      data=file,
-                                      datatype='mean')
-    except:
-        pass
-    try:
-        file = "/home/arnaud/Desktop/HDV/batch2/clean/HDV_" + plate_nb + ".3.csv"
-        if os.path.isfile(file):
-            plaque + TCA.Core.Replica(name="rep3",
-                                      data=file,
-                                      datatype='mean')
-    except:
-        pass
+    for i in ['1', '2', '3']:
+        try:
+            file = path+"HDV_" + plate_nb + "."+i+".csv"
+            if os.path.isfile(file):
+                plaque + TCA.Core.Replica(name="rep"+i,
+                                          data=file,
+                                          datatype='mean')
+        except:
+            pass
+
 
     channel = 'AvgIntenCh2'
     neg = 'Neg i'
     pos = 'SiNTCP i'
+
+    # plaque.normalization_channels(channels=channel,
+    #                               log_t=False,
+    #                               method='PercentOfControl',
+    #                               neg=platemap.search_well(neg),
+    #                               pos=platemap.search_well(pos))
 
     # plaque.check_data_consistency()
     # TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=True, verbose=True)
@@ -60,19 +53,19 @@ def HDV():
     #                         ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'],
     #                         channels=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
 
-    # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
+    ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
     # ana = TCA.plate_analysis(plaque, channel, neg, pos)
     # print(ana)
-    # ana.write("/home/arnaud/Desktop/HDV/RawdataClean/Percentvalue"+plate_nb+".csv")
+    ana.write(path+"Percentvalue"+plate_nb+".csv")
 
     # plaque.normalization_channels(channels=channel,
     #                               log_t=False,
-    #                               method='BackgroundSubstraction',
+    #                               method='PercentOfControl',
     #                               neg=platemap.search_well(neg),
     #                               pos=platemap.search_well(pos))
 
-    plaque.compute_data_from_replicat(channel=channel)
-    plaque.cut(1, 15, 1, 23, apply_down=True)
+    # plaque.compute_data_from_replicat(channel=channel)
+    # plaque.cut(1, 15, 1, 23, apply_down=True)
     # print(platemap)
     # plaque.compute_data_from_replicat(channel=channel)
 
@@ -83,7 +76,7 @@ def HDV():
     # TCA.plot_plate_3d(test1_pos)
 
     alpha = 0.1
-    verbose = True
+    verbose = False
     # try:
     #     TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
     #     TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
@@ -107,18 +100,18 @@ def HDV():
     # TCA.rank_product(plaque, secdata=True)
 
     sec = False
-    ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec,
-                                 verbose=verbose)
-    ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec,
-                                 variance="equal", verbose=verbose)
-    ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec,
-                                 verbose=verbose)
-    ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec, method='MM',
-                                 verbose=verbose)
-    tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=sec,
-                                   verbose=verbose)
-    tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=sec, verbose=verbose, robust=True)
-    tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=sec, verbose=verbose, robust=True)
+    # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec,
+    #                              verbose=verbose)
+    # ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec,
+    #                              variance="equal", verbose=verbose)
+    # ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec,
+    #                              verbose=verbose)
+    # ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=sec, method='MM',
+    #                              verbose=verbose)
+    # tstat1 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, variance='equal', sec_data=sec,
+    #                                verbose=verbose, robust=True)
+    # tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=sec, verbose=verbose, robust=True)
+    # tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=sec, verbose=verbose, robust=True)
 
     # __SIZE__ = len(platemap.platemap.values.flatten())
     #
@@ -153,7 +146,8 @@ def HDV():
     # TCA.boxplot_by_wells(plaque['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['D5', 'L6'], plate=plaque, channel=channel)
 
-HDV()
+for i in ['1', '2', '3']:
+    HDV(i)
 
 
 def misc():

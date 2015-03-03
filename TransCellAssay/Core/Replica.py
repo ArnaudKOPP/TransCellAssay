@@ -174,12 +174,8 @@ class Replica(object):
         if not self.isNormalized:
             log.warning('Data are not normalized for replicat : {}'.format(self.name))
 
-        if self.datatype == 'median':
-            self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
-            self._array_channel = channel
-        else:
-            self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
-            self._array_channel = channel
+        self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
+        self._array_channel = channel
 
     def get_data_array(self, channel, sec=False):
         """
