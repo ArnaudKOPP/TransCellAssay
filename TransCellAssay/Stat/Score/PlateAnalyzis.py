@@ -22,7 +22,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=None):
+def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=None, supp_data=False):
     """
     Do a plate analysis
     :param plate: plate
@@ -32,6 +32,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
     :param threshold: threshold for defining % of positive cell in negative ref
     :param percent: use percent for threshold, if false, it will be a real value
     :param path: Path to save Data
+    :param save_sup: Saving supp data if path is not None
     :return: return result
     """
     if not isinstance(plate, TCA.Plate):
@@ -66,17 +67,13 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
         percent_cell_all_replica = collections.OrderedDict()
         percent_cell_sd = collections.OrderedDict()
 
-        def __dict_to_df(input_dict, data_type):
+        def __dict_to_df(input_dict):
             name = np.array(list(input_dict))
             name = name.flatten().reshape(len(name), 1)
             ar = np.concatenate(list(input_dict.values()))
             ar = ar.flatten().reshape(len(ar)/len(plate.replica), len(plate.replica))
             ar = np.append(ar, name, axis=1)
-            df = pd.DataFrame(ar)
-            if path is not None:
-                df.to_csv(path_or_buf=os.path.join(path, str(data_type)+str(plate.name)+'.csv'), index=None,
-                          header=None)
-            return df
+            return pd.DataFrame(ar)
 
         # # iterate over replicat
         for k, replica in plate.replica.items():
@@ -109,8 +106,6 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
                 len_thres = len(np.extract(xdata.values > threshold_value, xdata.values))
                 # # include in dict key is the position and value is a %
                 percent_cell_all_replica.setdefault(well, []).append(((len_thres / len_total) * 100))
-
-        __dict_to_df(percent_cell_all_replica, 'percent_cell')
 
         # # Cell count and std
         sdvalue = {}
@@ -163,8 +158,22 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
         result.add_data(percent_cell_sd, 'SDPositiveCells')
 
         if path is not None:
-            result.write(file_path=os.path.join(path, 'PlateAnalyzisData_'+str(plate.name)+'.csv'))
+            try:
+                result.write(file_path=os.path.join(path, 'PlateAnalyzisData_'+str(plate.name)+'.csv'))
+            except Exception as e:
+                log.error('Error during save PlateAnalyzisData : {}'.format(e))
 
+        if supp_data:
+            writer = pd.ExcelWriter(os.path.join(path, 'SUPP_DATA_'+str(plate.name)+'.xlsx'))
+            try:
+                percent = __dict_to_df(percent_cell_all_replica)
+                cellcnt = __dict_to_df(cell_count_all_replica)
+                percent.to_excel(writer, 'Percent Cells', index=None, header=None)
+                cellcnt.to_excel(writer, 'Cells Count', index=None, header=None)
+            except Exception as e:
+                log.error('Error with SUPP_DATA export : {}'.format(e))
+
+            writer.save()
         return result
 
 
