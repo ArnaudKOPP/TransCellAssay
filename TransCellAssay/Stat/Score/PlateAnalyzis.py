@@ -7,6 +7,8 @@ Compute Cells Count, percent of positive Cells, viability and toxicity per Wells
 import TransCellAssay as TCA
 import numpy as np
 import pandas as pd
+import collections
+import os
 import logging
 log = logging.getLogger(__name__)
 
@@ -20,7 +22,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
+def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=None):
     """
     Do a plate analysis
     :param plate: plate
@@ -29,6 +31,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
     :param pos: positive control
     :param threshold: threshold for defining % of positive cell in negative ref
     :param percent: use percent for threshold, if false, it will be a real value
+    :param path: Path to save Data
     :return: return result
     """
     if not isinstance(plate, TCA.Plate):
@@ -57,11 +60,23 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
         neg_well = plate.platemap.search_well(neg)
         pos_well = plate.platemap.search_well(pos)
 
-        cell_count_tmp = {}
-        mean = {}
-        median = {}
-        dict_percent_cell_tmp = {}
-        dict_percent_sd_cell = {}
+        cell_count_all_replica = collections.OrderedDict()
+        mean_well_value_all_replica = collections.OrderedDict()
+        median_well_value_all_replica = collections.OrderedDict()
+        percent_cell_all_replica = collections.OrderedDict()
+        percent_cell_sd = collections.OrderedDict()
+
+        def __dict_to_df(input_dict, data_type):
+            name = np.array(list(input_dict))
+            name = name.flatten().reshape(len(name), 1)
+            ar = np.concatenate(list(input_dict.values()))
+            ar = ar.flatten().reshape(len(ar)/len(plate.replica), len(plate.replica))
+            ar = np.append(ar, name, axis=1)
+            df = pd.DataFrame(ar)
+            if path is not None:
+                df.to_csv(path_or_buf=os.path.join(path, str(data_type)+str(plate.name)+'.csv'), index=None,
+                          header=None)
+            return df
 
         # # iterate over replicat
         for k, replica in plate.replica.items():
@@ -71,7 +86,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             cellcount = datagb.Well.count().to_dict()
             for key, value in cellcount.items():
                 try:
-                    cell_count_tmp.setdefault(key, []).append(value)
+                    cell_count_all_replica.setdefault(key, []).append(value)
                 except KeyError:
                     pass
 
@@ -88,19 +103,20 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
             # iterate on well
             for well in well_list:
                 xdata = datagb.get_group(well)[channel]
-                mean.setdefault(well, []).append(np.mean(xdata.values))
-                median.setdefault(well, []).append(np.median(xdata.values))
+                mean_well_value_all_replica.setdefault(well, []).append(np.mean(xdata.values))
+                median_well_value_all_replica.setdefault(well, []).append(np.median(xdata.values))
                 len_total = len(xdata.values)
                 len_thres = len(np.extract(xdata.values > threshold_value, xdata.values))
                 # # include in dict key is the position and value is a %
-                dict_percent_cell_tmp.setdefault(well, []).append(((len_thres / len_total) * 100))
+                percent_cell_all_replica.setdefault(well, []).append(((len_thres / len_total) * 100))
+
+        __dict_to_df(percent_cell_all_replica, 'percent_cell')
 
         # # Cell count and std
         sdvalue = {}
-        for key, value in cell_count_tmp.items():
+        for key, value in cell_count_all_replica.items():
             sdvalue[key] = np.std(value)
-        meancountlist = [(i, sum(v) / len(v)) for i, v in cell_count_tmp.items()]
-        meancount = dict(meancountlist)  # # convert to dict
+        meancount = dict([(i, sum(v) / len(v)) for i, v in cell_count_all_replica.items()])
 
         result.add_data(meancount, 'CellsCount')
         result.add_data(sdvalue, 'SDCellsCount')
@@ -124,32 +140,30 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True):
         result.add_data(viability, 'Viability')
 
         # # variability
-        std = [(i, np.std(v)) for i, v in mean.items()]
-        stdm = [(i, np.std(v)) for i, v in median.items()]
-        std = dict(std)
-        stdm = dict(stdm)
+        std = dict([(i, np.std(v)) for i, v in mean_well_value_all_replica.items()])
+        stdm = dict([(i, np.std(v)) for i, v in median_well_value_all_replica.items()])
 
-        mean = [(i, sum(v) / len(v)) for i, v in mean.items()]
-        median = [(i, sum(v) / len(v)) for i, v in median.items()]
-        mean = dict(mean)
-        median = dict(median)
+        mean_well_value_all_replica = dict([(i, sum(v) / len(v)) for i, v in mean_well_value_all_replica.items()])
+        median_well_value_all_replica = dict([(i, sum(v) / len(v)) for i, v in median_well_value_all_replica.items()])
 
-        result.add_data(mean, 'Mean')
-        result.add_data(median, 'Median')
+        result.add_data(mean_well_value_all_replica, 'Mean')
+        result.add_data(median_well_value_all_replica, 'Median')
         result.add_data(std, 'Std')
         result.add_data(stdm, 'Stdm')
 
         # # positive cell
         # determine the mean of replicat
-        dict_percent_celllist = [(i, sum(v) / len(v)) for i, v in dict_percent_cell_tmp.items()]
-        dict_percent_cell = dict(dict_percent_celllist)
+        dict_percent_cell = dict([(i, sum(v) / len(v)) for i, v in percent_cell_all_replica.items()])
 
         # determine the standart deviation of % Cells
-        for key, value in dict_percent_cell_tmp.items():
-            dict_percent_sd_cell[key] = np.std(value)
+        for key, value in percent_cell_all_replica.items():
+            percent_cell_sd[key] = np.std(value)
 
         result.add_data(dict_percent_cell, 'PositiveCells')
-        result.add_data(dict_percent_sd_cell, 'SDPositiveCells')
+        result.add_data(percent_cell_sd, 'SDPositiveCells')
+
+        if path is not None:
+            result.write(file_path=os.path.join(path, 'PlateAnalyzisData_'+str(plate.name)+'.csv'))
 
         return result
 
