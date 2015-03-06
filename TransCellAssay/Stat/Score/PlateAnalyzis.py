@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import collections
 import os
+from scipy import stats
 import logging
 log = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
     :param threshold: threshold for defining % of positive cell in negative ref
     :param percent: use percent for threshold, if false, it will be a real value
     :param path: Path to save Data
-    :param save_sup: Saving supp data if path is not None
+    :param supp_data: Saving supp data if path is not None
     :return: return result
     """
     if not isinstance(plate, TCA.Plate):
@@ -106,6 +107,17 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
                 len_thres = len(np.extract(xdata.values > threshold_value, xdata.values))
                 # # include in dict key is the position and value is a %
                 percent_cell_all_replica.setdefault(well, []).append(((len_thres / len_total) * 100))
+
+        # p-value and fdr for percent cell
+        neg_data = [percent_cell_all_replica[x] for x in neg_well]
+        neg_data = np.array(neg_data).flatten()
+        pvalue = collections.OrderedDict()
+        for key, value in percent_cell_all_replica.items():
+            x = stats.ttest_ind(value, neg_data, equal_var=False)
+            pvalue[key] = x[1]
+
+        result.add_data(pvalue, 'p-value')
+        result.values["fdr"] = TCA.adjustpvalues(pvalues=result.values["p-value"])
 
         # # Cell count and std
         sdvalue = {}
@@ -193,9 +205,9 @@ class Result(object):
             size = 96
         self.values = np.zeros(size, dtype=[('Plate', object), ('GeneName', object), ('Well', object),
                                             ('CellsCount', float), ('SDCellsCount', float), ('PositiveCells', float),
-                                            ('SDPositiveCells', float), ('Mean', float), ('Std', float),
-                                            ('Median', float), ('Stdm', float), ('Viability', float),
-                                            ('Toxicity', float)])
+                                            ('SDPositiveCells', float), ('p-value', float), ('fdr', float),
+                                            ('Mean', float), ('Std', float), ('Median', float), ('Stdm', float),
+                                            ('Viability', float), ('Toxicity', float)])
 
         self._genepos_genename = {}  # # To save Well (key) and Gene position (value)
 
