@@ -12,6 +12,7 @@ reject the null hypothesis of equal averages.
 """
 from scipy import stats
 import TransCellAssay as TCA
+from TransCellAssay.Stat.Score.SSMD import __search_unpaired_data
 import numpy as np
 import logging
 log = logging.getLogger(__name__)
@@ -26,37 +27,74 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 
-def independance(plate, neg, channel, equal_var=True):
+def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False):
     """
-    Perform t-test againt neg reference for all well of plate/replica, work only for plate with one replicat
+    Perform t-test againt neg reference for all well of plate/replica
     :param plate: Plate object
-    :param neg: negtive reference
-    :param channel: on which channel to test
+    :param neg: negative reference
+    :param sec_data: use sec data
     :param equal_var: equal variance or not
+    :param verbose: print or not resultat
     :return: numpy array with result
     """
-    if not isinstance(plate, TCA.Plate):
-        raise TypeError('Need a Plate Object')
-    else:
-        if len(plate.replica) > 1:
-            raise NotImplementedError('Implemented only for one replicat for the moment')
+    try:
+        if isinstance(plate, TCA.Plate):
+            # if no neg was provided raise AttributeError
+            if neg is None:
+                raise ValueError('Must provided negative control')
+            log.info('Perform ttest on plate : {}'.format(plate.name))
+            if len(plate) > 1:
 
-    shape = plate.platemap.platemap.shape()
-    size = shape[0] * shape[1]
-    result_array = np.zeros(size, dtype=[('GeneName', object), ('T-Statistic', float),
-                                         ('Two-tailed P-Value', float)])
+                ttest_score = np.zeros(plate.platemap.platemap.shape)
 
-    for key, value in plate.replica.items():
-        neg_well = value.get_valid_well(neg)
-        neg_data = value.get_raw_data(channel=channel, well=neg_well)
-        cpt = 0
-        for i in range(shape[0]):
-            for j in range(shape[1]):
-                test = value.get_raw_data(channel=channel, well=TCA.get_opposite_well_format((i, j)))
-                res = stats.ttest_ind(neg_data, test, equal_var=equal_var)
-                result_array['GeneName'][cpt] = plate.platemap.values[i][j]
-                result_array['T-Statistic'][cpt] = res[0]
-                result_array['Two-Tailed P-Value'][cpt] = res[1]
-            cpt += 1
+                neg_position = plate.platemap.search_coord(neg)
+                if not neg_position:
+                    raise Exception("Not Well for control")
 
-    return result_array
+                neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+
+
+                # search rep value for ith well
+                for i in range(ttest_score.shape[0]):
+                    for j in range(ttest_score.shape[1]):
+                        well_value = []
+                        for key, value in plate.replica.items():
+                            if (i, j) in value.skip_well:
+                                continue
+                            try:
+                                if sec_data:
+                                    well_value.append(value.sec_array[i][j])
+                                else:
+                                    well_value.append(value.array[i][j])
+                            except Exception:
+                                raise Exception("Your desired datatype are not available")
+
+                        # # performed unpaired t-test
+                        ttest_score[i][j] = stats.ttest_ind(neg_value, well_value, equal_var=equal_var)[1]
+
+                # # determine fdr
+                or_shape = ttest_score.shape
+                fdr = TCA.adjustpvalues(pvalues=ttest_score.flatten())
+                fdr = fdr.reshape(or_shape)
+
+                if verbose:
+                    print("Unpaired ttest :")
+                    print("Systematic Error Corrected Data : ", sec_data)
+                    print("Data type : ", plate.datatype)
+                    print("Equal variance : ", equal_var)
+                    print("ttest p-value score :")
+                    print(ttest_score)
+                    print("fdr score :")
+                    print(fdr)
+                    print("")
+
+            else:
+                raise ValueError("T-test need at least two replicat")
+            return ttest_score, fdr
+        else:
+            raise TypeError('Take only plate')
+    except Exception as e:
+        log.error(e)
+
+
+
