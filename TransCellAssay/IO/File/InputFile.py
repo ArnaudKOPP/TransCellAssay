@@ -42,14 +42,17 @@ class InputFile(object):
         :param col: column name for col id
         :param row: column name for row id
         """
+        log.debug('Change row format from int to string')
         self.dataframe = self.dataframe.replace({'Row': {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H',
                                                          8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M', 13: 'N', 14: 'O',
                                                          15: 'P'}})
         # # insert Well columns
         self.dataframe.insert(0, "Well", 0)
         # # put Well value from row and col columns
+        log.Debug('Create Well column with good frmt')
         self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x[row], x[col] + 1), axis=1)
         remove = [row, col]
+        log.debug('Remove old col and row column')
         self.dataframe = self.dataframe.drop(remove, axis=1)
 
     def get_col(self):
