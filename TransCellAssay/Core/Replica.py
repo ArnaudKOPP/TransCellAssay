@@ -88,7 +88,7 @@ class Replica(object):
         if isinstance(array, np.ndarray):
             if array_type not in __valide_datatype:
                 raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
-            log.warning("Manual overide data array")
+            log.info("Import of none single cell data")
             self.array = array
             if array_type == 'median':
                 self.datatype = array_type

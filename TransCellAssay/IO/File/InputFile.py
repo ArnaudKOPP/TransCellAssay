@@ -49,7 +49,7 @@ class InputFile(object):
         # # insert Well columns
         self.dataframe.insert(0, "Well", 0)
         # # put Well value from row and col columns
-        log.Debug('Create Well column with good frmt')
+        log.debug('Create Well column with good frmt')
         self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x[row], x[col] + 1), axis=1)
         remove = [row, col]
         log.debug('Remove old col and row column')

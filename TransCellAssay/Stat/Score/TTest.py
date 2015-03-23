@@ -27,9 +27,9 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Dev"
 
 
-def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False):
+def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False, control_plate=None):
     """
-    Perform t-test againt neg reference for all well of plate/replica
+    Perform t-test against neg reference for all well of plate/replica
     :param plate: Plate object
     :param neg: negative reference
     :param sec_data: use sec data
@@ -43,15 +43,21 @@ def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False):
             if neg is None:
                 raise ValueError('Must provided negative control')
             log.info('Perform ttest on plate : {}'.format(plate.name))
+
             if len(plate) > 1:
 
                 ttest_score = np.zeros(plate.platemap.platemap.shape)
 
-                neg_position = plate.platemap.search_coord(neg)
-                if not neg_position:
-                    raise Exception("Not Well for control")
-
-                neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+                if control_plate is not None:
+                    neg_position = control_plate.platemap.search_coord(neg)
+                    if not neg_position:
+                        raise Exception("Not Well for control")
+                    neg_value = __search_unpaired_data(control_plate, neg_position, sec_data)
+                else:
+                    neg_position = plate.platemap.search_coord(neg)
+                    if not neg_position:
+                        raise Exception("Not Well for control")
+                    neg_value = __search_unpaired_data(plate, neg_position, sec_data)
 
 
                 # search rep value for ith well

@@ -33,7 +33,8 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_data=True, verbose=False, robust=True):
+def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_data=True, verbose=False, robust=True,
+                      control_plate=None):
     """
     Performed t-stat on plate object
     unpaired is for plate with replicat without great variance between them
@@ -57,7 +58,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
                     score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose, robust=robust)
                 else:
                     score = __unpaired_tstat_score(plate, neg_control, variance=variance, sec_data=sec_data,
-                                                   verbose=verbose, robust=robust)
+                                                   verbose=verbose, robust=robust, control_plate=control_plate)
             else:
                 raise ValueError("T-Stat need at least two replicat")
             return score
@@ -67,7 +68,8 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
         log.error(e)
 
 
-def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False, robust=True):
+def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False, robust=True,
+                           control_plate=None):
     """
     performed unpaired t-stat score
 
@@ -83,14 +85,20 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
     """
     ttest_score = np.zeros(plate.platemap.platemap.shape)
 
-    neg_position = plate.platemap.search_coord(neg_control)
-    if not neg_position:
-        raise Exception("Not Well for control")
+    if control_plate is not None:
+        neg_position = control_plate.platemap.search_coord(neg_control)
+        if not neg_position:
+            raise Exception("Not Well for control")
+        neg_value = __search_unpaired_data(control_plate, neg_position, sec_data)
+        nb_neg_wells = len(neg_value)
+    else:
+        neg_position = plate.platemap.search_coord(neg_control)
+        if not neg_position:
+            raise Exception("Not Well for control")
+        neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+        nb_neg_wells = len(neg_value)
 
     nb_rep = len(plate.replica)
-    neg_value = __search_unpaired_data(plate, neg_position, sec_data)
-
-    nb_neg_wells = len(neg_value)
 
     if robust:
         mean_neg = np.median(neg_value)

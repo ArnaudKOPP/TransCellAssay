@@ -39,7 +39,7 @@ __status__ = "Production"
 
 
 def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, method='UMVUE', variance='unequal',
-                     sec_data=True, inplate_data=False, verbose=False):
+                     sec_data=True, control_plate=None, inplate_data=False, verbose=False):
     """
     Performed SSMD on plate object
         unpaired is for plate with replicat without great variance between them
@@ -64,10 +64,10 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
                 if not paired:
                     if robust_version:
                         score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
-                                                verbose=verbose)
+                                                verbose=verbose, control_plate=control_plate)
                     else:
                         score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
-                                                verbose=verbose, robust=False)
+                                                verbose=verbose, robust=False, control_plate=control_plate)
                 else:
                     if robust_version:
                         score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
@@ -76,9 +76,11 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
                                               robust=False)
             else:
                 if robust_version:
-                    score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
+                    score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose,
+                                   control_plate=control_plate)
                 else:
-                    score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose, robust=False)
+                    score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose, robust=False,
+                                   control_plate=control_plate)
             return score
         else:
             raise TypeError('Take only plate')
@@ -106,7 +108,8 @@ def __search_unpaired_data(plate, ref, sec_data):
     return neg_value
 
 
-def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbose=False, robust=True):
+def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, control_plate=None, verbose=False,
+                    robust=True):
     """
     performed unpaired SSMD for plate with replicat
     :param plate: Plate Object to analyze
@@ -122,13 +125,20 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, verbo
 
     ssmd = np.zeros(plate.platemap.platemap.shape)
 
-    neg_position = plate.platemap.search_coord(neg_control)
-    if not neg_position:
-        raise Exception("Not Well for control")
+    if control_plate is not None:
+        neg_position = control_plate.platemap.search_coord(neg_control)
+        if not neg_position:
+            raise Exception("Not Well for control")
+        neg_value = __search_unpaired_data(control_plate, neg_position, sec_data)
+        nb_neg_wells = len(neg_value)
+    else:
+        neg_position = plate.platemap.search_coord(neg_control)
+        if not neg_position:
+            raise Exception("Not Well for control")
+        neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+        nb_neg_wells = len(neg_value)
 
     nb_rep = len(plate.replica)
-    neg_value = __search_unpaired_data(plate, neg_position, sec_data)
-    nb_neg_wells = len(neg_value)
 
     if robust:
         mean_median_neg = np.median(neg_value)
@@ -262,7 +272,7 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
     return ssmd
 
 
-def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False, robust=True):
+def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, control_plate=None, verbose=False, robust=True):
     """
     performed SSMD for plate without replicat
     take dataMean/Median or SECDatadata from plate object
