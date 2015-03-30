@@ -47,5 +47,7 @@ class EXCEL(InputFile):
                 data.fillna(0)
             self.dataframe = data
             log.info('Reading %s File' % fpath)
+            self.dataframe["Well"] = self.dataframe["Well"].str.replace(' - ', '')
+            self.dataframe["Well"] = self.dataframe["Well"].str.replace(r"\(.*\)", "")
         else:
             raise IOError('File don\'t exist')

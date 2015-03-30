@@ -248,7 +248,7 @@ class Plate(object):
 
         for key, replicat in self.replica.items():
             i += 1
-            if self.array is None:
+            if replicat.array is None:
                 replicat.compute_data_for_channel(channel)
             if forced_update:
                 replicat.compute_data_for_channel(channel)

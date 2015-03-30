@@ -21,20 +21,19 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
+# TODO refactoring this shitty class
+
 
 class ReferenceDataWriter(object):
     """
     Class for writing data of reference from plate into file
     """
 
-    def __init__(self, plate, channels, ref, filepath=None):
-        if filepath is None:
-            log.warning('File path not provided, default will be used')
-            self._writer = pd.ExcelWriter("ReferenceDataWriter.xlsx")
-        else:
-            self._writer = pd.ExcelWriter(filepath)
-            log.info('Writing xlsx :', filepath)
+    def __init__(self, plate, channels, ref, filepath):
+        self._writer = pd.ExcelWriter(filepath)
+        log.info('Writing : {}'.format(filepath))
         self._save_reference(plate, ref=ref, channels=channels)
+        self._writer.close()
 
     def _save_reference(self, plate, channels, ref):
         plt_list = []
