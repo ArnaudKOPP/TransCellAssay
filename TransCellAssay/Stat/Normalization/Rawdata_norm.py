@@ -29,11 +29,11 @@ __status__ = "Production"
 
 def plate_feature_scaling(plate, channel, mean_scaling=False):
     """
-    Apply feature scaling on plate object accross all replica
+    Apply feature scaling on plate object across all replica
     channel Scaling to [0,1] or [0, mean of max] if mean_scaling is True
     :param plate: Plate object
     :param channel: Which channel to scale
-    :param mean_scaling: if True, the max is the mean of max accross all replicat (instead of 1)
+    :param mean_scaling: if True, the max is the mean of max across all replica (instead of 1)
     """
     try:
         if isinstance(plate, TCA.Plate):
@@ -41,12 +41,12 @@ def plate_feature_scaling(plate, channel, mean_scaling=False):
             min_lst = []
             max_lst = []
 
-            # search min and max accross all replicat
+            # search min and max across all replica
             for key, value in plate.replica.items():
                 min_lst.append(np.min(value.rawdata.df[channel].values))
                 max_lst.append(np.max(value.rawdata.df[channel].values))
 
-            # apply channel scaling accross all replicat
+            # apply channel scaling across all replica
             for key, value in plate.replica.items():
                 value.rawdata = __df_scaling(value.rawdata, min_lst, max_lst, channel, mean_scaling)
                 value.isNormalized = True
@@ -80,14 +80,14 @@ def __df_scaling(rawdata, min_val, max_val, channel, mean=False):
 def rawdata_variability_normalization(obj, channel, method=None, log2_transf=True, neg_control=None, pos_control=None,
                                       threshold=None):
     """
-    Take a dataframe from replicat object and apply desired strategy of variability normalization
+    Take a dataframe from replica object and apply desired strategy of variability normalization
     :param obj: pd.dataframe to normalize
     :param channel: on which channel to normalize
     :param method: which method to apply
     :param log2_transf: apply log2 transformation
     :param neg_control: list of well for negative control A1 A2 ...
     :param pos_control: list of well for positive control A1 A2 ...
-    :param threshold: used in background substraction (median is 50) you can set as you want
+    :param threshold: used in background subtraction (median is 50) you can set as you want
     :return: normalized data
     """
     try:

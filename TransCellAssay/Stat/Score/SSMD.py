@@ -1,23 +1,23 @@
 # coding=utf-8
 """
-Function that performed paired/unpaired SSMD and for plate without replicat
+Function that performed paired/unpaired SSMD and for plate without replica
 
 SSMD is the mean of differences divided bu the standard deviation of the differences between an siRNA and a negative
 reference. In other words, SSMD is the average fold change (on the log scale) penalized by the variability of fold
-change (on the log scsale).
+change (on the log scale).
 
-In a screen without replicats, we cannot directly calculate the variability of each siRNA. Thus, like z-score, we have
+In a screen without replicas, we cannot directly calculate the variability of each siRNA. Thus, like z-score, we have
 to assume that each siRNA has the same variability as a negative reference and then calculate the variability based
-on the negative reference and/or all investiged siRNAs. On the basis of this assumption, we can calculate SSMD using
-method-of-moment(MM) method or the uniformy minimal variance unbiased estimate(UMVUE) method. The use of rebust version
+on the negative reference and/or all investigated siRNAs. On the basis of this assumption, we can calculate SSMD using
+method-of-moment(MM) method or the uniformly minimal variance unbiased estimate(UMVUE) method. The use of robust version
 is highly recommended.
 
-In a screen with replicats:
+In a screen with replicas:
 For the paired case, a measured value for an siRNA is paired with a median value of a negative reference in the same
-plate. The mean and variability of the difference of all these pairs accross all plates are used to calculate SSMD.
+plate. The mean and variability of the difference of all these pairs across all plates are used to calculate SSMD.
 For the unpaired case, all the measured value of an siRNA are formed as a group and all the measured value of a negative
 reference in the whole screen are formed as another group. The means and variability of these two separate groups are
-used to calculate the ssmd.
+used to calculate the SSMD.
 """
 
 import numpy as np
@@ -42,8 +42,8 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
                      sec_data=True, control_plate=None, inplate_data=False, verbose=False):
     """
     Performed SSMD on plate object
-        unpaired is for plate with replicat without great variance between them
-        paired is for plate with replicat with great variance between them
+        unpaired is for plate with replica without great variance between them
+        paired is for plate with replica with great variance between them
     :param plate: Plate Object to analyze
     :param neg_control: negative control reference
     :param paired: paired or unpaired statistic
@@ -51,7 +51,7 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
     :param method: which method to use MM or UMVUE
     :param variance: unequal or equal
     :param sec_data: use data with Systematic Error Corrected
-    :param inplate_data: compute SSMD on plate.Data, for plate without replicat in preference
+    :param inplate_data: compute SSMD on plate.Data, for plate without replica in preference
     :param verbose: be verbose or not
     :return: Corrected data
     """
@@ -111,7 +111,7 @@ def __search_unpaired_data(plate, ref, sec_data):
 def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, control_plate=None, verbose=False,
                     robust=True):
     """
-    performed unpaired SSMD for plate with replicat
+    performed unpaired SSMD for plate with replica
     :param plate: Plate Object to analyze
     :param neg_control: negative control reference
     :param variance: unequal or equal
@@ -211,7 +211,7 @@ def __search_paired_data(replica, ref, sec_data):
 
 def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False, robust=True):
     """
-    performed paired ssmd for plate with replicat
+    performed paired ssmd for plate with replica
     :param plate: Plate Object to analyze
     :param neg_control: negative control reference
     :param method: which method to use MM or UMVUE
@@ -274,7 +274,7 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
 
 def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, control_plate=None, verbose=False, robust=True):
     """
-    performed SSMD for plate without replicat
+    performed SSMD for plate without replica
     take dataMean/Median or SECDatadata from plate object
     :param plate: Plate Object to analyze
     :param neg_control: negative control reference
@@ -284,6 +284,8 @@ def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, control_plate=None
     :param robust: if robust, use median, else use mean
     :return:score data
     """
+    # TODO make using a control_plate
+
     if method not in ['UMVUE', 'MM']:
         raise ValueError('Wrong method choice')
 
@@ -329,7 +331,7 @@ def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, control_plate=None
             ssmd = (data - np.mean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.std(neg_data))
 
     if verbose:
-        print('SSMD without replicat, or inplate data from plate')
+        print('SSMD without replica, or inplate data from plate')
         print("Robust version : ", robust)
         print("Systematic Error Corrected Data : ", sec_data)
         print("Data type : ", plate.datatype)

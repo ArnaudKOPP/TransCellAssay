@@ -3,7 +3,7 @@
 Function that performed paired/unpaired T-Statistics
 
 For the paired case, a measured value for an siRNA is paired with a median value of a negative reference in the same
-plate. The mean and variability of the difference of all these pairs accross all plates are used to calculate t stat.
+plate. The mean and variability of the difference of all these pairs across all plates are used to calculate t stat.
 For the unpaired case, all the measured value of an siRNA are formed as a group and all the measured value of a negative
 reference in the whole screen are formed as another group. The means and variability of these two separate groups are
 used to calculate the t stat.
@@ -11,7 +11,7 @@ used to calculate the t stat.
 A large and positive T statistics indicates that three activity readings are consistently higher than the threshold
 value µ by a large margin, giving a high degree of confidence that the compound i is highly potent inhibitor. On the
 other hand, inconsistency among the three readings, reflected by a small t statistic and high p value as a result of the
-large standart deviation, weakens one's belief that the compound i is truly active even when the average of triplicates
+large standard deviation, weakens one's belief that the compound i is truly active even when the average of triplicates
 may be greater than the cutoff value.
 """
 
@@ -37,8 +37,8 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
                       control_plate=None):
     """
     Performed t-stat on plate object
-    unpaired is for plate with replicat without great variance between them
-    paired is for plate with replicat with great variance between them
+    unpaired is for plate with replica without great variance between them
+    paired is for plate with replica with great variance between them
     :param plate: Plate Object to analyze
     :param neg_control:  negative control reference
     :param variance: unequal or equal variance
@@ -60,7 +60,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
                     score = __unpaired_tstat_score(plate, neg_control, variance=variance, sec_data=sec_data,
                                                    verbose=verbose, robust=robust, control_plate=control_plate)
             else:
-                raise ValueError("T-Stat need at least two replicat")
+                raise ValueError("T-Stat need at least two replica")
             return score
         else:
             raise TypeError('Take only plate')
@@ -135,7 +135,7 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
                 ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * (
                     (nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
             else:
-                raise ValueError('Variance attribut must be unequal or equal.')
+                raise ValueError('Variance attribute must be unequal or equal.')
 
     if verbose:
         print("Unpaired t-stat :")

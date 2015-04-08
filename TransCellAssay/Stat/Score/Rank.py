@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 def rank_product(plate, secdata=False, mean_method="mean", rank_method="average", size=96):
     """
-    Compute the rank product of plate with replicat data
+    Compute the rank product of plate with replica data
     :param plate: plate object
     :param secdata: use or not systematic error corrected data
     :param mean_method: mean or median for rank product

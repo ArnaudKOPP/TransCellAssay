@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Plate is designed for manipulating one or more replicat
+Plate is designed for manipulating one or more replica, we store in this class replica object
 """
 
 import numpy as np
@@ -23,29 +23,31 @@ __status__ = "Production"
 
 class Plate(object):
     """
-    classdocs
-    Class for manipuling plate and their replicat :
+    Class for manipulating plate and their replica :
 
-    self.replica = {}  # Dict that contain all replicat, key are name and value are replicat object
+    self.replica = {}  # Dict that contain all replica, key are name and value are replica object
     self.name = None  # Name of Plate
-    self.platemap = TransCellAssay.Core..PlateMap()  # Plate Setup object
-    self.threshold = None  # Threeshold for considering Cell as positive
-    self._control_position = ((0, 11), (0, 23))  # column where control is positionned in plate (default pos)
+    self.platemap = TransCellAssay.Core.PlateMap()  # Plate Setup object
+    self.threshold = None  # Threshold for considering Cell as positive
+    self._control_position = ((0, 11), (0, 23))  # column where control is positioned in plate (default pos)
     self._neg = None  # Name of negative control
     self._pos = None  # Name of positive control
-    self._tox = None  # Name of toxics control
-    self.isNormalized = False  # Are replicat data normalized
-    self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replicat )
+    self._tox = None  # Name of toxic control
+    self.isNormalized = False  # Are replica data normalized
+    self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replica )
     self.datatype = "median" # median or mean data, default is median
-    self.array = None  # matrix that contain data from replicat of interested channel to analyze
+    self.array = None  # matrix that contain data from replica of interested channel to analyze
     self._array_channel = None, which channel is stored in data
-    self.sec_array = None  # matrix that contain data corrected or from replicat data
+    self.sec_array = None  # matrix that contain data corrected or from replica data
     self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
     def __init__(self, name=None, platemap=None, skip=()):
         """
-        Constructor
+        Constructor for init default value
+        :param name: name of plate, very important to file this
+        :param platemap: platemap for this plate
+        :param skip: Well to skip for all replica
         """
         self.replica = collections.OrderedDict()
         self.name = name
@@ -107,18 +109,18 @@ class Plate(object):
         else:
             raise AttributeError("Must provied numpy ndarray")
 
-    def add_replicat(self, replicat):
+    def add_replicat(self, replica):
         """
-        Add replicat object to plate
-        :param replicat: Give a replicat object
+        Add replicat object to plate, equivalent to + operator
+        :param replica: Give a replicat object
         """
-        assert isinstance(replicat, TCA.Core.Replica)
-        name = replicat.name
-        self.replica[name] = replicat
+        assert isinstance(replica, TCA.Core.Replica)
+        name = replica.name
+        self.replica[name] = replica
 
     def get_replicat(self, name):
         """
-        Get the replicat specified by name
+        Get the replicat specified by name, equivalent to [] operator
         :param name: string : key of replicat in dict
         :return: Replicat object
         """
@@ -186,28 +188,28 @@ class Plate(object):
                 return 0
         return 1
 
-    def get_raw_data(self, replicat=None, channel=None, well=None, well_idx=False):
+    def get_raw_data(self, replica=None, channel=None, well=None, well_idx=False):
         """
         Return a dict that contain raw data from all replica (or specified replicat), we can specified channel (list)
         and if we want to have well id
-        :param replicat: replicat id
+        :param replica: replica id
         :param channel: channel list
         :param well: defined or not which well you want, in list [] or simple string format
         :param well_idx: true or false for keeping well id (A1..)
         :return: dict with data
         """
         data = {}
-        if replicat is not None:
+        if replica is not None:
             for key, value in self.replica.items():
                 data[value.get_rep_name()] = value.get_raw_data(channel=channel, well=well, well_idx=well_idx)
         else:
-            for rep in replicat:
+            for rep in replica:
                 data[self.replica[rep].get_rep_name()] = rep.get_raw_data(channel=channel, well=well,
                                                                           well_idx=well_idx)
 
     def add_platemap(self, platemap):
         """
-        Add the platemap to the plate
+        Add the platemap to the plate, equivalent to + operator
         :param platemap:
         """
         assert isinstance(platemap, TCA.Core.PlateMap)
@@ -220,9 +222,9 @@ class Plate(object):
         """
         return self.platemap
 
-    def compute_all_channels_from_replicat(self):
+    def compute_all_channels_from_replica(self):
         """
-        compute all component mean from all replicat for each well
+        compute all component mean from all replica for each well
         :return: dataframe
         """
         df = None
@@ -235,28 +237,28 @@ class Plate(object):
                 df += tmp.median()
         return df / len(self.replica)
 
-    def compute_data_from_replicat(self, channel, use_sec_data=False, forced_update=False):
+    def compute_data_from_replica(self, channel, use_sec_data=False, forced_update=False):
         """
-        Compute the mean/median matrix data of all replicat
-        If replicat data is SpatialNorm already, this function will fill spatDataMatrix
-        :param forced_update: Forced redetermination of replicat data, to use when you have determine matrix too soon
-        :param use_sec_data: use or not sec data from replicat
+        Compute the mean/median matrix data of all replica
+        If replica data is SpatialNorm already, this function will fill sec_array
+        :param forced_update: Forced update of replica data, to use when you have determine matrix too soon
+        :param use_sec_data: use or not sec data from replica
         :param channel: which channel to have into sum up data
         """
         tmp_array = np.zeros(self.platemap.platemap.shape)
         i = 0
 
-        for key, replicat in self.replica.items():
+        for key, replica in self.replica.items():
             i += 1
-            if replicat.array is None:
-                replicat.compute_data_for_channel(channel)
+            if replica.array is None:
+                replica.compute_data_for_channel(channel)
             if forced_update:
-                replicat.compute_data_for_channel(channel)
+                replica.compute_data_for_channel(channel)
 
             if not use_sec_data:
-                tmp_array = tmp_array + replicat.array
+                tmp_array = tmp_array + replica.array
             else:
-                tmp_array = tmp_array + replicat.sec_array
+                tmp_array = tmp_array + replica.sec_array
 
         if not use_sec_data:
             self.array = tmp_array / i
@@ -266,7 +268,7 @@ class Plate(object):
 
     def cut(self, rb, re, cb, ce, apply_down=True):
         """
-        Cut a plate and replicat to 'zoom' into a defined zone, for avoiding crappy effect during SEC process
+        Cut a plate and replica to 'zoom' into a defined zone, for avoiding crappy effect during SEC process
         :param rb: row begin
         :param re: row end
         :param cb: col begin
@@ -296,21 +298,21 @@ class Plate(object):
     def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
                         threshold=None):
         """
-        Apply Well correction on all replicat data
-        call function like from replicat object
+        Apply Well correction on all replica data
+        call function like from replica object
         :param pos: positive control
         :param neg: negative control
         :param channel: channel to normalize
         :param method: which method to perform
         :param log_t:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
-        :param threshold: used in background substraction (median is 50) you can set as you want
+        :param threshold: used in background subtraction (median is 50) you can set as you want
         """
         for key, value in self.replica.items():
             value.normalization_channels(channels=channel, method=method, log_t=log_t, neg=neg, pos=pos,
                                          skipping_wells=skipping_wells, threshold=threshold)
         self.isNormalized = True
-        self.compute_data_from_replicat(channel, forced_update=True)
+        self.compute_data_from_replica(channel, forced_update=True)
 
     def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
                                threshold=None):
@@ -322,7 +324,7 @@ class Plate(object):
         :param method: which method to perform
         :param log_t:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
-        :param threshold: used in background substraction (median is 50) you can set as you want
+        :param threshold: used in background subtraction (median is 50) you can set as you want
         """
         log.info("Raw data normalization on {0} with {1} method".format(self.name, method))
         if isinstance(channels, list):
@@ -342,10 +344,10 @@ class Plate(object):
         """
         Apply a spatial normalization for remove edge effect
         Resulting matrix are save in plate object if save = True
-        Be careful !! if the replicat data was already be spatial norm, it will degrade data !!
+        Be careful !! if the replica data was already be spatial norm, it will degrade data !!
         :param algorithm: Bscore, MEA, PMP or diffusion model technics, default = Bscore
-        :param method: for bscore : use median or average method
-        :param apply_down: apply strategie to replicat, if true apply SEC on replicat !! not re-use function on plate
+        :param method: for Bscore : use median or average method
+        :param apply_down: apply strategies to replica, if true apply SEC on replica !! not re-use function on plate
         :param verbose: verbose : output the result ?
         :param save: save: save the residual into self.SECData , default = False
         :param max_iterations: max iterations for all technics
@@ -367,7 +369,7 @@ class Plate(object):
                 value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
                                                   max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
                                                   skip_col=skip_col, skip_row=skip_row, trimmed=trimmed)
-            self.compute_data_from_replicat(channel=None, use_sec_data=True)
+            self.compute_data_from_replica(channel=None, use_sec_data=True)
             return
 
         if self.array is None:
@@ -422,25 +424,25 @@ class Plate(object):
         for key, value in self.replica.items():
             value.save_memory(only_cache=only_cache)
 
-    def __sub__(self, id_rep):
+    def __sub__(self, to_rm):
         """
-        Remove replicat from plate, use - operator
-        :param id_rep: replica id to remove from plate
+        Remove replica from plate, use - operator
+        :param to_rm: replica id to remove from plate
         """
-        del self.replica[id_rep]
+        del self.replica[to_rm]
 
-    def __add__(self, id_rep):
+    def __add__(self, to_add):
         """
-        Add replicat to plate, use + operator
-        :param id_rep: replica id that is added
+        Add replica/platemap or list of replica to plate, use + operator
+        :param to_add: replica id that is added
         """
-        if isinstance(id_rep, TCA.Core.Replica):
-            name = id_rep.name
-            self.replica[name] = id_rep
-        elif isinstance(id_rep, TCA.Core.PlateMap):
-            self.platemap = id_rep
-        elif isinstance(id_rep, list):
-            for elem in id_rep:
+        if isinstance(to_add, TCA.Core.Replica):
+            name = to_add.name
+            self.replica[name] = to_add
+        elif isinstance(to_add, TCA.Core.PlateMap):
+            self.platemap = to_add
+        elif isinstance(to_add, list):
+            for elem in to_add:
                 assert isinstance(elem, TCA.Core.Replica)
                 self.replica[elem.name] = elem
         else:
@@ -448,17 +450,17 @@ class Plate(object):
 
     def __getitem__(self, key):
         """
-        Return replicat object, use [] operator
+        Return replica object, use [] operator
         :param key:
-        :return: return replicat
+        :return: return replica
         """
         return self.replica[key]
 
     def __setitem__(self, key, value):
         """
-        Set replicat objet, use [] operator
-        :param key: name of replicat
-        :param value: replicat object
+        Set replica object, use [] operator
+        :param key: name of replica
+        :param value: replica object
         """
         if not isinstance(value, TCA.Replica):
             raise AttributeError("Unsupported Type")
@@ -467,8 +469,8 @@ class Plate(object):
 
     def __len__(self):
         """
-        Get len /number of replicat inside Plate, use len(object)
-        :return: number of replicat
+        Get len /number of replica inside Plate, use len(object)
+        :return: number of replica
         """
         return len(self.replica)
 
@@ -481,7 +483,7 @@ class Plate(object):
             "\n PlateMap : \n" + repr(self.platemap) +
             "\n Data normalized ? " + repr(self.isNormalized) +
             "\n Data systematic error removed ? " + repr(self.isSpatialNormalized) +
-            "\n Replicat List : \n" + repr(self.replica))
+            "\n Replica List : \n" + repr(self.replica))
 
     def __str__(self):
         """

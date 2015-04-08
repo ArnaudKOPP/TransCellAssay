@@ -191,7 +191,7 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
 
 class Result(object):
     """
-    Class Result is especialy created for plateAnalyzis.
+    Class Result is especially created for plateAnalyzis.
     This class store data with dict in input, where key are well and item are data.
     """
 

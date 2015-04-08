@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Replicat implement the notion of technical replicat for plate
+Replica implement the notion of technical replica for plate
 """
 
 import numpy as np
@@ -20,10 +20,10 @@ __status__ = "Production"
 
 class Replica(object):
     """
-    classdocs
     Class for manipuling replicat of plate
+
     self.rawdata = rawdata  # data frame that contains data
-    self.name = ""  # Name of replicat
+    self.name = ""  # Name of replica
     self.isNormalized = False  # are the data normalized
     self.isSpatialNormalized = False  # systematics error removed or not
     self.datatype = "median" # median or mean of data
@@ -36,6 +36,11 @@ class Replica(object):
     def __init__(self, name=None, data=None, single=True, skip=(), datatype='median'):
         """
         Constructor
+        :param name: name of replica
+        :param data: Data for replica object
+        :param single: Are data single cell type or not
+        :param skip: Well to skip
+        :param datatype: Median or Mean data
         """
         self.rawdata = None
         self.isNormalized = False
@@ -47,7 +52,7 @@ class Replica(object):
 
         if data is not None:
             if not single:
-                self.set_data_overide(data)
+                self.set_data_override(data)
             else:
                 self.set_raw_data(data)
 
@@ -65,7 +70,7 @@ class Replica(object):
 
     def set_raw_data(self, input_file):
         """
-        Set data in replicat
+        Set data in replica
         :param input_file: csv file
         """
         self.rawdata = TCA.RawData(input_file)
@@ -77,9 +82,9 @@ class Replica(object):
         """
         return self.rawdata.get_channel_list
 
-    def set_data_overide(self, array, array_type='median'):
+    def set_data_override(self, array, array_type='median'):
         """
-        Set attribut data matrix into self.Data
+        Set attribute data matrix into self.Data
         This method is designed for 1Data/Well or for manual analysis
         :param array: numpy array with good shape
         :param array_type: median or mean data
@@ -99,15 +104,15 @@ class Replica(object):
 
     def set_name(self, info):
         """
-        set name for the replicat
-        :param info: info on replicat
+        set name for the replica
+        :param info: info on replica
         :return:
         """
         self.name = info
 
     def get_name(self):
         """
-        return name from replicat
+        return name from replica
         :return: info
         """
         return self.name
@@ -129,7 +134,7 @@ class Replica(object):
 
     def get_skip_well(self):
         """
-        Set the well to skip in neg or pos control
+        Get the skipped Well
         """
         return self.skip_well
 
@@ -163,7 +168,7 @@ class Replica(object):
 
     def compute_data_for_channel(self, channel):
         """
-        Compute data in matrix form, get mean or median for well and save them in replicat object
+        Compute data in matrix form, get mean or median for well and save them in replica object
         :param channel: which channel to keep in matrix
         :return:
         """
@@ -199,7 +204,7 @@ class Replica(object):
 
     def cut(self, rb, re, cb, ce):
         """
-        Cut the replicat to 'zoom' into a defined zone, for avoiding crappy effect during SEC process
+        Cut the replica to 'zoom' into a defined zone, for avoiding crappy effect during SEC process
         :param rb: row begin
         :param re: row end
         :param cb: col begin
@@ -225,10 +230,10 @@ class Replica(object):
         :param channel; which channel to normalize
         :param method: Performed X Transformation
         :param log_t:  Performed log2 Transformation
-        :param pos: postive control
+        :param pos: positive control
         :param neg: negative control
         :param skipping_wells: skip defined wells, use it with poc and npi
-        :param threshold: used in background substraction (median is 50) you can set as you want
+        :param threshold: used in background subtraction (median is 50) you can set as you want
         """
         if not self.isNormalized:
             log.debug('Raw Data normalization processing for replicat {} on channel {}'.format(self.name, channel))
@@ -260,7 +265,7 @@ class Replica(object):
         :param method: which method to perform
         :param log_t:  Performed log2 Transformation
         :param skipping_wells: skip defined wells, use it with poc and npi
-        :param threshold: used in background substraction (median is 50) you can set as you want
+        :param threshold: used in background subtraction (median is 50) you can set as you want
         """
         if isinstance(channels, str):
             self.__normalization(channel=channels, method=method, log_t=log_t, neg=neg, pos=pos,
@@ -283,7 +288,7 @@ class Replica(object):
         mediocre performance of the t-test in this case). MEA was generally the best method for correcting
         systematic error within 96-well plates, whereas PMP performed better for 384 /1526 well plates.
 
-        :param alpha: alpha for some algorithme
+        :param alpha: alpha for some algorithm
         :param algorithm: Bscore, MEA, PMP or diffusion model technics, default = Bscore
         :param method: median or mean data
         :param verbose: Output in console

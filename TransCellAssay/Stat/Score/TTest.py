@@ -34,7 +34,7 @@ def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False, cont
     :param neg: negative reference
     :param sec_data: use sec data
     :param equal_var: equal variance or not
-    :param verbose: print or not resultat
+    :param verbose: print or not result
     :return: numpy array with result
     """
     try:
@@ -58,7 +58,6 @@ def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False, cont
                     if not neg_position:
                         raise Exception("Not Well for control")
                     neg_value = __search_unpaired_data(plate, neg_position, sec_data)
-
 
                 # search rep value for ith well
                 for i in range(ttest_score.shape[0]):
@@ -95,12 +94,9 @@ def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False, cont
                     print("")
 
             else:
-                raise ValueError("T-test need at least two replicat")
+                raise ValueError("T-test need at least two replica")
             return ttest_score, fdr
         else:
             raise TypeError('Take only plate')
     except Exception as e:
         log.error(e)
-
-
-

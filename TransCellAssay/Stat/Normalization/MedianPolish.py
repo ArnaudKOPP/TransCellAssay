@@ -7,11 +7,11 @@ calculated bu subtracting the estimated plate average, row effect and col effect
 median parameter is used in the calculations, this method is relatively insensitive to outliers.
 -Bscore : this is a normalization parameters which involves the residual values calculated from median polish and the
 sample MAD to account for data variability.
--BZscore : This is a modified version of Bscore method, where the median polish is folowed by zscore calculations. While
-BSscore is more advantageous to Zscore  because of its capability to correct for row and col effect, it is less
-powerfull than Bscore and does not fit very well with the normal distribution model.
+-BZscore : This is a modified version of Bscore method, where the median polish is followed by zscore calculations.
+While BSscore is more advantageous to Zscore  because of its capability to correct for row and col effect, it is less
+powerful than Bscore and does not fit very well with the normal distribution model.
 
-trimmed mean : cut the outside limit default = 0.0 so its equivalent to the 'standart' mean.
+trimmed mean : cut the outside limit default = 0.0 so its equivalent to the 'standard' mean.
 """
 
 import numpy as np
@@ -33,7 +33,7 @@ __status__ = "Production"
 
 def median_polish(array, max_iterations=100, method='median', trimmed=0.0, verbose=False):
     """
-    Implements Tukey's median polish alghoritm for additive models
+    Implements Tukey's median polish algorithm for additive models
         method - default is median, alternative is mean. That would give us result equal ANOVA.
         With non full plate, it work for the moment only with entire empty col or Row
         Get numeric data from numpy ndarray to self.tbl, keep the original copy in tbl_org

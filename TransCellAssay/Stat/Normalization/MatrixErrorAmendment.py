@@ -4,7 +4,7 @@ The MEA method consist of the two followings steps:
     -Estimate the value of the row and col systematic errors, independently for every plate of the assay, by solving the
 system of linear equations/
     -Adjust the measurement of all compounds located in rows and col of the plate affected by the systematic error using
-the error estimates determinted in previous step.
+the error estimates determined in previous step.
 """
 
 import numpy as np
@@ -27,7 +27,7 @@ def matrix_error_amendmend(input_array, verbose=False, alpha=0.05, skip_col=[], 
     """
     Implementation of Matrix Error Amendment , published in 'Two effective methods for correcting experimental
     HTS data ' Dragiev, et al 2012
-    :param alpha: alpha for TTrest
+    :param alpha: alpha for TTest
     :param verbose: print or not result
     :param input_array: numpy ndarray represent data
     :param skip_col: index of col to skip

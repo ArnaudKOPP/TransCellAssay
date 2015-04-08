@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Search for systematic error in plate or replicat, use Welch T-Test
+Search for systematic error in plate or replica, use Welch T-Test
 
 """
 
@@ -20,7 +20,7 @@ __status__ = "Production"
 
 def systematic_error_detection_test(array, alpha=0.05, verbose=False, path=None):
     """
-    Search for systematic error in plate or replicat, use Welch T-Test
+    Search for systematic error in plate or replica, use Welch T-Test
     :param array: numpy array to test
     :param alpha: alpha for t-test
     :param verbose: verbose or not

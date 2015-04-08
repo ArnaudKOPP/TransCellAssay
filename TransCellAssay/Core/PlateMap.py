@@ -33,9 +33,8 @@ __status__ = "Production"
 
 class PlateMap(object):
     """
-    classdocs
-    Class for manipuling platemap
-    self.platesetup = pd.DataFrame() # pandas dataframe object that contain the platemap, use this module for more
+    Class for manipulating platemap
+    self.platemap = pd.DataFrame() # pandas dataframe object that contain the platemap, use this module for more
         easy manipulation of different type into array (more easy that numpy)
     """
 
@@ -52,15 +51,15 @@ class PlateMap(object):
         self._cb = None
         self._ce = None
 
-    def set_platemap(self, platemap_file=None):
+    def set_platemap(self, file_path=None):
         """
         Define platemap
         Read csv with first row as column name and first column as row name
-        :param platemap_file: csv file with platemap
+        :param file_path: csv file with platemap
         """
-        if os.path.isfile(platemap_file):
-            log.info('Reading PlateMap %s File' % platemap_file)
-            self.platemap = pd.read_csv(platemap_file, index_col=0)
+        if os.path.isfile(file_path):
+            log.info('Reading PlateMap %s File' % file_path)
+            self.platemap = pd.read_csv(file_path, index_col=0)
         else:
             raise IOError('File don\'t exist')
 

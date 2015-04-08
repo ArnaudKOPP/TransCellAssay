@@ -31,10 +31,14 @@ __status__ = "Production"
 class RawData(object):
     """
     Raw data that contain value in single cell level or 1data/well
-    :param path_or_file:
     """
 
     def __init__(self, path_or_file):
+        """
+        Constructor
+        :param path_or_file:
+        :return:
+        """
         self.__CACHING_gbdata = None
         self.__CACHING_gbdata_key = None
 
@@ -164,7 +168,7 @@ class RawData(object):
 
     def get_groupby_data(self, key='Well'):
         """
-        Perform a groupby on raw data, a 'caching' is set up for avoid computations if groupby was already perfomed
+        Perform a groupby on raw data, a 'caching' is set up for avoid computations if groupby was already performed
         :param key:
         :return:
         """

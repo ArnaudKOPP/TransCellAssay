@@ -20,14 +20,14 @@ np.set_printoptions(suppress=True, precision=4)
 
 
 def HDV(plate_nb):
-    path = '/home/arnaud/Desktop/HDV/batch4/clean/'
+    path = '/home/arnaud/Desktop/HDV/batch1/clean/'
 
-    plaque = TCA.Core.Plate(name='Plate_b4_subset_' + plate_nb)
+    plaque = TCA.Core.Plate(name='Plate_batch1_hdv_' + plate_nb)
     platemap = TCA.Core.PlateMap(platemap=path+"Pl"+plate_nb+"PP.csv")
     plaque + platemap
     for i in ['1', '2', '3']:
         try:
-            file = path+"subset_" + plate_nb + "."+i+".csv"
+            file = path+"HDV_" + plate_nb + "."+i+".csv"
             if os.path.isfile(file):
                 plaque + TCA.Core.Replica(name="rep"+i,
                                           data=file,
@@ -39,15 +39,15 @@ def HDV(plate_nb):
     neg = 'Neg infecté'
     pos = 'SiNTCP infecté'
 
-    outpath = os.path.join(path, 'result')
+    outpath = '/home/arnaud/Desktop/HDV/DataPOC/'
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
 
-    # plaque.normalization_channels(channels=channel,
-    #                               log_t=False,
-    #                               method='PercentOfControl',
-    #                               neg=platemap.search_well(neg),
-    #                               pos=platemap.search_well(pos))
+    plaque.normalization_channels(channels=channel,
+                                  log_t=False,
+                                  method='PercentOfControl',
+                                  neg=platemap.search_well(neg),
+                                  pos=platemap.search_well(pos))
 
     # plaque.check_data_consistency()
     # TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=True, verbose=True)
@@ -57,13 +57,13 @@ def HDV(plate_nb):
     #                         channels=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
 
     # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False, path=outpath, supp_data=False)
-    ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
+    # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
     # ana = TCA.plate_analysis(plaque, channel, neg, pos)
     # print(ana)
 
-    array = ana.values['PositiveCells']
-    array = array.flatten().reshape(platemap.shape())
-    TCA.heatmap_p(array)
+    # array = ana.values['PositiveCells']
+    # array = array.flatten().reshape(platemap.shape())
+    # TCA.heatmap_p(array)
 
     # plaque.compute_data_from_replicat(channel=channel)
 
@@ -123,14 +123,17 @@ def HDV(plate_nb):
     # tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=sec, verbose=verbose, robust=True)
     # tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=sec, verbose=verbose, robust=True)
 
-    # __SIZE__ = len(platemap.platemap.values.flatten())
-    #
-    # gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-    # final_array = np.append(gene, np.repeat([str(plaque.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
-    # final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    __SIZE__ = len(platemap.platemap.values.flatten())
+
+    gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
+    final_array = np.append(gene, np.repeat([str(plaque.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    try:
+        final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    except:
+        pass
     # final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
@@ -141,8 +144,8 @@ def HDV(plate_nb):
     #
     # print(pd.DataFrame(final_array))
 
-    # to_save = pd.DataFrame(final_array)
-    # to_save.to_csv("/home/arnaud/Desktop/ssmd_tstat_poc2.csv", index=False, header=False)
+    to_save = pd.DataFrame(final_array)
+    to_save.to_csv(os.path.join(outpath, plaque.name+'.csv'), index=False, header=False)
 
     # TCA.plate_heatmap_p(plaque, both=False)
     # TCA.plot_wells(plaque, neg=neg, pos=pos)
@@ -156,7 +159,7 @@ def HDV(plate_nb):
     # TCA.boxplot_by_wells(plaque['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['D5', 'L6'], plate=plaque, channel=channel)
 
-# for i in range(5, 11, 1):
+# for i in range(1, 4, 1):
 #     HDV(str(i))
 
 
@@ -214,17 +217,17 @@ def PRESTWICK():
 
     neg = 'DMSO'
 
-    ControlPlate.compute_data_from_replicat(channel='')
+    ControlPlate.compute_data_from_replica(channel='')
     ControlPlate.cut(0, 9, 1, 11, apply_down=True)
 
     # # median normalized plate
     for plaque in PlateList_Def:
-        plaque.compute_data_from_replicat(channel='')
+        plaque.compute_data_from_replica(channel='')
         plaque.cut(0, 9, 1, 11, apply_down=True)
         for key, value in plaque.replica.items():
             value.array = value.array/np.median(value.array.flatten())
     for plaque in PlateList_Pro:
-        plaque.compute_data_from_replicat(channel='')
+        plaque.compute_data_from_replica(channel='')
         plaque.cut(0, 9, 1, 11, apply_down=True)
         for key, value in plaque.replica.items():
             value.array = value.array/np.median(value.array.flatten())
@@ -339,5 +342,38 @@ def Schneider():
         TCA.plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=outpath, supp_data=False)
 
 # Schneider()
+
+
+def zita():
+    path = '/home/arnaud/Desktop/Anne/Zita/'
+
+    outpath = os.path.join(path, 'RES')
+    if not os.path.isdir(outpath):
+        os.makedirs(outpath)
+
+    channel = 'TotalIntenCh2'
+    neg = 'siSCR no UV b'
+    pos = 'siSCR UV'
+
+    PlateList = []
+    for i in range(1, 3, 1):
+        plaque = TCA.Core.Plate(name='Plaque'+str(i))
+        platemap = TCA.Core.PlateMap(platemap=path+"Pl"+str(i)+"PP.csv")
+        plaque + platemap
+        try:
+            file = path+"150402 Zita plaque"+str(i)+".csv"
+            if os.path.isfile(file):
+                plaque + TCA.Core.Replica(name="rep1",
+                                          data=file,
+                                          single=True,
+                                          datatype='mean')
+        except:
+            pass
+        PlateList.append(plaque)
+
+    for plate in PlateList:
+        TCA.plate_analysis(plate, channel, neg, pos, threshold=5, percent=True, path=outpath, supp_data=False)
+
+zita()
 
 print('FINISH')
