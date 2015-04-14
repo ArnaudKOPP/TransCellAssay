@@ -64,7 +64,7 @@ def plot_plate_3d(array, surf=False):
         print(e)
 
 
-def heatmap(array):
+def heatmap(array, file_path=None):
     """
     Output a heatmap with seaborn
     :param array: numpy array that represent data
@@ -82,12 +82,15 @@ def heatmap(array):
         # # tab like display
         ax.invert_yaxis()
 
-        pylab.show()
+        if file_path is not None:
+            pylab.savefig(file_path)
+        else:
+            pylab.show()
     except Exception as e:
         print(e)
 
 
-def plate_heatmap(plate, both=True):
+def plate_heatmap(plate, both=True, file_path=None):
     """
     Plate all heatmap for plate object
     :param both: print data and SECdata
@@ -119,12 +122,15 @@ def plate_heatmap(plate, both=True):
                 # # tab like display
                 ax.invert_yaxis()
             i += 1
-        plt.show()
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show()
     except Exception as e:
         print(e)
 
 
-def heatmap_map(*args, usesec=False):
+def heatmap_map(*args, usesec=False, file_path=None):
     """
     plot heatmap of all replica array from given plate
     :param args: plate object or list of plate
@@ -169,12 +175,15 @@ def heatmap_map(*args, usesec=False):
                 i += 1
         fig.set_tight_layout(True)
 
-        plt.show()
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show()
     except Exception as e:
         print(e)
 
 
-def heatmap_p(array):
+def heatmap_p(array, file_path=None):
     """
     Output a heatmap with seaborn
     :param array: numpy array that represent data
@@ -184,12 +193,15 @@ def heatmap_p(array):
         import seaborn as sns
         sns.set()
         sns.heatmap(array)
-        plt.show()
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show()
     except Exception as e:
         print(e)
 
 
-def plate_heatmap_p(plate, both=True):
+def plate_heatmap_p(plate, both=True, file_path=None):
     """
     Plate all heatmap for plate object
     :param both: print data and SECdata
@@ -218,12 +230,15 @@ def plate_heatmap_p(plate, both=True):
                 sns.set()
                 sns.heatmap(value.sec_array)
             i += 1
-        plt.show()
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show()
     except Exception as e:
         print(e)
 
 
-def heatmap_map_p(*args, usesec=False):
+def heatmap_map_p(*args, usesec=False, file_path=None):
     """
     plot heatmap of all replica array from given plate
     :param args: plate object or list of plate
@@ -267,12 +282,15 @@ def heatmap_map_p(*args, usesec=False):
                 i += 1
         fig.set_tight_layout(True)
 
-        plt.show()
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show()
     except Exception as e:
         print(e)
 
 
-def systematic_error(array):
+def systematic_error(array, file_path=None):
     """
     plot systematic error in cols and rows axis
     :param array: take a numpy array in input
@@ -305,14 +323,17 @@ def systematic_error(array):
             ax1.set_ylabel('Mean')
             ax1.set_title('Mean by Col')
 
-            plt.show()
+            if file_path is not None:
+                plt.savefig(file_path)
+            else:
+                plt.show()
         else:
             raise TypeError
     except Exception as e:
         print(e)
 
 
-def boxplot_by_wells(dataframe, channel):
+def boxplot_by_wells(dataframe, channel, file_path=None):
     """
     plot the boxplot for each well
     :param dataframe:
@@ -325,7 +346,10 @@ def boxplot_by_wells(dataframe, channel):
         pd.options.display.mpl_style = 'default'
         if isinstance(dataframe, pd.DataFrame):
             bp = dataframe.boxplot(column=channel, by='Well')
-            plt.show(block=True)
+            if file_path is not None:
+                plt.savefig(file_path)
+            else:
+                plt.show(block=True)
         else:
             raise TypeError
     except Exception as e:
@@ -346,7 +370,7 @@ def dual_flashlight_plot(y, x):
     pass
 
 
-def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', width=0.1):
+def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', width=0.1, file_path=None):
     """
     Plot from all replica from given plate, the array value
     :param args: plate object
@@ -406,12 +430,15 @@ def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', 
         ax.set_xlim([-0.5, i-0.5])
         ax.set_ylabel('Well value')
         ax.set_xlabel('Plate/Replicat ID')
-        plt.show()
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show()
     except Exception as e:
         print(e)
 
 
-def plot_distribution(wells, plate, channel, rep=None, pool=False):
+def plot_distribution(wells, plate, channel, rep=None, pool=False, file_path=None):
     """
     Plot distribution of multiple well
     :param wells: list of wells to plot distribution
@@ -446,7 +473,10 @@ def plot_distribution(wells, plate, channel, rep=None, pool=False):
                 else:
                     for key, value in rep_series.items():
                         value.plot(kind='hist', alpha=0.5, legend=True, bins=1000)
-            plt.show(block=True)
+            if file_path is not None:
+                plt.savefig(file_path)
+            else:
+                plt.show(block=True)
     except Exception as e:
         print(e)
 
