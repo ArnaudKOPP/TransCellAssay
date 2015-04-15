@@ -176,13 +176,13 @@ class RawData(object):
             if key is self.__CACHING_gbdata_key:
                 return self.__CACHING_gbdata
             else:
-                self.__new_caching(key)
+                self._new_caching(key)
                 return self.__CACHING_gbdata
         else:
-            self.__new_caching(key)
+            self._new_caching(key)
             return self.__CACHING_gbdata
 
-    def __new_caching(self, key='Well'):
+    def _new_caching(self, key='Well'):
         self.__CACHING_gbdata = self.df.groupby(key)
         self.__CACHING_gbdata_key = key
 
@@ -194,7 +194,7 @@ class RawData(object):
         :return:
         """
         if self.__CACHING_gbdata is None:
-            self.__new_caching()
+            self._new_caching()
         if channel is not None:
             return self.__CACHING_gbdata.get_group(key)[channel]
         else:

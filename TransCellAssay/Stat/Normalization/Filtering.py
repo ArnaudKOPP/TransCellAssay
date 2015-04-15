@@ -36,7 +36,7 @@ def plate_filtering(plate, channel, upper=None, lower=None, include=True, percen
     else:
         log.info('Apply filtering on :{}'.format(plate.name))
         for key, values in plate.replica.items():
-            values = __replica_filtering(values, channel, upper, lower, include, percent)
+            plate[key] = __replica_filtering(values, channel, upper, lower, include, percent)
         return plate
 
 
@@ -47,17 +47,24 @@ def __replica_filtering(replica, channel, upper=None, lower=None, include=True, 
 
 
 def __filtering_raw_data(raw_data, channel, upper=None, lower=None, include=True, percent=False):
-    if upper is not None and percent:
-        upper_threshold_value = np.percentile(raw_data.df[channel], upper)
-        raw_data = __upper_filter_raw_data(raw_data, channel, upper_threshold_value, include)
-
-    if lower is not None and percent:
-        lower_threshold_value = np.percentile(raw_data.df[channel], lower)
-        raw_data = __lower_filter_raw_data(raw_data, channel, lower_threshold_value, include)
+    if upper is not None:
+        if percent:
+            upper_threshold_value = np.percentile(raw_data.df[channel], upper)
+            raw_data = __upper_filter_raw_data(raw_data, channel, upper_threshold_value, include)
+        else:
+            raw_data = __upper_filter_raw_data(raw_data, channel, upper, include)
+    if lower is not None:
+        if percent:
+            lower_threshold_value = np.percentile(raw_data.df[channel], lower)
+            raw_data = __lower_filter_raw_data(raw_data, channel, lower_threshold_value, include)
+        else:
+            raw_data = __lower_filter_raw_data(raw_data, channel, lower, include)
+    raw_data._new_caching()
     return raw_data
 
 
 def __upper_filter_raw_data(raw_data, channel, threshold, include):
+    log.debug('Upper cut')
     if include:
         raw_data.df = raw_data.df[raw_data.df[channel] <= threshold]
     else:
@@ -66,6 +73,7 @@ def __upper_filter_raw_data(raw_data, channel, threshold, include):
 
 
 def __lower_filter_raw_data(raw_data, channel, threshold, include):
+    log.debug('Lower cut')
     if include:
         raw_data.df = raw_data.df[raw_data.df[channel] >= threshold]
     else:
