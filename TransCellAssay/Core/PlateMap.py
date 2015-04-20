@@ -63,12 +63,15 @@ class PlateMap(object):
         else:
             raise IOError('File don\'t exist')
 
-    def shape(self):
+    def shape(self, alt_frmt=False):
         """
         get the shape of platemap, so we can determine number of well
         :return: shape of platemap
         """
-        return self.platemap.shape
+        if alt_frmt:
+            return self.platemap.shape[0] * self.platemap.shape[1]
+        else:
+            return self.platemap.shape
 
     def search_coord(self, to_search):
         """
@@ -110,6 +113,18 @@ class PlateMap(object):
                     well = Utils.get_opposite_well_format(pos)
                     map_as_dict[well] = genename
         return map_as_dict
+
+    def as_array(self):
+        """
+        return platemap as numpy array with genename and well
+        :return:
+        """
+        data = self.as_dict()
+        names = ['Well', 'GeneName']
+        formats = ['object', 'object']
+        dtype = dict(names=names, formats=formats)
+        array = np.array([(key, val) for (key, val) in data.items()], dtype)
+        return array
 
     def as_matrix(self):
         """

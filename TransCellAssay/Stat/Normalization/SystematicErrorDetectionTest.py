@@ -6,7 +6,8 @@ Search for systematic error in plate or replica, use Welch T-Test
 
 import numpy as np
 from scipy import stats
-
+import logging
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"

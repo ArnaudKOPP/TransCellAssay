@@ -44,21 +44,24 @@ def plate_analyzis(plateid):
         if not os.path.exists(output_data_plate_dir):
             os.makedirs(output_data_plate_dir)
 
-        # # Want to skip some Well, key is plateid and rep id and give use a list of well to skip
-        # to_skip = {(1, 1): ((3, 0), (4, 0), (5, 11)),
-        #            (1, 2): ((6, 11)),
-        #            (1, 3): ()}
+        # Want to skip some Well, key is plateid and rep id and give use a list of well to skip
+        to_skip = {(1, 1): ((5, 11)),
+                   (1, 2): ((5, 11)),
+                   (2, 1): ((1, 11)),
+                   (2, 2): ((1, 11)),
+                   (2, 3): ((1, 11)),
+                   (3, 1): ((1, 11), (2, 0)),
+                   (3, 2): ((1, 11), (2, 0)),
+                   (3, 3): ((1, 11), (2, 0))}
 
         # # CREATE PLATE OBJECT HERE
         plaque + TCA.Core.PlateMap(platemap=os.path.join(__INPUT__, "PL" + str(plateid) + "PP.csv"))
         for i in range(1, __NBREP__ + 1):
             file_path = os.path.join(__INPUT__, "PL" + str(plateid) + "." + str(i) + ".csv")
             if os.path.isfile(file_path):
-                plaque + TCA.Replica(name="rep"+str(i), data=file_path, datatype='mean')
+                plaque + TCA.Replica(name="rep"+str(i), data=file_path, datatype='mean', skip=to_skip[(plateid, i)])
 
         # # BEGIN ANALYZIS HERE
-
-        __SIZE__ = 384
 
         plaque.normalization_channels(__CHAN__, method='PercentOfControl', log_t=False,
                                       neg=plaque.platemap.search_well(__NEG__),
@@ -116,9 +119,18 @@ def plate_analyzis(plateid):
         gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
         final_array = np.append(gene, np.repeat([str(plaque.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
         final_array = np.append(final_array, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
-        final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
+        try:
+            final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
+        except:
+            final_array = np.append(final_array, np.repeat([0], __SIZE__).reshape(__SIZE__, 1), axis=1)
+        try:
+            final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
+        except:
+            final_array = np.append(final_array, np.repeat([0], __SIZE__).reshape(__SIZE__, 1), axis=1)
+        try:
+            final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
+        except:
+            final_array = np.append(final_array, np.repeat([0], __SIZE__).reshape(__SIZE__, 1), axis=1)
         final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
         final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
         final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
@@ -134,8 +146,8 @@ def plate_analyzis(plateid):
         to_save = pd.DataFrame(final_array)
         to_save.to_csv(os.path.join(output_data_plate_dir, "SCORING.csv"), index=False, header=False)
 
-        TCA.heatmap_map_p(plaque, usesec=False)
-        TCA.plot_wells(plaque)
+        # TCA.heatmap_map_p(plaque, usesec=False)
+        # TCA.plot_wells(plaque)
 
         # # CLEAR PLATE OBJECT FOR MEMORY SAVING AND AVOID CRAPPY EFFECT
         plaque = None
@@ -147,17 +159,17 @@ def plate_analyzis(plateid):
         logging.error(e)
         return 0
 
-__INPUT__ = "/home/arnaud/Desktop/TOULOUSE/CONFIRMATION/"
-__OUTPUT__ = "/home/arnaud/Desktop/TOULOUSE/CONFIRMATION/ROI_B/"
+__INPUT__ = "/home/arnaud/Desktop/TOULOUSE/CONFIRMATION/RemovedData/"
+__OUTPUT__ = "/home/arnaud/Desktop/TOULOUSE/CONFIRMATION/RemovedData/ROI_A/"
 __NBPLATE__ = 3
 __NBREP__ = 3
 __THRES__ = 50
-__CHAN__ = 'ROI_B_Target_I_ObjectTotalInten'
+__CHAN__ = 'ROI_A_Target_I_ObjectTotalInten'
 __NEG__ = 'Neg'
 __POS__ = 'F1 ATPase A'
 __TOX__ = None
 __VERB__ = False
-__PROC__ = 1
+__PROC__ = 3
 
 if __OUTPUT__ is None:
     __OUTPUT__ = os.path.join(__INPUT__, "Analyze/")

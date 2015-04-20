@@ -23,17 +23,19 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=None, supp_data=False):
+def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, fixed_threshold=False, path=None):
     """
-    Do a plate analysis
+    Do a plate analysis, get cell count, positive cells that satisfied threshold (ttest and fdr), mean and median
+    for channel for all well, toxicity and viability index
+    if percent and fixed_threshold are false, given value for threshold will be used in real value for all well
     :param plate: plate
     :param channel: reference channel
     :param neg: negative control
     :param pos: positive control
     :param threshold: threshold for defining % of positive cell in negative ref
     :param percent: use percent for threshold, if false, it will be a real value
+    :param fixed_threshold: use given threshold (in value mode) for all well
     :param path: Path to save Data
-    :param supp_data: Saving supp data if path is not None
     :return: return result
     """
     if not isinstance(plate, TCA.Plate):
@@ -52,12 +54,12 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
 
         size = platemap.shape()
         __SIZE__ = (size[0] * size[1])
-
-        result = Result(size=__SIZE__)
+        log.debug("{} wells plate".format(__SIZE__))
+        result_array = Result(size=__SIZE__)
         x = platemap.as_dict()
 
-        result.init_gene_well(x)
-        result.values['Plate'] = np.repeat([plate.name], __SIZE__)
+        result_array.init_gene_well(x)
+        result_array.values['Plate'] = np.repeat([plate.name], __SIZE__)
 
         neg_well = plate.platemap.search_well(neg)
         pos_well = plate.platemap.search_well(pos)
@@ -76,29 +78,41 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
             ar = np.append(ar, name, axis=1)
             return pd.DataFrame(ar)
 
-        # # iterate over replicat
+        ########### iterate over replicat
+        i = 1
         for k, replica in plate.replica.items():
-            log.debug("PlateAnalysis : iteration on rep %s" % replica.name)
-            # # cell count
+            log.debug("Iteration on replica : {0}  size : {1} cells" .format(replica.name, len(replica.rawdata.df)))
+            ########### cell count
             datagb = replica.rawdata.get_groupby_data()
             cellcount = datagb.Well.count().to_dict()
+            log.debug("     Determine Cells count")
+            cell_count = collections.OrderedDict()
             for key, value in cellcount.items():
                 try:
                     cell_count_all_replica.setdefault(key, []).append(value)
+                    cell_count[key] = value
                 except KeyError:
                     pass
+            result_array.add_data(cell_count, 'CCrep'+str(i))
 
-            # # positive Cell
+            ########### positive Cell
             # # threshold value for control
-            if percent:
-                data_control = replica.get_raw_data(channel=channel, well=neg_well)
-                threshold_value = np.percentile(data_control, threshold)
-            else:
+            if fixed_threshold:
                 threshold_value = threshold
+            else:
+                if percent:
+                    data_control = replica.get_raw_data(channel=channel, well=neg_well)
+                    threshold_value = np.percentile(data_control, threshold)
+                else :
+                    data_control = replica.get_raw_data(channel=channel, well=neg_well)
+                    threshold_value = np.mean(data_control)
 
-            # # variability
+
+            ########### variability
             well_list = replica.rawdata.get_unique_well()
             # iterate on well
+            percent_cell = collections.OrderedDict()
+            log.debug("     Determine Positive Cells percentage")
             for well in well_list:
                 xdata = datagb.get_group(well)[channel]
                 mean_well_value_all_replica.setdefault(well, []).append(np.mean(xdata.values))
@@ -107,8 +121,12 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
                 len_thres = len(np.extract(xdata.values > threshold_value, xdata.values))
                 # # include in dict key is the position and value is a %
                 percent_cell_all_replica.setdefault(well, []).append(((len_thres / len_total) * 100))
+                percent_cell[well] = (len_thres / len_total) * 100
+            result_array.add_data(percent_cell, 'PCrep'+str(i))
+            i += 1
 
-        # p-value and fdr for percent cell
+        ########### p-value and fdr for percent cell
+        log.debug("T-Test p-value determination")
         neg_data = [percent_cell_all_replica[x] for x in neg_well]
         neg_data = np.array(neg_data).flatten()
         pvalue = collections.OrderedDict()
@@ -116,8 +134,8 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
             x = stats.ttest_ind(value, neg_data, equal_var=False)
             pvalue[key] = x[1]
 
-        result.add_data(pvalue, 'p-value')
-        result.values["fdr"] = TCA.adjustpvalues(pvalues=result.values["p-value"])
+        result_array.add_data(pvalue, 'p-value')
+        result_array.values["fdr"] = TCA.adjustpvalues(pvalues=result_array.values["p-value"])
 
         # # Cell count and std
         sdvalue = {}
@@ -125,17 +143,21 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
             sdvalue[key] = np.std(value)
         meancount = dict([(i, sum(v) / len(v)) for i, v in cell_count_all_replica.items()])
 
-        result.add_data(meancount, 'CellsCount')
-        result.add_data(sdvalue, 'SDCellsCount')
+        result_array.add_data(meancount, 'CellsCount')
+        result_array.add_data(sdvalue, 'SDCellsCount')
 
-        # # toxicity index
+        ########### toxicity index
+        log.debug("Toxicity determination")
         max_cell = max(meancount.values())
         min_cell = min(meancount.values())
         txidx = {}
         for key, item in meancount.items():
             txidx[key] = (max_cell - item) / (max_cell - min_cell)
 
-        # # viability index
+        result_array.add_data(txidx, 'Toxicity')
+
+        ########### viability index
+        log.debug("Viability determination")
         neg_val = [meancount[x] for x in neg_well]
         pos_val = [meancount[x] for x in pos_well]
         viability = {}
@@ -143,50 +165,40 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=No
             viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
                 np.mean(neg_val) - np.mean(pos_val))
 
-        result.add_data(txidx, 'Toxicity')
-        result.add_data(viability, 'Viability')
+        result_array.add_data(viability, 'Viability')
 
-        # # variability
+        ########### variability
+        log.debug("Variability determination")
         std = dict([(i, np.std(v)) for i, v in mean_well_value_all_replica.items()])
         stdm = dict([(i, np.std(v)) for i, v in median_well_value_all_replica.items()])
 
         mean_well_value_all_replica = dict([(i, sum(v) / len(v)) for i, v in mean_well_value_all_replica.items()])
         median_well_value_all_replica = dict([(i, sum(v) / len(v)) for i, v in median_well_value_all_replica.items()])
 
-        result.add_data(mean_well_value_all_replica, 'Mean')
-        result.add_data(median_well_value_all_replica, 'Median')
-        result.add_data(std, 'Std')
-        result.add_data(stdm, 'Stdm')
+        result_array.add_data(mean_well_value_all_replica, 'Mean')
+        result_array.add_data(median_well_value_all_replica, 'Median')
+        result_array.add_data(std, 'Std')
+        result_array.add_data(stdm, 'Stdm')
 
-        # # positive cell
+        ########### positive cell
         # determine the mean of replicat
         dict_percent_cell = dict([(i, sum(v) / len(v)) for i, v in percent_cell_all_replica.items()])
 
-        # determine the standart deviation of % Cells
+        ########### determine the standart deviation of % Cells
         for key, value in percent_cell_all_replica.items():
             percent_cell_sd[key] = np.std(value)
 
-        result.add_data(dict_percent_cell, 'PositiveCells')
-        result.add_data(percent_cell_sd, 'SDPositiveCells')
+        result_array.add_data(dict_percent_cell, 'PositiveCells')
+        result_array.add_data(percent_cell_sd, 'SDPositiveCells')
 
         if path is not None:
             try:
-                result.write(file_path=os.path.join(path, 'PlateAnalyzisData_'+str(plate.name)+'.csv'))
+                filepath = os.path.join(path, 'PlateAnalyzisData_'+str(plate.name)+'.csv')
+                result_array.write(file_path=filepath)
             except Exception as e:
                 log.error('Error during save PlateAnalyzisData : {}'.format(e))
 
-        if supp_data:
-            writer = pd.ExcelWriter(os.path.join(path, 'SUPP_DATA_'+str(plate.name)+'.xlsx'))
-            try:
-                percent = __dict_to_df(percent_cell_all_replica)
-                cellcnt = __dict_to_df(cell_count_all_replica)
-                percent.to_excel(writer, 'Percent Cells', index=None, header=None)
-                cellcnt.to_excel(writer, 'Cells Count', index=None, header=None)
-            except Exception as e:
-                log.error('Error with SUPP_DATA export : {}'.format(e))
-
-            writer.save()
-        return result
+        return result_array
 
 
 class Result(object):
@@ -204,7 +216,9 @@ class Result(object):
         if size is None:
             size = 96
         self.values = np.zeros(size, dtype=[('Plate', object), ('GeneName', object), ('Well', object),
-                                            ('CellsCount', float), ('SDCellsCount', float), ('PositiveCells', float),
+                                            ('CellsCount', float), ('CCrep1', float), ('CCrep2', float),
+                                            ('CCrep3', float), ('SDCellsCount', float), ('PositiveCells', float),
+                                            ('PCrep1', float), ('PCrep2', float), ('PCrep3', float),
                                             ('SDPositiveCells', float), ('p-value', float), ('fdr', float),
                                             ('Mean', float), ('Std', float), ('Median', float), ('Stdm', float),
                                             ('Viability', float), ('Toxicity', float)])

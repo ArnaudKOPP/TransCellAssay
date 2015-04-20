@@ -12,7 +12,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
-pd.set_option('display.max_rows', 50)
+pd.set_option('display.max_rows', 100)
 pd.set_option('display.max_columns', 50)
 pd.set_option('display.width', 1000)
 np.set_printoptions(linewidth=300)
@@ -20,34 +20,39 @@ np.set_printoptions(suppress=True, precision=4)
 
 
 def HDV(plate_nb):
-    path = '/home/arnaud/Desktop/HDV/batch1/clean/'
+    tag = 'subset'
+    path = '/home/arnaud/Desktop/HDV/DATA/'
 
-    plaque = TCA.Core.Plate(name='Plate_batch1_hdv_' + plate_nb)
-    platemap = TCA.Core.PlateMap(platemap=path+"Pl"+plate_nb+"PP.csv")
+    plaque = TCA.Core.Plate(name='HDV_' + tag + plate_nb)
+    platemap = TCA.Core.PlateMap(platemap=path+tag+"_PP_"+plate_nb+".csv")
     plaque + platemap
     for i in ['1', '2', '3']:
         try:
-            file = path+"HDV_" + plate_nb + "."+i+".csv"
+            file = path+tag+"_" + plate_nb + "."+i+".csv"
             if os.path.isfile(file):
                 plaque + TCA.Core.Replica(name="rep"+i,
                                           data=file,
                                           datatype='mean')
-        except:
+        except Exception as e:
+            print(e)
             pass
 
     channel = 'AvgIntenCh2'
     neg = 'Neg infecté'
     pos = 'SiNTCP infecté'
 
-    outpath = '/home/arnaud/Desktop/HDV/DataPOC/'
+    outpath = '/home/arnaud/Desktop/HDV/DATA/Final_Analyze/SCORING/'
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
 
-    plaque.normalization_channels(channels=channel,
-                                  log_t=False,
-                                  method='PercentOfControl',
-                                  neg=platemap.search_well(neg),
-                                  pos=platemap.search_well(pos))
+    # TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
+    # plaque.normalization_channels(channels=channel,
+    #                               log_t=False,
+    #                               method='PercentOfSample',
+    #                               neg=platemap.search_well(neg),
+    #                               pos=platemap.search_well(pos))
+
+    # TCA.plate_filtering(plaque, channel=channel, upper=150, lower=50, include=True, percent=False)
 
     # plaque.check_data_consistency()
     # TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=True, verbose=True)
@@ -56,7 +61,7 @@ def HDV(plate_nb):
     #                         ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'],
     #                         channels=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
 
-    # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False, path=outpath, supp_data=False)
+    # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=85, percent=True, path=outpath)
     # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
     # ana = TCA.plate_analysis(plaque, channel, neg, pos)
     # print(ana)
@@ -73,10 +78,10 @@ def HDV(plate_nb):
     #                               neg=platemap.search_well(neg),
     #                               pos=platemap.search_well(pos))
 
-    # plaque.compute_data_from_replicat(channel=channel)
-    # plaque.cut(1, 15, 1, 23, apply_down=True)
+    plaque.compute_data_from_replica(channel=channel)
+    plaque.cut(1, 15, 1, 23, apply_down=True)
     # print(platemap)
-    # plaque.compute_data_from_replicat(channel=channel)
+    plaque.compute_data_from_replica(channel=channel)
 
     # # Keep only neg or pos in 3D plot
     # test1_neg = TCA.get_masked_array(plaque.array, platemap.platemap.values, to_keep=neg)
@@ -86,27 +91,16 @@ def HDV(plate_nb):
 
     alpha = 0.1
     verbose = True
-    # try:
-    #     TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
-    #     TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
-    #     TCA.systematic_error_detection_test(plaque['rep3'].array, verbose=verbose, alpha=alpha)
-    # except KeyError:
-    #     pass
+    try:
+        TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
+        TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
+        TCA.systematic_error_detection_test(plaque['rep3'].array, verbose=verbose, alpha=alpha)
+    except KeyError:
+        pass
     # plaque.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=verbose, alpha=alpha,
     #                                    max_iterations=50)
 
-    # TEST Diffusion Model
-    # TCA.diffusion_model(plaque.array.copy(), max_iterations=120, verbose=verbose)
-
-    # ### not Single Cell
-    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=True, sec_data=True, verbose=verbose)
-    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=True, sec_data=True, method='MM', verbose=verbose)
-    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=False, sec_data=True, verbose=verbose)
-    # TCA.plate_ssmd_score(plaque, neg_control=neg, robust_version=False, sec_data=True, method='MM', verbose=verbose)
-
     # #### Single Cell
-    # ttest, fdr = TCA.plate_ttest(plaque, neg, verbose=verbose)
-    # ttest, fdr = TCA.plate_ttest(plaque, neg, equal_var=True, verbose=verbose)
     # TCA.rank_product(plaque, secdata=True)
 
     sec = False
@@ -122,18 +116,27 @@ def HDV(plate_nb):
     #                                verbose=verbose, robust=True)
     # tstat2 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=False, sec_data=sec, verbose=verbose, robust=True)
     # tstat3 = TCA.plate_tstat_score(plaque, neg_control=neg, paired=True, sec_data=sec, verbose=verbose, robust=True)
-
-    __SIZE__ = len(platemap.platemap.values.flatten())
-
-    gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-    final_array = np.append(gene, np.repeat([str(plaque.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
-    try:
-        final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
-    except:
-        pass
+    #
+    # ttest1, fdr1 = TCA.plate_ttest(plaque, neg, verbose=verbose)
+    # ttest2, fdr2 = TCA.plate_ttest(plaque, neg, equal_var=True, verbose=verbose)
+    #
+    # __SIZE__ = len(platemap.platemap.values.flatten())
+    #
+    # gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
+    # final_array = np.append(gene, np.repeat([str(plaque.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
+    # try:
+    #     final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    # except:
+    #     final_array = np.append(final_array, np.repeat([0], __SIZE__).reshape(__SIZE__, 1), axis=1)
+    # try:
+    #     final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    # except:
+    #     final_array = np.append(final_array, np.repeat([0], __SIZE__).reshape(__SIZE__, 1), axis=1)
+    # try:
+    #     final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
+    # except:
+    #     final_array = np.append(final_array, np.repeat([0], __SIZE__).reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
@@ -141,11 +144,13 @@ def HDV(plate_nb):
     # final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
     # final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, ttest1.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, fdr1.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, ttest2.flatten().reshape(__SIZE__, 1), axis=1)
+    # final_array = np.append(final_array, fdr2.flatten().reshape(__SIZE__, 1), axis=1)
     #
-    # print(pd.DataFrame(final_array))
-
-    to_save = pd.DataFrame(final_array)
-    to_save.to_csv(os.path.join(outpath, plaque.name+'.csv'), index=False, header=False)
+    # to_save = pd.DataFrame(final_array)
+    # to_save.to_csv(os.path.join(outpath, plaque.name+'.csv'), index=False, header=False)
 
     # TCA.plate_heatmap_p(plaque, both=False)
     # TCA.plot_wells(plaque, neg=neg, pos=pos)
@@ -157,10 +162,10 @@ def HDV(plate_nb):
     # TCA.plate_heatmap_p(plaque, both=False)
     # TCA.dual_flashlight_plot(plaque.array, ssmd)
     # TCA.boxplot_by_wells(plaque['rep1'].rawdata.df, channel=channel)
-    # TCA.plot_distribution(wells=['D5', 'L6'], plate=plaque, channel=channel)
+    # TCA.plot_distribution(wells=['E2', 'F2'], plate=plaque, channel=channel, pool=True)
 
-# for i in range(1, 4, 1):
-#     HDV(str(i))
+for i in range(1, 2, 1):
+    HDV(str(i))
 
 
 def PRESTWICK():
@@ -339,7 +344,7 @@ def Schneider():
         PlateList.append(plaque)
 
     for plate in PlateList:
-        TCA.plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=outpath, supp_data=False)
+        TCA.plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=outpath)
 
 # Schneider()
 
@@ -347,11 +352,11 @@ def Schneider():
 def zita():
     path = '/home/arnaud/Desktop/Anne/Zita/'
 
-    outpath = os.path.join(path, 'RES')
+    outpath = os.path.join(path, 'RES2')
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
 
-    channel = 'TotalIntenCh2'
+    channel = 'TargetTotalIntenCh2'
     neg = 'siSCR no UV b'
     pos = 'siSCR UV'
 
@@ -361,7 +366,7 @@ def zita():
         platemap = TCA.Core.PlateMap(platemap=path+"Pl"+str(i)+"PP.csv")
         plaque + platemap
         try:
-            file = path+"150402 Zita plaque"+str(i)+".csv"
+            file = path+"150415 Zita marquage 6-4P Plaque"+str(i)+".csv"
             if os.path.isfile(file):
                 plaque + TCA.Core.Replica(name="rep1",
                                           data=file,
@@ -372,8 +377,8 @@ def zita():
         PlateList.append(plaque)
 
     for plate in PlateList:
-        TCA.plate_analysis(plate, channel, neg, pos, threshold=5, percent=True, path=outpath, supp_data=False)
+        TCA.plate_analysis(plate, channel, neg, pos, threshold=5, percent=True, path=outpath)
 
-zita()
+# zita()
 
 print('FINISH')
