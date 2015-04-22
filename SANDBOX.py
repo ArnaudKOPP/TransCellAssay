@@ -164,8 +164,8 @@ def HDV(plate_nb):
     # TCA.boxplot_by_wells(plaque['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['E2', 'F2'], plate=plaque, channel=channel, pool=True)
 
-for i in range(1, 2, 1):
-    HDV(str(i))
+# for i in range(1, 2, 1):
+#     HDV(str(i))
 
 
 def PRESTWICK():
@@ -381,4 +381,35 @@ def zita():
 
 # zita()
 
+
+def misc():
+    path = '/home/arnaud/Desktop/Amélie/'
+
+    outpath = os.path.join(path, 'Ch4_95')
+    if not os.path.isdir(outpath):
+        os.makedirs(outpath)
+
+    channel = 'AvgIntenCh4'
+    neg = 'neg'
+
+    PlateList = []
+    for i in range(1, 4, 1):
+        plaque = TCA.Core.Plate(name='Plaque'+str(i))
+        platemap = TCA.Core.PlateMap(platemap=path+"Pl"+str(i)+"PP.csv")
+        plaque + platemap
+        try:
+            file = path+"Pl"+str(i)+".1.csv"
+            if os.path.isfile(file):
+                plaque + TCA.Core.Replica(name="rep1",
+                                          data=file,
+                                          single=True,
+                                          datatype='mean')
+        except:
+            pass
+        PlateList.append(plaque)
+
+    for plate in PlateList:
+        TCA.plate_analysis(plate, channel, neg, threshold=5, percent=True, path=outpath)
+
+misc()
 print('FINISH')

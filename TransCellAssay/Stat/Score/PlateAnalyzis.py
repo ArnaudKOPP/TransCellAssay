@@ -23,7 +23,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, fixed_threshold=False, path=None):
+def plate_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fixed_threshold=False, path=None):
     """
     Do a plate analysis, get cell count, positive cells that satisfied threshold (ttest and fdr), mean and median
     for channel for all well, toxicity and viability index
@@ -62,7 +62,6 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, fixed_t
         result_array.values['Plate'] = np.repeat([plate.name], __SIZE__)
 
         neg_well = plate.platemap.search_well(neg)
-        pos_well = plate.platemap.search_well(pos)
 
         cell_count_all_replica = collections.OrderedDict()
         mean_well_value_all_replica = collections.OrderedDict()
@@ -157,15 +156,19 @@ def plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, fixed_t
         result_array.add_data(txidx, 'Toxicity')
 
         ########### viability index
-        log.debug("Viability determination")
-        neg_val = [meancount[x] for x in neg_well]
-        pos_val = [meancount[x] for x in pos_well]
-        viability = {}
-        for key, item in meancount.items():
-            viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
-                np.mean(neg_val) - np.mean(pos_val))
+        if pos is not None:
+            log.debug("Viability determination")
+            pos_well = plate.platemap.search_well(pos)
+            neg_val = [meancount[x] for x in neg_well]
+            pos_val = [meancount[x] for x in pos_well]
+            viability = {}
+            for key, item in meancount.items():
+                viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
+                    np.mean(neg_val) - np.mean(pos_val))
 
-        result_array.add_data(viability, 'Viability')
+            result_array.add_data(viability, 'Viability')
+        else:
+            log.info('No positive control provided, no viability performed')
 
         ########### variability
         log.debug("Variability determination")

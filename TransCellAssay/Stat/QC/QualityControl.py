@@ -78,7 +78,7 @@ __status__ = "Production"
 
 
 def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False, use_raw_data=True, dirpath=None,
-                          skipping_wells=True, verbose=False):
+                          skipping_wells=True):
     """
     Compute quality control on plate for selected channel
     :param plate: Plate to compute quality object
@@ -114,11 +114,7 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
             qc_data_array = qc_data_array.append(
                 __replicat_quality_control(value, channel=channel, neg_well=neg_well, pos_well=pos_well,
                                            sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data,
-                                           skipping_wells=skipping_wells,  verbose=False))
-
-        if verbose:
-            print("Quality control for plate: ", plate.name + "\n")
-            print(qc_data_array)
+                                           skipping_wells=skipping_wells))
 
         if dirpath is not None:
             qc_data_array.to_csv(os.path.join(dirpath, "QC_Data.csv"), index=False)
@@ -127,7 +123,7 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
 
 
 def __replicat_quality_control(replica, channel, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,
-                               skipping_wells=True, verbose=False):
+                               skipping_wells=True):
     """
     Compute quality control on replica for selected channel
     :param replica: Replica to compute qc
@@ -198,9 +194,6 @@ def __replicat_quality_control(replica, channel, neg_well, pos_well, sedt=False,
     qc_data_array['SSMD'] = __ssmd(negdata, posdata)
     qc_data_array['CVD'] = __cvd(negdata, posdata)
 
-    if verbose:
-        print("\nQuality Control for replicat : ", replica.name + "\n")
-        print(qc_data_array)
     return qc_data_array
 
 
