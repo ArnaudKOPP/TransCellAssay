@@ -383,22 +383,23 @@ def zita():
 
 
 def misc():
-    path = '/home/arnaud/Desktop/Amélie/'
+    path = '/home/arnaud/Desktop/TargetActivation.V4_04-23-15_01;16;00/'
 
-    outpath = os.path.join(path, 'Ch4_95')
+    outpath = os.path.join(path, '600')
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
 
-    channel = 'AvgIntenCh4'
-    neg = 'neg'
+    channel = 'AvgIntenCh2'
+    neg = 'Infectées'
+    pos = 'Cyclo i'
 
     PlateList = []
-    for i in range(1, 4, 1):
+    for i in range(1, 2, 1):
         plaque = TCA.Core.Plate(name='Plaque'+str(i))
-        platemap = TCA.Core.PlateMap(platemap=path+"Pl"+str(i)+"PP.csv")
+        platemap = TCA.Core.PlateMap(platemap=path+"PP_hdv.csv")
         plaque + platemap
         try:
-            file = path+"Pl"+str(i)+".1.csv"
+            file = os.path.join(path+"150423 z factor prestwick.csv")
             if os.path.isfile(file):
                 plaque + TCA.Core.Replica(name="rep1",
                                           data=file,
@@ -409,7 +410,8 @@ def misc():
         PlateList.append(plaque)
 
     for plate in PlateList:
-        TCA.plate_analysis(plate, channel, neg, threshold=5, percent=True, path=outpath)
+        TCA.plate_analysis(plate, channel, neg, pos, threshold=600, percent=False, fixed_threshold=True)
+        # TCA.plot_distribution(wells=['E2', 'F2'], plate=plate, channel=channel, pool=True)
 
 misc()
 print('FINISH')

@@ -17,7 +17,6 @@ __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
-__version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
@@ -54,7 +53,6 @@ def plate_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fi
 
         size = platemap.shape()
         __SIZE__ = (size[0] * size[1])
-        log.debug("{} wells plate".format(__SIZE__))
         result_array = Result(size=__SIZE__)
         x = platemap.as_dict()
 
@@ -80,7 +78,7 @@ def plate_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fi
         ########### iterate over replicat
         i = 1
         for k, replica in plate.replica.items():
-            log.debug("Iteration on replica : {0}  size : {1} cells" .format(replica.name, len(replica.rawdata.df)))
+            log.debug("Iteration on replica : {0} | {1} | {2}" .format(replica.name, __SIZE__, len(replica.rawdata.df)))
             ########### cell count
             datagb = replica.rawdata.get_groupby_data()
             cellcount = datagb.Well.count().to_dict()
@@ -102,10 +100,10 @@ def plate_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fi
                 if percent:
                     data_control = replica.get_raw_data(channel=channel, well=neg_well)
                     threshold_value = np.percentile(data_control, threshold)
-                else :
+                else:
                     data_control = replica.get_raw_data(channel=channel, well=neg_well)
                     threshold_value = np.mean(data_control)
-
+            log.debug('     Threshold value used: {}'.format(threshold_value))
 
             ########### variability
             well_list = replica.rawdata.get_unique_well()

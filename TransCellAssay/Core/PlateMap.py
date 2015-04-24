@@ -10,6 +10,8 @@ B
 C
 D
 E
+
+The goal of this object is to store location of multiple control or bank product, we can get all well for one product
 ..
 """
 
@@ -25,7 +27,6 @@ __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
-__version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
@@ -50,6 +51,7 @@ class PlateMap(object):
         self._re = None
         self._cb = None
         self._ce = None
+        log.debug('Created PlateMap')
 
     def set_platemap(self, file_path=None):
         """

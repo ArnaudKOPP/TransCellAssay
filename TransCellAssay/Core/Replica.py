@@ -12,7 +12,6 @@ __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
-__version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
@@ -33,7 +32,7 @@ class Replica(object):
     self.skip_well = () # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
-    def __init__(self, name=None, data=None, single=True, skip=(), datatype='median'):
+    def __init__(self, name, data, single=True, skip=(), datatype='mean'):
         """
         Constructor
         :param name: name of replica
@@ -42,24 +41,21 @@ class Replica(object):
         :param skip: Well to skip
         :param datatype: Median or Mean data
         """
+        self.name = name
         self.rawdata = None
+
         self.isNormalized = False
         self.isSpatialNormalized = False
         self.datatype = datatype
         self._array_channel = None
+
         self.array = None
         self.sec_array = None
 
-        if data is not None:
-            if not single:
-                self.set_data_override(data)
-            else:
-                self.set_raw_data(data)
-
-        if name is not None:
-            self.name = name
+        if not single:
+            self.set_data_override(data)
         else:
-            self.name = None
+            self.set_raw_data(data)
 
         self.skip_well = skip
         self._is_cutted = False
@@ -67,6 +63,7 @@ class Replica(object):
         self._re = None
         self._cb = None
         self._ce = None
+        log.debug('Replica created : {}'.format(self.name))
 
     def set_raw_data(self, input_file):
         """
@@ -351,7 +348,7 @@ class Replica(object):
         :param path: Where to write .csv file
         """
         if name is None:
-            name = self.name+".csv"
+            name = self.name
         self.rawdata.save_raw_data(path=path, name=name)
 
     def save_memory(self, only_cache=True):

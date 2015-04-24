@@ -22,7 +22,6 @@ __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
-__version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
@@ -136,7 +135,7 @@ class RawData(object):
         elif size <= 384:
             array = np.zeros((16, 24))
         elif size > 384:
-            raise NotImplementedError('MAX 384 Well plate are not implemented')
+            raise NotImplementedError('MAX 384 Well plate: bigger plate are not implemented')
         for i in range(size):
             array[self.df['Row'][i]][self.df['Column'][i]] = self.df[chan][i]
         return array
@@ -160,7 +159,7 @@ class RawData(object):
         elif len(position_value_dict) <= 384:
             data = np.zeros((16, 24))
         elif len(position_value_dict) > 384:
-            raise NotImplementedError('MAX 384 Well plate are not implemented')
+            raise NotImplementedError('MAX 384 Well plate: bigger plate are not implemented')
         for key, elem in position_value_dict.items():
             pos = TCA.get_opposite_well_format(key)
             data[pos[0]][pos[1]] = elem
@@ -185,6 +184,7 @@ class RawData(object):
     def _new_caching(self, key='Well'):
         self.__CACHING_gbdata = self.df.groupby(key)
         self.__CACHING_gbdata_key = key
+        log.debug('Created cache')
 
     def __get_group(self, key, channel=None):
         """
@@ -214,7 +214,7 @@ class RawData(object):
             raise Exception("Writing Raw data problem")
 
     def __write_raw_data(self, filepath):
-        self.df.to_csv(path=os.path.join(filepath) + ".csv", index=False)
+        self.df.to_csv(path=filepath, index=False)
         log.info('Writing File : {}'.format(filepath))
 
     def save_memory(self, only_caching=True):
@@ -224,8 +224,10 @@ class RawData(object):
         """
         self.__CACHING_gbdata = None
         self.__CACHING_gbdata_key = None
+        log.debug('Cache cleared')
         if not only_caching:
             self.df = None
+            log.debug('Rawdata cleared')
 
     def __repr__(self):
         return "\n Raw Data head : \n" + repr(self.df.head())

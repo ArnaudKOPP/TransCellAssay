@@ -15,7 +15,6 @@ __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "CC BY-NC-ND 4.0 License"
-__version__ = "1.0"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
@@ -42,7 +41,7 @@ class Plate(object):
     self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
-    def __init__(self, name=None, platemap=None, skip=()):
+    def __init__(self, name, platemap=None, skip=()):
         """
         Constructor for init default value
         :param name: name of plate, very important to file this
@@ -55,12 +54,6 @@ class Plate(object):
         self.platemap = TCA.Core.PlateMap()
         if platemap is not None:
             self.platemap = platemap
-        self.threshold = None
-        self._control_position = ((0, 11), (0, 23))
-
-        self._neg = None
-        self._pos = None
-        self._tox = None
 
         self.isNormalized = False
         self.isSpatialNormalized = False
@@ -70,11 +63,13 @@ class Plate(object):
         self.sec_array = None
 
         self.skip_well = skip
+
         self._is_cutted = False
         self._rb = None
         self._re = None
         self._cb = None
         self._ce = None
+        log.debug('Plate created : {}'.format(self.name))
 
     def set_plate_name(self, name):
         """
@@ -406,7 +401,7 @@ class Plate(object):
                 self.sec_array = corrected_data_array
                 self.isSpatialNormalized = True
 
-    def save_raw_data(self, path):
+    def save_raw_data(self, path, name=None):
         """
         Save normalized raw data
         :param path: path where to save raw data
@@ -414,7 +409,10 @@ class Plate(object):
         if not os.path.isdir(path):
             os.mkdir(path)
         for key, value in self.replica.items():
-            value.save_raw_data(path)
+            if name is not None:
+                value.save_raw_data(path=path, name=name)
+            else:
+                value.save_raw_data(path=path, name=self.name)
 
     def save_memory(self, only_cache=True):
         """
