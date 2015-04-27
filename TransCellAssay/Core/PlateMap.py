@@ -75,26 +75,26 @@ class PlateMap(object):
         else:
             return self.platemap.shape
 
-    def search_coord(self, to_search):
+    def search_coord(self, elem):
         """
         Search position of the gene and return coord
-        :param to_search: gene to search
+        :param elem: gene to search
         :return: list of coord
         """
-        list_coord = [x for x in zip(*np.where(self.platemap.values == to_search))]
+        list_coord = [x for x in zip(*np.where(self.platemap.values == elem))]
         if len(list_coord) < 1:
-            raise KeyError('This gene don\'t exist: %s' % to_search)
+            raise KeyError('This element don\'t exist: %s' % elem)
         return list_coord
 
-    def search_well(self, to_search):
+    def search_well(self, elem):
         """
         Search position of the gene and return Well (list if multiple)
-        :param to_search: gene to search
+        :param elem: gene to search
         :return: list of Well
         """
-        list_well = [Utils.get_opposite_well_format(x) for x in zip(*np.where(self.platemap.values == to_search))]
+        list_well = [Utils.get_opposite_well_format(x) for x in zip(*np.where(self.platemap.values == elem))]
         if len(list_well) < 1:
-            raise KeyError('This gene don\'t exist: %s' % to_search)
+            raise KeyError('This element don\'t exist: %s' % elem)
         return list_well
 
     def as_dict(self):

@@ -1,11 +1,10 @@
 # coding=utf-8
 """
-Class that store raw data in single cell or 1data/well
-use pandas dataframe for storing
-
+Class that store raw data in single cell, we use pandas dataframe for storing in memory
 Need a specific format for running optimum
 
-Well    X     X
+Well    Channel1     Channel2
+A1
 A1
 A2
 ..
@@ -29,7 +28,7 @@ __status__ = "Production"
 
 class RawData(object):
     """
-    Raw data that contain value in single cell level or 1data/well
+    Raw data that contain value in single cell level
     """
 
     def __init__(self, path_or_file):
@@ -38,9 +37,6 @@ class RawData(object):
         :param path_or_file:
         :return:
         """
-        self.__CACHING_gbdata = None
-        self.__CACHING_gbdata_key = None
-
         if isinstance(path_or_file, str):
             if os.path.isfile(path_or_file):
                 self.df = pd.read_csv(path_or_file, engine='c')
@@ -56,12 +52,18 @@ class RawData(object):
         else:
             raise NotImplementedError('Input types not handled')
 
+        self.__CACHING_gbdata = None
+        self.__CACHING_gbdata_key = None
+
     def get_channel_list(self):
         """
         Get all channels/component in list
         :return: list of channel/component
         """
-        return self.df.columns.tolist()
+        if self.df is not None:
+            return self.df.columns.tolist()
+        else:
+            raise IOError('Empty rawdata')
 
     def get_raw_data(self, channel=None, well=None, well_idx=False):
         """
@@ -71,7 +73,8 @@ class RawData(object):
         :param well_idx: add or not well id
         :return: raw data in pandas dataframe
         """
-
+        if self.df is None:
+            raise IOError('Empty rawdata')
         # # add well to columns that we want
         if well_idx:
             if not isinstance(channel, list):
@@ -120,6 +123,8 @@ class RawData(object):
         return all unique wells
         :return:
         """
+        if self.df is None:
+            raise IOError('Empty rawdata')
         return self.df.Well.unique()
 
     def df_to_array(self, chan):
@@ -147,6 +152,8 @@ class RawData(object):
         :param type_mean:
         :return:
         """
+        if self.df is None:
+            raise IOError('Empty rawdata')
         gbdata = self.get_groupby_data()
         if type_mean is 'median':
             tmp = gbdata.median()
@@ -229,8 +236,11 @@ class RawData(object):
             self.df = None
             log.debug('Rawdata cleared')
 
+    def __len__(self):
+        return len(self.df)
+
     def __repr__(self):
-        return "\n Raw Data head : \n" + repr(self.df.head())
+        return "\nRaw Data head : \n" + repr(self.df.head())
 
     def __str__(self):
         return self.__repr__()

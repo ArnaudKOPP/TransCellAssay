@@ -456,11 +456,11 @@ def plot_distribution(wells, plate, channel, rep=None, pool=False, file_path=Non
             for Well in wells:
                 rep_series = dict()
                 if rep is not None:
-                    rep_series[rep] = pd.Series(plate[rep].get_raw_data(channel=channel, well=Well))
+                    rep_series[rep] = pd.Series(plate[rep].get_rawdata(channel=channel, well=Well))
                     rep_series[rep].name = str(rep)+str(Well)
                 else:
                     for key, value in plate.replica.items():
-                        rep_series[key] = pd.Series(value.get_raw_data(channel=channel, well=Well))
+                        rep_series[key] = pd.Series(value.get_rawdata(channel=channel, well=Well))
                         rep_series[key].name = key+str(Well)
                 # # Plotting with pandas
                 if pool:

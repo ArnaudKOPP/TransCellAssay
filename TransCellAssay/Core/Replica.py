@@ -53,9 +53,9 @@ class Replica(object):
         self.sec_array = None
 
         if not single:
-            self.set_data_override(data)
+            self.set_array_data(data)
         else:
-            self.set_raw_data(data)
+            self.set_rawdata(data)
 
         self.skip_well = skip
         self._is_cutted = False
@@ -65,7 +65,7 @@ class Replica(object):
         self._ce = None
         log.debug('Replica created : {}'.format(self.name))
 
-    def set_raw_data(self, input_file):
+    def set_rawdata(self, input_file):
         """
         Set data in replica
         :param input_file: csv file
@@ -79,11 +79,11 @@ class Replica(object):
         """
         return self.rawdata.get_channel_list
 
-    def set_data_override(self, array, array_type='median'):
+    def set_array_data(self, array, array_type='median'):
         """
-        Set attribute data matrix into self.Data
+        Set attribute data matrix into self.array
         This method is designed for 1Data/Well or for manual analysis
-        :param array: numpy array with good shape
+        :param array: numpy array with good shape like platemap
         :param array_type: median or mean data
         """
         __valide_datatype = ['median', 'mean']
@@ -153,7 +153,7 @@ class Replica(object):
         else:
             raise ValueError('Empty List')
 
-    def get_raw_data(self, channel=None, well=None, well_idx=False):
+    def get_rawdata(self, channel=None, well=None, well_idx=False):
         """
         Get Raw data with specified param
         :param channel: defined or not channel
@@ -163,7 +163,7 @@ class Replica(object):
         """
         return self.rawdata.get_raw_data(channel=channel, well=well, well_idx=well_idx)
 
-    def compute_data_for_channel(self, channel):
+    def data_for_channel(self, channel):
         """
         Compute data in matrix form, get mean or median for well and save them in replica object
         :param channel: which channel to keep in matrix
@@ -174,10 +174,22 @@ class Replica(object):
                 log.warning('Overwriting previous channel data from {} to {}'.format(
                     self._array_channel, channel))
         if not self.isNormalized:
-            log.warning('Data are not normalized for replicat : {}'.format(self.name))
+            log.warning('Data are not normalized for replica : {}'.format(self.name))
 
         self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
         self._array_channel = channel
+
+    def data_for_channels(self, by='Median'):
+        """
+        Compute for all
+        :param by : Median or Mean
+        :return:
+        """
+        tmp = self.rawdata.get_groupby_data()
+        if by == 'Median':
+            return tmp.median().reset_index()
+        else:
+            return tmp.mean().reset_index()
 
     def get_data_array(self, channel, sec=False):
         """
@@ -192,11 +204,11 @@ class Replica(object):
             else:
                 return self.sec_array
         if self.array is None:
-            self.compute_data_for_channel(channel)
+            self.data_for_channel(channel)
         if channel is self._array_channel:
             return self.array
         else:
-            self.compute_data_for_channel(channel)
+            self.data_for_channel(channel)
             return self.array
 
     def cut(self, rb, re, cb, ce):
@@ -248,7 +260,7 @@ class Replica(object):
                                                                  pos_control=positive,
                                                                  threshold=threshold)
             self.isNormalized = True
-            self.compute_data_for_channel(channel)
+            self.data_for_channel(channel)
         else:
             log.warning("Data are already normalized, do nothing")
 
@@ -272,8 +284,8 @@ class Replica(object):
                 self.__normalization(channel=chan, method=method, log_t=log_t, neg=neg, pos=pos,
                                      skipping_wells=skipping_wells, threshold=threshold)
                 self.isNormalized = True
-            log.warning("Choose your channels that you want to work with plate.compute_data_from_replicat or "
-                        "replica.compute_data_for_channel")
+            log.warning("Choose your channels that you want to work with plate.agg_data_from_replica_channel or "
+                        "replica.data_for_channel")
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=True,
                                     max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[], skip_row=[],
@@ -363,10 +375,10 @@ class Replica(object):
         """
         Definition for the representation
         """
-        return ("\n Replicat : " + repr(self.name) +
+        return ("\nReplicat ID : " + repr(self.name) +
                 repr(self.rawdata) +
-                "\n Data normalized ? : " + repr(self.isNormalized) +
-                "\n Data systematic error removed ? : " + repr(self.isSpatialNormalized) + "\n")
+                "\nData normalized : " + repr(self.isNormalized) +
+                "\nData systematic error removed : " + repr(self.isSpatialNormalized) + "\n")
 
     def __str__(self):
         """

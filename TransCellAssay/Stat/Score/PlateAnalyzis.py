@@ -22,7 +22,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fixed_threshold=False, path=None):
+def plate_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fixed_threshold=True, path=None):
     """
     Do a plate analysis, get cell count, positive cells that satisfied threshold (ttest and fdr), mean and median
     for channel for all well, toxicity and viability index
@@ -98,10 +98,10 @@ def plate_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fi
                 threshold_value = threshold
             else:
                 if percent:
-                    data_control = replica.get_raw_data(channel=channel, well=neg_well)
+                    data_control = replica.get_rawdata(channel=channel, well=neg_well)
                     threshold_value = np.percentile(data_control, threshold)
                 else:
-                    data_control = replica.get_raw_data(channel=channel, well=neg_well)
+                    data_control = replica.get_rawdata(channel=channel, well=neg_well)
                     threshold_value = np.mean(data_control)
             log.debug('     Threshold value used: {}'.format(threshold_value))
 

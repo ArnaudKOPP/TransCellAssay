@@ -16,27 +16,6 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def reporthook(count, block_size, total_size):
-    """
-    Reporthook for visualizing advance of download
-    :param count:
-    :param block_size:
-    :param total_size:
-    :return:
-    """
-    global start_time
-    if count == 0:
-        start_time = time.time()
-        return
-    duration = time.time() - start_time
-    progress_size = int(count * block_size)
-    speed = int(progress_size / (1024 * duration))
-    percent = int(count * block_size * 100 / total_size)
-    sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
-                     (percent, progress_size / (1024 * 1024), speed, duration))
-    sys.stdout.flush()
-
-
 def get_opposite_well_format(to_change):
     """
     Change Well Format
@@ -65,7 +44,7 @@ def get_masked_array(data_arr, plate_array, to_keep):
     """
     Return an array with data to keep and set to 0 other
     :param data_arr: array data with value
-    :param plate_array: numpy array from platesetup
+    :param plate_array: numpy array from PlateMap
     :param to_keep: gene name to keep
     :return: numpy array with data keeped and 0 to other
     """
@@ -79,13 +58,13 @@ def get_masked_array(data_arr, plate_array, to_keep):
 
 def mad_based_outlier(data, thresh=3.5):
     """
-    http://stackoverflow.com/questions/22354094/pythonic-way-of-detecting-outliers-in-one-dimensional-observation-data
-
-    Based on mad, determine outliers
+    Based on mad, determine outliers by row
     :param data:
     :param thresh:
     :return:
     """
+    or_shape = data.shape
+    data = data.flatten()
     if len(data.shape) == 1:
         data = data[:, None]
     median = np.median(data, axis=0)
@@ -93,14 +72,13 @@ def mad_based_outlier(data, thresh=3.5):
     diff = np.sqrt(diff)
     med_abs_deviation = np.median(diff)
     modified_z_score = 0.6745 * diff / med_abs_deviation
+    modified_z_score = modified_z_score.reshape(or_shape)
     return modified_z_score > thresh
 
 
 def percentile_based_outlier(data, threshold=95):
     """
-    http://stackoverflow.com/questions/22354094/pythonic-way-of-detecting-outliers-in-one-dimensional-observation-data
-
-    Based on percentilen determine outliers
+    Based on percentile determine outliers
     :param data:
     :param threshold:
     :return:

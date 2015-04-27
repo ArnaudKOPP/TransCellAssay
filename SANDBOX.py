@@ -12,7 +12,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
-pd.set_option('display.max_rows', 100)
+pd.set_option('display.max_rows', 50)
 pd.set_option('display.max_columns', 50)
 pd.set_option('display.width', 1000)
 np.set_printoptions(linewidth=300)
@@ -45,7 +45,7 @@ def HDV(plate_nb):
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
 
-    # TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
+    TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
     # plaque.normalization_channels(channels=channel,
     #                               log_t=False,
     #                               method='PercentOfSample',
@@ -78,10 +78,10 @@ def HDV(plate_nb):
     #                               neg=platemap.search_well(neg),
     #                               pos=platemap.search_well(pos))
 
-    plaque.compute_data_from_replica(channel=channel)
+    plaque.agg_data_from_replica_channel(channel=channel)
     plaque.cut(1, 15, 1, 23, apply_down=True)
     # print(platemap)
-    plaque.compute_data_from_replica(channel=channel)
+    plaque.agg_data_from_replica_channel(channel=channel)
 
     # # Keep only neg or pos in 3D plot
     # test1_neg = TCA.get_masked_array(plaque.array, platemap.platemap.values, to_keep=neg)
@@ -90,13 +90,17 @@ def HDV(plate_nb):
     # TCA.plot_plate_3d(test1_pos)
 
     alpha = 0.1
-    verbose = True
+    verbose = False
     try:
-        TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
-        TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
-        TCA.systematic_error_detection_test(plaque['rep3'].array, verbose=verbose, alpha=alpha)
+        ar1 = TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
+        ar2 = TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
+        ar3 = TCA.systematic_error_detection_test(plaque['rep3'].array, verbose=verbose, alpha=alpha)
     except KeyError:
         pass
+
+    arr = ar1+ar2+ar3
+    TCA.plot_plate_3d(arr, surf=True)
+
     # plaque.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=verbose, alpha=alpha,
     #                                    max_iterations=50)
 
@@ -222,17 +226,17 @@ def PRESTWICK():
 
     neg = 'DMSO'
 
-    ControlPlate.compute_data_from_replica(channel='')
+    ControlPlate.agg_data_from_replica_channel(channel='')
     ControlPlate.cut(0, 9, 1, 11, apply_down=True)
 
     # # median normalized plate
     for plaque in PlateList_Def:
-        plaque.compute_data_from_replica(channel='')
+        plaque.agg_data_from_replica_channel(channel='')
         plaque.cut(0, 9, 1, 11, apply_down=True)
         for key, value in plaque.replica.items():
             value.array = value.array/np.median(value.array.flatten())
     for plaque in PlateList_Pro:
-        plaque.compute_data_from_replica(channel='')
+        plaque.agg_data_from_replica_channel(channel='')
         plaque.cut(0, 9, 1, 11, apply_down=True)
         for key, value in plaque.replica.items():
             value.array = value.array/np.median(value.array.flatten())
@@ -410,8 +414,22 @@ def misc():
         PlateList.append(plaque)
 
     for plate in PlateList:
-        TCA.plate_analysis(plate, channel, neg, pos, threshold=600, percent=False, fixed_threshold=True)
+        # print(plate)
+        # print(plate['rep1'])
+        # print(plate.agg_data_from_replica_channels())
+        plate.agg_data_from_replica_channel(channel)
+        print(plate.array)
+        # qc = TCA.plate_quality_control(plate, channel, cneg=neg, cpos=pos)
+        # print(qc)
+        # TCA.plate_analysis(plate, channel, neg, pos, threshold=600, percent=False, fixed_threshold=True)
         # TCA.plot_distribution(wells=['E2', 'F2'], plate=plate, channel=channel, pool=True)
+        # plate.agg_data_from_replica(channel=channel)
+        # print(plate.agg_data_channels_from_replica())
+        # TCA.plot_plate_3d(plate.array)
+        print('MAD')
+        print(TCA.mad_based_outlier(plate.array))
+        print('PERCENTILE')
+        print(TCA.percentile_based_outlier(plate.array))
 
 misc()
 print('FINISH')
