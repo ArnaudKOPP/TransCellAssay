@@ -45,7 +45,7 @@ def HDV(plate_nb):
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
 
-    TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
+    TCA.plate_channel_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
     # plaque.normalization_channels(channels=channel,
     #                               log_t=False,
     #                               method='PercentOfSample',
@@ -348,7 +348,7 @@ def Schneider():
         PlateList.append(plaque)
 
     for plate in PlateList:
-        TCA.plate_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=outpath)
+        TCA.plate_channel_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=outpath)
 
 # Schneider()
 
@@ -381,29 +381,28 @@ def zita():
         PlateList.append(plaque)
 
     for plate in PlateList:
-        TCA.plate_analysis(plate, channel, neg, pos, threshold=5, percent=True, path=outpath)
+        TCA.plate_channel_analysis(plate, channel, neg, pos, threshold=5, percent=True, path=outpath)
 
 # zita()
 
 
 def misc():
-    path = '/home/arnaud/Desktop/TargetActivation.V4_04-23-15_01;16;00/'
+    path = '/home/arnaud/Desktop/Schneider/Sylvain plaque test spot detector/'
 
-    outpath = os.path.join(path, '600')
-    if not os.path.isdir(outpath):
-        os.makedirs(outpath)
+    # outpath = os.path.join(path, '600')
+    # if not os.path.isdir(outpath):
+    #     os.makedirs(outpath)
 
-    channel = 'AvgIntenCh2'
-    neg = 'Infectées'
-    pos = 'Cyclo i'
+    channel = 'SpotTotalAreaCh3'
+    neg = 'scramble'
 
     PlateList = []
     for i in range(1, 2, 1):
         plaque = TCA.Core.Plate(name='Plaque'+str(i))
-        platemap = TCA.Core.PlateMap(platemap=path+"PP_hdv.csv")
+        platemap = TCA.Core.PlateMap(platemap=path+"PlateMap.csv")
         plaque + platemap
         try:
-            file = os.path.join(path+"150423 z factor prestwick.csv")
+            file = os.path.join(path+"Validation_Rawdata.csv")
             if os.path.isfile(file):
                 plaque + TCA.Core.Replica(name="rep1",
                                           data=file,
@@ -417,19 +416,20 @@ def misc():
         # print(plate)
         # print(plate['rep1'])
         # print(plate.agg_data_from_replica_channels())
-        plate.agg_data_from_replica_channel(channel)
-        print(plate.array)
+        # plate.agg_data_from_replica_channel(channel)
+        # print(plate.array)
         # qc = TCA.plate_quality_control(plate, channel, cneg=neg, cpos=pos)
         # print(qc)
-        # TCA.plate_analysis(plate, channel, neg, pos, threshold=600, percent=False, fixed_threshold=True)
+        # TCA.plate_channel_analysis(plate, channel, neg, threshold=50, percent=True, path=path)
+        TCA.plate_channels_analysis(plate, channels=('SpotTotalAreaCh2', 'SpotTotalAreaCh3'), neg=neg, threshold=50, percent=True)
         # TCA.plot_distribution(wells=['E2', 'F2'], plate=plate, channel=channel, pool=True)
         # plate.agg_data_from_replica(channel=channel)
         # print(plate.agg_data_channels_from_replica())
         # TCA.plot_plate_3d(plate.array)
-        print('MAD')
-        print(TCA.mad_based_outlier(plate.array))
-        print('PERCENTILE')
-        print(TCA.percentile_based_outlier(plate.array))
+        # print('MAD')
+        # print(TCA.mad_based_outlier(plate.array, thresh=3.0))
+        # print('PERCENTILE')
+        # print(TCA.percentile_based_outlier(plate.array, threshold=95))
 
 misc()
 print('FINISH')

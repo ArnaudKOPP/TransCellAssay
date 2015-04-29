@@ -22,7 +22,28 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fixed_threshold=True, path=None):
+def plate_channels_analysis(plate, channels, neg, pos=None, threshold=50, percent=True, fixed_threshold=False, path=None):
+    """
+    Like plate_channel_analysis, do a plate analysis but for multiple channels and parameters
+    :param plate: plate object
+    :param channels: list of channels
+    :param neg:
+    :param pos:
+    :param threshold:
+    :param percent:
+    :param fixed_threshold:
+    :param path:
+    :return:
+    """
+    if not isinstance(channels, list):
+        channels = list(channels)
+    for chan in channels:
+        log.info('Plate analysis for channel {}'.format(chan))
+        plate_channel_analysis(plate=plate, channel=chan, neg=neg, pos=pos, threshold=threshold, percent=percent,
+                               fixed_threshold=fixed_threshold, path=path)
+
+
+def plate_channel_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fixed_threshold=False, path=None):
     """
     Do a plate analysis, get cell count, positive cells that satisfied threshold (ttest and fdr), mean and median
     for channel for all well, toxicity and viability index
@@ -194,10 +215,10 @@ def plate_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fi
 
         if path is not None:
             try:
-                filepath = os.path.join(path, 'PlateAnalyzisData_'+str(plate.name)+'.csv')
+                filepath = os.path.join(path, 'PlateAnalyzis_'+str(plate.name)+'_'+str(channel)+'.csv')
                 result_array.write(file_path=filepath)
             except Exception as e:
-                log.error('Error during save PlateAnalyzisData : {}'.format(e))
+                log.error('Error during save PlateAnalyzis : {}'.format(e))
 
         return result_array
 

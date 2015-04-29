@@ -69,7 +69,7 @@ def plate_analyzis(plateid):
                                       skipping_wells=True)
 
         try:
-            analyse = TCA.plate_analysis(plaque, __CHAN__, __NEG__, __POS__, threshold=__THRES__, percent=True)
+            analyse = TCA.plate_channel_analysis(plaque, __CHAN__, __NEG__, __POS__, threshold=__THRES__, percent=True)
             analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
         except Exception as e:
             logging.error(e)
