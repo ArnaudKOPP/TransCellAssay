@@ -41,6 +41,7 @@ class Replica(object):
         :param skip: Well to skip
         :param datatype: Median or Mean data
         """
+        log.debug('Replica created : {}'.format(name))
         self.name = name
         self.rawdata = None
 
@@ -63,7 +64,6 @@ class Replica(object):
         self._re = None
         self._cb = None
         self._ce = None
-        log.debug('Replica created : {}'.format(self.name))
 
     def set_rawdata(self, input_file):
         """

@@ -191,7 +191,7 @@ class RawData(object):
     def _new_caching(self, key='Well'):
         self.__CACHING_gbdata = self.df.groupby(key)
         self.__CACHING_gbdata_key = key
-        log.debug('Created cache')
+        log.debug('Created rawdata cache')
 
     def __get_group(self, key, channel=None):
         """

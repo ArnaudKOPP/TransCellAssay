@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Platemap is designed to store matrix who represent the plate map, compatible with 96, 384 Well (1526 is tricky)
+Platemap is designed to store matrix who represent the plate map, compatible with 96, 384 Well (1536 is tricky)
 The matrix is representing by a pandas DataFrame (numpy array like)
 
 design in csv file must follow this
@@ -43,6 +43,7 @@ class PlateMap(object):
         """
         Constructor
         """
+        log.debug('Created PlateMap')
         self.platemap = pd.DataFrame()
         if platemap is not None:
             self.set_platemap(platemap)
@@ -51,7 +52,6 @@ class PlateMap(object):
         self._re = None
         self._cb = None
         self._ce = None
-        log.debug('Created PlateMap')
 
     def set_platemap(self, file_path=None):
         """
@@ -77,7 +77,7 @@ class PlateMap(object):
 
     def search_coord(self, elem):
         """
-        Search position of the gene and return coord
+        Search position of the gene and return coord (list of multiple)
         :param elem: gene to search
         :return: list of coord
         """
@@ -159,7 +159,7 @@ class PlateMap(object):
         Return geneName from specified position
         A1 = (0,0)
         :param position: A1 or (0, 0)
-        :return: string geneName of platesetup
+        :return: string geneName of plateMap
         """
         # # for (0, 0) format
         if isinstance(position, tuple):

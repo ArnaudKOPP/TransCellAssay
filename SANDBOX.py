@@ -12,7 +12,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
-pd.set_option('display.max_rows', 50)
+pd.set_option('display.max_rows', 100)
 pd.set_option('display.max_columns', 50)
 pd.set_option('display.width', 1000)
 np.set_printoptions(linewidth=300)
@@ -20,15 +20,14 @@ np.set_printoptions(suppress=True, precision=4)
 
 
 def HDV(plate_nb):
-    tag = 'subset'
+    tag = 'target_'
     path = '/home/arnaud/Desktop/HDV/DATA/'
 
     plaque = TCA.Core.Plate(name='HDV_' + tag + plate_nb)
-    platemap = TCA.Core.PlateMap(platemap=path+tag+"_PP_"+plate_nb+".csv")
-    plaque + platemap
+    plaque.platemap.set_platemap(file_path=path+tag+"PP_"+plate_nb+".csv")
     for i in ['1', '2', '3']:
         try:
-            file = path+tag+"_" + plate_nb + "."+i+".csv"
+            file = path+tag+plate_nb + "."+i+".csv"
             if os.path.isfile(file):
                 plaque + TCA.Core.Replica(name="rep"+i,
                                           data=file,
@@ -41,11 +40,11 @@ def HDV(plate_nb):
     neg = 'Neg infecté'
     pos = 'SiNTCP infecté'
 
-    outpath = '/home/arnaud/Desktop/HDV/DATA/Final_Analyze/SCORING/'
+    outpath = '/home/arnaud/Desktop/HDV/DATA/Final_Analyze2/'
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
 
-    TCA.plate_channel_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
+    # TCA.plate_channel_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
     # plaque.normalization_channels(channels=channel,
     #                               log_t=False,
     #                               method='PercentOfSample',
@@ -61,16 +60,15 @@ def HDV(plate_nb):
     #                         ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'],
     #                         channels=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
 
-    # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=85, percent=True, path=outpath)
+    ana = TCA.plate_channel_analysis(plaque, channel, neg, pos, threshold=85, percent=True)
     # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
     # ana = TCA.plate_analysis(plaque, channel, neg, pos)
-    # print(ana)
+    print(ana)
 
     # array = ana.values['PositiveCells']
     # array = array.flatten().reshape(platemap.shape())
     # TCA.heatmap_p(array)
 
-    # plaque.compute_data_from_replicat(channel=channel)
 
     # plaque.normalization_channels(channels=channel,
     #                               log_t=False,
@@ -78,10 +76,10 @@ def HDV(plate_nb):
     #                               neg=platemap.search_well(neg),
     #                               pos=platemap.search_well(pos))
 
-    plaque.agg_data_from_replica_channel(channel=channel)
-    plaque.cut(1, 15, 1, 23, apply_down=True)
-    # print(platemap)
-    plaque.agg_data_from_replica_channel(channel=channel)
+    # plaque.agg_data_from_replica_channel(channel=channel)
+    # plaque.cut(1, 15, 1, 23, apply_down=True)
+    # # print(platemap)
+    # plaque.agg_data_from_replica_channel(channel=channel)
 
     # # Keep only neg or pos in 3D plot
     # test1_neg = TCA.get_masked_array(plaque.array, platemap.platemap.values, to_keep=neg)
@@ -91,15 +89,15 @@ def HDV(plate_nb):
 
     alpha = 0.1
     verbose = False
-    try:
-        ar1 = TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
-        ar2 = TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
-        ar3 = TCA.systematic_error_detection_test(plaque['rep3'].array, verbose=verbose, alpha=alpha)
-    except KeyError:
-        pass
-
-    arr = ar1+ar2+ar3
-    TCA.plot_plate_3d(arr, surf=True)
+    # try:
+    #     ar1 = TCA.systematic_error_detection_test(plaque['rep1'].array, verbose=verbose, alpha=alpha)
+    #     ar2 = TCA.systematic_error_detection_test(plaque['rep2'].array, verbose=verbose, alpha=alpha)
+    #     ar3 = TCA.systematic_error_detection_test(plaque['rep3'].array, verbose=verbose, alpha=alpha)
+    # except KeyError:
+    #     pass
+    #
+    # arr = ar1+ar2+ar3
+    # TCA.plot_plate_3d(arr, surf=True)
 
     # plaque.systematic_error_correction(algorithm="PMP", apply_down=True, save=True, verbose=verbose, alpha=alpha,
     #                                    max_iterations=50)
@@ -168,8 +166,8 @@ def HDV(plate_nb):
     # TCA.boxplot_by_wells(plaque['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['E2', 'F2'], plate=plaque, channel=channel, pool=True)
 
-# for i in range(1, 2, 1):
-#     HDV(str(i))
+for i in range(1, 2, 1):
+    HDV(str(i))
 
 
 def PRESTWICK():
@@ -320,11 +318,11 @@ def PRESTWICK():
 
 
 def Schneider():
-    path = '/home/arnaud/Desktop/Schneider/red_green/'
+    path = '/home/arnaud/Desktop/Schneider/BatchV2/'
 
-    outpath = os.path.join(path, 'red')
-    if not os.path.isdir(outpath):
-        os.makedirs(outpath)
+    # outpath = os.path.join(path, 'red')
+    # if not os.path.isdir(outpath):
+    #     os.makedirs(outpath)
 
     channel = 'hetero rouge - bckg rouge'
     neg = 'Scramble'
@@ -348,7 +346,8 @@ def Schneider():
         PlateList.append(plaque)
 
     for plate in PlateList:
-        TCA.plate_channel_analysis(plate, channel, neg, pos, threshold=50, percent=True, path=outpath)
+        TCA.plate_channels_analysis(plate, channels=('Count', 'MeanArea'), neg=neg, pos=pos, threshold=50,
+                                    percent=True, path=path)
 
 # Schneider()
 
@@ -387,22 +386,22 @@ def zita():
 
 
 def misc():
-    path = '/home/arnaud/Desktop/Schneider/Sylvain plaque test spot detector/'
+    path = '/home/arnaud/Desktop/Datas Aurores CF23/'
 
     # outpath = os.path.join(path, '600')
     # if not os.path.isdir(outpath):
     #     os.makedirs(outpath)
 
-    channel = 'SpotTotalAreaCh3'
+    channel = 'AvgIntenCh2'
     neg = 'scramble'
 
     PlateList = []
     for i in range(1, 2, 1):
         plaque = TCA.Core.Plate(name='Plaque'+str(i))
-        platemap = TCA.Core.PlateMap(platemap=path+"PlateMap.csv")
+        platemap = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/PP_96.csv")
         plaque + platemap
         try:
-            file = os.path.join(path+"Validation_Rawdata.csv")
+            file = os.path.join(path+"CF23_test_Ab_anti-GFP_ab13970_170415.csv")
             if os.path.isfile(file):
                 plaque + TCA.Core.Replica(name="rep1",
                                           data=file,
@@ -421,8 +420,10 @@ def misc():
         # qc = TCA.plate_quality_control(plate, channel, cneg=neg, cpos=pos)
         # print(qc)
         # TCA.plate_channel_analysis(plate, channel, neg, threshold=50, percent=True, path=path)
-        TCA.plate_channels_analysis(plate, channels=('SpotTotalAreaCh2', 'SpotTotalAreaCh3'), neg=neg, threshold=50, percent=True)
-        # TCA.plot_distribution(wells=['E2', 'F2'], plate=plate, channel=channel, pool=True)
+        # TCA.plate_channels_analysis(plate, channels=('Ratio_Target_I', 'Ratio_Target_II'), neg=neg, threshold=50,
+        #                             percent=True, path=path)
+        TCA.plot_distribution_hist(wells=['D2', 'C2', 'B2'], plate=plate, channel=channel, pool=True, bins=200)
+        TCA.plot_distribution_kde(wells=['D2', 'C2', 'B2'], plate=plate, channel=channel, pool=True)
         # plate.agg_data_from_replica(channel=channel)
         # print(plate.agg_data_channels_from_replica())
         # TCA.plot_plate_3d(plate.array)
@@ -431,5 +432,5 @@ def misc():
         # print('PERCENTILE')
         # print(TCA.percentile_based_outlier(plate.array, threshold=95))
 
-misc()
+# misc()
 print('FINISH')

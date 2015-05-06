@@ -48,6 +48,7 @@ class Plate(object):
         :param platemap: platemap for this plate
         :param skip: Well to skip for all replica
         """
+        log.debug('Plate created : {}'.format(name))
         self.replica = collections.OrderedDict()
         self.name = name
 
@@ -69,7 +70,6 @@ class Plate(object):
         self._re = None
         self._cb = None
         self._ce = None
-        log.debug('Plate created : {}'.format(self.name))
 
     def set_plate_name(self, name):
         """
@@ -214,7 +214,7 @@ class Plate(object):
         else:
             for rep in replica:
                 data[self.replica[rep].get_rep_name()] = rep.get_rawdata(channel=channel, well=well,
-                                                                          well_idx=well_idx)
+                                                                         well_idx=well_idx)
 
     def agg_data_from_replica_channels(self, by='Median'):
         """
