@@ -35,25 +35,17 @@ class ReferenceDataWriter(object):
         self._writer.close()
 
     def _save_reference(self, plate, channels, ref):
-        plt_list = []
-
-        # # Grab all plate object
         if not isinstance(plate, TCA.Plate):
             raise ValueError('Take Plate in input')
 
         plt_col_idx = [str(x)+str(y)+str(z) for x in [t for t in plate.replica.keys()] for y in ref for z in ['Mean', 'Std', 'Sem']]
 
         for channel in channels:
-            if channel not in plate.platemap.get_channel_list():
-                raise ValueError('Wrong Channel')
-            log.debug('Computation for channel :', channel)
+            log.debug('Computation for channel :{}'.format(channel))
             plt_name_index = []
             df = pd.DataFrame()
-            i = 1
-            for plate in plt_list:
-                df = df.append(pd.DataFrame(self._get_plate_reference_data(plate, refs=ref, chan=channel)))
-                plt_name_index.append(plate.name+str(i))
-                i += 1
+            df = df.append(pd.DataFrame(self._get_plate_reference_data(plate, refs=ref, chan=channel)))
+            plt_name_index.append(plate.name)
             df = df.set_index([plt_name_index])
             df.columns = plt_col_idx
             if self._writer is not None:
@@ -71,7 +63,7 @@ class ReferenceDataWriter(object):
 
         plate_ref_data = None
 
-        for key, value in plate.replicat.items():
+        for key, value in plate.replica.items():
             tmp = self._get_replicat_reference_data(value, well_ref, chan=chan)
             if plate_ref_data is not None:
                 plate_ref_data = np.append(plate_ref_data, tmp, axis=1)

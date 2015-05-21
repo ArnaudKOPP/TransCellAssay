@@ -224,8 +224,8 @@ def __get_data_control(data, channel, c_ref):
         if isinstance(i, tuple):
             i = TCA.get_opposite_well_format(i)
         if datax.empty:
-            datax = data.get_rawdata(channel=channel, well=i)
-        datax = datax.append(data.get_rawdata(channel=channel, well=i))
+            datax = data.get_raw_data(channel=channel, well=i)
+        datax = datax.append(data.get_raw_data(channel=channel, well=i))
     return datax
 
 
