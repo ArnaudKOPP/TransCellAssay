@@ -1,10 +1,11 @@
 # coding=utf-8
 """
 Usefull function
+
+1536 well is only supported in 'simple' format from A to AF for row and 1 to 48 for columns  (begin by 0 in python)
 """
 
-import sys
-import time
+import re
 import numpy as np
 
 __author__ = "Arnaud KOPP"
@@ -16,26 +17,39 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def get_opposite_well_format(to_change):
+def get_opposite_well_format(to_change, bignum=False):
     """
     Change Well Format
     A1 to (0,0) or (1,3) to B4
-    1536 format not yet supported
     :param to_change: tuple or str
     :return: opposite well format
     """
-    lettereq = dict(A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14, P=15)
+    lettereq = dict(A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14, P=15, Q=16, R=17,
+                    S=18, T=19, U=20, V=21, W=22, X=23, Y=24, Z=25, AA=26, AB=27, AC=28, AD=29, AE=30, AF=31)
     numbeq = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M',
-              13: 'N', 14: 'O', 15: 'P'}
+              13: 'N', 14: 'O', 15: 'P', 16:'Q', 17:'R', 18:'S', 19:'T', 20:'U', 21:'V', 22:'W', 23:'X', 24:'Y', 25:'Z',
+              26:'AA', 27:'AB', 28:'AC', 29:'AD', 30:'AE', 31:'AF'}
     try:
-        if isinstance(to_change, tuple):
-            new_form = "{0}{1}".format(str(numbeq[to_change[0]]), to_change[1] + 1)
-            return new_form
-        elif isinstance(to_change, str):
-            new_form = lettereq[to_change[0]], int(to_change[1:]) - 1
-            return new_form
+        if bignum:
+            if isinstance(to_change, tuple):
+                new_form = "{0}{1}".format(str(numbeq[to_change[0]]), to_change[1] + 1)
+                return new_form
+            elif isinstance(to_change, str):
+                r = re.compile(pattern="([a-zA-Z]+)([0-9]+)")
+                m = r.match(to_change)
+                new_form = lettereq[m.group(1)], int(m.group(2)) - 1
+                return new_form
+            else:
+                raise ValueError
         else:
-            raise ValueError
+            if isinstance(to_change, tuple):
+                new_form = "{0}{1}".format(str(numbeq[to_change[0]]), to_change[1] + 1)
+                return new_form
+            elif isinstance(to_change, str):
+                new_form = lettereq[to_change[0]], int(to_change[1:]) - 1
+                return new_form
+            else:
+                raise ValueError
     except Exception as e:
         print(e)
 
