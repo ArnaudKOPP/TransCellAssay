@@ -11,6 +11,15 @@ C
 D
 E
 
+if 1536 layout, only this one is supported
+
+    1   2   3    ...... 48
+A
+B
+..
+AE
+AF
+
 The goal of this object is to store location of multiple control or bank product, we can get all well for one product
 ..
 """

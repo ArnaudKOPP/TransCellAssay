@@ -27,9 +27,9 @@ def HDV(plate_nb):
     plaque.platemap.set_platemap(file_path=path+tag+"PP_"+plate_nb+".csv")
     for i in ['1', '2', '3']:
         try:
-            file = path+tag+plate_nb + "."+i+".csv"
+            file = path + tag + plate_nb + "." + i + ".csv"
             if os.path.isfile(file):
-                plaque + TCA.Core.Replica(name="rep"+i,
+                plaque + TCA.Core.Replica(name="rep" + i,
                                           data=file,
                                           datatype='mean')
         except Exception as e:
@@ -54,15 +54,15 @@ def HDV(plate_nb):
     # TCA.plate_filtering(plaque, channel=channel, upper=150, lower=50, include=True, percent=False)
 
     # plaque.check_data_consistency()
-    # TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=True, verbose=True)
+    # TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=True, dirpath="/home/arnaud/Desktop/")
     # TCA.ReferenceDataWriter(plaque,
     #                         filepath='/home/arnaud/Desktop/test.xlsx',
-    #                         ref=['Neg', 'F1 ATPase A', 'F1 ATPase B'],
-    #                         channels=["ROI_B_Target_I_ObjectTotalInten", "ROI_A_Target_I_ObjectTotalInten"])
+    #                         ref=['Neg infecté', 'SiNTCP infecté'],
+    #                         channels=['AvgIntenCh2'])
 
-    ana = TCA.plate_channel_analysis(plaque, channel, neg, pos, threshold=85, percent=True)
-    # ana = TCA.plate_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
-    # ana = TCA.plate_analysis(plaque, channel, neg, pos)
+    # ana = TCA.plate_channel_analysis(plaque, channel, neg, pos, threshold=85, percent=True)
+    ana = TCA.plate_channel_analysis(plaque, channel, neg, pos, threshold=600, percent=False)
+    # ana = TCA.plate_channel_analysiss(plaque, channel, neg, pos)
     print(ana)
 
     # array = ana.values['PositiveCells']
@@ -166,8 +166,9 @@ def HDV(plate_nb):
     # TCA.boxplot_by_wells(plaque['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['E2', 'F2'], plate=plaque, channel=channel, pool=True)
 
-for i in range(1, 2, 1):
-    HDV(str(i))
+
+# for i in range(7, 8, 1):
+#     HDV(str(i))
 
 
 def PRESTWICK():
@@ -176,14 +177,14 @@ def PRESTWICK():
     cell_line = 'Def'
     PlateList_Def = []
     for i in range(1, 17, 1):
-        plaque = TCA.Core.Plate(name='Mouse_repeat1_'+cell_line + str(i))
-        platemap = TCA.Core.PlateMap(platemap=path+"Pl"+str(i)+"PP.csv")
+        plaque = TCA.Core.Plate(name='Mouse_repeat1_' + cell_line + str(i))
+        platemap = TCA.Core.PlateMap(platemap=path + "Pl" + str(i) + "PP.csv")
         plaque + platemap
         for j in range(1, 4, 1):
             try:
-                file = path+cell_line+"_PL" + str(i) + "."+str(j)+".csv"
+                file = path + cell_line + "_PL" + str(i) + "." + str(j) + ".csv"
                 if os.path.isfile(file):
-                    plaque + TCA.Core.Replica(name="rep"+str(j),
+                    plaque + TCA.Core.Replica(name="rep" + str(j),
                                               data=np.loadtxt(file, delimiter=','),
                                               single=False,
                                               datatype='mean')
@@ -194,14 +195,14 @@ def PRESTWICK():
     cell_line = 'Pro'
     PlateList_Pro = []
     for i in range(1, 17, 1):
-        plaque = TCA.Core.Plate(name='Mouse_repeat1_'+cell_line + str(i))
-        platemap = TCA.Core.PlateMap(platemap=path+"Pl"+str(i)+"PP.csv")
+        plaque = TCA.Core.Plate(name='Mouse_repeat1_' + cell_line + str(i))
+        platemap = TCA.Core.PlateMap(platemap=path + "Pl" + str(i) + "PP.csv")
         plaque + platemap
         for j in range(1, 4, 1):
             try:
-                file = path+cell_line+"_PL" + str(i) + "."+str(j)+".csv"
+                file = path + cell_line + "_PL" + str(i) + "." + str(j) + ".csv"
                 if os.path.isfile(file):
-                    plaque + TCA.Core.Replica(name="rep"+str(j),
+                    plaque + TCA.Core.Replica(name="rep" + str(j),
                                               data=np.loadtxt(file, delimiter=','),
                                               single=False,
                                               datatype='mean')
@@ -211,12 +212,12 @@ def PRESTWICK():
 
     # # Control plate
     ControlPlate = TCA.Core.Plate(name='Control')
-    platemapC = TCA.Core.PlateMap(platemap=path+"PlXXPP.csv")
+    platemapC = TCA.Core.PlateMap(platemap=path + "PlXXPP.csv")
     ControlPlate + platemapC
     i = 1
     for file in os.listdir(path):
         if fnmatch.fnmatch(file, '*Control*'):
-            ControlPlate + TCA.Core.Replica(name="rep"+str(i),
+            ControlPlate + TCA.Core.Replica(name="rep" + str(i),
                                             data=np.loadtxt(os.path.join(path, file), delimiter=','),
                                             single=False,
                                             datatype='mean')
@@ -232,15 +233,15 @@ def PRESTWICK():
         plaque.agg_data_from_replica_channel(channel='')
         plaque.cut(0, 9, 1, 11, apply_down=True)
         for key, value in plaque.replica.items():
-            value.array = value.array/np.median(value.array.flatten())
+            value.array = value.array / np.median(value.array.flatten())
     for plaque in PlateList_Pro:
         plaque.agg_data_from_replica_channel(channel='')
         plaque.cut(0, 9, 1, 11, apply_down=True)
         for key, value in plaque.replica.items():
-            value.array = value.array/np.median(value.array.flatten())
+            value.array = value.array / np.median(value.array.flatten())
 
     for key, value in ControlPlate.replica.items():
-        value.array = value.array/np.median(value.array.flatten())
+        value.array = value.array / np.median(value.array.flatten())
 
     verbose = True
     sec = False
@@ -278,7 +279,7 @@ def PRESTWICK():
         final_array = np.append(final_array, fdr2.flatten().reshape(__SIZE__, 1), axis=1)
 
         to_save = pd.DataFrame(final_array)
-        to_save.to_csv(os.path.join(output_path, 'HIT_'+plaque.name+'.csv'), index=False, header=False)
+        to_save.to_csv(os.path.join(output_path, 'HIT_' + plaque.name + '.csv'), index=False, header=False)
 
     for plaque in PlateList_Pro:
         ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=sec,
@@ -309,10 +310,11 @@ def PRESTWICK():
         final_array = np.append(final_array, fdr2.flatten().reshape(__SIZE__, 1), axis=1)
 
         to_save = pd.DataFrame(final_array)
-        to_save.to_csv(os.path.join(output_path, 'HIT_'+plaque.name+'.csv'), index=False, header=False)
+        to_save.to_csv(os.path.join(output_path, 'HIT_' + plaque.name + '.csv'), index=False, header=False)
 
-    # TCA.plot_wells(PlateList)
-    # TCA.heatmap_map_p(PlateList, usesec=False)
+        # TCA.plot_wells(PlateList)
+        # TCA.heatmap_map_p(PlateList, usesec=False)
+
 
 # PRESTWICK()
 
@@ -330,14 +332,14 @@ def Schneider():
 
     PlateList = []
     for i in range(1, 4, 1):
-        plaque = TCA.Core.Plate(name='Plaque'+str(i))
-        platemap = TCA.Core.PlateMap(platemap=path+"Pl"+str(i)+"PP.csv")
+        plaque = TCA.Core.Plate(name='Plaque' + str(i))
+        platemap = TCA.Core.PlateMap(platemap=path + "Pl" + str(i) + "PP.csv")
         plaque + platemap
         for j in range(3):
             try:
-                file = path+"Pl" + str(i) + "."+str(j)+".csv"
+                file = path + "Pl" + str(i) + "." + str(j) + ".csv"
                 if os.path.isfile(file):
-                    plaque + TCA.Core.Replica(name="rep"+str(j),
+                    plaque + TCA.Core.Replica(name="rep" + str(j),
                                               data=file,
                                               single=True,
                                               datatype='mean')
@@ -348,6 +350,7 @@ def Schneider():
     for plate in PlateList:
         TCA.plate_channels_analysis(plate, channels=('Count', 'MeanArea'), neg=neg, pos=pos, threshold=50,
                                     percent=True, path=path)
+
 
 # Schneider()
 
@@ -365,11 +368,11 @@ def zita():
 
     PlateList = []
     for i in range(1, 3, 1):
-        plaque = TCA.Core.Plate(name='Plaque'+str(i))
-        platemap = TCA.Core.PlateMap(platemap=path+"Pl"+str(i)+"PP.csv")
+        plaque = TCA.Core.Plate(name='Plaque' + str(i))
+        platemap = TCA.Core.PlateMap(platemap=path + "Pl" + str(i) + "PP.csv")
         plaque + platemap
         try:
-            file = path+"150415 Zita marquage 6-4P Plaque"+str(i)+".csv"
+            file = path + "150415 Zita marquage 6-4P Plaque" + str(i) + ".csv"
             if os.path.isfile(file):
                 plaque + TCA.Core.Replica(name="rep1",
                                           data=file,
@@ -382,26 +385,27 @@ def zita():
     for plate in PlateList:
         TCA.plate_channel_analysis(plate, channel, neg, pos, threshold=5, percent=True, path=outpath)
 
+
 # zita()
 
 
 def misc():
-    path = '/home/arnaud/Desktop/Datas Aurores CF23/'
+    path = '/home/arnaud/Desktop/Schneider/Sylvain analyse avec noyaux denses exclus/'
 
     # outpath = os.path.join(path, '600')
     # if not os.path.isdir(outpath):
     #     os.makedirs(outpath)
 
-    channel = 'AvgIntenCh2'
+    # channel = 'Target_II_ratio'
     neg = 'scramble'
 
     PlateList = []
     for i in range(1, 2, 1):
-        plaque = TCA.Core.Plate(name='Plaque'+str(i))
-        platemap = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/PP_96.csv")
+        plaque = TCA.Core.Plate(name='Plaque' + str(i))
+        platemap = TCA.Core.PlateMap(platemap="/home/arnaud/Desktop/Schneider/Sylvain analyse avec noyaux denses exclus/PlateMap.csv")
         plaque + platemap
         try:
-            file = os.path.join(path+"CF23_test_Ab_anti-GFP_ab13970_170415.csv")
+            file = os.path.join(path + "siRNA_validation.csv")
             if os.path.isfile(file):
                 plaque + TCA.Core.Replica(name="rep1",
                                           data=file,
@@ -420,10 +424,14 @@ def misc():
         # qc = TCA.plate_quality_control(plate, channel, cneg=neg, cpos=pos)
         # print(qc)
         # TCA.plate_channel_analysis(plate, channel, neg, threshold=50, percent=True, path=path)
-        # TCA.plate_channels_analysis(plate, channels=('Ratio_Target_I', 'Ratio_Target_II'), neg=neg, threshold=50,
-        #                             percent=True, path=path)
-        TCA.plot_distribution_hist(wells=['D2', 'C2', 'B2'], plate=plate, channel=channel, pool=True, bins=200)
-        TCA.plot_distribution_kde(wells=['D2', 'C2', 'B2'], plate=plate, channel=channel, pool=True)
+        TCA.plate_channels_analysis(plate, channels=('Target_I_ratio', 'Target_II_ratio'), neg=neg, threshold=50,
+                                    percent=True, path=path)
+        # TCA.ReferenceDataWriter(plate,
+        #                         filepath='/home/arnaud/Desktop/test.xlsx',
+        #                         ref=['scramble', 'Suvh1'],
+        #                         channels=['Target_I_ratio', 'Target_II_ratio'])
+        # TCA.plot_distribution_hist(wells=['D2', 'C2', 'B2'], plate=plate, channel=channel, pool=True, bins=200)
+        # TCA.plot_distribution_kde(wells=['D2', 'C2', 'B2'], plate=plate, channel=channel, pool=True)
         # plate.agg_data_from_replica(channel=channel)
         # print(plate.agg_data_channels_from_replica())
         # TCA.plot_plate_3d(plate.array)
@@ -433,4 +441,5 @@ def misc():
         # print(TCA.percentile_based_outlier(plate.array, threshold=95))
 
 # misc()
-print('FINISH')
+
+TCA.sigmoid_fitting()

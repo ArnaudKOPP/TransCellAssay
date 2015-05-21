@@ -17,36 +17,36 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def get_opposite_well_format(to_change, bignum=False):
+def get_opposite_well_format(to_conv, bignum=False):
     """
     Change Well Format
     A1 to (0,0) or (1,3) to B4
-    :param to_change: tuple or str
+    :param to_conv: tuple or str
     :return: opposite well format
     """
     lettereq = dict(A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14, P=15, Q=16, R=17,
                     S=18, T=19, U=20, V=21, W=22, X=23, Y=24, Z=25, AA=26, AB=27, AC=28, AD=29, AE=30, AF=31)
     numbeq = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M',
-              13: 'N', 14: 'O', 15: 'P', 16:'Q', 17:'R', 18:'S', 19:'T', 20:'U', 21:'V', 22:'W', 23:'X', 24:'Y', 25:'Z',
-              26:'AA', 27:'AB', 28:'AC', 29:'AD', 30:'AE', 31:'AF'}
+              13: 'N', 14: 'O', 15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U', 21: 'V', 22: 'W', 23: 'X',
+              24: 'Y', 25: 'Z',26: 'AA', 27: 'AB', 28: 'AC', 29: 'AD', 30: 'AE', 31: 'AF'}
     try:
         if bignum:
-            if isinstance(to_change, tuple):
-                new_form = "{0}{1}".format(str(numbeq[to_change[0]]), to_change[1] + 1)
+            if isinstance(to_conv, tuple):
+                new_form = "{0}{1}".format(str(numbeq[to_conv[0]]), to_conv[1] + 1)
                 return new_form
-            elif isinstance(to_change, str):
+            elif isinstance(to_conv, str):
                 r = re.compile(pattern="([a-zA-Z]+)([0-9]+)")
-                m = r.match(to_change)
+                m = r.match(to_conv)
                 new_form = lettereq[m.group(1)], int(m.group(2)) - 1
                 return new_form
             else:
                 raise ValueError
         else:
-            if isinstance(to_change, tuple):
-                new_form = "{0}{1}".format(str(numbeq[to_change[0]]), to_change[1] + 1)
+            if isinstance(to_conv, tuple):
+                new_form = "{0}{1}".format(str(numbeq[to_conv[0]]), to_conv[1] + 1)
                 return new_form
-            elif isinstance(to_change, str):
-                new_form = lettereq[to_change[0]], int(to_change[1:]) - 1
+            elif isinstance(to_conv, str):
+                new_form = lettereq[to_conv[0]], int(to_conv[1:]) - 1
                 return new_form
             else:
                 raise ValueError
@@ -82,7 +82,7 @@ def mad_based_outlier(data, thresh=3.5):
     if len(data.shape) == 1:
         data = data[:, None]
     median = np.median(data, axis=0)
-    diff = np.sum((data - median)**2, axis=-1)
+    diff = np.sum((data - median) ** 2, axis=-1)
     diff = np.sqrt(diff)
     med_abs_deviation = np.median(diff)
     modified_z_score = 0.6745 * diff / med_abs_deviation

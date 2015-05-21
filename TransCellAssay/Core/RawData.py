@@ -140,7 +140,8 @@ class RawData(object):
         elif size <= 384:
             array = np.zeros((16, 24))
         elif size > 384:
-            raise NotImplementedError('MAX 384 Well plate: bigger plate are not implemented')
+            array = np.zeros((32, 48))
+            log.warning('1536 well plate size')
         for i in range(size):
             array[self.df['Row'][i]][self.df['Column'][i]] = self.df[chan][i]
         return array
