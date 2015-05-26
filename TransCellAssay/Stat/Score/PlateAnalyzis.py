@@ -31,13 +31,13 @@ def plate_channels_analysis(plate, channels, neg, pos=None, threshold=50, percen
     Like plate_channel_analysis, do a plate analysis but for multiple channels and parameters
     :param plate: plate object
     :param channels: list of channels
-    :param neg:
-    :param pos:
-    :param threshold:
-    :param percent:
-    :param fixed_threshold:
-    :param path:
-    :return:
+    :param neg: negative control
+    :param pos: positive control, is optional
+    :param threshold: fixe the percent of positive well found in negative control well
+    :param percent: True if threshold value is percent, False if we want to give a value
+    :param fixed_threshold: use given threshold (value mode) for all well
+    :param path: path where file will be saved
+    :return: return result into a dataframe
     """
     if not isinstance(channels, list):
         channels = list(channels)
@@ -48,20 +48,6 @@ def plate_channels_analysis(plate, channels, neg, pos=None, threshold=50, percen
 
 
 def plate_channel_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fixed_threshold=False, path=None):
-    """
-    Do a plate analysis, get cell count, positive cells that satisfied threshold (ttest and fdr), mean and median
-    for channel for all well, toxicity and viability index
-    if percent and fixed_threshold are false, given value for threshold will be used in real value for all well
-    :param plate: plate
-    :param channel: reference channel
-    :param neg: negative control use of neg for various score and toxicity index
-    :param pos: positive control for viability score
-    :param threshold: threshold for defining % of positive cell in negative ref
-    :param percent: use percent for threshold, if false, it will be a real value
-    :param fixed_threshold: use given threshold (in value mode) for all well
-    :param path: Path to save Data
-    :return: return result
-    """
     if not isinstance(plate, TCA.Plate):
         raise TypeError("File Plate Object")
     else:
@@ -95,14 +81,6 @@ def plate_channel_analysis(plate, channel, neg, pos=None, threshold=50, percent=
         median_well_value_all_replica = collections.OrderedDict()
         percent_cell_all_replica = collections.OrderedDict()
         percent_cell_sd = collections.OrderedDict()
-
-        def __dict_to_df(input_dict):
-            name = np.array(list(input_dict))
-            name = name.flatten().reshape(len(name), 1)
-            ar = np.concatenate(list(input_dict.values()))
-            ar = ar.flatten().reshape(len(ar) / len(plate.replica), len(plate.replica))
-            ar = np.append(ar, name, axis=1)
-            return pd.DataFrame(ar)
 
         # ########## iterate over replicat
         i = 1

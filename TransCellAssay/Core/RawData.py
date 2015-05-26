@@ -31,15 +31,15 @@ class RawData(object):
     Raw data that contain value in single cell level
     """
 
-    def __init__(self, path_or_file):
+    def __init__(self, path_or_file, **kwargs):
         """
         Constructor
-        :param path_or_file:
+        :param path_or_file: give the path of csv file or InputFile object
         :return:
         """
         if isinstance(path_or_file, str):
             if os.path.isfile(path_or_file):
-                self.df = pd.read_csv(path_or_file, engine='c')
+                self.df = pd.read_csv(path_or_file, engine='c', **kwargs)
                 log.info('Reading RawData %s File' % path_or_file)
             else:
                 raise IOError('File don\'t exist')
@@ -208,7 +208,7 @@ class RawData(object):
         else:
             return self.__CACHING_gbdata.get_group(key)
 
-    def save_raw_data(self, path, name=None):
+    def save_raw_data(self, path, name=None, **kwargs):
         """
         Save normalized Raw data
         :param name: Give name to file
@@ -217,12 +217,12 @@ class RawData(object):
         if not os.path.isdir(path):
             os.mkdir(path)
         if name is not None:
-            self.__write_raw_data(os.path.join(path, name)+'.csv')
+            self.__write_raw_data(os.path.join(path, name)+'.csv', **kwargs)
         else:
             raise Exception("Writing Raw data problem")
 
-    def __write_raw_data(self, filepath):
-        self.df.to_csv(path=filepath, index=False)
+    def __write_raw_data(self, filepath, **kwargs):
+        self.df.to_csv(path=filepath, index=False, **kwargs)
         log.info('Writing File : {}'.format(filepath))
 
     def save_memory(self, only_caching=True):

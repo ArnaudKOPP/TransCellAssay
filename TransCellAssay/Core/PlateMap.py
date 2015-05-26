@@ -48,21 +48,21 @@ class PlateMap(object):
         easy manipulation of different type into array (more easy that numpy)
     """
 
-    def __init__(self, platemap=None):
+    def __init__(self, platemap=None, **kwargs):
         """
         Constructor
         """
         log.debug('Created PlateMap')
         self.platemap = pd.DataFrame()
         if platemap is not None:
-            self.set_platemap(platemap)
+            self.set_platemap(platemap, **kwargs)
         self._is_cutted = False
         self._rb = None
         self._re = None
         self._cb = None
         self._ce = None
 
-    def set_platemap(self, file_path=None):
+    def set_platemap(self, file_path=None, **kwargs):
         """
         Define platemap
         Read csv with first row as column name and first column as row name
@@ -70,7 +70,7 @@ class PlateMap(object):
         """
         if os.path.isfile(file_path):
             log.info('Reading PlateMap %s File' % file_path)
-            self.platemap = pd.read_csv(file_path, index_col=0)
+            self.platemap = pd.read_csv(file_path, index_col=0, **kwargs)
         else:
             raise IOError('File don\'t exist')
 

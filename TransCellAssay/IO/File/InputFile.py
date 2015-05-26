@@ -125,7 +125,7 @@ class InputFile(object):
         if cp_format:
             self.dataframe['Well'] = self.dataframe['Well'].apply(__cp_well_format())
 
-    def write_raw_data(self, path, name, frmt='csv'):
+    def write_raw_data(self, path, name, frmt='csv', **kwargs):
         """
         Write raw data into csv
         :param name: Name of file
@@ -139,7 +139,7 @@ class InputFile(object):
             log.info("Write raw data %s" % fname)
         elif frmt is 'txt':
             fname += '.txt'
-            self.dataframe.to_csv(fname, sep='\t', index=False, index_label=False)
+            self.dataframe.to_csv(fname, sep='\t', index=False, index_label=False, **kwargs)
             log.info("Write raw data %s" % fname)
         else:
             raise NotImplementedError('Format not supported for the moment')

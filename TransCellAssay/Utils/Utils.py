@@ -7,6 +7,7 @@ Usefull function
 
 import re
 import numpy as np
+import pandas as pd
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -22,6 +23,7 @@ def get_opposite_well_format(to_conv, bignum=False):
     Change Well Format
     A1 to (0,0) or (1,3) to B4
     :param to_conv: tuple or str
+    :param bignum: 1536 well plate format
     :return: opposite well format
     """
     lettereq = dict(A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14, P=15, Q=16, R=17,
@@ -100,3 +102,11 @@ def percentile_based_outlier(data, threshold=95):
     diff = (100 - threshold) / 2.0
     minval, maxval = np.percentile(data, [diff, 100 - diff])
     return (data < minval) | (data > maxval)
+
+
+def dict_to_df(input_dict):
+    name = np.array(list(input_dict))
+    name = name.flatten().reshape(len(name), 1)
+    ar = np.concatenate(list(input_dict.values()))
+    ar = np.append(ar, name, axis=1)
+    return pd.DataFrame(ar)
