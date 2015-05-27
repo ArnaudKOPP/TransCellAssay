@@ -25,8 +25,8 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-def plate_channels_analysis(plate, channels, neg, pos=None, threshold=50, percent=True, fixed_threshold=False,
-                            path=None):
+def plate_channels_analysis(plate, channels, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
+                            path=None, tag=""):
     """
     Like plate_channel_analysis, do a plate analysis but for multiple channels and parameters
     :param plate: plate object
@@ -44,10 +44,11 @@ def plate_channels_analysis(plate, channels, neg, pos=None, threshold=50, percen
     for chan in channels:
         log.info('Plate analysis for channel {}'.format(chan))
         plate_channel_analysis(plate=plate, channel=chan, neg=neg, pos=pos, threshold=threshold, percent=percent,
-                               fixed_threshold=fixed_threshold, path=path)
+                               fixed_threshold=fixed_threshold, path=path, tag=tag)
 
 
-def plate_channel_analysis(plate, channel, neg, pos=None, threshold=50, percent=True, fixed_threshold=False, path=None):
+def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False, path=None,
+                           tag=""):
     if not isinstance(plate, TCA.Plate):
         raise TypeError("File Plate Object")
     else:
@@ -74,7 +75,10 @@ def plate_channel_analysis(plate, channel, neg, pos=None, threshold=50, percent=
         result_array.init_gene_well(x)
         result_array.values['Plate'] = np.repeat([plate.name], __SIZE__)
 
-        neg_well = plate.platemap.search_well(neg)
+        if neg is not None:
+            neg_well = plate.platemap.search_well(neg)
+        else:
+            log.info('No Negative control provided, only work with fixed_treshold to True')
 
         cell_count_all_replica = collections.OrderedDict()
         mean_well_value_all_replica = collections.OrderedDict()
@@ -132,17 +136,18 @@ def plate_channel_analysis(plate, channel, neg, pos=None, threshold=50, percent=
             i += 1
 
         # ########## p-value and fdr for percent cell
-        if len(plate) > 1:
-            log.debug("Perform T-Test on positive Cells percentage")
-            neg_data = [percent_cell_all_replica[x] for x in neg_well]
-            neg_data = np.array(neg_data).flatten()
-            pvalue = collections.OrderedDict()
-            for key, value in percent_cell_all_replica.items():
-                x = stats.ttest_ind(value, neg_data, equal_var=False)
-                pvalue[key] = x[1]
+        if neg is not None:
+            if len(plate) > 1:
+                log.debug("Perform T-Test on positive Cells percentage")
+                neg_data = [percent_cell_all_replica[x] for x in neg_well]
+                neg_data = np.array(neg_data).flatten()
+                pvalue = collections.OrderedDict()
+                for key, value in percent_cell_all_replica.items():
+                    x = stats.ttest_ind(value, neg_data, equal_var=False)
+                    pvalue[key] = x[1]
 
-            result_array.add_data(pvalue, 'p-value')
-            result_array.values["fdr"] = TCA.adjustpvalues(pvalues=result_array.values["p-value"])
+                result_array.add_data(pvalue, 'p-value')
+                result_array.values["fdr"] = TCA.adjustpvalues(pvalues=result_array.values["p-value"])
 
         # ########## Cell count and std
         if len(plate) > 1:
@@ -155,32 +160,34 @@ def plate_channel_analysis(plate, channel, neg, pos=None, threshold=50, percent=
         result_array.add_data(meancount, 'CellsCount')
 
         # ########## toxicity index
-        log.debug("Toxicity determination")
-        # ### 0 idx is the max cell of all plate
-        # max_cell = max(meancount.values())
-        # ### 0 idx is the neg control
-        max_cell = np.mean([cell_count_all_replica[neg] for neg in neg_well])
-        min_cell = min(meancount.values())
-        txidx = {}
-        for key, item in meancount.items():
-            txidx[key] = (max_cell - item) / (max_cell - min_cell)
+        if neg is not None:
+            log.debug("Toxicity determination")
+            # ### 0 idx is the max cell of all plate
+            # max_cell = max(meancount.values())
+            # ### 0 idx is the neg control
+            max_cell = np.mean([cell_count_all_replica[neg] for neg in neg_well])
+            min_cell = min(meancount.values())
+            txidx = {}
+            for key, item in meancount.items():
+                txidx[key] = (max_cell - item) / (max_cell - min_cell)
 
-        result_array.add_data(txidx, 'Toxicity')
+            result_array.add_data(txidx, 'Toxicity')
 
         # ########## viability index
-        if pos is not None:
-            log.debug("Viability determination")
-            pos_well = plate.platemap.search_well(pos)
-            neg_val = [meancount[x] for x in neg_well]
-            pos_val = [meancount[x] for x in pos_well]
-            viability = {}
-            for key, item in meancount.items():
-                viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
-                    np.mean(neg_val) - np.mean(pos_val))
+        if neg is not None:
+            if pos is not None:
+                log.debug("Viability determination")
+                pos_well = plate.platemap.search_well(pos)
+                neg_val = [meancount[x] for x in neg_well]
+                pos_val = [meancount[x] for x in pos_well]
+                viability = {}
+                for key, item in meancount.items():
+                    viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
+                        np.mean(neg_val) - np.mean(pos_val))
 
-            result_array.add_data(viability, 'Viability')
-        else:
-            log.info('No positive control provided, no viability performed')
+                result_array.add_data(viability, 'Viability')
+            else:
+                log.info('No positive control provided, no viability performed')
 
         # ########## variability
         if len(plate) > 1:
@@ -209,7 +216,8 @@ def plate_channel_analysis(plate, channel, neg, pos=None, threshold=50, percent=
 
         if path is not None:
             try:
-                filepath = os.path.join(path, 'PlateAnalyzis_' + str(plate.name) + '_' + str(channel) + '.csv')
+                filepath = os.path.join(path, 'PlateAnalyzis_' + str(plate.name) + '_' + str(channel) + "_" + str(tag)
+                                        + '.csv')
                 result_array.write(file_path=filepath)
             except Exception as e:
                 log.error('Error during writing data from PlateAnalyzis : {}'.format(e))
