@@ -32,12 +32,12 @@ class Replica(object):
     self.skip_well = () # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
-    def __init__(self, name, data, single=True, skip=(), datatype='mean'):
+    def __init__(self, name, data_file_path, is_single_cell=True, skip=(), datatype='mean'):
         """
         Constructor
         :param name: name of replica
-        :param data: Data for replica object
-        :param single: Are data single cell type or not
+        :param data_file_path: Data for replica object
+        :param is_single_cell: Are data single cell type or not
         :param skip: Well to skip
         :param datatype: Median or Mean data
         """
@@ -53,10 +53,10 @@ class Replica(object):
         self.array = None
         self.sec_array = None
 
-        if not single:
-            self.set_array_data(data)
+        if not is_single_cell:
+            self.set_array_data(data_file_path)
         else:
-            self.set_rawdata(data)
+            self.set_rawdata(data_file_path)
 
         self.skip_well = skip
         self._is_cutted = False

@@ -48,14 +48,14 @@ class PlateMap(object):
         easy manipulation of different type into array (more easy that numpy)
     """
 
-    def __init__(self, platemap=None, **kwargs):
+    def __init__(self, file_path=None, **kwargs):
         """
         Constructor
         """
         log.debug('Created PlateMap')
         self.platemap = pd.DataFrame()
-        if platemap is not None:
-            self.set_platemap(platemap, **kwargs)
+        if file_path is not None:
+            self.set_platemap(file_path, **kwargs)
         self._is_cutted = False
         self._rb = None
         self._re = None

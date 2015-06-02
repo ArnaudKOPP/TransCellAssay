@@ -41,7 +41,7 @@ class Plate(object):
     self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     """
 
-    def __init__(self, name, platemap=None, skip=()):
+    def __init__(self, name, platemap=None, skip=(), replica=None):
         """
         Constructor for init default value
         :param name: name of plate, very important to file this
@@ -54,7 +54,7 @@ class Plate(object):
 
         self.platemap = TCA.Core.PlateMap()
         if platemap is not None:
-            self.platemap = platemap
+            self.__add__(platemap)
 
         self.isNormalized = False
         self.isSpatialNormalized = False
@@ -70,6 +70,9 @@ class Plate(object):
         self._re = None
         self._cb = None
         self._ce = None
+
+        if replica is not None:
+            self.__add__(replica)
 
     def set_plate_name(self, name):
         """
@@ -436,18 +439,18 @@ class Plate(object):
         """
         del self.replica[to_rm]
 
-    def __add__(self, other):
+    def __add__(self, to_add):
         """
         Add replica/platemap or list of replica to plate, use + operator
-        :param other: replica id that is added
+        :param to_add: replica id that is added
         """
-        if isinstance(other, TCA.Core.Replica):
-            name = other.name
-            self.replica[name] = other
-        elif isinstance(other, TCA.Core.PlateMap):
-            self.platemap = other
-        elif isinstance(other, list):
-            for elem in other:
+        if isinstance(to_add, TCA.Core.Replica):
+            name = to_add.name
+            self.replica[name] = to_add
+        elif isinstance(to_add, TCA.Core.PlateMap):
+            self.platemap = to_add
+        elif isinstance(to_add, list):
+            for elem in to_add:
                 assert isinstance(elem, TCA.Core.Replica)
                 self.replica[elem.name] = elem
         else:

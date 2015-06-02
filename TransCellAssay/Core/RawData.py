@@ -222,8 +222,11 @@ class RawData(object):
             raise Exception("Writing Raw data problem")
 
     def __write_raw_data(self, filepath, **kwargs):
-        self.df.to_csv(path=filepath, index=False, **kwargs)
-        log.info('Writing File : {}'.format(filepath))
+        try:
+            self.df.to_csv(filepath, index=False, **kwargs)
+            log.info('Writing File : {}'.format(filepath))
+        except Exception as e:
+            log.error(e)
 
     def save_memory(self, only_caching=True):
         """
