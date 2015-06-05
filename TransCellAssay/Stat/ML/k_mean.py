@@ -11,7 +11,6 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
-import pandas as pd
 import numpy as np
 import TransCellAssay as TCA
 
@@ -22,9 +21,10 @@ class k_mean_clustering():
     :param Plate:
     """
 
-    def __init__(self, Plate):
-        assert isinstance(Plate, TCA.Plate)
-        self.rawData = Plate.agg_data_from_replica_channels()
+    def __init__(self, plate):
+        assert isinstance(plate, TCA.Plate)
+        self.rawData = plate.agg_data_from_replica_channels()
+        self.rawData = self.rawData.drop(['Well'], axis=1)
 
     def do_cluster(self, n_cluster=10):
         """

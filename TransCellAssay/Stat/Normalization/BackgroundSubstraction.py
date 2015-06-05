@@ -15,7 +15,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class BackgroundSubstraction():
+class BackgroundSubstraction(object):
     """
 
     :param background:

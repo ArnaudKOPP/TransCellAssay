@@ -32,7 +32,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class WellCorrection():
+class WellCorrection(object):
     """
 
     :param args:
@@ -80,25 +80,17 @@ class WellCorrection():
             if apply_on == "Plate":
                 # iterate on all plate
                 for plate in self.screen:
-                    # check if plate object
-                    if not isinstance(plate, TCA.Plate):
-                        raise TypeError("Must provided good object")
-                    else:
-                        return 0
+                    return 0
 
             elif apply_on == "Replicat":
                 # iterate on all plate
                 for plate in self.screen:
-                    # check if plate object
-                    if not isinstance(plate, TCA.Plate):
-                        raise TypeError("Must provided good object")
-                    else:
-                        # iterate on all replicat in the plate
-                        for repName, repValue in plate.replica.items():
-                            if not isinstance(repValue, TCA.Replica):
-                                raise TypeError
-                            else:
-                                return 0
+                    # iterate on all replicat in the plate
+                    for repName, repValue in plate.replica.items():
+                        if not isinstance(repValue, TCA.Replica):
+                            raise TypeError
+                        else:
+                            return 0
             else:
                 raise AttributeError("Apply strategy only on plate or replicat")
         except Exception as e:

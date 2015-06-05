@@ -19,7 +19,7 @@ __email__ = "kopp.arnaud@gmail.com"
 __status__ = "Production"
 
 
-class BackgroundCorrection():
+class BackgroundCorrection(object):
     """
 
     :param args:
@@ -70,31 +70,23 @@ class BackgroundCorrection():
             if apply_on == "Plate":
                 # iterate on all plate
                 for plate in self.screen:
-                    # check if plate object
-                    if not isinstance(plate, TCA.Plate):
-                        raise TypeError("Must provided good object")
-                    else:
-                        if self.BackgroundModel is None:
-                            self.BackgroundModel = np.zeros(plate.array.shape)
-                        self.BackgroundModel += plate.array
+                    if self.BackgroundModel is None:
+                        self.BackgroundModel = np.zeros(plate.array.shape)
+                    self.BackgroundModel += plate.array
                 self.BackgroundModel *= 1 / len(self.screen)
             elif apply_on == "Replicat":
                 object_cnt = 0
                 # iterate on all plate
                 for plate in self.screen:
-                    # check if plate object
-                    if not isinstance(plate, TCA.Plate):
-                        raise TypeError("Must provided good object")
-                    else:
-                        # iterate on all replicat in the plate
-                        for repName, repValue in plate.replica.items():
-                            if not isinstance(repValue, TCA.Replica):
-                                raise TypeError
-                            else:
-                                if self.BackgroundModelMean is None:
-                                    self.BackgroundModelMean = np.zeros(repValue.array.shape)
-                                self.BackgroundModel += repValue.array
-                                object_cnt += 1
+                    # iterate on all replicat in the plate
+                    for repName, repValue in plate.replica.items():
+                        if not isinstance(repValue, TCA.Replica):
+                            raise TypeError
+                        else:
+                            if self.BackgroundModelMean is None:
+                                self.BackgroundModelMean = np.zeros(repValue.array.shape)
+                            self.BackgroundModel += repValue.array
+                            object_cnt += 1
                 self.BackgroundModel *= 1 / object_cnt
             else:
                 raise AttributeError("Apply strategy only on plate or replicat")
@@ -129,26 +121,18 @@ class BackgroundCorrection():
             if apply_on == "Plate":
                 # iterate on all plate
                 for plate in self.screen:
-                    # check if plate object
-                    if not isinstance(plate, TCA.Plate):
-                        raise TypeError("Must provided good object")
-                    else:
-                        plate.sec_array -= self.BackgroundModel
-                        plate.isSpatialNormalized = True
+                    plate.sec_array -= self.BackgroundModel
+                    plate.isSpatialNormalized = True
             elif apply_on == "Replicat":
                 # iterate on all plate
                 for plate in self.screen:
-                    # check if plate object
-                    if not isinstance(plate, TCA.Plate):
-                        raise TypeError("Must provided good object")
-                    else:
-                        # iterate on all replicat in the plate
-                        for repName, repValue in plate.replica.items():
-                            if not isinstance(repValue, TCA.Replica):
-                                raise TypeError
-                            else:
-                                repValue.sec_array -= self.BackgroundModel
-                                repValue.isSpatialNormalized = True
+                    # iterate on all replicat in the plate
+                    for repName, repValue in plate.replica.items():
+                        if not isinstance(repValue, TCA.Replica):
+                            raise TypeError
+                        else:
+                            repValue.sec_array -= self.BackgroundModel
+                            repValue.isSpatialNormalized = True
             else:
                 raise AttributeError("Apply strategy only on plate or replicat")
         except Exception as e:

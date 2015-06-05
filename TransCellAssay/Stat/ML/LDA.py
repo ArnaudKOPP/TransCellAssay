@@ -44,7 +44,7 @@ class LDA():
             raw_data = replicat.rawdata
             data = self._clear_dataframe(raw_data)
 
-            ## DO LDA
+            # # DO LDA
             from sklearn.lda import LDA
 
             X = data.as_matrix()
