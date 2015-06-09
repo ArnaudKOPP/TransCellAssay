@@ -3,6 +3,7 @@
 Method for making graphics of plate
 """
 import TransCellAssay as TCA
+import warnings
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -21,11 +22,11 @@ def plot_plate_3d(array, surf=False):
     :return:show 3d plot
     """
     try:
+        import numpy as np
         if surf:
             from mpl_toolkits.mplot3d import Axes3D
             from matplotlib import cm
             import matplotlib.pyplot as plt
-            import numpy as np
 
             fig = plt.figure()
             x = np.arange(array.shape[1])
@@ -40,7 +41,6 @@ def plot_plate_3d(array, surf=False):
         else:
             from mpl_toolkits.mplot3d import Axes3D
             import matplotlib.pyplot as plt
-            import numpy as np
 
             data_array = np.array(array)
             fig = plt.figure()
@@ -65,9 +65,10 @@ def plot_plate_3d(array, surf=False):
 
 def heatmap(array, file_path=None):
     """
-    Output a heatmap with seaborn
+    Output a heatmap with matplotlib
     :param array: numpy array that represent data
     """
+    warnings.warn("Shouldn't use this function anymore! use _p function", PendingDeprecationWarning)
     try:
         import matplotlib
         import pylab
@@ -95,6 +96,7 @@ def plate_heatmap(plate, both=True, file_path=None):
     :param both: print data and SECdata
     :param plate: plate object with correct data
     """
+    warnings.warn("Shouldn't use this function anymore! use _p function", PendingDeprecationWarning)
     try:
         import matplotlib
         import pylab as plt
@@ -129,12 +131,13 @@ def plate_heatmap(plate, both=True, file_path=None):
         print(e)
 
 
-def heatmap_map(*args, usesec=False, file_path=None):
+def plates_heatmap(*args, usesec=False, file_path=None):
     """
     plot heatmap of all replica array from given plate
     :param args: plate object or list of plate
     :param usesec: use sec data or not
     """
+    warnings.warn("Shouldn't use this function anymore! use _p function", PendingDeprecationWarning)
     try:
         import matplotlib
         import pylab as plt
@@ -237,7 +240,7 @@ def plate_heatmap_p(plate, both=True, file_path=None):
         print(e)
 
 
-def heatmap_map_p(*args, usesec=False, file_path=None):
+def plates_heatmap_p(*args, usesec=False, file_path=None):
     """
     plot heatmap of all replica array from given plate
     :param args: plate object or list of plate
@@ -357,9 +360,9 @@ def boxplot_by_wells(dataframe, channel, file_path=None):
 
 def dual_flashlight_plot(y, x):
     """
-    y is ssmd, x is log fold change
-    :param y: ssmd
-    :param x: log fold change
+    x and y array
+    :param y: array
+    :param x: array
     """
     import matplotlib.pyplot as plt
     fig = plt.figure()
@@ -523,18 +526,15 @@ def plot_distribution_kde(wells, plate, channel, rep=None, pool=False, file_path
         print(e)
 
 
-def plot_3d_cloud_point(dataframe, x=None, y=None, z=None):
+def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z'):
     """
-    Plot in 3d raw data with choosen channels
-    :param dataframe: dataframe without class label !!
-    :param x: x channel
-    :param y: y channel
-    :param z: z channel
+    Plot in 3d three array of data
+    :param x: x array
+    :param y: y array
+    :param z: z array
     """
     try:
-        import pandas as pd
-
-        assert isinstance(dataframe, pd.DataFrame)
+        import numpy as np
 
         from matplotlib import pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
@@ -543,53 +543,54 @@ def plot_3d_cloud_point(dataframe, x=None, y=None, z=None):
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
-        ax.plot(dataframe[x], dataframe[y], dataframe[z], '.', markersize=4, color='blue', alpha=0.5, label='Raw Data')
+        ax.plot(x, y, z, '.', markersize=4, color='blue', alpha=0.5, label='Point')
 
-        ax.set_xlabel(x)
-        ax.set_ylabel(y)
-        ax.set_zlabel(z)
+        ax.set_xlabel(str(x_label))
+        ax.set_ylabel(str(y_label))
+        ax.set_zlabel(str(z_label))
 
-        plt.title('Raw Data point')
+        plt.title(str(title))
         ax.legend(loc='upper right')
         plt.show()
     except Exception as e:
         print(e)
 
 
-def plot_3d_per_well(dataframe, x=None, y=None, z=None, single_cell=True):
+def plot_3d_per_well(df, x, y, z, single_cell=True, skip_wells=[]):
     """
     Plot in 3d raw data with choosen channels and with different color by well
-    :param single_cell:
-    :param dataframe: dataframe without class label !!
+    :param single_cell: plot all cell or only median
+    :param df: dataframe without class label !!
     :param x: x channel
     :param y: y channel
     :param z: z channel
+    :param skip_wells: skip some wells if wanted
     """
     try:
         import pandas as pd
         import numpy as np
 
-        assert isinstance(dataframe, pd.DataFrame)
+        assert isinstance(df, pd.DataFrame)
 
         from matplotlib import pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
         from mpl_toolkits.mplot3d import proj3d
 
-        wells = dataframe.Well.unique()
+        wells = df.Well.unique()
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
         for well in wells:
-            if not single_cell:
-                ax.plot(dataframe[x][dataframe['Well'] == well],
-                        dataframe[y][dataframe['Well'] == well],
-                        dataframe[z][dataframe['Well'] == well], '.', markersize=4, color='blue', alpha=0.5,
-                        label='Raw Data')
-            else:
-                ax.plot(np.median(dataframe[x][dataframe['Well'] == well]),
-                        np.median(dataframe[y][dataframe['Well'] == well]),
-                        np.median(dataframe[z][dataframe['Well'] == well]), '.', markersize=4, color='blue', alpha=0.5,
-                        label='Raw Data')
+            if well not in skip_wells:
+                if single_cell:
+                    ax.plot(df[x][df['Well'] == well].values,
+                            df[y][df['Well'] == well].values,
+                            df[z][df['Well'] == well].values, '.', markersize=4, alpha=0.5, label=str(well))
+                else:
+                    ax.plot([np.median(df[x][df['Well'] == well].values)],
+                            [np.median(df[y][df['Well'] == well].values)],
+                            [np.median(df[z][df['Well'] == well].values)], '.', markersize=4, alpha=0.5,
+                            label=str(well))
         ax.set_xlabel(x)
         ax.set_ylabel(y)
         ax.set_zlabel(z)
@@ -599,20 +600,3 @@ def plot_3d_per_well(dataframe, x=None, y=None, z=None, single_cell=True):
         plt.show()
     except Exception as e:
         print(e)
-
-
-'''
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.mplot3d import proj3d
-
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-
-ax.scatter(data["Nuc Area"][data["Well"] == 'A1'], data["Nuc Intensity"][data["Well"] == 'A1'], data["Cell Intensity"][data["Well"] == 'A1'], '.', color='blue', alpha=0.5, label='E1')
-ax.scatter(data["Nuc Area"][data["Well"] == 'B1'], data["Nuc Intensity"][data["Well"] == 'B1'], data["Cell Intensity"][data["Well"] == 'B1'], '.', color='red', alpha=0.1, label='B1')
-
-plt.title('Raw Data point')
-ax.legend(loc='upper right')
-plt.show()
-'''

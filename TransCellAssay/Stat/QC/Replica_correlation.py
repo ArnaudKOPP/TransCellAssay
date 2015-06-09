@@ -29,7 +29,9 @@ class RepCor(object):
                 raise Exception('Plate must contain at least two replica')
             else:
                 self.arr = self.__create_array(plate)
-                self.__triplicate()
+                # self.__triplicate()
+                # # OR
+                TCA.plot_3d_cloud_point(title='test', x=self.arr[:, 1], y=self.arr[:, 2], z=self.arr[:, 3])
 
     @staticmethod
     def __create_array(plate):

@@ -166,14 +166,14 @@ def HDV():
     # TCA.plot_plate_3d(plaque.array, surf=True)
     # TCA.plate_heatmap_p(plaque)
     # TCA.heatmap_map_p(plaque, usesec=True)
-    TCA.plate_heatmap_p(plaque, both=False)
+    # TCA.plate_heatmap_p(plaque, both=False)
     # TCA.dual_flashlight_plot(plaque.array, ssmd)
     # TCA.boxplot_by_wells(plaque['rep1'].rawdata.df, channel=channel)
     # TCA.plot_distribution(wells=['E2', 'F2'], plate=plaque, channel=channel, pool=True)
     TCA.RepCor(plaque)
 
 
-HDV()
+# HDV()
 
 
 def misc():
@@ -184,10 +184,10 @@ def misc():
     #     os.makedirs(outpath)
 
     PlateList = []
-    plaque = TCA.Core.Plate(name='Plaque U2OS TT DXR 24h',
+    plaque = TCA.Core.Plate(name='test',
                             platemap=TCA.Core.PlateMap(file_path=os.path.join(path, "PP_96.csv")),
                             replica=TCA.Core.Replica(name="rep1",
-                                                     data_file_path=os.path.join(path + "150428 U2OS TT DXR 24h.csv"),
+                                                     data_file_path=os.path.join(path + "270515 U2OS DXR 53BP1.csv"),
                                                      is_single_cell=True,
                                                      datatype='mean'))
 
@@ -198,22 +198,27 @@ def misc():
         # print(plate)
         # print(plate['rep1'])
         # print(plate.agg_data_from_replica_channels())
-        # plate.agg_data_from_replica_channel(channel)
+        plate.agg_data_from_replica_channel(channel='TotalIntenCh2')
         # print(plate.array)
         # qc = TCA.plate_quality_control(plate, channel, cneg=neg, cpos=pos)
         # print(qc)
-        TCA.plate_channels_analysis(plate, neg="A1", pos='B10', channels=('SpotCountCh2', 'SpotTotalAreaCh2',
-                                                                          'SpotTotalIntenCh2'),
-                                    threshold=95, percent=True, clean=True)
-        # TCA.plate_channel_analysis(plate, channel='CircRingAvgIntenRatioCh2', threshold=1.5, percent=False,
-        #                            fixed_threshold=True, clean=True)
+        # TCA.plate_channels_analysis(plate, neg="A1", pos='B10', channels=('SpotCountCh2', 'SpotTotalAreaCh2',
+        #                                                                   'SpotTotalIntenCh2'),
+        #                             threshold=95, percent=True, clean=True)
+        # TCA.plate_channel_analysis(plate, neg='DMSO noUV', channel='TotalIntenCh2', threshold=200000, percent=False,
+        #                            fixed_threshold=True, clean=True, path=path, tag='200000')
+        # TCA.plate_channel_analysis(plate, neg='DMSO noUV', channel='TotalIntenCh2', threshold=180000, percent=False,
+        #                            fixed_threshold=True, clean=True, path=path, tag='180000')
+        # TCA.plate_channel_analysis(plate, neg='DMSO noUV', channel='TotalIntenCh2', threshold=50, percent=True,
+        #                            clean=True, path=path, tag='50percent')
         # TCA.ReferenceDataWriter(plate,
         #                         filepath='/home/arnaud/Desktop/test.xlsx',
         #                         ref=['scramble', 'Suvh1'],
         #                         channels=['Target_I_ratio', 'Target_II_ratio'])
-        # TCA.plot_distribution_hist(wells=['D2', 'C2', 'B2'], plate=plate, channel=channel, pool=True, bins=200)
-        # TCA.plot_distribution_kde(wells=['D2', 'C2', 'B2'], plate=plate, channel=channel, pool=True)
-        # plate.agg_data_from_replica(channel=channel)
+        # TCA.plot_distribution_hist(wells=['B2', 'G2'], plate=plate, channel='TotalIntenCh2', pool=True, bins=2000)
+        # TCA.plot_distribution_kde(wells=['B2', 'B3', 'B4', 'G2', 'G3', 'G4'], plate=plate, channel='TotalIntenCh2',
+        #                           pool=True)
+        # plate.agg_data_from_replica_channel(channel='TotalIntenCh2')
         # print(plate.agg_data_channels_from_replica())
         # TCA.plot_plate_3d(plate.array)
         # print('MAD')
@@ -222,9 +227,11 @@ def misc():
         # print(TCA.percentile_based_outlier(plate.array, threshold=95))
         # cluster = TCA.k_mean_clustering(plate)
         # cluster.do_cluster()
+        TCA.plot_3d_per_well(plate['rep1'].rawdata.df, x='TotalIntenCh2', y='AvgIntenCh2', z='ObjectAreaCh1',
+                             single_cell=False)
 
 
-# misc()
+misc()
 
 # import cProfile
 # cProfile.run('[TCA.get_opposite_well_format("B12", bignum=True) for i in range(1000)]')
