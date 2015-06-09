@@ -44,13 +44,20 @@ __status__ = "Production"
 class PlateMap(object):
     """
     Class for manipulating platemap
-    self.platemap = pd.DataFrame() # pandas dataframe object that contain the platemap, use this module for more
-        easy manipulation of different type into array (more easy that numpy)
+    self.platemap = pd.DataFrame()      # pandas dataframe object that contain the platemap, use this module for more
+                                            easy manipulation of different type into array (more easy that numpy)
+    self._is_cutted = False             # Bool for know if plate are cutted
+    self._rb = None                     # row begin
+    self._re = None                     # row end
+    self._cb = None                     # col begin
+    self._ce = None                     # col end
     """
 
     def __init__(self, file_path=None, **kwargs):
         """
         Constructor
+        :param file_path: file path from csv file
+        :param kwargs: add param for pandas arg reading
         """
         log.debug('Created PlateMap')
         self.platemap = pd.DataFrame()
@@ -67,6 +74,7 @@ class PlateMap(object):
         Define platemap
         Read csv with first row as column name and first column as row name
         :param file_path: csv file with platemap
+        :param kwargs: add param for pandas arg reading
         """
         if os.path.isfile(file_path):
             log.info('Reading PlateMap %s File' % file_path)
@@ -111,7 +119,7 @@ class PlateMap(object):
         Return Platemap as a dict
         :return: dataframe
         """
-        mat = self.platemap.as_matrix()  # # transform PS dataframe into numpy matrix
+        mat = self.platemap.as_matrix()  # # transform platemap into numpy matrix
         size = mat.shape  # # get shape of matrix
         row = size[0]
         col = size[1]
@@ -162,6 +170,19 @@ class PlateMap(object):
         self._re = re
         self._cb = cb
         self._ce = ce
+
+    def __setitem__(self, key, value):
+        """
+        Set geneName from specified position
+        :param key: position (A1 or (0, 0))
+        :param value: string genename for well
+        """
+        # # for (0, 0) format
+        if isinstance(key, tuple):
+            self.platemap.iloc[key[0], key[1]] = str(value)
+        # # for 'A1' format
+        elif isinstance(key, str):
+            self.platemap.loc[[key[0]], [key[1:]]] = str(value)
 
     def __getitem__(self, position):
         """

@@ -19,17 +19,22 @@ __status__ = "Production"
 
 class Replica(object):
     """
-    Class for manipuling replicat of plate
+    Class for manipulating replica of plate
 
-    self.rawdata = rawdata  # data frame that contains data
-    self.name = ""  # Name of replica
-    self.isNormalized = False  # are the data normalized
-    self.isSpatialNormalized = False  # systematics error removed or not
-    self.datatype = "median" # median or mean of data
-    self.array = None  # matrix that contain mean of interested channels to analyze
-    self._array_channel = None, which channel is stored in data
-    self.sec_array = None  # matrix that contain data corrected
-    self.skip_well = () # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
+    self.rawdata = rawdata              # rawdata object
+    self.name = ""                      # Name of replica
+    self.isNormalized = False           # are the data normalized
+    self.isSpatialNormalized = False    # systematics error removed or not
+    self.datatype = "median"            # median or mean of data
+    self.array = None                   # matrix that contain mean/median of interested channels to analyze
+    self._array_channel = None          # which channel is stored in data
+    self.sec_array = None               # matrix that contain spatial data corrected
+    self.skip_well = ()                 # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
+    self._is_cutted = False             # Bool for know if plate are cutted
+    self._rb = None                     # row begin
+    self._re = None                     # row end
+    self._cb = None                     # col begin
+    self._ce = None                     # col end
     """
 
     def __init__(self, name, data_file_path, is_single_cell=True, skip=(), datatype='mean'):
@@ -44,20 +49,16 @@ class Replica(object):
         log.debug('Replica created : {}'.format(name))
         self.name = name
         self.rawdata = None
-
         self.isNormalized = False
         self.isSpatialNormalized = False
         self.datatype = datatype
         self._array_channel = None
-
         self.array = None
         self.sec_array = None
-
         if not is_single_cell:
             self.set_array_data(data_file_path)
         else:
             self.set_rawdata(data_file_path)
-
         self.skip_well = skip
         self._is_cutted = False
         self._rb = None
@@ -72,7 +73,7 @@ class Replica(object):
         """
         self.rawdata = TCA.RawData(input_file)
 
-    def get_channel_list(self):
+    def get_channels_list(self):
         """
         Get all channels/component in list
         :return: list of channel/component
@@ -86,10 +87,10 @@ class Replica(object):
         :param array: numpy array with good shape like platemap
         :param array_type: median or mean data
         """
-        __valide_datatype = ['median', 'mean']
+        __valid_datatype = ['median', 'mean']
         if isinstance(array, np.ndarray):
-            if array_type not in __valide_datatype:
-                raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
+            if array_type not in __valid_datatype:
+                raise ValueError("Must provided data type, possibilities : {}".format(__valid_datatype))
             log.info("Import of none single cell data")
             self.array = array
             if array_type == 'median':

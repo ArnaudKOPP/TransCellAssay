@@ -24,55 +24,49 @@ class Plate(object):
     """
     Class for manipulating plate and their replica :
 
-    self.replica = {}  # Dict that contain all replica, key are name and value are replica object
-    self.name = None  # Name of Plate
-    self.platemap = TransCellAssay.Core.PlateMap()  # Plate Setup object
-    self.threshold = None  # Threshold for considering Cell as positive
-    self._control_position = ((0, 11), (0, 23))  # column where control is positioned in plate (default pos)
-    self._neg = None  # Name of negative control
-    self._pos = None  # Name of positive control
-    self._tox = None  # Name of toxic control
-    self.isNormalized = False  # Are replica data normalized
+    self.replica = {}                 # Dict that contain all replica, key are name and value are replica object
+    self.name = None                  # Name of Plate
+    self.platemap = TCA.Core.PlateMap()  # Plate Setup object
+    self.isNormalized = False         # Are replica data normalized
     self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replica )
-    self.datatype = "median" # median or mean data, default is median
-    self.array = None  # matrix that contain data from replica of interested channel to analyze
-    self._array_channel = None, which channel is stored in data
-    self.sec_array = None  # matrix that contain data corrected or from replica data
-    self.skip_well = None # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
+    self.datatype = "median"          # median or mean data, default is median
+    self.array = None                 # matrix that contain data from all replica of interested channel to analyze
+    self.sec_array = None             # matrix that contain spatial data corrected from all replica
+    self.skip_well = None             # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
+    self._is_cutted = False           # Bool for know if plate are cutted
+    self._rb = None                   # row begin
+    self._re = None                   # row end
+    self._cb = None                   # col begin
+    self._ce = None                   # col end
     """
 
     def __init__(self, name, platemap=None, skip=(), replica=None):
         """
         Constructor for init default value
-        :param name: name of plate, very important to file this
-        :param platemap: platemap for this plate
+        :param name: name of plate, very important to file this, it will be use for certain function
+        :param platemap: platemap object for this plate
         :param skip: Well to skip for all replica
+        :param replica: add one or a list of replica
         """
         log.debug('Plate created : {}'.format(name))
         self.replica = collections.OrderedDict()
         self.name = name
-
         self.platemap = TCA.Core.PlateMap()
         if platemap is not None:
             self.__add__(platemap)
-
+        if replica is not None:
+            self.__add__(replica)
         self.isNormalized = False
         self.isSpatialNormalized = False
-
         self.datatype = "median"
         self.array = None
         self.sec_array = None
-
         self.skip_well = skip
-
         self._is_cutted = False
         self._rb = None
         self._re = None
         self._cb = None
         self._ce = None
-
-        if replica is not None:
-            self.__add__(replica)
 
     def set_plate_name(self, name):
         """
@@ -90,7 +84,7 @@ class Plate(object):
 
     def set_data(self, array, array_type):
         """
-        Set attribut data matrix into self.Data
+        Set data matrix into self.array
         This method is designed for 1Data/Well or for manual analysis
         :param array: numpy array with good shape
         :param array_type: median or mean data
@@ -112,8 +106,7 @@ class Plate(object):
         Add the platemap to the plate, equivalent to + operator
         :param platemap:
         """
-        assert isinstance(platemap, TCA.Core.PlateMap)
-        self.platemap = platemap
+        self.__add__(platemap)
 
     def get_platemap(self):
         """
@@ -122,27 +115,25 @@ class Plate(object):
         """
         return self.platemap
 
-    def add_replicat(self, replica):
+    def add_replica(self, replica):
         """
         Add replicat object to plate, equivalent to + operator
-        :param replica: Give a replicat object
+        :param replica: Give a replica object
         """
-        assert isinstance(replica, TCA.Core.Replica)
-        name = replica.name
-        self.replica[name] = replica
+        self.__add__(replica)
 
-    def get_replicat(self, name):
+    def get_replica(self, name):
         """
         Get the replicat specified by name, equivalent to [] operator
-        :param name: string : key of replicat in dict
-        :return: Replicat object
+        :param name: string : key of replica in dict
+        :return: Replica object
         """
         return self.replica[name]
 
-    def get_all_replicat(self):
+    def get_all_replica(self):
         """
-        Get all replicat from plate
-        :return: dict of replicat
+        Get all replica from plate
+        :return: dict of replica
         """
         return self.replica
 
@@ -169,8 +160,8 @@ class Plate(object):
 
     def check_data_consistency(self, remove=False):
         """
-        Check if all replicat have same well
-        :param remove: remove or not replicat with data error
+        Check if all replica have same well
+        :param remove: remove or not replica with data error
         :return: 0 if error, 1 if data good
         """
         from itertools import chain
@@ -202,7 +193,7 @@ class Plate(object):
 
     def get_raw_data(self, replica=None, channel=None, well=None, well_idx=False):
         """
-        Return a dict that contain raw data from all replica (or specified replicat), we can specified channel (list)
+        Return a dict that contain raw data from all replica (or specified replica), we can specified channel (list)
         and if we want to have well id
         :param replica: replica id
         :param channel: channel list
@@ -219,7 +210,7 @@ class Plate(object):
                 data[self.replica[rep].get_rep_name()] = rep.get_rawdata(channel=channel, well=well,
                                                                          well_idx=well_idx)
 
-    def agg_data_from_replica_channels(self, by='Median'):
+    def get_agg_data_from_replica_channels(self, by='Median'):
         """
         compute all component mean from all replica for each well
         :param by: 'Median' or 'Mean'

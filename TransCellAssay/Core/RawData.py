@@ -29,13 +29,16 @@ __status__ = "Production"
 class RawData(object):
     """
     Raw data that contain value in single cell level
+    self.df                             # DataFrame (pandas DF)
+    self.__CACHING_gbdata = None        # groupby object (pandas) from DataFrame
+    self.__CACHING_gbdata_key = None    # key (channels) of groupby
     """
 
     def __init__(self, path_or_file, **kwargs):
         """
         Constructor
         :param path_or_file: give the path of csv file or InputFile object
-        :return:
+        :param kwargs: add param for pandas arg reading
         """
         if isinstance(path_or_file, str):
             if os.path.isfile(path_or_file):

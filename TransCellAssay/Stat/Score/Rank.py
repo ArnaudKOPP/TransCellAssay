@@ -27,7 +27,6 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
     :param mean_method: mean or median for rank product
     :param rank_method: method for rank : average, min, max, dense, ordinal
     :param size: number of well of plate
-    :param verbose: print or not result
     :return: return np ndarray with result
     """
     if isinstance(plate, TCA.Plate):
