@@ -6,10 +6,9 @@ K-mean clustering based on phenotype
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
+__license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Production"
 
 import numpy as np
 import TransCellAssay as TCA
@@ -23,7 +22,7 @@ class k_mean_clustering():
 
     def __init__(self, plate):
         assert isinstance(plate, TCA.Plate)
-        self.rawData = plate.agg_data_from_replica_channels()
+        self.rawData = plate.get_agg_data_from_replica_channels()
         self.rawData = self.rawData.drop(['Well'], axis=1)
 
     def do_cluster(self, n_cluster=10):

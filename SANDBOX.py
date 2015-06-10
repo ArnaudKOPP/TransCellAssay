@@ -6,7 +6,7 @@ For testing module in actual dev
 import pandas as pd
 import numpy as np
 import os
-import fnmatch
+import cProfile
 import TransCellAssay as TCA
 import logging
 
@@ -199,7 +199,7 @@ def misc():
         # print(plate['rep1'])
         # print(plate.agg_data_from_replica_channels())
         plate.agg_data_from_replica_channel(channel='TotalIntenCh2')
-        # print(plate.array)
+        print(plate.array)
         # qc = TCA.plate_quality_control(plate, channel, cneg=neg, cpos=pos)
         # print(qc)
         # TCA.plate_channels_analysis(plate, neg="A1", pos='B10', channels=('SpotCountCh2', 'SpotTotalAreaCh2',
@@ -220,19 +220,19 @@ def misc():
         #                           pool=True)
         # plate.agg_data_from_replica_channel(channel='TotalIntenCh2')
         # print(plate.agg_data_channels_from_replica())
-        # TCA.plot_plate_3d(plate.array)
+        TCA.array_surf_3d(plate.array)
         # print('MAD')
         # print(TCA.mad_based_outlier(plate.array, thresh=3.0))
         # print('PERCENTILE')
         # print(TCA.percentile_based_outlier(plate.array, threshold=95))
         # cluster = TCA.k_mean_clustering(plate)
         # cluster.do_cluster()
-        TCA.plot_3d_per_well(plate['rep1'].rawdata.df, x='TotalIntenCh2', y='AvgIntenCh2', z='ObjectAreaCh1',
-                             single_cell=False)
+        # TCA.systematic_error_detection_test(plate.array, verbose=True)
+        # TCA.plot_3d_per_well(plate['rep1'].rawdata, x='TotalIntenCh2', y='AvgIntenCh2', z='ObjectAreaCh1',
+        #                      single_cell=True)
 
 
 misc()
 
-# import cProfile
 # cProfile.run('[TCA.get_opposite_well_format("B12", bignum=True) for i in range(1000)]')
 # cProfile.run('[TCA.get_opposite_well_format("B12") for i in range(1000)]')

@@ -8,57 +8,64 @@ import warnings
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
+__license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Production"
 
 
-def plot_plate_3d(array, surf=False):
+def array_surf_3d(array):
     """
-    Make a 3d histogramme plot of matrix representing plate, give an array(in matrix form) of value (whatever you want)
-    :param surf: surface or histogram
+    Make a 3d surface plot of matrix representing plate, give an array(in matrix form) of value (whatever you want)
     :param array: numpy array
     :return:show 3d plot
     """
     try:
         import numpy as np
-        if surf:
-            from mpl_toolkits.mplot3d import Axes3D
-            from matplotlib import cm
-            import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
 
-            fig = plt.figure()
-            x = np.arange(array.shape[1])
-            y = np.arange(array.shape[0])
-            x, y = np.meshgrid(x, y)
-            z = array
-            ax = fig.gca(projection='3d')
-            surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.cm.Reds, linewidth=0, antialiased=True)
-            fig.colorbar(surf, shrink=0.5, aspect=5)
-            ax.invert_yaxis()
-            plt.show()
-        else:
-            from mpl_toolkits.mplot3d import Axes3D
-            import matplotlib.pyplot as plt
+        fig = plt.figure()
+        x = np.arange(array.shape[1])
+        y = np.arange(array.shape[0])
+        x, y = np.meshgrid(x, y)
+        z = array
+        ax = fig.gca(projection='3d')
+        surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.cm.Reds, linewidth=0, antialiased=True)
+        fig.colorbar(surf, shrink=0.5, aspect=5)
+        ax.invert_yaxis()
+        plt.show()
+    except Exception as e:
+        print(e)
 
-            data_array = np.array(array)
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            x_data, y_data = np.meshgrid(np.arange(data_array.shape[1]), np.arange(data_array.shape[0]))
-            #
-            # Flatten out the arrays so that they may be passed to "ax.bar3d".
-            # Basically, ax.bar3d expects three one-dimensional arrays:
-            # x_data, y_data, z_data. The following call boils down to picking
-            # one entry from each array and plotting a bar to from
-            # (x_data[i], y_data[i], 0) to (x_data[i], y_data[i], z_data[i]).
-            #
-            x_data = x_data.flatten()
-            y_data = y_data.flatten()
-            z_data = data_array.flatten()
-            ax.bar3d(x_data, y_data, np.zeros(len(z_data)), 1, 1, z_data, color='b', alpha=0.5)
-            ax.invert_yaxis()
-            plt.show()
+def array_hist_3d(array):
+    """
+    Make a 3d histogramme plot of matrix representing plate, give an array(in matrix form) of value (whatever you want)
+    :param array: numpy array
+    :return:show 3d plot
+    """
+    try:
+        import numpy as np
+        from mpl_toolkits.mplot3d import Axes3D
+        import matplotlib.pyplot as plt
+
+        data_array = np.array(array)
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        x_data, y_data = np.meshgrid(np.arange(data_array.shape[1]), np.arange(data_array.shape[0]))
+        #
+        # Flatten out the arrays so that they may be passed to "ax.bar3d".
+        # Basically, ax.bar3d expects three one-dimensional arrays:
+        # x_data, y_data, z_data. The following call boils down to picking
+        # one entry from each array and plotting a bar to from
+        # (x_data[i], y_data[i], 0) to (x_data[i], y_data[i], z_data[i]).
+        #
+        x_data = x_data.flatten()
+        y_data = y_data.flatten()
+        z_data = data_array.flatten()
+        ax.bar3d(x_data, y_data, np.zeros(len(z_data)), 1, 1, z_data, color='b', alpha=0.5)
+        ax.invert_yaxis()
+        plt.show()
     except Exception as e:
         print(e)
 
@@ -297,63 +304,59 @@ def systematic_error(array, file_path=None):
     plot systematic error in cols and rows axis
     :param array: take a numpy array in input
     """
+    import numpy as np
+    assert isinstance(array, np.ndarray)
     try:
         import matplotlib.pyplot as plt
-        import numpy as np
 
         rowmean = []
         rowstd = []
         colmean = []
         colstd = []
-        if isinstance(array, np.ndarray):
-            for row in range(array.shape[0]):
-                rowmean.append(np.mean(array[row, :]))
-                rowstd.append(np.std(array[row, :]))
-            for col in range(array.shape[1]):
-                colmean.append(np.mean(array[:, col]))
-                colstd.append(np.std(array[:, col]))
+        for row in range(array.shape[0]):
+            rowmean.append(np.mean(array[row, :]))
+            rowstd.append(np.std(array[row, :]))
+        for col in range(array.shape[1]):
+            colmean.append(np.mean(array[:, col]))
+            colstd.append(np.std(array[:, col]))
 
-            fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(10, 5))
+        fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(10, 5))
 
-            row = np.arange(array.shape[0])
-            col = np.arange(array.shape[1])
-            ax0.bar(row, rowmean, color='r', yerr=rowstd)
-            ax1.bar(col, colmean, color='r', yerr=colstd)
+        row = np.arange(array.shape[0])
+        col = np.arange(array.shape[1])
+        ax0.bar(row, rowmean, color='r', yerr=rowstd)
+        ax1.bar(col, colmean, color='r', yerr=colstd)
 
-            ax0.set_ylabel('Mean')
-            ax0.set_title('Mean by row')
-            ax1.set_ylabel('Mean')
-            ax1.set_title('Mean by Col')
+        ax0.set_ylabel('Mean')
+        ax0.set_title('Mean by row')
+        ax1.set_ylabel('Mean')
+        ax1.set_title('Mean by Col')
 
-            if file_path is not None:
-                plt.savefig(file_path)
-            else:
-                plt.show()
+        if file_path is not None:
+            plt.savefig(file_path)
         else:
-            raise TypeError
+            plt.show()
     except Exception as e:
         print(e)
 
 
-def boxplot_by_wells(dataframe, channel, file_path=None):
+def boxplot_by_wells(rawdata, channel, file_path=None):
     """
     plot the boxplot for each well
-    :param dataframe:
+    :param rawdata:
     :param channel; whiche channel to display
     """
+    assert isinstance(rawdata, TCA.Core.RawData)
     try:
         import pandas as pd
         import matplotlib.pyplot as plt
 
         pd.options.display.mpl_style = 'default'
-        if isinstance(dataframe, pd.DataFrame):
-            bp = dataframe.boxplot(column=channel, by='Well')
-            if file_path is not None:
-                plt.savefig(file_path)
-            else:
-                plt.show(block=True)
+        bp = rawdata.df.boxplot(column=channel, by='Well')
+        if file_path is not None:
+            plt.savefig(file_path)
         else:
-            raise TypeError
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -449,79 +452,80 @@ def plot_distribution_hist(wells, plate, channel, rep=None, pool=False, bins=100
     :param rep: if rep is provided, plot only distribution of selected wells for this one
     :param pool: if pool is True, the selected wells are pooled accross replica
     """
+    assert isinstance(plate, TCA.Core.Plate)
     try:
         import matplotlib.pyplot as plt
         import pandas as pd
         import TransCellAssay.Core
 
         pd.options.display.mpl_style = 'default'
-        if isinstance(plate, TCA.Core.Plate):
-            for Well in wells:
-                rep_series = dict()
-                if rep is not None:
-                    rep_series[rep] = pd.Series(plate[rep].get_rawdata(channel=channel, well=Well))
-                    rep_series[rep].name = str(rep)+str(Well)
-                else:
-                    for key, value in plate.replica.items():
-                        rep_series[key] = pd.Series(value.get_rawdata(channel=channel, well=Well))
-                        rep_series[key].name = key+str(Well)
-                # # Plotting with pandas
-                if pool:
-                    pooled_data = pd.Series()
-                    for key, value in rep_series.items():
-                        pooled_data = pooled_data.append(value)
-                    pooled_data.name = str(Well)
-                    pooled_data.plot(kind='hist', alpha=0.5, legend=True, bins=bins)
-                else:
-                    for key, value in rep_series.items():
-                        value.plot(kind='hist', alpha=0.5, legend=True, bins=bins)
-            if file_path is not None:
-                plt.savefig(file_path)
+        for Well in wells:
+            rep_series = dict()
+            if rep is not None:
+                rep_series[rep] = pd.Series(plate[rep].get_rawdata(channel=channel, well=Well))
+                rep_series[rep].name = str(rep)+str(Well)
             else:
-                plt.show(block=True)
+                for key, value in plate.replica.items():
+                    rep_series[key] = pd.Series(value.get_rawdata(channel=channel, well=Well))
+                    rep_series[key].name = key+str(Well)
+            # # Plotting with pandas
+            if pool:
+                pooled_data = pd.Series()
+                for key, value in rep_series.items():
+                    pooled_data = pooled_data.append(value)
+                pooled_data.name = str(Well)
+                pooled_data.plot(kind='hist', alpha=0.5, legend=True, bins=bins)
+            else:
+                for key, value in rep_series.items():
+                    value.plot(kind='hist', alpha=0.5, legend=True, bins=bins)
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
 
-def plot_distribution_kde(wells, plate, channel, rep=None, pool=False, file_path=None):
+def plot_distribution_kde(plate, wells, channel, rep=None, pool=False, file_path=None):
     """
     Plot distribution of multiple well with kde
-    :param wells: list of wells to plot distribution
     :param plate: Plate with replica
+    :param wells: list of wells to plot distribution
     :param channel: which channel to plot
     :param rep: if rep is provided, plot only distribution of selected wells for this one
     :param pool: if pool is True, the selected wells are pooled accross replica
+    :param file_path: saving location
     """
+    assert isinstance(plate, TCA.Core.Plate)
     try:
         import matplotlib.pyplot as plt
         import pandas as pd
         import TransCellAssay.Core
 
         pd.options.display.mpl_style = 'default'
-        if isinstance(plate, TCA.Core.Plate):
-            for Well in wells:
-                rep_series = dict()
-                if rep is not None:
-                    rep_series[rep] = pd.Series(plate[rep].get_rawdata(channel=channel, well=Well))
-                    rep_series[rep].name = str(rep)+str(Well)
-                else:
-                    for key, value in plate.replica.items():
-                        rep_series[key] = pd.Series(value.get_rawdata(channel=channel, well=Well))
-                        rep_series[key].name = key+str(Well)
-                # # Plotting with pandas
-                if pool:
-                    pooled_data = pd.Series()
-                    for key, value in rep_series.items():
-                        pooled_data = pooled_data.append(value)
-                    pooled_data.name = str(Well)
-                    pooled_data.plot(kind='kde', alpha=0.5, legend=True)
-                else:
-                    for key, value in rep_series.items():
-                        value.plot(kind='kde', alpha=0.5, legend=True)
-            if file_path is not None:
-                plt.savefig(file_path)
+        for Well in wells:
+            rep_series = dict()
+            if rep is not None:
+                rep_series[rep] = pd.Series(plate[rep].get_rawdata(channel=channel, well=Well))
+                rep_series[rep].name = str(rep)+str(Well)
             else:
-                plt.show(block=True)
+                for key, value in plate.replica.items():
+                    rep_series[key] = pd.Series(value.get_rawdata(channel=channel, well=Well))
+                    rep_series[key].name = key+str(Well)
+            # # Plotting with pandas
+            if pool:
+                pooled_data = pd.Series()
+                for key, value in rep_series.items():
+                    pooled_data = pooled_data.append(value)
+                pooled_data.name = str(Well)
+                pooled_data.plot(kind='kde', alpha=0.5, legend=True)
+            else:
+                for key, value in rep_series.items():
+                    value.plot(kind='kde', alpha=0.5, legend=True)
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -535,7 +539,6 @@ def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z'):
     """
     try:
         import numpy as np
-
         from matplotlib import pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
         from mpl_toolkits.mplot3d import proj3d
@@ -556,40 +559,39 @@ def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z'):
         print(e)
 
 
-def plot_3d_per_well(df, x, y, z, single_cell=True, skip_wells=[]):
+def plot_3d_per_well(rawdata, x, y, z, single_cell=True, skip_wells=[]):
     """
     Plot in 3d raw data with choosen channels and with different color by well
     :param single_cell: plot all cell or only median
-    :param df: dataframe without class label !!
+    :param rawdata: raw data object
     :param x: x channel
     :param y: y channel
     :param z: z channel
     :param skip_wells: skip some wells if wanted
     """
+    assert isinstance(rawdata, TCA.Core.RawData)
     try:
         import pandas as pd
         import numpy as np
-
-        assert isinstance(df, pd.DataFrame)
-
         from matplotlib import pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
         from mpl_toolkits.mplot3d import proj3d
 
-        wells = df.Well.unique()
+        wells = rawdata.get_unique_well()
         fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
         for well in wells:
             if well not in skip_wells:
                 if single_cell:
-                    ax.plot(df[x][df['Well'] == well].values,
-                            df[y][df['Well'] == well].values,
-                            df[z][df['Well'] == well].values, '.', markersize=4, alpha=0.5, label=str(well))
+                    ax.plot(rawdata.df[x][rawdata.df['Well'] == well].values,
+                            rawdata.df[y][rawdata.df['Well'] == well].values,
+                            rawdata.df[z][rawdata.df['Well'] == well].values, '.', markersize=4, alpha=0.5,
+                            label=str(well))
                 else:
-                    ax.plot([np.median(df[x][df['Well'] == well].values)],
-                            [np.median(df[y][df['Well'] == well].values)],
-                            [np.median(df[z][df['Well'] == well].values)], '.', markersize=4, alpha=0.5,
+                    ax.plot([np.median(rawdata.df[x][rawdata.df['Well'] == well].values)],
+                            [np.median(rawdata.df[y][rawdata.df['Well'] == well].values)],
+                            [np.median(rawdata.df[z][rawdata.df['Well'] == well].values)], '.', markersize=4, alpha=0.5,
                             label=str(well))
         ax.set_xlabel(x)
         ax.set_ylabel(y)

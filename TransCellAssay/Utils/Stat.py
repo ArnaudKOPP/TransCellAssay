@@ -9,10 +9,9 @@ import scipy.stats
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
+__license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Production"
 
 
 def kl(p, q):

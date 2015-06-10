@@ -14,10 +14,9 @@ log = logging.getLogger(__name__)
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
+__license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Production"
 
 
 class Plate(object):
@@ -247,9 +246,9 @@ class Plate(object):
         for key, replica in self.replica.items():
             i += 1
             if replica.array is None:
-                replica.data_for_channel(channel)
+                replica.compute_data_channel(channel)
             if forced_update:
-                replica.data_for_channel(channel)
+                replica.compute_data_channel(channel)
 
             if not use_sec_data:
                 tmp_array = tmp_array + replica.array
@@ -402,7 +401,7 @@ class Plate(object):
                 self.sec_array = corrected_data_array
                 self.isSpatialNormalized = True
 
-    def save_raw_data(self, path, name=None):
+    def write_rawdata(self, path, name=None):
         """
         Save normalized raw data
         :param path: path where to save raw data
@@ -411,17 +410,17 @@ class Plate(object):
             os.mkdir(path)
         for key, value in self.replica.items():
             if name is not None:
-                value.save_raw_data(path=path, name=name)
+                value.write_rawdata(path=path, name=name)
             else:
-                value.save_raw_data(path=path, name=self.name)
+                value.write_rawdata(path=path, name=self.name)
 
-    def save_memory(self, only_cache=True):
+    def clear_memory(self, only_cache=True):
         """
         Save memory by deleting Raw Data
         :param only_cache: Remove only cache
         """
         for key, value in self.replica.items():
-            value.save_memory(only_cache=only_cache)
+            value.clear_memory(only_cache=only_cache)
 
     def __sub__(self, to_rm):
         """

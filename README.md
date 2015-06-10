@@ -31,7 +31,7 @@ kopp@igbmc.fr
 
 ##License
 
-This work is for the moment on [CC BY-NC-ND 4.0 License](https://creativecommons.org/licenses/by-nc-nd/4.0/)  
+This work is under [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html) licence.
 © 2014-2015 KOPP Arnaud All Rights Reserved
 
 

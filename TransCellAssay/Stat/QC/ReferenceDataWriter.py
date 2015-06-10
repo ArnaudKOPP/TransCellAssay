@@ -15,10 +15,9 @@ log = logging.getLogger(__name__)
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
+__license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Production"
 
 # TODO refactoring this shitty class
 
@@ -76,7 +75,7 @@ class ReferenceDataWriter(object):
         ref_data = None
         # # we have a dict with key is ref name and value is well position
         for key, value in refs.items():
-            tmp = self._ref_data_array([replicat.get_data_array(channel=chan)[x[0]][x[1]] for x in
+            tmp = self._ref_data_array([replicat.get_data_channel(channel=chan)[x[0]][x[1]] for x in
                                         replicat.get_valid_well(value)])
             if ref_data is not None:
                 ref_data = np.append(ref_data, tmp, axis=1)

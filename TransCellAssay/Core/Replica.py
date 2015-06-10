@@ -11,10 +11,9 @@ log = logging.getLogger(__name__)
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
+__license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Production"
 
 
 class Replica(object):
@@ -164,7 +163,7 @@ class Replica(object):
         """
         return self.rawdata.get_raw_data(channel=channel, well=well, well_idx=well_idx)
 
-    def data_for_channel(self, channel):
+    def compute_data_channel(self, channel):
         """
         Compute data in matrix form, get mean or median for well and save them in replica object
         :param channel: which channel to keep in matrix
@@ -177,10 +176,10 @@ class Replica(object):
         if not self.isNormalized:
             log.warning('Data are not normalized for replica : {}'.format(self.name))
 
-        self.array = self.rawdata.compute_matrix(channel=channel, type_mean=self.datatype)
+        self.array = self.rawdata.get_data_channel(channel=channel, type_mean=self.datatype)
         self._array_channel = channel
 
-    def data_for_channels(self, by='Median'):
+    def get_data_channels(self, by='Median'):
         """
         Compute for all
         :param by : Median or Mean
@@ -192,7 +191,7 @@ class Replica(object):
         else:
             return tmp.mean().reset_index()
 
-    def get_data_array(self, channel, sec=False):
+    def get_data_channel(self, channel, sec=False):
         """
         Return data in matrix form, get mean or median for well
         :param channel: which channel to keep in matrix
@@ -205,11 +204,11 @@ class Replica(object):
             else:
                 return self.sec_array
         if self.array is None:
-            self.data_for_channel(channel)
+            self.compute_data_channel(channel)
         if channel is self._array_channel:
             return self.array
         else:
-            self.data_for_channel(channel)
+            self.compute_data_channel(channel)
             return self.array
 
     def cut(self, rb, re, cb, ce):
@@ -261,7 +260,7 @@ class Replica(object):
                                                                  pos_control=positive,
                                                                  threshold=threshold)
             self.isNormalized = True
-            self.data_for_channel(channel)
+            self.compute_data_channel(channel)
         else:
             log.warning("Data are already normalized, do nothing")
 
@@ -354,7 +353,7 @@ class Replica(object):
                 self.sec_array = corrected_data_array
                 self.isSpatialNormalized = True
 
-    def save_raw_data(self, path, name=None):
+    def write_rawdata(self, path, name=None):
         """
         Save normalized Raw data
         :param name: Give name to file
@@ -364,7 +363,7 @@ class Replica(object):
             name = self.name
         self.rawdata.save_raw_data(path=path, name=name)
 
-    def save_memory(self, only_cache=True):
+    def clear_memory(self, only_cache=True):
         """
         Save memory by deleting Raw Data that use a lot of memory
         :param only_cache: Remove only cache or all

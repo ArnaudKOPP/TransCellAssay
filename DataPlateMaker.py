@@ -16,15 +16,6 @@ import xlsxwriter
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
 
-__author__ = "Arnaud KOPP"
-__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
-__credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
-__version__ = "1.0"
-__maintainer__ = "Arnaud KOPP"
-__email__ = "kopp.arnaud@gmail.com"
-__status__ = "Production"
-
 DEBUG = 1
 PRINT = True
 
@@ -137,10 +128,9 @@ def main(argv=None):  # IGNORE:C0111
   Copyright 2014 KOPP. All rights reserved.
   Distributed on an "AS IS" basis without warranties
   or conditions of any kind, either express or implied.
-  VERSION = %s
 
 USAGE
-''' % (program_shortdesc, str(__version__))
+''' % program_shortdesc
 
     try:
         # # Setup argument parser

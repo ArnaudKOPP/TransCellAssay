@@ -12,10 +12,9 @@ log = logging.getLogger(__name__)
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
+__license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Dev"
 
 
 def plate_filtering(plate, channel, upper=None, lower=None, include=True, percent=False):

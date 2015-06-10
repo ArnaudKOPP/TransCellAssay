@@ -20,10 +20,9 @@ log = logging.getLogger(__name__)
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
-__license__ = "CC BY-NC-ND 4.0 License"
+__license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-__status__ = "Production"
 
 
 class RawData(object):
@@ -149,7 +148,7 @@ class RawData(object):
             array[self.df['Row'][i]][self.df['Column'][i]] = self.df[chan][i]
         return array
 
-    def compute_matrix(self, channel, type_mean='mean'):
+    def get_data_channel(self, channel, type_mean='mean'):
         """
         Compute mean or median for each well in matrix format
         :param channel:
@@ -211,7 +210,7 @@ class RawData(object):
         else:
             return self.__CACHING_gbdata.get_group(key)
 
-    def save_raw_data(self, path, name=None, **kwargs):
+    def write_rawdata(self, path, name=None, **kwargs):
         """
         Save normalized Raw data
         :param name: Give name to file
@@ -231,7 +230,7 @@ class RawData(object):
         except Exception as e:
             log.error(e)
 
-    def save_memory(self, only_caching=True):
+    def clear_memory(self, only_caching=True):
         """
         Remove some data for saving memory
         :param only_caching: remove only cache
