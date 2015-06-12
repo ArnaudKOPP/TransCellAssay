@@ -368,7 +368,7 @@ class Replica(object):
         Save memory by deleting Raw Data that use a lot of memory
         :param only_cache: Remove only cache or all
         """
-        self.rawdata.save_memory(only_cache=only_cache)
+        self.rawdata.clear_memory(only_caching=only_cache)
         log.debug('Saving memory')
 
     def __repr__(self):

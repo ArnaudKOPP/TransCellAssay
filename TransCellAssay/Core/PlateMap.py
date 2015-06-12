@@ -29,6 +29,7 @@ import pandas as pd
 import numpy as np
 from TransCellAssay import Utils as Utils
 import collections
+import string
 import logging
 log = logging.getLogger(__name__)
 
@@ -59,9 +60,10 @@ class PlateMap(object):
         :param kwargs: add param for pandas arg reading
         """
         log.debug('Created PlateMap')
-        self.platemap = pd.DataFrame()
         if file_path is not None:
             self.set_platemap(file_path, **kwargs)
+        else:
+            self.platemap = pd.DataFrame()
         self._is_cutted = False
         self._rb = None
         self._re = None
@@ -169,6 +171,33 @@ class PlateMap(object):
         self._re = re
         self._cb = cb
         self._ce = ce
+
+    def generate_empty_platemap(self, size):
+        """
+        Generate an empty platemap with defined size
+        :param size:
+        :return:
+        """
+        if int(size) == 96:
+            self.__generate_empty_96()
+        elif int(size) == 384:
+            self.__generate_empty_384()
+        elif int(size) == 1536:
+            self.__generate_empty_1536()
+        else:
+            raise ValueError('Expected size : 96, 348 or 1536')
+
+    def __generate_empty_96(self):
+        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:8], columns=range(1, 9, 1))
+
+    def __generate_empty_384(self):
+        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:16], columns=range(1, 25, 1))
+
+    def __generate_empty_1536(self):
+        self.platemap = pd.DataFrame(data='Empty',index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+                                                         'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                                                         'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF'],
+                                     columns=range(1, 49, 1))
 
     def __setitem__(self, key, value):
         """

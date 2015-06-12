@@ -50,9 +50,10 @@ class Plate(object):
         log.debug('Plate created : {}'.format(name))
         self.replica = collections.OrderedDict()
         self.name = name
-        self.platemap = TCA.Core.PlateMap()
         if platemap is not None:
             self.__add__(platemap)
+        else:
+            self.platemap = TCA.Core.PlateMap()
         if replica is not None:
             self.__add__(replica)
         self.isNormalized = False
