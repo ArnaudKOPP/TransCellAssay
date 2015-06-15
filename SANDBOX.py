@@ -94,7 +94,7 @@ def misc():
         TCA.plate_channels_analysis(plate, neg="NT", pos='Neg3_0', channels=('SpotCountCh2', 'SpotTotalAreaCh2',
                                                                           'SpotTotalIntenCh2','SpotCountCh3',
                                                                           'SpotTotalAreaCh3','SpotTotalIntenCh3'),
-                                    threshold=95, percent=True, clean=True, path=path)
+                                    threshold=95, percent=True, clean=True)
         # TCA.plate_channel_analysis(plate, neg='DMSO noUV', channel='TotalIntenCh2', threshold=200000, percent=False,
         #                            fixed_threshold=True, clean=True, path=path, tag='200000')
         # TCA.plate_channel_analysis(plate, neg='DMSO noUV', channel='TotalIntenCh2', threshold=180000, percent=False,
@@ -121,9 +121,11 @@ def misc():
         # TCA.plot_3d_per_well(plate['rep1'].rawdata, x='TotalIntenCh2', y='AvgIntenCh2', z='ObjectAreaCh1',
         #                      single_cell=True)
 
+# misc()
 
-misc()
-
+pm = TCA.PlateMap(size=1536)
+print(pm)
+print(pm['H45'])
 # cProfile.run('[TCA.get_opposite_well_format("B12", bignum=True) for i in range(1000)]')
 # cProfile.run('[TCA.get_opposite_well_format("B12") for i in range(1000)]')
 

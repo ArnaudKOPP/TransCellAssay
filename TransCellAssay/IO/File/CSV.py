@@ -32,8 +32,9 @@ class CSV(InputFile):
         """
         if os.path.isfile(fpath):
             try:
-                self.dataframe = pd.read_csv(fpath, engine='c', **kwargs)
                 log.info('Reading %s File' % fpath)
+                self.dataframe = pd.read_csv(fpath, engine='c', **kwargs)
+                log.info('Finish reading file')
             except Exception as e:
                 log.error(e)
                 pass

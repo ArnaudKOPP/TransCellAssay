@@ -53,17 +53,18 @@ class PlateMap(object):
     self._ce = None                     # col end
     """
 
-    def __init__(self, file_path=None, **kwargs):
+    def __init__(self, file_path=None, size=96,**kwargs):
         """
         Constructor
         :param file_path: file path from csv file
+        :param size: default size for platemap if not file is provided
         :param kwargs: add param for pandas arg reading
         """
         log.debug('Created PlateMap')
         if file_path is not None:
             self.set_platemap(file_path, **kwargs)
         else:
-            self.platemap = pd.DataFrame()
+            self.generate_empty_platemap(size=size)
         self._is_cutted = False
         self._rb = None
         self._re = None
@@ -172,11 +173,10 @@ class PlateMap(object):
         self._cb = cb
         self._ce = ce
 
-    def generate_empty_platemap(self, size):
+    def generate_empty_platemap(self, size=96):
         """
         Generate an empty platemap with defined size
-        :param size:
-        :return:
+        :param size: number of well for plate, only 96,384 or 1536
         """
         if int(size) == 96:
             self.__generate_empty_96()
@@ -189,15 +189,23 @@ class PlateMap(object):
 
     def __generate_empty_96(self):
         self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:8], columns=range(1, 9, 1))
+        self.__fill_empty()
 
     def __generate_empty_384(self):
         self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:16], columns=range(1, 25, 1))
+        self.__fill_empty()
 
     def __generate_empty_1536(self):
         self.platemap = pd.DataFrame(data='Empty',index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
                                                          'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
                                                          'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF'],
                                      columns=range(1, 49, 1))
+        self.__fill_empty()
+
+    def __fill_empty(self):
+        for r in self.platemap.index:
+            for c in self.platemap.columns:
+                self.platemap.loc[r, c] = str(r)+str(c)
 
     def __setitem__(self, key, value):
         """
@@ -207,10 +215,10 @@ class PlateMap(object):
         """
         # # for (0, 0) format
         if isinstance(key, tuple):
-            self.platemap.iloc[key[0], key[1]] = str(value)
+            self.platemap.iloc[int(key[0]), int(key[1])] = str(value)
         # # for 'A1' format
         elif isinstance(key, str):
-            self.platemap.loc[[key[0]], [key[1:]]] = str(value)
+            self.platemap.loc[str(key[0]), int(key[1:])] = str(value)
 
     def __getitem__(self, position):
         """
@@ -221,10 +229,10 @@ class PlateMap(object):
         """
         # # for (0, 0) format
         if isinstance(position, tuple):
-            return self.platemap.iloc[position[0], position[1]]
+            return self.platemap.iloc[int(position[0]), int(position[1])]
         # # for 'A1' format
         elif isinstance(position, str):
-            return self.platemap.loc[[position[0]], [position[1:]]]
+            return self.platemap.loc[str(position[0]), int(position[1:])]
 
     def __repr__(self):
         """

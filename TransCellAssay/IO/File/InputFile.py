@@ -40,7 +40,7 @@ class InputFile(object):
         :param col: column name for col id
         :param row: column name for row id
         """
-        log.debug('Change row format from int to string')
+        log.debug('Change row format : int -> letters')
         self.dataframe = self.dataframe.replace({'Row': {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H',
                                                          8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M', 13: 'N', 14: 'O',
                                                          15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U', 21: 'V',
@@ -50,7 +50,9 @@ class InputFile(object):
         self.dataframe.insert(0, "Well", 0)
         # # put Well value from row and col columns
         log.debug('Create Well column with good frmt')
-        self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x[row], x[col] + 1), axis=1)
+        # self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x[row], x[col] + 1), axis=1)
+        self.dataframe[col] += 1
+        self.dataframe['Well'] = self.dataframe[row] + self.dataframe[col].astype(str)
         remove = [row, col]
         log.debug('Remove old col and row column')
         self.dataframe = self.dataframe.drop(remove, axis=1)
@@ -63,13 +65,14 @@ class InputFile(object):
             self.__col = self.dataframe.columns()
         return self.__col
 
-    def remove_col(self):
+    def remove_col(self, to_remove=[]):
         """
         Remove useless col
+        :param to_remove: list of col to remove
         """
         # columns that we can remove because useless
         useless = ['PlateNumber', 'FieldNumber', 'CellNumber', 'X', 'Y', 'Z', 'Width', 'Height', 'PixelSizeX',
-                   'PixelSizeY', 'PixelSizeZ']
+                   'PixelSizeY', 'PixelSizeZ'] + to_remove
         for col in useless:
             try:
                 self.dataframe = self.dataframe.drop([col], axis=1)
@@ -83,7 +86,7 @@ class InputFile(object):
         """
         try:
             self.dataframe = self.dataframe.dropna(axis=0)
-            log.debug('Remove Nan on data')
+            log.debug('Removed Nan on data')
         except:
             pass
 
@@ -131,15 +134,16 @@ class InputFile(object):
         :param path: Directory where to save file
         :param frmt: format of data, csv by default
         """
+        log.info("Writing raw data")
         fname = os.path.join(path, name)
         if frmt is 'csv':
             fname += '.csv'
             self.dataframe.to_csv(fname, index=False, index_label=False)
-            log.info("Write raw data %s" % fname)
+            log.info('Finished  %s' % fname)
         elif frmt is 'txt':
             fname += '.txt'
             self.dataframe.to_csv(fname, sep='\t', index=False, index_label=False, **kwargs)
-            log.info("Write raw data %s" % fname)
+            log.info('Finished %s' % fname)
         else:
             raise NotImplementedError('Format not supported for the moment')
 

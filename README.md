@@ -4,7 +4,7 @@ This Python packages is for analysis of Transfected Cell Assay data in High Thro
 Data input is designed to be Single Cell data but 1data/well will work also in csv/txt file.
 This package has been designed with the aim to facilitate the development of data analysis pipeline, so programming skills are needed for the moment. 
 It was developed and tested on python 3.4 platform and will replace CellHTS2 or similar software for our analysis. It work 
-on 96 and 384 Well plate with acceptable performance (1536 on plate for further dev).
+on 96, 384 and 1536(depend format) Well plate with acceptable performance.
 
 ### What TCA do :
 
@@ -41,5 +41,4 @@ This work is under [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html) licence.
 * Bayesian Inference 
 * Dose Response Analysis
 * Phenotypic Response
-* 1536 Well Plate (big depend on format writing in export of data)
 * hdf5 support
