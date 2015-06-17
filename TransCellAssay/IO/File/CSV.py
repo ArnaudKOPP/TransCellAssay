@@ -35,6 +35,7 @@ class CSV(InputFile):
                 log.info('Reading %s File' % fpath)
                 self.dataframe = pd.read_csv(fpath, engine='c', **kwargs)
                 log.info('Finish reading file')
+                self.__filepath = fpath
             except Exception as e:
                 log.error(e)
                 pass

@@ -21,40 +21,59 @@ np.set_printoptions(suppress=True, precision=4)
 
 def HDV():
     platelist = []
-    for j in range(1, 19, 1):
+    channel = 'AvgIntenCh2'
+    neg = 'Neg infecté'
+    pos = 'SiNTCP infecté'
+    for j in range(1, 2, 1):
         tag = 'target'
         path = '/home/arnaud/Desktop/HDV/DATA/'
 
         plaque = TCA.Core.Plate(name='HDV_' + tag+"_"+str(j),
-                                platemap=TCA.Core.PlateMap(file_path=os.path.join(path, tag+"_PP_" + str(j)+".csv")))
+                                platemap=TCA.Core.PlateMap(fpath=os.path.join(path, tag+"_PP_" + str(j)+".csv")))
         for i in ['1', '2', '3']:
             try:
                 file = os.path.join(path, tag+"_"+str(j)+"."+str(i)+".csv")
                 if os.path.isfile(file):
                     plaque + TCA.Core.Replica(name="rep" + i,
-                                              data_file_path=file,
+                                              fpath=file,
                                               datatype='mean')
             except Exception as e:
                 print(e)
                 pass
-
-        channel = 'AvgIntenCh2'
-        neg = 'Neg infecté'
-        pos = 'SiNTCP infecté'
-
         plaque.agg_data_from_replica_channel(channel=channel)
+        # print(plaque['rep1'])
+        x = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
+                                variance="equal", verbose=True)
+        y = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
+                                verbose=True)
+        z = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False,
+                                 verbose=True)
+        t = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False,
+                                 method='MM', verbose=True)
+        pval, fdr = TCA.plate_ttest(plaque, neg=neg, verbose=True)
+        # plaque.normalization_channels(channels=channel,
+        #                       log_t=False,
+        #                       method='Zscore',
+        #                       neg=plaque.platemap.search_well(neg),
+        #                       pos=plaque.platemap.search_well(pos))
 
+        # TCA.systematic_error_detection_test(plaque.array, verbose=True)
+        # TCA.systematic_error(plaque.array)
+        # TCA.heatmap(plaque.array)
         # outpath = os.path.join(path, "FINAL_ANALYSE_3")
         # if not os.path.isdir(outpath):
         #     os.makedirs(outpath)
         # TCA.plate_channel_analysis(plaque, neg=neg, pos=pos, channel=channel, threshold=85, percent=True,
         #                            clean=True, tag='15', path=outpath)
-        plaque.clear_memory(only_cache=False)
+        # plaque.clear_memory(only_cache=False)
+        # TCA.arrays_surf_3d(pval, fdr)
         platelist.append(plaque)
+        print(plaque.platemap)
+        print(plaque['rep1'])
         # del plaque
-    TCA.plates_heatmap_p(platelist, usesec=False)
+    # TCA.plot_wells(platelist, usesec=False, neg=neg, pos=pos)
 
-# HDV()
+HDV()
 
 
 def misc():
@@ -66,18 +85,18 @@ def misc():
 
     PlateList = []
     plaque = TCA.Core.Plate(name='NCS gH2AX 53BP1 Hela',
-                            platemap=TCA.Core.PlateMap(file_path=os.path.join(path, "PP_96_2.csv")),
+                            platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "PP_96_2.csv")),
                             replica=TCA.Core.Replica(name="rep1",
-                                                     data_file_path=os.path.join(path + "Federica test NCS gH2AX 53BP1 Hela.csv"),
-                                                     is_single_cell=True,
+                                                     fpath=os.path.join(path + "Federica test NCS gH2AX 53BP1 Hela.csv"),
+                                                     singleCells=True,
                                                      datatype='mean'))
 
     PlateList.append(plaque)
     plaque = TCA.Core.Plate(name='NCS gH2AX 53BP1 U2OS',
-                            platemap=TCA.Core.PlateMap(file_path=os.path.join(path, "PP_96.csv")),
+                            platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "PP_96.csv")),
                             replica=TCA.Core.Replica(name="rep1",
-                                                     data_file_path=os.path.join(path + "Federica test NCS gH2AX 53BP1 U2OS.csv"),
-                                                     is_single_cell=True,
+                                                     fpath=os.path.join(path + "Federica test NCS gH2AX 53BP1 U2OS.csv"),
+                                                     singleCells=True,
                                                      datatype='mean'))
 
     PlateList.append(plaque)
@@ -123,9 +142,9 @@ def misc():
 
 # misc()
 
-pm = TCA.PlateMap(size=1536)
-print(pm)
-print(pm['H45'])
+# pm = TCA.PlateMap(size=1536)
+# print(pm)
+# print(pm['H45'])
 # cProfile.run('[TCA.get_opposite_well_format("B12", bignum=True) for i in range(1000)]')
 # cProfile.run('[TCA.get_opposite_well_format("B12") for i in range(1000)]')
 

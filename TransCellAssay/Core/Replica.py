@@ -36,12 +36,12 @@ class Replica(object):
     self._ce = None                     # col end
     """
 
-    def __init__(self, name, data_file_path, is_single_cell=True, skip=(), datatype='mean'):
+    def __init__(self, name, fpath, singleCells=True, skip=(), datatype='mean'):
         """
         Constructor
         :param name: name of replica
-        :param data_file_path: Data for replica object
-        :param is_single_cell: Are data single cell type or not
+        :param fpath: Data for replica object
+        :param singleCells: Are data single cell type or not
         :param skip: Well to skip
         :param datatype: Median or Mean data
         """
@@ -54,10 +54,10 @@ class Replica(object):
         self._array_channel = None
         self.array = None
         self.sec_array = None
-        if not is_single_cell:
-            self.set_array_data(data_file_path)
+        if not singleCells:
+            self.set_array_data(fpath)
         else:
-            self.set_rawdata(data_file_path)
+            self.set_rawdata(fpath)
         self.skip_well = skip
         self._is_cutted = False
         self._rb = None
@@ -92,10 +92,7 @@ class Replica(object):
                 raise ValueError("Must provided data type, possibilities : {}".format(__valid_datatype))
             log.info("Import of none single cell data")
             self.array = array
-            if array_type == 'median':
-                self.datatype = array_type
-            else:
-                self.datatype = array_type
+            self.datatype = array_type
         else:
             raise AttributeError("Must provided numpy ndarray")
 
@@ -363,6 +360,13 @@ class Replica(object):
             name = self.name
         self.rawdata.save_raw_data(path=path, name=name)
 
+    def get_file_location(self):
+        """
+        get all file location for all replica
+        :return:
+        """
+        return self.rawdata.get_file_location()
+
     def clear_memory(self, only_cache=True):
         """
         Save memory by deleting Raw Data that use a lot of memory
@@ -375,7 +379,7 @@ class Replica(object):
         """
         Definition for the representation
         """
-        return ("\nReplicat ID : " + repr(self.name) +
+        return ("\nReplica ID : " + repr(self.name) +
                 repr(self.rawdata) +
                 "\nData normalized : " + repr(self.isNormalized) +
                 "\nData systematic error removed : " + repr(self.isSpatialNormalized) + "\n")

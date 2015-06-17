@@ -227,8 +227,8 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
     if not neg_position:
         raise Exception("Not Well for control")
 
-    x = (scipy.special.gamma((len(plate.replica) - 1) / 2) / scipy.special.gamma(
-        (len(plate.replica) - 2) / 2)) * np.sqrt(2 / (len(plate.replica) - 1))
+    n = len(plate.replica)
+    x = (scipy.special.gamma((n - 1) / 2) / scipy.special.gamma((n - 2) / 2)) * np.sqrt(2 / (n - 1))
 
     try:
         for i in range(ssmd.shape[0]):
@@ -315,7 +315,8 @@ def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, control_plate=None
     if len(neg_data) < 2:
         raise ValueError('Insuficient negative data')
 
-    k = 2 * (scipy.special.gamma(((len(neg_data) - 1) / 2) / scipy.special.gamma((len(neg_data) - 2) / 2))) ** 2
+    n = len(neg_data)
+    k = 2 * (scipy.special.gamma(((n - 1) / 2) / scipy.special.gamma((n - 2) / 2))) ** 2
 
     if robust:
         if method == 'MM':

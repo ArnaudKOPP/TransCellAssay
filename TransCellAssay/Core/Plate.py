@@ -94,12 +94,9 @@ class Plate(object):
             if array_type not in __valide_datatype:
                 raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
             self.array = array
-            if array_type == 'median':
-                self.datatype = array_type
-            else:
-                self.datatype = array_type
+            self.datatype = array_type
         else:
-            raise AttributeError("Must provied numpy ndarray")
+            raise AttributeError("Must provided numpy ndarray")
 
     def add_platemap(self, platemap):
         """
@@ -422,6 +419,16 @@ class Plate(object):
         """
         for key, value in self.replica.items():
             value.clear_memory(only_cache=only_cache)
+
+    def get_file_location(self):
+        """
+        return in dict all file location from all replica
+        :return:
+        """
+        floc = collections.OrderedDict()
+        for key, value in self.replica.items():
+            floc[str(key)] = str(value.get_file_location())
+        return floc
 
     def __sub__(self, to_rm):
         """

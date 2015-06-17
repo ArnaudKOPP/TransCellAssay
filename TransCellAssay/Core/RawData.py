@@ -33,22 +33,25 @@ class RawData(object):
     self.__CACHING_gbdata_key = None    # key (channels) of groupby
     """
 
-    def __init__(self, path_or_file, **kwargs):
+    def __init__(self, fpath, **kwargs):
         """
         Constructor
-        :param path_or_file: give the path of csv file or InputFile object
+        :param fpath: give the path of csv file or InputFile object
         :param kwargs: add param for pandas arg reading
         """
-        if isinstance(path_or_file, str):
-            if os.path.isfile(path_or_file):
-                self.df = pd.read_csv(path_or_file, engine='c', **kwargs)
-                log.info('Reading RawData %s File' % path_or_file)
+        if isinstance(fpath, str):
+            if os.path.isfile(fpath):
+                log.info('Reading RawData %s File' % fpath)
+                self.df = pd.read_csv(fpath, engine='c', **kwargs)
+                log.info('Finished')
+                self.__file = fpath
             else:
                 raise IOError('File don\'t exist')
 
-        elif isinstance(path_or_file, TCA.InputFile):
-            if path_or_file.dataframe is not None:
-                self.df = path_or_file.dataframe
+        elif isinstance(fpath, TCA.InputFile):
+            if fpath.dataframe is not None:
+                self.df = fpath.dataframe
+                self.__file = fpath.get_file_path()
             else:
                 raise ValueError('Empty Input File')
         else:
@@ -242,11 +245,18 @@ class RawData(object):
             self.df = None
             log.debug('Rawdata cleared')
 
+    def get_file_location(self):
+        """
+        return file location from data
+        :return:
+        """
+        return self.__file
+
     def __len__(self):
         return len(self.df)
 
     def __repr__(self):
-        return "\nRaw Data head : \n" + repr(self.df.head())
+        return "\nRaw Data : \nFile location ->"+repr(self.__file)+"\nSample : \n" + repr(self.df.head()) + "\n"
 
     def __str__(self):
         return self.__repr__()

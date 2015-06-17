@@ -53,16 +53,18 @@ class PlateMap(object):
     self._ce = None                     # col end
     """
 
-    def __init__(self, file_path=None, size=96,**kwargs):
+    def __init__(self, fpath=None, size=96,**kwargs):
         """
         Constructor
-        :param file_path: file path from csv file
+        :param fpath: file path from csv file
         :param size: default size for platemap if not file is provided
         :param kwargs: add param for pandas arg reading
         """
         log.debug('Created PlateMap')
-        if file_path is not None:
-            self.set_platemap(file_path, **kwargs)
+        self.__file = None
+        if fpath is not None:
+            self.set_platemap(fpath, **kwargs)
+            self.__file = fpath
         else:
             self.generate_empty_platemap(size=size)
         self._is_cutted = False
@@ -207,6 +209,16 @@ class PlateMap(object):
             for c in self.platemap.columns:
                 self.platemap.loc[r, c] = str(r)+str(c)
 
+    def get_file_location(self):
+        """
+        return file location if available
+        :return:
+        """
+        if self.__file is not None:
+            return self.__file
+        else:
+            return 'Not available'
+
     def __setitem__(self, key, value):
         """
         Set geneName from specified position
@@ -239,7 +251,7 @@ class PlateMap(object):
         Definition for the representation
         :return:
         """
-        return "PlateMap: \n" + repr(self.platemap) + "\n"
+        return "\nPlateMap: \n" + repr(self.platemap) + "\nFile location ->"+repr(self.__file) + "\n"
 
     def __str__(self):
         """

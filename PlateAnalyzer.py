@@ -46,11 +46,11 @@ def plate_analyzis(plateid):
                    (3, 3): ((1, 11), (2, 0))}
 
         # # CREATE PLATE OBJECT HERE
-        plaque + TCA.Core.PlateMap(file_path=os.path.join(__INPUT__, "PL" + str(plateid) + "PP.csv"))
+        plaque + TCA.Core.PlateMap(fpath=os.path.join(__INPUT__, "PL" + str(plateid) + "PP.csv"))
         for i in range(1, __NBREP__ + 1):
             file_path = os.path.join(__INPUT__, "PL" + str(plateid) + "." + str(i) + ".csv")
             if os.path.isfile(file_path):
-                plaque + TCA.Replica(name="rep"+str(i), data_file_path=file_path, datatype='mean', skip=to_skip[(plateid, i)])
+                plaque + TCA.Replica(name="rep"+str(i), fpath=file_path, datatype='mean', skip=to_skip[(plateid, i)])
 
         # # BEGIN ANALYZIS HERE
 

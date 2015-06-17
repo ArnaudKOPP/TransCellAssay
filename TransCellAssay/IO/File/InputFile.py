@@ -26,6 +26,7 @@ class InputFile(object):
         self.dataframe = None
         self.is1Datawell = False
         self.__col = None
+        self.__filepath = None
 
     def load(self, fpath):
         """
@@ -150,7 +151,7 @@ class InputFile(object):
     def df_to_array(self, channel, size=None):
         """
         Change shape in list from 1Data/well to numpy matrix
-        :param channel: whiche channel to have in matrix format
+        :param channel: which channel to have in matrix format
         :param size: size/len of data 96 , 384 or 1526
         :return: numpy array
         """
@@ -163,7 +164,7 @@ class InputFile(object):
                 elif size == 384:
                     array = np.zeros((16, 24))
                 else:
-                    raise NotImplementedError('1526 not yet implemented')
+                    array = np.zeros((24, 48))
                 for i in range(size):
                     array[self.dataframe['Row'][i]][self.dataframe['Column'][i]] = self.dataframe[channel][i]
                 return array
@@ -171,3 +172,6 @@ class InputFile(object):
                 raise Exception('Empty raw data')
         else:
             raise Exception('Not applicable on this data type')
+
+    def get_file_path(self):
+        return self.__filepath

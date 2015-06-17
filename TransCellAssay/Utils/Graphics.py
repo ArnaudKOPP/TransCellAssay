@@ -12,8 +12,9 @@ __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
+warnings.simplefilter('always', DeprecationWarning)
 
-def array_surf_3d(array):
+def array_surf_3d(*args, array):
     """
     Make a 3d surface plot of matrix representing plate, give an array(in matrix form) of value (whatever you want)
     :param array: numpy array
@@ -31,8 +32,42 @@ def array_surf_3d(array):
         x, y = np.meshgrid(x, y)
         z = array
         ax = fig.gca(projection='3d')
-        surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.cm.Reds, linewidth=0, antialiased=True)
+        surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.cm.Reds,
+                               linewidth=0, antialiased=True,alpha=0.5)
         fig.colorbar(surf, shrink=0.5, aspect=5)
+        ax.invert_yaxis()
+        plt.show()
+    except Exception as e:
+        print(e)
+
+def arrays_surf_3d(*args):
+    """
+    Make a 3d surface plot of matrix representing plate, give a list of array (with same size) and limited to 4
+    :param args: list of array, limit to 4
+    :return:show 3d plot
+    """
+    try:
+        import numpy as np
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        import matplotlib.pyplot as plt
+
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+
+        cmap = (plt.cm.Reds, plt.cm.Blues, plt.cm.BuGn, plt.cm.BuPu)
+        i = 0
+
+        for arg in args:
+            assert isinstance(arg, np.ndarray)
+            x = np.arange(arg.shape[1])
+            y = np.arange(arg.shape[0])
+            x, y = np.meshgrid(x, y)
+            z = arg
+            surf = ax.plot_surface(x, y, z, rstride=1, cstride=1,cmap=cmap[i],
+                                   linewidth=0, antialiased=True,alpha=0.2)
+            fig.colorbar(surf, shrink=0.5, aspect=5)
+            i += 1
         ax.invert_yaxis()
         plt.show()
     except Exception as e:
@@ -69,13 +104,12 @@ def array_hist_3d(array):
     except Exception as e:
         print(e)
 
-
 def heatmap(array, file_path=None):
     """
     Output a heatmap with matplotlib
     :param array: numpy array that represent data
     """
-    warnings.warn("Shouldn't use this function anymore! use _p function", PendingDeprecationWarning)
+    warnings.warn("Shouldn't use this function anymore! use _p function", DeprecationWarning)
     try:
         import matplotlib
         import pylab
@@ -95,7 +129,6 @@ def heatmap(array, file_path=None):
             pylab.show()
     except Exception as e:
         print(e)
-
 
 def plate_heatmap(plate, both=True, file_path=None):
     """
@@ -136,7 +169,6 @@ def plate_heatmap(plate, both=True, file_path=None):
             plt.show()
     except Exception as e:
         print(e)
-
 
 def plates_heatmap(*args, usesec=False, file_path=None):
     """
@@ -191,7 +223,6 @@ def plates_heatmap(*args, usesec=False, file_path=None):
     except Exception as e:
         print(e)
 
-
 def heatmap_p(array, file_path=None):
     """
     Output a heatmap with seaborn
@@ -208,7 +239,6 @@ def heatmap_p(array, file_path=None):
             plt.show()
     except Exception as e:
         print(e)
-
 
 def plate_heatmap_p(plate, both=True, file_path=None):
     """
@@ -245,7 +275,6 @@ def plate_heatmap_p(plate, both=True, file_path=None):
             plt.show()
     except Exception as e:
         print(e)
-
 
 def plates_heatmap_p(*args, usesec=False, file_path=None):
     """
@@ -298,7 +327,6 @@ def plates_heatmap_p(*args, usesec=False, file_path=None):
     except Exception as e:
         print(e)
 
-
 def systematic_error(array, file_path=None):
     """
     plot systematic error in cols and rows axis
@@ -324,13 +352,25 @@ def systematic_error(array, file_path=None):
 
         row = np.arange(array.shape[0])
         col = np.arange(array.shape[1])
-        ax0.bar(row, rowmean, color='r', yerr=rowstd)
-        ax1.bar(col, colmean, color='r', yerr=colstd)
+        ax0.bar(row, rowmean, color='c', yerr=rowstd)
+        ax1.bar(col, colmean, color='c', yerr=colstd)
+
+        ax0.spines["top"].set_visible(False)
+        ax0.spines["bottom"].set_visible(False)
+        ax0.spines["right"].set_visible(False)
+        ax0.spines["left"].set_visible(False)
+        ax1.spines["top"].set_visible(False)
+        ax1.spines["bottom"].set_visible(False)
+        ax1.spines["right"].set_visible(False)
+        ax1.spines["left"].set_visible(False)
 
         ax0.set_ylabel('Mean')
         ax0.set_title('Mean by row')
         ax1.set_ylabel('Mean')
         ax1.set_title('Mean by Col')
+
+        plt.tick_params(axis="both", which="both", bottom="off", top="off",
+                labelbottom="on", left="off", right="off", labelleft="on")
 
         if file_path is not None:
             plt.savefig(file_path)
@@ -338,7 +378,6 @@ def systematic_error(array, file_path=None):
             plt.show()
     except Exception as e:
         print(e)
-
 
 def boxplot_by_wells(rawdata, channel, file_path=None):
     """
@@ -360,7 +399,6 @@ def boxplot_by_wells(rawdata, channel, file_path=None):
     except Exception as e:
         print(e)
 
-
 def dual_flashlight_plot(y, x):
     """
     x and y array
@@ -373,7 +411,6 @@ def dual_flashlight_plot(y, x):
     plt.scatter(y.flatten(), x.flatten())
     plt.show()
     pass
-
 
 def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', width=0.1, file_path=None):
     """
@@ -434,14 +471,13 @@ def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', 
                 i += 1
         ax.set_xlim([-0.5, i-0.5])
         ax.set_ylabel('Well value')
-        ax.set_xlabel('Plate/Replicat ID')
+        ax.set_xlabel('Plate/Replica ID')
         if file_path is not None:
             plt.savefig(file_path)
         else:
             plt.show()
     except Exception as e:
         print(e)
-
 
 def plot_distribution_hist(wells, plate, channel, rep=None, pool=False, bins=100, file_path=None):
     """
@@ -484,7 +520,6 @@ def plot_distribution_hist(wells, plate, channel, rep=None, pool=False, bins=100
             plt.show(block=True)
     except Exception as e:
         print(e)
-
 
 def plot_distribution_kde(plate, wells, channel, rep=None, pool=False, file_path=None):
     """
@@ -529,7 +564,6 @@ def plot_distribution_kde(plate, wells, channel, rep=None, pool=False, file_path
     except Exception as e:
         print(e)
 
-
 def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z'):
     """
     Plot in 3d three array of data
@@ -557,7 +591,6 @@ def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z'):
         plt.show()
     except Exception as e:
         print(e)
-
 
 def plot_3d_per_well(rawdata, x, y, z, single_cell=True, skip_wells=[]):
     """
