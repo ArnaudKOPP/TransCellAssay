@@ -10,7 +10,7 @@ import cProfile
 import TransCellAssay as TCA
 import logging
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
 pd.set_option('display.max_rows', 100)
 pd.set_option('display.max_columns', 50)
@@ -40,17 +40,17 @@ def HDV():
             except Exception as e:
                 print(e)
                 pass
-        plaque.agg_data_from_replica_channel(channel=channel)
+        # plaque.agg_data_from_replica_channel(channel=channel)
         # print(plaque['rep1'])
-        x = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
-                                variance="equal", verbose=True)
-        y = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
-                                verbose=True)
-        z = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False,
-                                 verbose=True)
-        t = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False,
-                                 method='MM', verbose=True)
-        pval, fdr = TCA.plate_ttest(plaque, neg=neg, verbose=True)
+        # x = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
+        #                         variance="equal", verbose=False)
+        # y = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
+        #                         verbose=False)
+        # z = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False,
+        #                          verbose=False)
+        # t = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False,
+        #                          method='MM', verbose=False)
+        # pval, fdr = TCA.plate_ttest(plaque, neg=neg, verbose=False)
         # plaque.normalization_channels(channels=channel,
         #                       log_t=False,
         #                       method='Zscore',
@@ -63,43 +63,46 @@ def HDV():
         # outpath = os.path.join(path, "FINAL_ANALYSE_3")
         # if not os.path.isdir(outpath):
         #     os.makedirs(outpath)
-        # TCA.plate_channel_analysis(plaque, neg=neg, pos=pos, channel=channel, threshold=85, percent=True,
-        #                            clean=True, tag='15', path=outpath)
+        res = TCA.plate_channel_analysis(plaque, neg=neg, pos=pos, channel=channel, threshold=85, percent=True,
+                                   clean=True, tag='15')
+        print(res)
         # plaque.clear_memory(only_cache=False)
         # TCA.arrays_surf_3d(pval, fdr)
-        platelist.append(plaque)
-        print(plaque.platemap)
-        print(plaque['rep1'])
+        # platelist.append(plaque)
+        # print(plaque.platemap)
+        # print(plaque['rep1'])
+        # print(plaque)
         # del plaque
     # TCA.plot_wells(platelist, usesec=False, neg=neg, pos=pos)
 
-HDV()
+# HDV()
 
 
 def misc():
-    path = '/home/arnaud/Desktop/Anne/Federica analyse 150611/'
+    path = '/home/arnaud/Desktop/Anne/Sergey Alekseev/'
 
     # outpath = os.path.join(path, '600')
     # if not os.path.isdir(outpath):
     #     os.makedirs(outpath)
 
     PlateList = []
-    plaque = TCA.Core.Plate(name='NCS gH2AX 53BP1 Hela',
-                            platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "PP_96_2.csv")),
+
+    plaque = TCA.Core.Plate(name='Sergey alekseev',
+                            platemap=TCA.Core.PlateMap(),
                             replica=TCA.Core.Replica(name="rep1",
-                                                     fpath=os.path.join(path + "Federica test NCS gH2AX 53BP1 Hela.csv"),
+                                                     fpath=os.path.join(path, '150624 Sergey Alekseev.csv'),
                                                      singleCells=True,
                                                      datatype='mean'))
 
     PlateList.append(plaque)
-    plaque = TCA.Core.Plate(name='NCS gH2AX 53BP1 U2OS',
-                            platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "PP_96.csv")),
-                            replica=TCA.Core.Replica(name="rep1",
-                                                     fpath=os.path.join(path + "Federica test NCS gH2AX 53BP1 U2OS.csv"),
-                                                     singleCells=True,
-                                                     datatype='mean'))
-
-    PlateList.append(plaque)
+    # plaque = TCA.Core.Plate(name='NCS gH2AX 53BP1 U2OS',
+    #                         platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "PP_96.csv")),
+    #                         replica=TCA.Core.Replica(name="rep1",
+    #                                                  fpath=os.path.join(path + "Federica test NCS gH2AX 53BP1 U2OS.csv"),
+    #                                                  singleCells=True,
+    #                                                  datatype='mean'))
+    #
+    # PlateList.append(plaque)
 
     for plate in PlateList:
         # plate.replica['rep1'].rawdata.df.to_csv(os.path.join(path, 'siRNA_validation.csv'))
@@ -110,10 +113,14 @@ def misc():
         # print(plate.array)
         # qc = TCA.plate_quality_control(plate, channel, cneg=neg, cpos=pos)
         # print(qc)
-        TCA.plate_channels_analysis(plate, neg="NT", pos='Neg3_0', channels=('SpotCountCh2', 'SpotTotalAreaCh2',
-                                                                          'SpotTotalIntenCh2','SpotCountCh3',
-                                                                          'SpotTotalAreaCh3','SpotTotalIntenCh3'),
-                                    threshold=95, percent=True, clean=True)
+        # TCA.plate_channels_analysis(plate, neg="NT", pos='Neg3_0', channels=('SpotCountCh2', 'SpotTotalAreaCh2',
+        #                                                                   'SpotTotalIntenCh2','SpotCountCh3',
+        #                                                                   'SpotTotalAreaCh3','SpotTotalIntenCh3'),
+        #                             threshold=95, percent=True, clean=True)
+        TCA.plate_channel_analysis(plate, neg="D11", channel='AvgIntenCh2', threshold=95, percent=True,
+                                   clean=1, path=path, tag='95')
+        TCA.plate_channel_analysis(plate, neg="D11", channel='AvgIntenCh2', threshold=98, percent=True,
+                                   clean=1, path=path, tag='98')
         # TCA.plate_channel_analysis(plate, neg='DMSO noUV', channel='TotalIntenCh2', threshold=200000, percent=False,
         #                            fixed_threshold=True, clean=True, path=path, tag='200000')
         # TCA.plate_channel_analysis(plate, neg='DMSO noUV', channel='TotalIntenCh2', threshold=180000, percent=False,
@@ -140,11 +147,14 @@ def misc():
         # TCA.plot_3d_per_well(plate['rep1'].rawdata, x='TotalIntenCh2', y='AvgIntenCh2', z='ObjectAreaCh1',
         #                      single_cell=True)
 
-# misc()
+misc()
 
-# pm = TCA.PlateMap(size=1536)
+# pm = TCA.PlateMap(size=96)
 # print(pm)
-# print(pm['H45'])
+# pm2 = TCA.PlateMap(fpath='/home/arnaud/Desktop/PP_96.csv')
+# print(pm2)
+# print(pm['D6'])
+# print(pm2['D6'])
 # cProfile.run('[TCA.get_opposite_well_format("B12", bignum=True) for i in range(1000)]')
 # cProfile.run('[TCA.get_opposite_well_format("B12") for i in range(1000)]')
 

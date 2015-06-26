@@ -43,7 +43,7 @@ class RawData(object):
             if os.path.isfile(fpath):
                 log.info('Reading RawData %s File' % fpath)
                 self.df = pd.read_csv(fpath, engine='c', **kwargs)
-                log.info('Finished')
+                log.debug('Finished')
                 self.__file = fpath
             else:
                 raise IOError('File don\'t exist')

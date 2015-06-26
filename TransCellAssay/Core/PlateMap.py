@@ -82,7 +82,7 @@ class PlateMap(object):
         """
         if os.path.isfile(file_path):
             log.info('Reading PlateMap %s File' % file_path)
-            self.platemap = pd.read_csv(file_path, index_col=0, **kwargs)
+            self.platemap = pd.read_csv(file_path, index_col=0, header=0, **kwargs)
         else:
             raise IOError('File don\'t exist')
 
@@ -190,7 +190,7 @@ class PlateMap(object):
             raise ValueError('Expected size : 96, 348 or 1536')
 
     def __generate_empty_96(self):
-        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:8], columns=range(1, 9, 1))
+        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:8], columns=range(1, 13, 1))
         self.__fill_empty()
 
     def __generate_empty_384(self):
@@ -230,7 +230,10 @@ class PlateMap(object):
             self.platemap.iloc[int(key[0]), int(key[1])] = str(value)
         # # for 'A1' format
         elif isinstance(key, str):
-            self.platemap.loc[str(key[0]), int(key[1:])] = str(value)
+            try:
+                self.platemap.loc[str(key[0]), int(key[1:])] = str(value)
+            except:
+                self.platemap.loc[str(key[0]), str(key[1:])] = str(value)
 
     def __getitem__(self, position):
         """
@@ -244,7 +247,10 @@ class PlateMap(object):
             return self.platemap.iloc[int(position[0]), int(position[1])]
         # # for 'A1' format
         elif isinstance(position, str):
-            return self.platemap.loc[str(position[0]), int(position[1:])]
+            try:
+                return self.platemap.loc[str(position[0]), int(position[1:])]
+            except:
+                return self.platemap.loc[str(position[0]), str(position[1:])]
 
     def __repr__(self):
         """

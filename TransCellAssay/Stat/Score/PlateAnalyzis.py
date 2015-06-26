@@ -223,7 +223,6 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
                 result_array.write(file_path=filepath)
             except Exception as e:
                 log.error('Error during writing data from PlateAnalyzis : {}'.format(e))
-
         return result_array
 
 
