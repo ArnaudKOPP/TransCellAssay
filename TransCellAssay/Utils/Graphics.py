@@ -399,6 +399,65 @@ def boxplot_by_wells(rawdata, channel, file_path=None):
     except Exception as e:
         print(e)
 
+def well_count(replica, file_path=None):
+    """
+
+    :param rawdata:
+    :param file_path:
+    :return:
+    """
+    assert isinstance(replica, TCA.Core.Replica)
+    try:
+        import pandas as pd
+        import matplotlib.pyplot as plt
+
+        pd.options.display.mpl_style = 'default'
+
+        dfgb = replica.rawdata.get_groupby_data()
+        dfgb.size().plot(kind='bar')
+
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show(block=True)
+
+    except Exception as e:
+        print(e)
+
+def plate_well_count(plate, file_path=None):
+    """
+
+    :param plate:
+    :param file_path:
+    :return:
+    """
+    assert isinstance(plate, TCA.Core.Plate)
+    try:
+        import pandas as pd
+        import matplotlib.pyplot as plt
+
+        pd.options.display.mpl_style = 'default'
+
+        b = len(plate.replica)
+        a = 1
+        fig = plt.figure(figsize=(2.*b, 2.*a))
+
+        i = 1
+        for key, value in plate.replica.items():
+            assert isinstance(value, TCA.Core.Replica)
+            ax = fig.add_subplot(a, b, i)
+            df = value.rawdata.df
+            df.groupby('Well').size().plot(kind='bar')
+            ax.set_title(str(plate.name)+' '+str(value.name))
+            i += 1
+        if file_path is not None:
+            plt.savefig(file_path)
+        else:
+            plt.show(block=True)
+
+    except Exception as e:
+        print(e)
+
 def dual_flashlight_plot(y, x):
     """
     x and y array
