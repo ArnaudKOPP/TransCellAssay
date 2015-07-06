@@ -36,7 +36,7 @@ def array_surf_3d(*args, array):
                                linewidth=0, antialiased=True,alpha=0.5)
         fig.colorbar(surf, shrink=0.5, aspect=5)
         ax.invert_yaxis()
-        plt.show()
+        plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -69,7 +69,7 @@ def arrays_surf_3d(*args):
             fig.colorbar(surf, shrink=0.5, aspect=5)
             i += 1
         ax.invert_yaxis()
-        plt.show()
+        plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -100,7 +100,7 @@ def array_hist_3d(array):
         z_data = data_array.flatten()
         ax.bar3d(x_data, y_data, np.zeros(len(z_data)), 1, 1, z_data, color='b', alpha=0.5)
         ax.invert_yaxis()
-        plt.show()
+        plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -126,11 +126,11 @@ def heatmap(array, file_path=None):
         if file_path is not None:
             pylab.savefig(file_path)
         else:
-            pylab.show()
+            pylab.show(block=True)
     except Exception as e:
         print(e)
 
-def plate_heatmap(plate, both=True, file_path=None):
+def plate_heatmap(plate, both=False, file_path=None):
     """
     Plate all heatmap for plate object
     :param both: print data and SECdata
@@ -166,7 +166,7 @@ def plate_heatmap(plate, both=True, file_path=None):
         if file_path is not None:
             plt.savefig(file_path)
         else:
-            plt.show()
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -219,7 +219,7 @@ def plates_heatmap(*args, usesec=False, file_path=None):
         if file_path is not None:
             plt.savefig(file_path)
         else:
-            plt.show()
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -236,11 +236,11 @@ def heatmap_p(array, file_path=None):
         if file_path is not None:
             plt.savefig(file_path)
         else:
-            plt.show()
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
-def plate_heatmap_p(plate, both=True, file_path=None):
+def plate_heatmap_p(plate, both=False, file_path=None):
     """
     Plate all heatmap for plate object
     :param both: print data and SECdata
@@ -272,7 +272,7 @@ def plate_heatmap_p(plate, both=True, file_path=None):
         if file_path is not None:
             plt.savefig(file_path)
         else:
-            plt.show()
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -323,7 +323,7 @@ def plates_heatmap_p(*args, usesec=False, file_path=None):
         if file_path is not None:
             plt.savefig(file_path)
         else:
-            plt.show()
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -375,7 +375,7 @@ def systematic_error(array, file_path=None):
         if file_path is not None:
             plt.savefig(file_path)
         else:
-            plt.show()
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -418,6 +418,34 @@ def well_count(replica, file_path=None):
 
         if file_path is not None:
             plt.savefig(file_path)
+        else:
+            plt.show(block=True)
+
+    except Exception as e:
+        print(e)
+
+def well_sorted(replica, well, channel, file_path=None):
+    """
+
+    :param plate:
+    :param file_path:
+    :return:
+    """
+    assert isinstance(replica, TCA.Core.Replica)
+    try:
+        import pandas as pd
+        import matplotlib.pyplot as plt
+
+        pd.options.display.mpl_style = 'default'
+
+        df = replica.get_rawdata(channel=channel, well=well)
+        df_sorted = df.sort(inplace=False)
+        df_sorted = df_sorted.reset_index()
+        df_sorted = df_sorted.drop('index', 1)
+        df_sorted.plot()
+
+        if file_path is not None:
+            plt.savefig(file_path, dpi=200)
         else:
             plt.show(block=True)
 
@@ -468,7 +496,7 @@ def dual_flashlight_plot(y, x):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     plt.scatter(y.flatten(), x.flatten())
-    plt.show()
+    plt.show(block=True)
     pass
 
 def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', width=0.1, file_path=None):
@@ -534,7 +562,7 @@ def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', 
         if file_path is not None:
             plt.savefig(file_path)
         else:
-            plt.show()
+            plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -647,7 +675,7 @@ def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z'):
 
         plt.title(str(title))
         ax.legend(loc='upper right')
-        plt.show()
+        plt.show(block=True)
     except Exception as e:
         print(e)
 
@@ -674,7 +702,7 @@ def plot_3d_per_well(rawdata, x, y, z, single_cell=True, skip_wells=[]):
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
         for well in wells:
-            if well not in skip_wells:
+            if well not in skip_wells :
                 if single_cell:
                     ax.plot(rawdata.df[x][rawdata.df['Well'] == well].values,
                             rawdata.df[y][rawdata.df['Well'] == well].values,
@@ -691,6 +719,6 @@ def plot_3d_per_well(rawdata, x, y, z, single_cell=True, skip_wells=[]):
 
         plt.title('Raw Data point')
         ax.legend(loc='upper right')
-        plt.show()
+        plt.show(block=True)
     except Exception as e:
         print(e)

@@ -17,7 +17,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_filtering(plate, channel, upper=None, lower=None, include=True, percent=False):
+def channel_filtering(plate, channel, upper=None, lower=None, include=True, percent=False):
     """
     Make filtering of raw_data by condition
     :param plate: Plate object

@@ -9,4 +9,4 @@ from TransCellAssay.Stat.Normalization.BackgroundSubstraction import *
 from TransCellAssay.Stat.Normalization.WellCorrection import *
 from TransCellAssay.Stat.Normalization.SystematicErrorDetectionTest import systematic_error_detection_test
 from TransCellAssay.Stat.Normalization.Rawdata_norm import rawdata_variability_normalization, plate_feature_scaling
-from TransCellAssay.Stat.Normalization.Filtering import plate_filtering
+from TransCellAssay.Stat.Normalization.Filtering import channel_filtering
