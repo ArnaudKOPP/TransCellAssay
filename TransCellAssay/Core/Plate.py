@@ -4,6 +4,7 @@ Plate is designed for manipulating one or more replica, we store in this class r
 """
 
 import numpy as np
+import pandas as pd
 import TransCellAssay as TCA
 import os
 import collections
@@ -287,6 +288,17 @@ class Plate(object):
         self._re = re
         self._cb = cb
         self._ce = ce
+
+    def get_count(self):
+        cnt = None
+        for key, value in self.replica.items():
+            df = value.get_count()
+            df = df.transpose()
+            if cnt is None:
+                cnt = df
+            else:
+                cnt = pd.concat([cnt, df], axis=0)
+        return cnt
 
     def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
                         threshold=None):

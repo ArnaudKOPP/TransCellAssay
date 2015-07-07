@@ -229,6 +229,16 @@ class Replica(object):
         self._cb = cb
         self._ce = ce
 
+    def get_count(self):
+        """
+        Get the count for all well
+        :return:
+        """
+        gb_data = self.rawdata.get_groupby_data()
+        cnt = gb_data.Well.count().to_frame()
+        cnt.columns = ['Count_'+str(self.name)]
+        return cnt
+
     def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
                         threshold=None):
         """
