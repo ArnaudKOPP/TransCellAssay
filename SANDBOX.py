@@ -100,8 +100,8 @@ def misc2():
 
 
     for plate in PlateList:
-        TCA.plot_distribution_kde(plate, plate.platemap.search_well('scramble')+plate.platemap.search_well('Suvh1/h2'),
-                                  channel='ratio_taget_I')
+        TCA.plot_wells_distribution(plate, wells=['scramble', 'Suvh1/h2'], by_name=True,
+                                  channel='ratio_taget_I', kind='kde')
 
 misc2()
 

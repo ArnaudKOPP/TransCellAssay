@@ -14,7 +14,7 @@ __email__ = "kopp.arnaud@gmail.com"
 
 warnings.simplefilter('always', DeprecationWarning)
 
-def array_surf_3d(*args, array):
+def array_surf_3d(array):
     """
     Make a 3d surface plot of matrix representing plate, give an array(in matrix form) of value (whatever you want)
     :param array: numpy array
@@ -566,56 +566,16 @@ def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', 
     except Exception as e:
         print(e)
 
-def plot_distribution_hist(wells, plate, channel, rep=None, pool=False, bins=100, file_path=None):
+def plot_wells_distribution(plate, wells, channel, by_name=False, kind='kde', rep=None, pool=False, bins=100,
+                            file_path=None):
     """
-    Plot distribution of multiple well with hist
-    :param wells: list of wells to plot distribution
-    :param plate: Plate with replica
-    :param channel: which channel to plot
-    :param rep: if rep is provided, plot only distribution of selected wells for this one
-    :param pool: if pool is True, the selected wells are pooled accross replica
-    """
-    assert isinstance(plate, TCA.Core.Plate)
-    try:
-        import matplotlib.pyplot as plt
-        import pandas as pd
-        import TransCellAssay.Core
-
-        pd.options.display.mpl_style = 'default'
-        for Well in wells:
-            rep_series = dict()
-            if rep is not None:
-                rep_series[rep] = pd.Series(plate[rep].get_rawdata(channel=channel, well=Well))
-                rep_series[rep].name = str(rep)+str(Well)
-            else:
-                for key, value in plate.replica.items():
-                    rep_series[key] = pd.Series(value.get_rawdata(channel=channel, well=Well))
-                    rep_series[key].name = key+str(Well)
-            # # Plotting with pandas
-            if pool:
-                pooled_data = pd.Series()
-                for key, value in rep_series.items():
-                    pooled_data = pooled_data.append(value)
-                pooled_data.name = str(Well)
-                pooled_data.plot(kind='hist', alpha=0.5, legend=True, bins=bins)
-            else:
-                for key, value in rep_series.items():
-                    value.plot(kind='hist', alpha=0.5, legend=True, bins=bins)
-        if file_path is not None:
-            plt.savefig(file_path)
-        else:
-            plt.show(block=True)
-    except Exception as e:
-        print(e)
-
-def plot_distribution_kde(plate, wells, channel, rep=None, pool=False, file_path=None):
-    """
-    Plot distribution of multiple well with kde
+    Plot distribution of multiple well with kde or hist
     :param plate: Plate with replica
     :param wells: list of wells to plot distribution
     :param channel: which channel to plot
+    :param by_name: if True the wells must be a valid genename from plate
     :param rep: if rep is provided, plot only distribution of selected wells for this one
-    :param pool: if pool is True, the selected wells are pooled accross replica
+    :param pool: if pool is True, the selected wells are pooled across replica
     :param file_path: saving location
     """
     assert isinstance(plate, TCA.Core.Plate)
@@ -628,10 +588,14 @@ def plot_distribution_kde(plate, wells, channel, rep=None, pool=False, file_path
         for Well in wells:
             rep_series = dict()
             if rep is not None:
+                if by_name:
+                    Well = plate.platemap.search_well(Well)
                 rep_series[rep] = pd.Series(plate[rep].get_rawdata(channel=channel, well=Well))
                 rep_series[rep].name = str(rep)+str(Well)
             else:
                 for key, value in plate.replica.items():
+                    if by_name:
+                        Well = plate.platemap.search_well(Well)
                     rep_series[key] = pd.Series(value.get_rawdata(channel=channel, well=Well))
                     rep_series[key].name = key+str(Well)
             # # Plotting with pandas
@@ -640,10 +604,16 @@ def plot_distribution_kde(plate, wells, channel, rep=None, pool=False, file_path
                 for key, value in rep_series.items():
                     pooled_data = pooled_data.append(value)
                 pooled_data.name = str(Well)
-                pooled_data.plot(kind='kde', alpha=0.5, legend=True)
+                if kind == 'hist':
+                    pooled_data.plot(kind=kind, alpha=0.5, legend=True, bins=bins)
+                else:
+                    pooled_data.plot(kind=kind, alpha=0.5, legend=True)
             else:
                 for key, value in rep_series.items():
-                    value.plot(kind='kde', alpha=0.5, legend=True)
+                    if kind == 'hist':
+                        value.plot(kind=kind, alpha=0.5, legend=True, bins=bins)
+                    else:
+                        value.plot(kind=kind, alpha=0.5, legend=True)
         if file_path is not None:
             plt.savefig(file_path)
         else:
