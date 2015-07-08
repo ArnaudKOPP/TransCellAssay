@@ -65,6 +65,7 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
     platemap = plate.get_platemap()
 
     size = platemap.shape()
+    WellKey = 'Well'
     __SIZE__ = (size[0] * size[1])
     result_array = Result(size=__SIZE__)
     x = platemap.as_dict()
@@ -89,7 +90,7 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
         log.debug("Iteration on replica : {0} | {1} | {2}".format(replica.name, __SIZE__, len(replica.rawdata.df)))
         # ########## cell count
         datagb = replica.rawdata.get_groupby_data()
-        cellcount = datagb.Well.count().to_dict()
+        cellcount = datagb[WellKey].count().to_dict()
         log.debug("     Determine Cells count")
         cell_count = collections.OrderedDict()
         for key, value in cellcount.items():

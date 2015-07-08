@@ -31,17 +31,17 @@ class PCA():
         """
         try:
             if isinstance(obj_input, TCA.Replica):
-                print("Process PCA on Replicat")
+                print("Process PCA on Replica")
                 self.rawdata = obj_input.rawdata
             if isinstance(obj_input, TCA.Plate):
                 print("Process PCA on Plate")
         except Exception as e:
             print(e)
 
-    def _replicat_pca(self, replicat, n_component=3):
+    def _replicat_pca(self, replica, n_component=3):
         try:
-            assert isinstance(replicat, TCA.Replica)
-            raw_data = replicat.rawdata
+            assert isinstance(replica, TCA.Replica)
+            raw_data = replica.rawdata
             data = self._clear_dataframe(raw_data)
 
             ## DO PCA
@@ -141,7 +141,7 @@ class PCA():
 
 def plot_3d_cloud_point_pca(df, eig_vec, x=None, y=None, z=None):
     """
-    Plot in 3d raw data with choosen channels
+    Plot in 3d raw data with chosen channels
     :param eig_vec:
     :param df: dataframe without class label !!
     :param x: x channel

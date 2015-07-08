@@ -34,7 +34,7 @@ def rank_product(plate, secdata=False, mean_method="mean", rank_method="average"
         for key, value in plate.replica.items():
             log.debug('Rank : iteration on %s' % value.name)
             if secdata:
-                rank = __get_data_rank(value.sec_array, method=rank_method)
+                rank = __get_data_rank(value.array_c, method=rank_method)
             else:
                 rank = __get_data_rank(value.array, method=rank_method)
             rk_pdt = np.append(rk_pdt, rank.flatten().reshape(size, 1), axis=1)

@@ -30,17 +30,17 @@ class LDA():
         """
         try:
             if isinstance(obj_input, TCA.Replica):
-                print("Process LDA on Replicat")
+                print("Process LDA on Replica")
                 self.rawdata = obj_input.rawdata
             if isinstance(obj_input, TCA.Plate):
                 print("Process LDA on Plate")
         except Exception as e:
             print(e)
 
-    def _replicat_LDA(self, replicat, n_component=3):
+    def _replicat_LDA(self, replica, n_component=3):
         try:
-            assert isinstance(replicat, TCA.Replica)
-            raw_data = replicat.rawdata
+            assert isinstance(replica, TCA.Replica)
+            raw_data = replica.rawdata
             data = self._clear_dataframe(raw_data)
 
             # # DO LDA

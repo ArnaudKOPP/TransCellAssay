@@ -158,7 +158,7 @@ def plate_heatmap(plate, both=False, file_path=None):
             ax.invert_yaxis()
             if both:
                 ax = fig.add_subplot(a, b, i+b)
-                ax.pcolor(value.sec_array, cmap=plt.cm.Reds, edgecolors='k')
+                ax.pcolor(value.array_c, cmap=plt.cm.Reds, edgecolors='k')
                 ax.set_title(str(plate.name)+str(value.name))
                 # # tab like display
                 ax.invert_yaxis()
@@ -209,7 +209,7 @@ def plates_heatmap(*args, usesec=False, file_path=None):
                     # # tab like display
                     ax.invert_yaxis()
                 else:
-                    ax.pcolor(value.sec_array, cmap=plt.cm.Reds, edgecolors='k')
+                    ax.pcolor(value.array_c, cmap=plt.cm.Reds, edgecolors='k')
                     # # tab like display
                     ax.invert_yaxis()
                 ax.set_title(str(plate.name)+' '+str(value.name))
@@ -267,7 +267,7 @@ def plate_heatmap_p(plate, both=False, file_path=None):
             if both:
                 ax = fig.add_subplot(a, b, i+b)
                 sns.set()
-                sns.heatmap(value.sec_array)
+                sns.heatmap(value.array_c)
             i += 1
         if file_path is not None:
             plt.savefig(file_path)
@@ -315,7 +315,7 @@ def plates_heatmap_p(*args, usesec=False, file_path=None):
                     sns.heatmap(value.array)
                 else:
                     sns.set()
-                    sns.heatmap(value.sec_array)
+                    sns.heatmap(value.array_c)
                 ax.set_title(str(plate.name)+' '+str(value.name))
                 i += 1
         fig.set_tight_layout(True)
@@ -535,7 +535,7 @@ def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', 
             for key, value in plate.replica.items():
                 # select data
                 if usesec:
-                    data = value.sec_array.flatten()
+                    data = value.array_c.flatten()
                 else:
                     data = value.array.flatten()
                 # part for neg, pos or other in color

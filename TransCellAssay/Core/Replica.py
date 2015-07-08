@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Replica implement the notion of technical replica for plate
+Replica implement the notion of technical replica for plate, in real, it represent one plate
 """
 
 import numpy as np
@@ -20,20 +20,20 @@ class Replica(object):
     """
     Class for manipulating replica of plate
 
-    self.rawdata = rawdata              # rawdata object
     self.name = ""                      # Name of replica
+    self.rawdata = rawdata              # rawdata object
     self.isNormalized = False           # are the data normalized
     self.isSpatialNormalized = False    # systematics error removed or not
     self.datatype = "median"            # median or mean of data
     self.array = None                   # matrix that contain mean/median of interested channels to analyze
     self._array_channel = None          # which channel is stored in data
-    self.sec_array = None               # matrix that contain spatial data corrected
+    self.array_c = None                 # matrix that contain spatial data corrected
     self.skip_well = ()                 # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     self._is_cutted = False             # Bool for know if plate are cutted
-    self._rb = None                     # row begin
-    self._re = None                     # row end
-    self._cb = None                     # col begin
-    self._ce = None                     # col end
+    self._rb = None                     # row begin of cutting operation
+    self._re = None                     # row end of cutting operation
+    self._cb = None                     # col begin of cutting operation
+    self._ce = None                     # col end of cutting operation
     """
 
     def __init__(self, name, fpath, singleCells=True, skip=(), datatype='mean'):
@@ -53,7 +53,7 @@ class Replica(object):
         self.datatype = datatype
         self._array_channel = None
         self.array = None
-        self.sec_array = None
+        self.array_c = None
         if not singleCells:
             self.set_array_data(fpath)
         else:
@@ -77,7 +77,7 @@ class Replica(object):
         Get all channels/component in list
         :return: list of channel/component
         """
-        return self.rawdata.get_channel_list
+        return self.rawdata.get_channel_list()
 
     def set_array_data(self, array, array_type='median'):
         """
@@ -196,10 +196,10 @@ class Replica(object):
         :return: compute data in matrix form
         """
         if sec:
-            if self.sec_array is None:
-                raise ValueError('Launch Systematic Error Correction before')
+            if self.array_c is None:
+                raise ValueError('Process Systematic Error Correction method before')
             else:
-                return self.sec_array
+                return self.array_c
         if self.array is None:
             self.compute_data_channel(channel)
         if channel is self._array_channel:
@@ -221,21 +221,21 @@ class Replica(object):
         log.debug('Cutting operation on replica : {0} (param {1}:{2},{3}:{4})'.format(self.name, rb, re, cb, ce))
         if self.array is not None:
             self.array = self.array[rb: re, cb: ce]
-        if self.sec_array is not None:
-            self.sec_array = self.sec_array[rb: re, cb: ce]
+        if self.array_c is not None:
+            self.array_c = self.array_c[rb: re, cb: ce]
         self._is_cutted = True
         self._rb = rb
         self._re = re
         self._cb = cb
         self._ce = ce
 
-    def get_count(self):
+    def get_count(self, well_key='Well'):
         """
         Get the count for all well
         :return:
         """
         gb_data = self.rawdata.get_groupby_data()
-        cnt = gb_data.Well.count().to_frame()
+        cnt = gb_data[well_key].count().to_frame()
         cnt.columns = ['Count_'+str(self.name)]
         return cnt
 
@@ -252,7 +252,7 @@ class Replica(object):
         :param threshold: used in background subtraction (median is 50) you can set as you want
         """
         if not self.isNormalized:
-            log.debug('Raw Data normalization processing for replicat {} on channel {}'.format(self.name, channel))
+            log.debug('Raw Data normalization processing for replica {} on channel {}'.format(self.name, channel))
             if skipping_wells:
                 negative = [x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)]
                 positive = [x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)]
@@ -324,7 +324,7 @@ class Replica(object):
 
         if self.array is None:
             log.error("Use first : compute_data_for_channel")
-            raise ValueError()
+            raise AttributeError()
 
         else:
             if self.isSpatialNormalized:
@@ -357,7 +357,7 @@ class Replica(object):
                 corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
                                                            verbose=verbose)
             if save:
-                self.sec_array = corrected_data_array
+                self.array_c = corrected_data_array
                 self.isSpatialNormalized = True
 
     def write_rawdata(self, path, name=None):

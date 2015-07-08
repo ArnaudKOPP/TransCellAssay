@@ -3,7 +3,7 @@
 In this correction method, the background signal corresponding to each well is calculated by averaging the activities
 withing each well across all plate of screen.
 Then, a kriging interpolation can be made but not sur for the moment.
-We substract then the calculated background to value from plate or replicat.
+We substract then the calculated background to value from plate or replica.
 """
 
 import numpy as np
@@ -73,11 +73,11 @@ class BackgroundCorrection(object):
                         self.BackgroundModel = np.zeros(plate.array.shape)
                     self.BackgroundModel += plate.array
                 self.BackgroundModel *= 1 / len(self.screen)
-            elif apply_on == "Replicat":
+            elif apply_on == "Replica":
                 object_cnt = 0
                 # iterate on all plate
                 for plate in self.screen:
-                    # iterate on all replicat in the plate
+                    # iterate on all replica in the plate
                     for repName, repValue in plate.replica.items():
                         if not isinstance(repValue, TCA.Replica):
                             raise TypeError
@@ -122,7 +122,7 @@ class BackgroundCorrection(object):
                 for plate in self.screen:
                     plate.sec_array -= self.BackgroundModel
                     plate.isSpatialNormalized = True
-            elif apply_on == "Replicat":
+            elif apply_on == "Replica":
                 # iterate on all plate
                 for plate in self.screen:
                     # iterate on all replicat in the plate
@@ -130,7 +130,7 @@ class BackgroundCorrection(object):
                         if not isinstance(repValue, TCA.Replica):
                             raise TypeError
                         else:
-                            repValue.sec_array -= self.BackgroundModel
+                            repValue.array_c -= self.BackgroundModel
                             repValue.isSpatialNormalized = True
             else:
                 raise AttributeError("Apply strategy only on plate or replicat")

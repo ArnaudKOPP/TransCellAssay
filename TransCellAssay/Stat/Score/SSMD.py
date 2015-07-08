@@ -98,7 +98,7 @@ def __search_unpaired_data(plate, ref, sec_data):
         for neg in valid_neg_position:
             try:
                 if sec_data:
-                    neg_value.append(value.sec_array[neg[0]][neg[1]])
+                    neg_value.append(value.array_c[neg[0]][neg[1]])
                 else:
                     neg_value.append(value.array[neg[0]][neg[1]])
             except Exception:
@@ -158,7 +158,7 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, contr
                     continue
                 try:
                     if sec_data:
-                        well_value.append(value.sec_array[i][j])
+                        well_value.append(value.array_c[i][j])
                     else:
                         well_value.append(value.array[i][j])
                 except Exception:
@@ -198,7 +198,7 @@ def __search_paired_data(replica, ref, sec_data):
     for neg_i in valid_neg_pos:
         try:
             if sec_data:
-                well_value = replica.sec_array[neg_i[0]][neg_i[1]]
+                well_value = replica.array_c[neg_i[0]][neg_i[1]]
             else:
                 well_value = replica.array[neg_i[0]][neg_i[1]]
             neg_value.append(well_value)
@@ -242,7 +242,7 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
                     else:
                         neg = np.mean(__search_paired_data(value, neg_position, sec_data))
                     if sec_data:
-                        well_value.append(value.sec_array[i][j] - neg)
+                        well_value.append(value.array_c[i][j] - neg)
                     else:
                         well_value.append(value.array[i][j] - neg)
                 if robust:
@@ -302,7 +302,7 @@ def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, control_plate=None
 
     try:
         if sec_data:
-            data = plate.sec_array
+            data = plate.array_c
         else:
             data = plate.array
     except Exception as e:

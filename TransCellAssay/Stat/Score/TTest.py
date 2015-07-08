@@ -66,7 +66,7 @@ def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False, cont
                                 continue
                             try:
                                 if sec_data:
-                                    well_value.append(value.sec_array[i][j])
+                                    well_value.append(value.array_c[i][j])
                                 else:
                                     well_value.append(value.array[i][j])
                             except Exception:

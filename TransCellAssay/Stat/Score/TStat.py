@@ -55,7 +55,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
                 if paired:
                     score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose, robust=robust)
                 else:
-                    score = __unpaired_tstat_score(plate, neg_control, variance=variance, sec_data=sec_data,
+                    score = __unpaired_tstat_score(plate, neg_control, variance=variance, data_c=sec_data,
                                                    verbose=verbose, robust=robust, control_plate=control_plate)
             else:
                 raise ValueError("T-Stat need at least two replica")
@@ -66,7 +66,7 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
         log.error(e)
 
 
-def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True, verbose=False, robust=True,
+def __unpaired_tstat_score(plate, neg_control, variance='unequal', data_c=True, verbose=False, robust=True,
                            control_plate=None):
     """
     performed unpaired t-stat score
@@ -77,7 +77,7 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
     :param plate: Plate Object to analyze
     :param neg_control: negative control reference
     :param variance: unequal or equal variance
-    :param sec_data: use data with Systematic Error Corrected
+    :param data_c: use data with Systematic Error Corrected
     :param verbose: be verbose or not
     :return: score data
     """
@@ -87,13 +87,13 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
         neg_position = control_plate.platemap.search_coord(neg_control)
         if not neg_position:
             raise Exception("Not Well for control")
-        neg_value = __search_unpaired_data(control_plate, neg_position, sec_data)
+        neg_value = __search_unpaired_data(control_plate, neg_position, data_c)
         nb_neg_wells = len(neg_value)
     else:
         neg_position = plate.platemap.search_coord(neg_control)
         if not neg_position:
             raise Exception("Not Well for control")
-        neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+        neg_value = __search_unpaired_data(plate, neg_position, data_c)
         nb_neg_wells = len(neg_value)
 
     nb_rep = len(plate.replica)
@@ -112,8 +112,8 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
                 if (i, j) in value.skip_well:
                     continue
                 try:
-                    if sec_data:
-                        well_value.append(value.sec_array[i][j])
+                    if data_c:
+                        well_value.append(value.array_c[i][j])
                     else:
                         well_value.append(value.array[i][j])
                 except Exception:
@@ -137,7 +137,7 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', sec_data=True
 
     if verbose:
         print("Unpaired t-stat :")
-        print("Systematic Error Corrected Data : ", sec_data)
+        print("Systematic Error Corrected Data : ", data_c)
         print("Data type : ", plate.datatype)
         print("variance parameter : ", variance)
         print("Robust version : ", robust)
@@ -171,7 +171,7 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False, robus
                 neg_median = np.median(__search_paired_data(value, neg_position, sec_data))
                 try:
                     if sec_data:
-                        well_value.append(value.sec_array[i][j] - neg_median)
+                        well_value.append(value.array_c[i][j] - neg_median)
                     else:
                         well_value.append(value.array[i][j] - neg_median)
                 except Exception:

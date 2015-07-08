@@ -1,6 +1,7 @@
 # coding=utf-8
 """
-Plate is designed for manipulating one or more replica, we store in this class replica object
+Plate is designed for manipulating one or more replica, we store in this class replica object, a platemap object is
+attached to this class
 """
 
 import numpy as np
@@ -31,13 +32,13 @@ class Plate(object):
     self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replica )
     self.datatype = "median"          # median or mean data, default is median
     self.array = None                 # matrix that contain data from all replica of interested channel to analyze
-    self.sec_array = None             # matrix that contain spatial data corrected from all replica
+    self.array_c = None               # matrix that contain spatial data corrected from all replica
     self.skip_well = None             # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
     self._is_cutted = False           # Bool for know if plate are cutted
-    self._rb = None                   # row begin
-    self._re = None                   # row end
-    self._cb = None                   # col begin
-    self._ce = None                   # col end
+    self._rb = None                   # row begin of cutting operation
+    self._re = None                   # row end of cutting operation
+    self._cb = None                   # col begin of cutting operation
+    self._ce = None                   # col end of cutting operation
     """
 
     def __init__(self, name, platemap=None, skip=(), replica=None):
@@ -48,7 +49,7 @@ class Plate(object):
         :param skip: Well to skip for all replica
         :param replica: add one or a list of replica
         """
-        log.debug('Plate created : {}'.format(name))
+        log.info('Plate created : {}'.format(name))
         self.replica = collections.OrderedDict()
         self.name = name
         if platemap is not None:
@@ -61,7 +62,7 @@ class Plate(object):
         self.isSpatialNormalized = False
         self.datatype = "median"
         self.array = None
-        self.sec_array = None
+        self.array_c = None
         self.skip_well = skip
         self._is_cutted = False
         self._rb = None
@@ -234,7 +235,7 @@ class Plate(object):
     def agg_data_from_replica_channel(self, channel, use_sec_data=False, forced_update=False):
         """
         Compute the mean/median matrix data of all replica
-        If replica data is SpatialNorm already, this function will fill sec_array
+        If replica data is SpatialNorm already, this function will fill array_c
         :param forced_update: Forced update of replica data, to use when you have determine matrix too soon
         :param use_sec_data: use or not sec data from replica
         :param channel: which channel to have into sum up data
@@ -257,7 +258,7 @@ class Plate(object):
         if not use_sec_data:
             self.array = tmp_array / i
         else:
-            self.sec_array = tmp_array / i
+            self.array_c = tmp_array / i
             self.isSpatialNormalized = True
 
     def cut(self, rb, re, cb, ce, apply_down=True):
@@ -276,8 +277,8 @@ class Plate(object):
             self.array = self.array[rb: re, cb: ce]
         else:
             raise AttributeError('array is empty')
-        if self.sec_array is not None:
-            self.sec_array = None
+        if self.array_c is not None:
+            self.array_c = None
             log.warning('Must reperforme SEC process')
         if apply_down:
             for key, value in self.replica.items():
@@ -408,7 +409,7 @@ class Plate(object):
                 corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
                                                            verbose=verbose)
             if save:
-                self.sec_array = corrected_data_array
+                self.array_c = corrected_data_array
                 self.isSpatialNormalized = True
 
     def write_rawdata(self, path, name=None):

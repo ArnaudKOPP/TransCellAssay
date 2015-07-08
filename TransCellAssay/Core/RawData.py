@@ -1,7 +1,9 @@
 # coding=utf-8
 """
-Class that store raw data in single cell, we use pandas dataframe for storing in memory
-Need a specific format for running optimum
+Class that store raw data in single cell, we use pandas dataframe for storing in memory.
+Need a specific format for running optimum.
+
+This class is not designed for storing 1data/well, use instead array of replica class
 
 Well    Channel1     Channel2
 A1
@@ -28,7 +30,7 @@ __email__ = "kopp.arnaud@gmail.com"
 class RawData(object):
     """
     Raw data that contain value in single cell level
-    self.df                             # DataFrame (pandas DF)
+    self.df                             # DataFrame (pandas DF) for storing data
     self.__CACHING_gbdata = None        # groupby object (pandas) from DataFrame
     self.__CACHING_gbdata_key = None    # key (channels) of groupby
     """
@@ -123,14 +125,14 @@ class RawData(object):
                 # # return all data
                 return self.df
 
-    def get_unique_well(self):
+    def get_unique_well(self, well_key='Well'):
         """
         return all unique wells
         :return:
         """
         if self.df is None:
             raise IOError('Empty rawdata')
-        return self.df.Well.unique()
+        return self.df[well_key].unique()
 
     def df_to_array(self, chan):
         """

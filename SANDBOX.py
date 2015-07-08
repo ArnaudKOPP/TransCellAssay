@@ -40,6 +40,7 @@ def HDV():
             except Exception as e:
                 print(e)
                 pass
+        print(plaque.get_count().transpose())
         # plaque.agg_data_from_replica_channel(channel=channel)
         # print(plaque['rep1'])
         # x = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
@@ -59,7 +60,7 @@ def HDV():
 
         # TCA.systematic_error_detection_test(plaque.array, verbose=True)
         # TCA.systematic_error(plaque.array)
-        TCA.plate_well_count(plaque)
+        # TCA.plate_well_count(plaque)
         # TCA.heatmap(plaque.array)
         # outpath = os.path.join(path, "FINAL_ANALYSE_3")
         # if not os.path.isdir(outpath):
@@ -81,9 +82,9 @@ def HDV():
 def misc2():
     path = '/home/arnaud/Desktop/Schneider/Plaque du 02072015/'
 
-    outpath = os.path.join(path, 'ratio')
-    if not os.path.isdir(outpath):
-        os.makedirs(outpath)
+    # outpath = os.path.join(path, 'ratio')
+    # if not os.path.isdir(outpath):
+    #     os.makedirs(outpath)
 
     PlateList = []
 
@@ -99,13 +100,10 @@ def misc2():
 
 
     for plate in PlateList:
-        channel = ['ratio_taget_I', 'ratio_taget_II']
-        TCA.plate_channels_analysis(plate, neg="scramble", channels=channel, threshold=50, percent=True,
-                                    clean=True, path=outpath)
-        # TCA.plate_channels_analysis(plate, neg="E5", channels=channel, threshold=99, percent=True,
-        #                             clean=True, path=path, tag='1')
+        TCA.plot_distribution_kde(plate, plate.platemap.search_well('scramble')+plate.platemap.search_well('Suvh1/h2'),
+                                  channel='ratio_taget_I')
 
-# misc2()
+misc2()
 
 
 def misc():
@@ -121,6 +119,7 @@ def misc():
                                                          singleCells=True,
                                                          datatype='mean'))
         PlateList.append(plaque)
+        print(plaque.get_count().transpose())
         # outpath = os.path.join(path, name[0:-4]+'_resultat')
         # if not os.path.isdir(outpath):
         #     os.makedirs(outpath)
@@ -157,16 +156,16 @@ def misc():
         del platelist_copy
 
 
-    for gfpvalue in [2000, 2500, 3000]:
-        for octvalue in [1500, 2000, 2500]:
-            for zscanvalue in [1500, 2000]:
-                filtering(PlateList, gfp=gfpvalue)
-                filtering(PlateList, oct=octvalue)
-                filtering(PlateList, zscan=zscanvalue)
-                filtering(PlateList, gfp=gfpvalue, zscan=zscanvalue)
-                filtering(PlateList, gfp=gfpvalue, oct=octvalue)
-                filtering(PlateList, gfp=gfpvalue, oct=octvalue, zscan=zscanvalue)
-                filtering(PlateList, oct=octvalue, zscan=zscanvalue)
+    # for gfpvalue in [2000, 2500, 3000]:
+    #     for octvalue in [1500, 2000, 2500]:
+    #         for zscanvalue in [1500, 2000]:
+    #             filtering(PlateList, gfp=gfpvalue)
+    #             filtering(PlateList, oct=octvalue)
+    #             filtering(PlateList, zscan=zscanvalue)
+    #             filtering(PlateList, gfp=gfpvalue, zscan=zscanvalue)
+    #             filtering(PlateList, gfp=gfpvalue, oct=octvalue)
+    #             filtering(PlateList, gfp=gfpvalue, oct=octvalue, zscan=zscanvalue)
+    #             filtering(PlateList, oct=octvalue, zscan=zscanvalue)
 
 
 
@@ -207,7 +206,7 @@ def misc():
         # x.remove('E2')
         # TCA.plot_3d_per_well(plate['rep1'].rawdata, x='AvgIntenCh3', y='AvgIntenCh4', z='AvgIntenCh5', skip_wells=x)
 
-misc()
+# misc()
 
 #######################################################################################################################
 #######################################################################################################################
@@ -345,8 +344,8 @@ misc()
 
 # TCA.plate_heatmap_p(plaque, both=False)
 # TCA.plot_wells(plaque, neg=neg, pos=pos)
-# TCA.plot_plate_3d(plaque['rep1'].sec_array, surf=True)
-# TCA.plot_plate_3d(plaque.sec_array)
+# TCA.plot_plate_3d(plaque['rep1'].array_c, surf=True)
+# TCA.plot_plate_3d(plaque.array_c)
 # TCA.plot_plate_3d(plaque.array, surf=True)
 # TCA.plate_heatmap_p(plaque)
 # TCA.heatmap_map_p(plaque, usesec=True)

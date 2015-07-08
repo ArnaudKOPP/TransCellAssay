@@ -46,17 +46,17 @@ class PlateMap(object):
     Class for manipulating platemap
     self.platemap = pd.DataFrame()      # pandas dataframe object that contain the platemap, use this module for more
                                             easy manipulation of different type into array (more easy that numpy)
-    self._is_cutted = False             # Bool for know if plate are cutted
-    self._rb = None                     # row begin
-    self._re = None                     # row end
-    self._cb = None                     # col begin
-    self._ce = None                     # col end
+    self._is_cutted = False             # Bool for know if plate are cutted or no
+    self._rb = None                     # row begin of cutting operation
+    self._re = None                     # row end of cutting operation
+    self._cb = None                     # col begin of cutting operation
+    self._ce = None                     # col end of cutting operation
     """
 
     def __init__(self, fpath=None, size=96,**kwargs):
         """
         Constructor
-        :param fpath: file path from csv file
+        :param fpath: file path from csv file, if no one is provided, a generic platemap is created
         :param size: default size for platemap if not file is provided
         :param kwargs: add param for pandas arg reading
         """
@@ -67,6 +67,7 @@ class PlateMap(object):
             self.__file = fpath
         else:
             self.generate_empty_platemap(size=size)
+            log.debug('Generic platemap created')
         self._is_cutted = False
         self._rb = None
         self._re = None
@@ -75,8 +76,7 @@ class PlateMap(object):
 
     def set_platemap(self, file_path=None, **kwargs):
         """
-        Define platemap
-        Read csv with first row as column name and first column as row name
+        Define platemap, read a csv file with first row as column name and first column as row name
         :param file_path: csv file with platemap
         :param kwargs: add param for pandas arg reading
         """
@@ -88,7 +88,8 @@ class PlateMap(object):
 
     def shape(self, alt_frmt=False):
         """
-        get the shape of platemap, so we can determine number of well
+        Get the shape of platemap, so we can determine number of well
+        :param alt_frmt: if true, return 96, 384 or 1536 well format, if False return numpy shape (8,12)
         :return: shape of platemap
         """
         if alt_frmt:
@@ -98,7 +99,7 @@ class PlateMap(object):
 
     def search_coord(self, elem):
         """
-        Search position of the gene and return coord (list of multiple)
+        Search position of the gene and return coord (list ff multiple)
         :param elem: gene to search
         :return: list of coord
         """
@@ -158,7 +159,7 @@ class PlateMap(object):
 
     def cut(self, rb, re, cb, ce):
         """
-        Cut platemap
+        Cut the platemap with specified coordinate
         :param rb: row begin
         :param re: row end
         :param cb: col begin
