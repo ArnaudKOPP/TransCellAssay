@@ -40,7 +40,7 @@ def HDV():
             except Exception as e:
                 print(e)
                 pass
-        print(plaque.get_count().transpose())
+        print(TCA.ScoringPlate(plaque, channel=channel, neg=neg, verbose=False))
         # plaque.agg_data_from_replica_channel(channel=channel)
         # print(plaque['rep1'])
         # x = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
@@ -77,7 +77,7 @@ def HDV():
         # del plaque
     # TCA.plot_wells(platelist, usesec=False, neg=neg, pos=pos)
 
-# HDV()
+HDV()
 
 def misc2():
     path = '/home/arnaud/Desktop/Schneider/Plaque du 02072015/'
@@ -100,10 +100,13 @@ def misc2():
 
 
     for plate in PlateList:
-        TCA.plot_wells_distribution(plate, wells=['scramble', 'Suvh1/h2'], by_name=True,
-                                  channel='ratio_taget_I', kind='kde')
+        TCA.channel_filtering(plate, channel='ratio_taget_I', lower=0, include=False)
+        TCA.channel_filtering(plate, channel='ratio_taget_II', lower=0, include=False)
+        plate.write_rawdata(path=path, name='ratio_cleaned.csv')
+        # TCA.plate_channels_analysis(plate, neg='scramble', pos='Suvh1/h2', channels=['ratio_taget_I', 'ratio_taget_II'],
+        #                             threshold=50, path=path, tag='0_cleaned', clean=True)
 
-misc2()
+# misc2()
 
 
 def misc():
@@ -213,6 +216,9 @@ def misc():
 #                           COLLECTIONS OF FUNCTIONS                                                                  #
 #######################################################################################################################
 #######################################################################################################################
+
+# x = TCA.DoseResponseCurve(func='4pl')
+
 
 # pm = TCA.PlateMap(size=96)
 # print(pm)

@@ -368,7 +368,7 @@ class Replica(object):
         """
         if name is None:
             name = self.name
-        self.rawdata.save_raw_data(path=path, name=name)
+        self.rawdata.write_rawdata(path=path, name=name)
 
     def get_file_location(self):
         """

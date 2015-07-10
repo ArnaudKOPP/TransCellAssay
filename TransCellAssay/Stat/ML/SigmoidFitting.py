@@ -18,65 +18,90 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-class sigmoid_fitting():
+class DoseResponseCurve(object):
     """
     class for Dose Response analysis
+    http://psg.hitachi-solutions.com/masterplex/blog/the-4-parameter-logistic-4pl-nonlinear-regression-model
     """
 
-    def __init__(self):
+    def __init__(self, func):
 
-        def sigmoid(x, x0, k):
-            y = 1 / (1 + np.exp(-k * (x - x0)))
-            return y
+        __valid_function = ['sigmoid', '4pl', '5pl']
+        if func not in __valid_function:
+            raise ValueError('Valid func type : {}'.format(__valid_function))
+        self.__fit()
 
+    @staticmethod
+    def __logistic4(x, A, B, C, D):
+        """
+        4PL logistic equation.
+        A = Bottom
+        B = HillCoef
+        C = EC50 or inflection point
+        D = Top
+        """
+        return ((A - D) / (1.0 + ((x / C) ** B))) + D
+
+    @staticmethod
+    def __logistic5(x, A, B, C, D, E):
+        """
+        :param x:
+        :param A: is the MFI (Mean Fluorescent Intensity)/RLU (Relative Light Unit) value for the minimum asymptote
+        :param B: is the Hill slope
+        :param C: is the concentration at the inflection point
+        :param D: is the MFI/RLU value for the maximum asymptote
+        :param E: is the asymmetry factor
+        :return:
+        """
+        return (D + (A - D) / ((1 + (x / C) ** B) ** E))
+
+    @staticmethod
+    def __sigmoid(x, x0, k):
+        y = 1 / (1 + np.exp(-k * (x - x0)))
+        return y
+
+    def __fit(self):
+        # Input Data
         xdata = np.array([0.0, 1.0, 3.0, 4.3, 7.0, 8.0, 8.5, 10.0, 12.0])
         ydata = np.array([0.01, 0.02, 0.04, 0.11, 0.43, 0.7, 0.89, 0.95, 0.99])
 
-        popt, pcov = curve_fit(sigmoid, xdata, ydata)
-        print(popt, pcov)
 
-        x = np.linspace(-1, 15, 50)
-        y = sigmoid(x, *popt)
+        # Fit curve to get parameters
+        popt, pcov = curve_fit(self.__logistic4, xdata, ydata, maxfev=20000)
+        perr = np.sqrt(np.diag(pcov))
+        print('4Pl')
+        print('Parameters :', popt)
+        print('Std err    :', perr)
+        print('Param cov  :', pcov)
 
-        pylab.plot(xdata, ydata, 'o', label='data')
-        pylab.plot(x, y, label='fit')
-        pylab.ylim(0, 1.05)
-        pylab.legend(loc='best')
-        pylab.show()
+        # # Create data for fitted curve
+        # x = np.linspace(-1, 15, 50)
+        # y = self.__logistic4(x, *popt)
+        #
+        # # Plot data and fitted curve
+        # pylab.plot(xdata, ydata, 'o', label='Input data')
+        # pylab.plot(x, y, label='Curve fit 4pl')
+        # pylab.ylim(0, 1.05)
+        # pylab.legend(loc='best')
+        # pylab.show()
 
-        # http://people.duke.edu/~ccc14/pcfb/analysis.html
-        def logistic4(x, A, B, C, D):
-            """4PL lgoistic equation."""
-            return ((A - D) / (1.0 + ((x / C) ** B))) + D
 
-        def residuals(p, y, x):
-            """Deviations of data from fitted 4PL curve"""
-            A, B, C, D = p
-            err = y - logistic4(x, A, B, C, D)
-            return err
 
-        def peval(x, p):
-            """Evaluated value at x with current parameters."""
-            A, B, C, D = p
-            return logistic4(x, A, B, C, D)
+        # Fit curve to get parameters
+        popt, pcov = curve_fit(self.__logistic5, xdata, ydata, maxfev=20000)
+        perr = np.sqrt(np.diag(pcov))
+        print('5Pl')
+        print('Parameters :', popt)
+        print('Std err    :', perr)
+        print('Param cov  :', pcov)
 
-        # Make up some data for fitting and add noise
-        # In practice, y_meas would be read in from a file
-        x = np.linspace(0, 20, 20)
-        A, B, C, D = 0.5, 2.5, 8, 7.3
-        y_true = logistic4(x, A, B, C, D)
-        y_meas = y_true + 0.2 * npr.randn(len(x))
-
-        # Initial guess for parameters
-        p0 = [0, 1, 1, 1]
-
-        # Fit equation using least squares optimization
-        plsq = leastsq(residuals, p0, args=(y_meas, x))
-
-        # Plot results
-        plt.plot(x, peval(x, plsq[0]), x, y_meas, 'o', x, y_true)
-        plt.title('Least-squares 4PL fit to noisy data')
-        plt.legend(['Fit', 'Noisy', 'True'], loc='upper left')
-        for i, (param, actual, est) in enumerate(zip('ABCD', [A, B, C, D], plsq[0])):
-            plt.text(10, 3 - i * 0.5, '%s = %.2f, est(%s) = %.2f' % (param, actual, param, est))
-        plt.show()
+        # # Create data for fitted curve
+        # x = np.linspace(-1, 15, 50)
+        # y = self.__logistic5(x, *popt)
+        #
+        # # Plot data and fitted curve
+        # pylab.plot(xdata, ydata, 'o', label='Input data')
+        # pylab.plot(x, y, label='Curve fit 5pl')
+        # pylab.ylim(0, 1.05)
+        # pylab.legend(loc='best')
+        # pylab.show()

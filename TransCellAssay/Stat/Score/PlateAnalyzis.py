@@ -84,7 +84,7 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
     percent_cell_all_replica = collections.OrderedDict()
     percent_cell_sd = collections.OrderedDict()
 
-    # ########## iterate over replicat
+    # ########## iterate over replica
     i = 1
     for k, replica in plate.replica.items():
         log.debug("Iteration on replica : {0} | {1} | {2}".format(replica.name, __SIZE__, len(replica.rawdata.df)))
