@@ -35,66 +35,61 @@ def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False, cont
     :param verbose: print or not result
     :return: numpy array with result
     """
-    try:
-        if isinstance(plate, TCA.Plate):
-            # if no neg was provided raise AttributeError
-            if neg is None:
-                raise ValueError('Must provided negative control')
-            log.info('Perform ttest on plate : {}'.format(plate.name))
+    assert isinstance(plate, TCA.Plate)
+    # if no neg was provided raise AttributeError
+    if neg is None:
+        raise ValueError('Must provided negative control')
+    log.info('Perform ttest on plate : {}'.format(plate.name))
 
-            if len(plate) > 1:
+    if len(plate) > 1:
 
-                ttest_score = np.zeros(plate.platemap.platemap.shape)
+        ttest_score = np.zeros(plate.platemap.platemap.shape)
 
-                if control_plate is not None:
-                    neg_position = control_plate.platemap.search_coord(neg)
-                    if not neg_position:
-                        raise Exception("Not Well for control")
-                    neg_value = __search_unpaired_data(control_plate, neg_position, sec_data)
-                else:
-                    neg_position = plate.platemap.search_coord(neg)
-                    if not neg_position:
-                        raise Exception("Not Well for control")
-                    neg_value = __search_unpaired_data(plate, neg_position, sec_data)
-
-                # search rep value for ith well
-                for i in range(ttest_score.shape[0]):
-                    for j in range(ttest_score.shape[1]):
-                        well_value = []
-                        for key, value in plate.replica.items():
-                            if (i, j) in value.skip_well:
-                                continue
-                            try:
-                                if sec_data:
-                                    well_value.append(value.array_c[i][j])
-                                else:
-                                    well_value.append(value.array[i][j])
-                            except Exception:
-                                raise Exception("Your desired datatype are not available")
-
-                        # # performed unpaired t-test
-                        ttest_score[i][j] = stats.ttest_ind(neg_value, well_value, equal_var=equal_var)[1]
-
-                # # determine fdr
-                or_shape = ttest_score.shape
-                fdr = TCA.adjustpvalues(pvalues=ttest_score.flatten())
-                fdr = fdr.reshape(or_shape)
-
-                if verbose:
-                    print("Unpaired ttest :")
-                    print("Systematic Error Corrected Data : ", sec_data)
-                    print("Data type : ", plate.datatype)
-                    print("Equal variance : ", equal_var)
-                    print("ttest p-value score :")
-                    print(ttest_score)
-                    print("fdr score :")
-                    print(fdr)
-                    print("")
-
-            else:
-                raise ValueError("T-test need at least two replica")
-            return ttest_score, fdr
+        if control_plate is not None:
+            neg_position = control_plate.platemap.search_coord(neg)
+            if not neg_position:
+                raise Exception("Not Well for control")
+            neg_value = __search_unpaired_data(control_plate, neg_position, sec_data)
         else:
-            raise TypeError('Take only plate')
-    except Exception as e:
-        log.error(e)
+            neg_position = plate.platemap.search_coord(neg)
+            if not neg_position:
+                raise Exception("Not Well for control")
+            neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+
+        # search rep value for ith well
+        for i in range(ttest_score.shape[0]):
+            for j in range(ttest_score.shape[1]):
+                well_value = []
+                for key, value in plate.replica.items():
+                    if (i, j) in value.skip_well:
+                        continue
+                    try:
+                        if sec_data:
+                            well_value.append(value.array_c[i][j])
+                        else:
+                            well_value.append(value.array[i][j])
+                    except Exception:
+                        raise Exception("Your desired datatype are not available")
+
+                # # performed unpaired t-test
+                ttest_score[i][j] = stats.ttest_ind(neg_value, well_value, equal_var=equal_var)[1]
+
+        # # determine fdr
+        or_shape = ttest_score.shape
+        fdr = TCA.adjustpvalues(pvalues=ttest_score.flatten())
+        fdr = fdr.reshape(or_shape)
+
+        if verbose:
+            print("Unpaired ttest :")
+            print("Systematic Error Corrected Data : ", sec_data)
+            print("Data type : ", plate.datatype)
+            print("Equal variance : ", equal_var)
+            print("ttest p-value score :")
+            print(ttest_score)
+            print("fdr score :")
+            print(fdr)
+            print("")
+
+    else:
+        raise ValueError("T-test need at least two replica")
+    return ttest_score, fdr

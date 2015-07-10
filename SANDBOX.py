@@ -40,7 +40,12 @@ def HDV():
             except Exception as e:
                 print(e)
                 pass
-        print(TCA.ScoringPlate(plaque, channel=channel, neg=neg, verbose=False))
+        # print(plaque)
+        # print(plaque['rep1'])
+        # plaque.write_data(path='/home/arnaud/Desktop/save_test/', channel=channel, sec=False)
+        # TCA.RepCor(plaque, channel=channel)
+        # print(TCA.ScoringPlate(plaque, channel=channel, neg=neg, verbose=False))
+        # print(TCA.rank_product(plaque, channel=channel, secdata=False))
         # plaque.agg_data_from_replica_channel(channel=channel)
         # print(plaque['rep1'])
         # x = TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
@@ -100,9 +105,11 @@ def misc2():
 
 
     for plate in PlateList:
-        TCA.channel_filtering(plate, channel='ratio_taget_I', lower=0, include=False)
-        TCA.channel_filtering(plate, channel='ratio_taget_II', lower=0, include=False)
-        plate.write_rawdata(path=path, name='ratio_cleaned.csv')
+        # TCA.channel_filtering(plate, channel='ratio_taget_I', lower=0, include=False)
+        # TCA.channel_filtering(plate, channel='ratio_taget_II', lower=0, include=False)
+        # plate.write_rawdata(path=path, name='ratio_cleaned.csv')
+        # print(TCA.ScoringPlate(plate, channel='ROI_A_Target_I_ObjectTotalInten', neg='scramble', verbose=False))
+        print(TCA.rank_product(plate, channel='ROI_A_Target_I_ObjectTotalInten', secdata=False))
         # TCA.plate_channels_analysis(plate, neg='scramble', pos='Suvh1/h2', channels=['ratio_taget_I', 'ratio_taget_II'],
         #                             threshold=50, path=path, tag='0_cleaned', clean=True)
 

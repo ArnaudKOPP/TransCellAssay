@@ -53,37 +53,32 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
     :param verbose: be verbose or not
     :return: Corrected data
     """
-    try:
-        if isinstance(plate, TCA.Plate):
-            if neg_control is None:
-                raise ValueError('Must provided negative control')
-            log.info('Perform SSMD on plate : {}'.format(plate.name))
-            if len(plate) > 1 and not inplate_data:
-                if not paired:
-                    if robust_version:
-                        score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
-                                                verbose=verbose, control_plate=control_plate)
-                    else:
-                        score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
-                                                verbose=verbose, robust=False, control_plate=control_plate)
-                else:
-                    if robust_version:
-                        score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
-                    else:
-                        score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose,
-                                              robust=False)
+    assert isinstance(plate, TCA.Plate)
+    if neg_control is None:
+        raise ValueError('Must provided negative control')
+    log.info('Perform SSMD on plate : {}'.format(plate.name))
+    if len(plate) > 1 and not inplate_data:
+        if not paired:
+            if robust_version:
+                score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
+                                        verbose=verbose, control_plate=control_plate)
             else:
-                if robust_version:
-                    score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose,
-                                   control_plate=control_plate)
-                else:
-                    score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose, robust=False,
-                                   control_plate=control_plate)
-            return score
+                score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
+                                        verbose=verbose, robust=False, control_plate=control_plate)
         else:
-            raise TypeError('Take only plate')
-    except Exception as e:
-        print(e)
+            if robust_version:
+                score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
+            else:
+                score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose,
+                                      robust=False)
+    else:
+        if robust_version:
+            score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose,
+                           control_plate=control_plate)
+        else:
+            score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose, robust=False,
+                           control_plate=control_plate)
+    return score
 
 
 def __search_unpaired_data(plate, ref, sec_data):

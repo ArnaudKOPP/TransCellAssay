@@ -3,6 +3,7 @@
 Replica implement the notion of technical replica for plate, in real, it represent one plate
 """
 
+import os
 import numpy as np
 import TransCellAssay as TCA
 import logging
@@ -369,6 +370,24 @@ class Replica(object):
         if name is None:
             name = self.name
         self.rawdata.write_rawdata(path=path, name=name)
+
+
+    def write_data(self, path, channel, sec=False):
+        """
+        Write array
+        :param path:
+        :param channel:
+        :param sec:
+        :return:
+        """
+        self.compute_data_channel(channel=channel)
+        if sec:
+            np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(channel)) + ".csv",
+                           X=self.array_c, delimiter=",", fmt='%1.4f')
+        else:
+            np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(channel)) + ".csv",
+                           X=self.array, delimiter=",", fmt='%1.4f')
+
 
     def get_file_location(self):
         """

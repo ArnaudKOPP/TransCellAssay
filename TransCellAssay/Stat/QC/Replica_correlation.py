@@ -1,9 +1,6 @@
 # coding=utf-8
 """
-In this correction method, the background signal corresponding to each well is calculated by averaging the activities
-withing each well across all plate of screen.
-Then, a kriging interpolation can be made but not sur for the moment.
-We substract then the calculated background to value from plate or replicat.
+Method for graphics determination of replica correlation
 """
 
 import numpy as np
@@ -19,27 +16,23 @@ __email__ = "kopp.arnaud@gmail.com"
 
 
 class RepCor(object):
-    def __init__(self, plate):
-        if not isinstance(plate, TCA.Plate):
-            raise TypeError('Must be a Plate object')
+    def __init__(self, plate, channel):
+        assert  isinstance(plate, TCA.Plate)
+        if not len(plate) > 1:
+            raise Exception('Plate must contain at least two replica')
         else:
-            if not len(plate) > 1:
-                raise Exception('Plate must contain at least two replica')
-            else:
-                self.arr = self.__create_array(plate)
-                # self.__triplicate()
-                # # OR
-                TCA.plot_3d_cloud_point(title='test', x=self.arr[:, 1], y=self.arr[:, 2], z=self.arr[:, 3])
+            plate.agg_data_from_replica_channel(channel=channel, forced_update=True)
+            self.arr = self.__create_array(plate)
+            self.__triplicate()
+            # # OR
+            TCA.plot_3d_cloud_point(title='test', x=self.arr[:, 1], y=self.arr[:, 2], z=self.arr[:, 3])
 
     @staticmethod
     def __create_array(plate):
         __SIZE__ = len(plate.platemap.platemap.values.flatten())
         array = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
         for key, rep in plate.replica.items():
-            if rep.array is not None:
-                array = np.append(array, rep.array.flatten().reshape(__SIZE__, 1), axis=1)
-            else:
-                raise Exception('Determine first array mean for replica')
+            array = np.append(array, rep.array.flatten().reshape(__SIZE__, 1), axis=1)
         return array
 
     def __duplicate(self):

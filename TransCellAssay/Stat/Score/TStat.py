@@ -45,25 +45,20 @@ def plate_tstat_score(plate, neg_control, variance='unequal', paired=False, sec_
     :param verbose: be verbose or not
     :return: score data
     """
-    try:
-        if isinstance(plate, TCA.Plate):
-            # if no neg was provided raise AttributeError
-            if neg_control is None:
-                raise ValueError('Must provided negative control')
-            log.info('Perform T-Stat on plate : {}'.format(plate.name))
-            if len(plate) > 1:
-                if paired:
-                    score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose, robust=robust)
-                else:
-                    score = __unpaired_tstat_score(plate, neg_control, variance=variance, data_c=sec_data,
-                                                   verbose=verbose, robust=robust, control_plate=control_plate)
-            else:
-                raise ValueError("T-Stat need at least two replica")
-            return score
+    assert isinstance(plate, TCA.Plate)
+    # if no neg was provided raise AttributeError
+    if neg_control is None:
+        raise ValueError('Must provided negative control')
+    log.info('Perform T-Stat on plate : {}'.format(plate.name))
+    if len(plate) > 1:
+        if paired:
+            score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose, robust=robust)
         else:
-            raise TypeError('Take only plate')
-    except Exception as e:
-        log.error(e)
+            score = __unpaired_tstat_score(plate, neg_control, variance=variance, data_c=sec_data,
+                                           verbose=verbose, robust=robust, control_plate=control_plate)
+    else:
+        raise ValueError("T-Stat need at least two replica")
+    return score
 
 
 def __unpaired_tstat_score(plate, neg_control, variance='unequal', data_c=True, verbose=False, robust=True,

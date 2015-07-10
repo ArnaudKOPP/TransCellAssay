@@ -28,15 +28,13 @@ class ReferenceDataWriter(object):
     """
 
     def __init__(self, plate, channels, ref, filepath):
+        assert isinstance(plate, TCA.Plate)
         self._writer = pd.ExcelWriter(filepath)
         log.info('Writing : {}'.format(filepath))
         self._save_reference(plate, ref=ref, channels=channels)
         self._writer.close()
 
     def _save_reference(self, plate, channels, ref):
-        if not isinstance(plate, TCA.Plate):
-            raise ValueError('Take Plate in input')
-
         plt_col_idx = [str(x)+str(y)+str(z) for x in [t for t in plate.replica.keys()] for y in ref for z in ['Mean', 'Std', 'Sem']]
 
         for channel in channels:

@@ -91,33 +91,31 @@ def plate_quality_control(plate, channel, cneg, cpos, sedt=False, sec_data=False
     :param verbose: print or not quality data
     :return: return numpy array with qc
     """
-    if not isinstance(plate, TCA.Core.Plate):
-        raise TypeError("Need A Plate")
-    else:
-        if plate._is_cutted:
-            log.error('Plate was cutted, plate analysis cannot be performed : ABORT')
-            return 0
-        try:
-            neg_well = plate.platemap.search_coord(cneg)
-            pos_well = plate.platemap.search_coord(cpos)
-        except KeyError:
-            log.error('Some Reference are non existing : ABORT')
-            return 0
+    assert isinstance(plate, TCA.Core.Plate)
+    if plate._is_cutted:
+        log.error('Plate was cutted, plate analysis cannot be performed : ABORT')
+        return 0
+    try:
+        neg_well = plate.platemap.search_coord(cneg)
+        pos_well = plate.platemap.search_coord(cpos)
+    except KeyError:
+        log.error('Some Reference are non existing : ABORT')
+        return 0
 
-        qc_data_array = pd.DataFrame()
+    qc_data_array = pd.DataFrame()
 
-        log.info('Perform quality control on {}'.format(plate.name))
+    log.info('Perform quality control on {}'.format(plate.name))
 
-        for key, value in plate.replica.items():
-            qc_data_array = qc_data_array.append(
-                __replicat_quality_control(value, channel=channel, neg_well=neg_well, pos_well=pos_well,
-                                           sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data,
-                                           skipping_wells=skipping_wells))
+    for key, value in plate.replica.items():
+        qc_data_array = qc_data_array.append(
+            __replicat_quality_control(value, channel=channel, neg_well=neg_well, pos_well=pos_well,
+                                       sedt=sedt, sec_data=sec_data, use_raw_data=use_raw_data,
+                                       skipping_wells=skipping_wells))
 
-        if dirpath is not None:
-            qc_data_array.to_csv(os.path.join(dirpath, "QC_Data.csv"), index=False)
+    if dirpath is not None:
+        qc_data_array.to_csv(os.path.join(dirpath, "QC_Data.csv"), index=False)
 
-        return qc_data_array
+    return qc_data_array
 
 
 def __replicat_quality_control(replica, channel, neg_well, pos_well, sedt=False, sec_data=False, use_raw_data=True,

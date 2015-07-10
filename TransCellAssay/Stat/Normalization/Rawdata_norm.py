@@ -34,24 +34,22 @@ def plate_feature_scaling(plate, channel, mean_scaling=False):
     :param mean_scaling: if True, the max is the mean of max across all replica (instead of 1)
     """
     try:
-        if isinstance(plate, TCA.Plate):
-            log.debug('Perform feature scaling on {}'.format(plate.name))
-            min_lst = []
-            max_lst = []
+        assert isinstance(plate, TCA.Plate)
+        log.debug('Perform feature scaling on {}'.format(plate.name))
+        min_lst = []
+        max_lst = []
 
-            # search min and max across all replica
-            for key, value in plate.replica.items():
-                min_lst.append(np.min(value.rawdata.df[channel].values))
-                max_lst.append(np.max(value.rawdata.df[channel].values))
+        # search min and max across all replica
+        for key, value in plate.replica.items():
+            min_lst.append(np.min(value.rawdata.df[channel].values))
+            max_lst.append(np.max(value.rawdata.df[channel].values))
 
-            # apply channel scaling across all replica
-            for key, value in plate.replica.items():
-                value.rawdata = __df_scaling(value.rawdata, min_lst, max_lst, channel, mean_scaling)
-                value.isNormalized = True
+        # apply channel scaling across all replica
+        for key, value in plate.replica.items():
+            value.rawdata = __df_scaling(value.rawdata, min_lst, max_lst, channel, mean_scaling)
+            value.isNormalized = True
 
-            plate.isNormalized = True
-        else:
-            raise TypeError('Take a plate object in input')
+        plate.isNormalized = True
     except Exception as e:
         print(e)
 
@@ -66,13 +64,10 @@ def __df_scaling(rawdata, min_val, max_val, channel, mean=False):
     :param mean: bool
     :return: normalized raw data
     """
-    try:
-        rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - min(min_val)) / (max(max_val) - min(min_val))
-        if mean:
-            rawdata.df.loc[:, channel] *= (sum(max_val) / len(max_val))
-        return rawdata
-    except Exception as e:
-        print(e)
+    rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - min(min_val)) / (max(max_val) - min(min_val))
+    if mean:
+        rawdata.df.loc[:, channel] *= (sum(max_val) / len(max_val))
+    return rawdata
 
 
 def rawdata_variability_normalization(obj, channel, method=None, log2_transf=True, neg_control=None, pos_control=None,
@@ -121,27 +116,24 @@ def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None,
     """
     Function that picked up functions for normalize raw data
     """
-    try:
-        if log2_transf:
-            rawdata = __log2_transformation(rawdata, channel)
-        if method == 'Zscore':
-            rawdata = __zscore_(rawdata, channel)
-        if method == 'RobustZscore':
-            rawdata = __robustzscore(rawdata, channel)
-        if method == 'PercentOfSample':
-            rawdata = __percentofsample(rawdata, channel)
-        if method == 'RobustPercentOfSample':
-            rawdata = __robustpercentofsample(rawdata, channel)
-        if method == 'PercentOfControl':
-            rawdata = __percentofcontrol(rawdata, channel, neg_control, pos_control)
-        if method == 'NormalizedPercentInhibition':
-            rawdata = __normalizedpercentinhibition(rawdata, channel, neg_control, pos_control)
-        if method == 'BackgroundSubstraction':
-            rawdata = __backgroundsubstraction(rawdata, channel, threshold)
-            rawdata.df.loc[rawdata.df[channel] < 0, channel] = 0
-        return rawdata
-    except Exception as e:
-        print(e)
+    if log2_transf:
+        rawdata = __log2_transformation(rawdata, channel)
+    if method == 'Zscore':
+        rawdata = __zscore_(rawdata, channel)
+    if method == 'RobustZscore':
+        rawdata = __robustzscore(rawdata, channel)
+    if method == 'PercentOfSample':
+        rawdata = __percentofsample(rawdata, channel)
+    if method == 'RobustPercentOfSample':
+        rawdata = __robustpercentofsample(rawdata, channel)
+    if method == 'PercentOfControl':
+        rawdata = __percentofcontrol(rawdata, channel, neg_control, pos_control)
+    if method == 'NormalizedPercentInhibition':
+        rawdata = __normalizedpercentinhibition(rawdata, channel, neg_control, pos_control)
+    if method == 'BackgroundSubstraction':
+        rawdata = __backgroundsubstraction(rawdata, channel, threshold)
+        rawdata.df.loc[rawdata.df[channel] < 0, channel] = 0
+    return rawdata
 
 
 def __log2_transformation(rawdata, channel):

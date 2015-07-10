@@ -247,8 +247,9 @@ class Plate(object):
             i += 1
             if replica.array is None:
                 replica.compute_data_channel(channel)
-            if forced_update:
-                replica.compute_data_channel(channel)
+            else:
+                if forced_update:
+                    replica.compute_data_channel(channel)
 
             if not use_sec_data:
                 tmp_array = tmp_array + replica.array
@@ -424,6 +425,31 @@ class Plate(object):
                 value.write_rawdata(path=path, name=name)
             else:
                 value.write_rawdata(path=path, name=self.name)
+
+    def write_data(self, path, channel, sec=False):
+        """
+        Save the Mean of replica and all replica array data
+        :param path:
+        :param channel: which channel to save
+        :param sec: use sec data
+        :return:
+        """
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        self.agg_data_from_replica_channel(channel=channel, use_sec_data=sec, forced_update=True)
+
+        if sec :
+            np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(channel)) + ".csv", X=self.array_c,
+                       delimiter=",", fmt='%1.4f')
+            for key, value in self.replica.items():
+                np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(value.name)+'_'+str(channel)) + ".csv",
+                           X=value.array_c, delimiter=",", fmt='%1.4f')
+        else:
+            np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(channel)) + ".csv", X=self.array,
+                       delimiter=",", fmt='%1.4f')
+            for key, value in self.replica.items():
+                np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(value.name)+'_'+str(channel)) + ".csv",
+                           X=value.array, delimiter=",", fmt='%1.4f')
 
     def clear_memory(self, only_cache=True):
         """

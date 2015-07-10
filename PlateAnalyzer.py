@@ -12,7 +12,7 @@ import pandas as pd
 import multiprocessing as mp
 import logging
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
 
 
@@ -59,16 +59,8 @@ def plate_analyzis(plateid):
         #                               pos=plaque.platemap.search_well(__POS__),
         #                               skipping_wells=True)
 
-        try:
-            analyse = TCA.plate_channel_analysis(plaque, __CHAN__, __NEG__, __POS__, threshold=__THRES__, percent=True)
-            # analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
-        except Exception as e:
-            logging.error(e)
-            pass
-
-        # # for key, value in plaque.replicat.items():
-        # #     np.savetxt(fname=os.path.join(output_data_plate_dir, str(value.name)) + ".csv", X=value.Data, delimiter=",",
-        # #                fmt='%1.4f')
+        analyse = TCA.plate_channel_analysis(plaque, __CHAN__, __NEG__, __POS__, threshold=__THRES__, percent=True)
+        # analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
 
         # try:
         #     # TCA.ReferenceDataWriter(plaque,
@@ -84,64 +76,14 @@ def plate_analyzis(plateid):
 
         # plaque.systematic_error_correction(algorithm="MEA", apply_down=True, save=True, verbose=False, skip_col=[0, 11])
 
-        # verbose = __VERB__
         # sec = False
         # robust = True
-        # ssmd1 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=robust, sec_data=sec,
-        #                              verbose=verbose)
-        # ssmd2 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=False, robust_version=robust, sec_data=sec,
-        #                              variance="equal", verbose=verbose)
-        # ssmd3 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=robust, sec_data=sec,
-        #                              verbose=verbose)
-        # ssmd4 = TCA.plate_ssmd_score(plaque, neg_control=__NEG__, paired=True, robust_version=robust, sec_data=sec,
-        #                              method='MM', verbose=verbose)
-        # tstat1 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, variance='equal', sec_data=sec,
-        #                                verbose=verbose, robust=robust)
-        # tstat2 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=False, sec_data=sec, verbose=verbose,
-        #                                robust=robust)
-        # tstat3 = TCA.plate_tstat_score(plaque, neg_control=__NEG__, paired=True, sec_data=sec, verbose=verbose,
-        #                                robust=robust)
-        #
-        # ttest1, fdr1 = TCA.plate_ttest(plaque, __NEG__, verbose=verbose)
-        # ttest2, fdr2 = TCA.plate_ttest(plaque, __NEG__, equal_var=True, verbose=verbose)
-        #
-        # __SIZE__ = len(plaque.platemap.platemap.values.flatten())
-        #
-        # gene = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-        # final_array = np.append(gene, np.repeat([str(plaque.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, plaque.array.flatten().reshape(__SIZE__, 1), axis=1)
-        # try:
-        #     final_array = np.append(final_array, plaque['rep1'].array.flatten().reshape(__SIZE__, 1), axis=1)
-        # except:
-        #     final_array = np.append(final_array, np.repeat([0], __SIZE__).reshape(__SIZE__, 1), axis=1)
-        # try:
-        #     final_array = np.append(final_array, plaque['rep2'].array.flatten().reshape(__SIZE__, 1), axis=1)
-        # except:
-        #     final_array = np.append(final_array, np.repeat([0], __SIZE__).reshape(__SIZE__, 1), axis=1)
-        # try:
-        #     final_array = np.append(final_array, plaque['rep3'].array.flatten().reshape(__SIZE__, 1), axis=1)
-        # except:
-        #     final_array = np.append(final_array, np.repeat([0], __SIZE__).reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd1.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd2.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd3.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ssmd4.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, tstat1.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, tstat2.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, tstat3.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ttest1.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, fdr1.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, ttest2.flatten().reshape(__SIZE__, 1), axis=1)
-        # final_array = np.append(final_array, fdr2.flatten().reshape(__SIZE__, 1), axis=1)
-        #
-        # to_save = pd.DataFrame(final_array)
+        # to_save = TCA.ScoringPlate(plaque, channel=__CHAN__, neg=__NEG__, robust=robust, data_c=sec, verbose=__VERB__)
         # to_save.to_csv(os.path.join(output_data_plate_dir, "SCORING.csv"), index=False, header=False)
 
-        # TCA.heatmap_map_p(plaque, usesec=False)
-        # TCA.plot_wells(plaque)
 
         # # CLEAR PLATE OBJECT FOR MEMORY SAVING AND AVOID CRAPPY EFFECT
-        plaque = None
+        del plaque
 
         time_stop = time.time()
         print("\033[0;32m   ----> TOTAL TIME  {0:f}s for plate :\033[0m".format(float(time_stop - time_start)), plateid)

@@ -28,15 +28,13 @@ def channel_filtering(plate, channel, upper=None, lower=None, include=True, perc
     :param percent: Percent or value
     :return: filtered raw data
     """
-    if not isinstance(plate, TCA.Plate):
-        log.error('Plate object for input')
-        raise TypeError
-    else:
-        log.info('Apply filtering on :{}'.format(plate.name))
-        for key, values in plate.replica.items():
-            plate[key] = __replica_filtering(values, channel, upper, lower, include, percent)
-        plate.agg_data_from_replica_channel(channel, forced_update=True)
-        return plate
+    assert isinstance(plate, TCA.Plate)
+
+    log.info('Apply filtering on :{}'.format(plate.name))
+    for key, values in plate.replica.items():
+        plate[key] = __replica_filtering(values, channel, upper, lower, include, percent)
+    plate.agg_data_from_replica_channel(channel, forced_update=True)
+    return plate
 
 
 def __replica_filtering(replica, channel, upper=None, lower=None, include=True, percent=False):

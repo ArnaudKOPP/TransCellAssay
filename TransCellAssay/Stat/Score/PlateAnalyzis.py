@@ -71,7 +71,7 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
     x = platemap.as_dict()
 
     result_array.init_gene_well(x)
-    result_array.values['Plate'] = np.repeat([plate.name], __SIZE__)
+    result_array.values['PlateName'] = np.repeat([plate.name], __SIZE__)
 
     if neg is not None:
         neg_well = plate.platemap.search_well(neg)
@@ -144,8 +144,8 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
                 x = stats.ttest_ind(value, neg_data, equal_var=False)
                 pvalue[key] = x[1]
 
-            result_array.add_data(pvalue, 'p-value')
-            result_array.values["fdr"] = TCA.adjustpvalues(pvalues=result_array.values["p-value"])
+            result_array.add_data(pvalue, 'TTest p-value')
+            result_array.values["TTest fdr"] = TCA.adjustpvalues(pvalues=result_array.values["TTest p-value"])
 
     # ########## Cell count and std
     if len(plate) > 1:
@@ -239,10 +239,10 @@ class Result(object):
         """
         if size is None:
             size = 96
-        self.values = pd.DataFrame(np.zeros(size, dtype=[('Plate', object), ('GeneName', object), ('Well', object),
+        self.values = pd.DataFrame(np.zeros(size, dtype=[('PlateName', object), ('PlateMap', object), ('Well', object),
                                                          ('CellsCount', float), ('PositiveCells', float),
-                                                         ('Mean', float),
-                                                         ('Median', float), ('Viability', float), ('Toxicity', float)]))
+                                                         ('Mean', float), ('Median', float), ('Viability', float),
+                                                         ('Toxicity', float)]))
 
         self._genepos_genename = {}  # # To save Well (key) and Gene position (value)
 
@@ -255,7 +255,7 @@ class Result(object):
         try:
             i = 0
             for k, v in gene_list.items():
-                self.values.loc[i, 'GeneName'] = v
+                self.values.loc[i, 'PlateMap'] = v
                 self.values.loc[i, 'Well'] = k
                 self._genepos_genename[k] = i
                 i += 1

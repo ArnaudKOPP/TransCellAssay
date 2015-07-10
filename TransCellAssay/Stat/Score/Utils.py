@@ -27,11 +27,11 @@ def ScoringPlate(plate, channel, neg, robust=False, data_c=False, verbose=False)
     :return:
     """
     assert isinstance(plate, TCA.Plate)
-    plate.agg_data_from_replica_channel(channel=channel)
+    plate.agg_data_from_replica_channel(channel=channel, forced_update=True)
     if len(plate) == 1:
-        return __singleReplicaPlate()
+        return __singleReplicaPlate(plate, neg, robust, data_c, verbose)
     else:
-       return __multipleReplicaPlate(plate, neg, robust, data_c, verbose)
+        return __multipleReplicaPlate(plate, neg, robust, data_c, verbose)
     
 def __singleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False):
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
@@ -42,14 +42,15 @@ def __singleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False):
 
     x = pd.DataFrame(final_array)
     x.columns = ['PlateMap', 'PlateName', 'Well Mean']
+    print(x)
 
     ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, method='MM', robust_version=robust, sec_data=data_c,
                              verbose=verbose)
     ssmd2 = TCA.plate_ssmd_score(plate, neg_control=neg, robust_version=robust, sec_data=data_c,
                              verbose=verbose)
 
-    x['SSMD MM'] = ssmd1
-    x['SSMD UMVUE'] = ssmd2
+    x['SSMD MM'] = ssmd1.flatten().reshape(__SIZE__, 1)
+    x['SSMD UMVUE'] = ssmd2.flatten().reshape(__SIZE__, 1)
 
     return x
 
