@@ -528,7 +528,9 @@ class Plate(object):
             "\n" + repr(self.platemap) +
             "\nData normalized : " + repr(self.isNormalized) +
             "\nData systematic error removed : " + repr(self.isSpatialNormalized) +
-            "\nReplica List ID: " + repr([values.name for key, values in self.replica.items()]))
+            "\nReplica List ID: " + repr([values.name for key, values in self.replica.items()])+
+            "\nRawData File location: " + repr([values.rawdata.get_file_location() for key, values in self.replica.items()])
+        )
 
     def __str__(self):
         """

@@ -12,7 +12,7 @@ import pandas as pd
 import multiprocessing as mp
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s',
+logging.basicConfig(level=logging.INFO, format='[%(process)d/%(processName)s] @ [%(asctime)s] - %(levelname)-8s : %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
 
 
@@ -28,8 +28,8 @@ def plate_analyzis(plateid):
 
         created = mp.Process()
         current = mp.current_process()
-        print('created:', created.name, created._identity, 'running on :', current.name, current._identity,
-              "for analyzis of ", plaque.name)
+        # print('created:', created.name, created._identity, 'running on :', current.name, current._identity,
+        #       "for analyzis of ", plaque.name)
 
         output_data_plate_dir = os.path.join(__OUTPUT__, plaque.name)
         if not os.path.exists(output_data_plate_dir):
@@ -59,7 +59,7 @@ def plate_analyzis(plateid):
         #                               pos=plaque.platemap.search_well(__POS__),
         #                               skipping_wells=True)
 
-        analyse = TCA.plate_channel_analysis(plaque, __CHAN__, __NEG__, __POS__, threshold=__THRES__, percent=True)
+        # analyse = TCA.plate_channel_analysis(plaque, __CHAN__, __NEG__, __POS__, threshold=__THRES__, percent=True)
         # analyse.write(os.path.join(output_data_plate_dir, "BasicsResults.csv"))
 
         # try:
@@ -116,17 +116,17 @@ if __TOX__ is None:
     __TOX__ = __POS__
 
 # # write txt file for saving parameters
-file = open(os.path.join(__OUTPUT__, 'Analyse_Parameters.txt'), 'w')
-file.write("INPUT : " + str(__INPUT__) + "\n")
-file.write("OUTPUT : " + str(__OUTPUT__) + "\n")
-file.write("NBPLATE : " + str(__NBPLATE__) + "\n")
-file.write("NBREP : " + str(__NBREP__) + "\n")
-file.write("CHANNEL : " + str(__CHAN__) + "\n")
-file.write("THRESHOLD : " + str(__THRES__) + "\n")
-file.write("NEG : " + str(__NEG__) + "\n")
-file.write("POS : " + str(__POS__) + "\n")
-file.write("TOX : " + str(__TOX__) + "\n")
-file.close()
+# file = open(os.path.join(__OUTPUT__, 'Analyse_Parameters.txt'), 'w')
+# file.write("INPUT : " + str(__INPUT__) + "\n")
+# file.write("OUTPUT : " + str(__OUTPUT__) + "\n")
+# file.write("NBPLATE : " + str(__NBPLATE__) + "\n")
+# file.write("NBREP : " + str(__NBREP__) + "\n")
+# file.write("CHANNEL : " + str(__CHAN__) + "\n")
+# file.write("THRESHOLD : " + str(__THRES__) + "\n")
+# file.write("NEG : " + str(__NEG__) + "\n")
+# file.write("POS : " + str(__POS__) + "\n")
+# file.write("TOX : " + str(__TOX__) + "\n")
+# file.close()
 
 
 time_start = time.time()

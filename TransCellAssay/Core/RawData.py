@@ -258,7 +258,7 @@ class RawData(object):
         return len(self.df)
 
     def __repr__(self):
-        return "\nRaw Data : \nFile location ->"+repr(self.__file)+"\nSample : \n" + repr(self.df.head()) + "\n"
+        return "\nRaw Data : \nRawData File location :"+repr(self.__file)+"\nSample : \n" + repr(self.df.head()) + "\n"
 
     def __str__(self):
         return self.__repr__()

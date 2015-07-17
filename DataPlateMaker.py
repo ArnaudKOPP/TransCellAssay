@@ -192,7 +192,7 @@ USAGE
                 # # create new excel file and worksheet
                 workbook = xlsxwriter.Workbook(output + barcode + '-save.xlsx')
                 i = 0
-                list_sheets = ["%s" % x for x in (all_col - skip)]
+                list_sheets = ["%s" % x for x in (all_col.difference(skip))]
                 # # put on channel per sheet
                 for chan in all_col:
                     if chan in skip:

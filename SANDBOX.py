@@ -10,7 +10,7 @@ import cProfile
 import TransCellAssay as TCA
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s',
+logging.basicConfig(level=logging.INFO, format='[%(process)d/%(processName)s] @ [%(asctime)s] - %(levelname)-8s : %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
 pd.set_option('display.max_rows', 100)
 pd.set_option('display.max_columns', 50)
@@ -40,7 +40,7 @@ def HDV():
             except Exception as e:
                 print(e)
                 pass
-        # print(plaque)
+        print(plaque)
         # print(plaque['rep1'])
         # plaque.write_data(path='/home/arnaud/Desktop/save_test/', channel=channel, sec=False)
         # TCA.RepCor(plaque, channel=channel)
@@ -82,10 +82,10 @@ def HDV():
         # del plaque
     # TCA.plot_wells(platelist, usesec=False, neg=neg, pos=pos)
 
-HDV()
+# HDV()
 
 def misc2():
-    path = '/home/arnaud/Desktop/Schneider/Plaque du 02072015/'
+    path = '/home/arnaud/Desktop/Schneider/Sylvain adjust time ratio/'
 
     # outpath = os.path.join(path, 'ratio')
     # if not os.path.isdir(outpath):
@@ -93,10 +93,10 @@ def misc2():
 
     PlateList = []
 
-    NameList = ['ratio vert rouge.csv']
+    NameList = ['Sylvain acquisition adjust time.csv']
     for name in NameList:
         plaque = TCA.Core.Plate(name=name[0:-4],
-                                platemap=TCA.Core.PlateMap('/home/arnaud/Desktop/Schneider/Plaque du 02072015/PP_96.csv'),
+                                platemap=TCA.Core.PlateMap(os.path.join(path, 'PP_96.csv')),
                                 replica=TCA.Core.Replica(name="rep1",
                                                          fpath=os.path.join(path, str(name)),
                                                          singleCells=True,
@@ -105,15 +105,17 @@ def misc2():
 
 
     for plate in PlateList:
+        print(plate)
         # TCA.channel_filtering(plate, channel='ratio_taget_I', lower=0, include=False)
         # TCA.channel_filtering(plate, channel='ratio_taget_II', lower=0, include=False)
         # plate.write_rawdata(path=path, name='ratio_cleaned.csv')
         # print(TCA.ScoringPlate(plate, channel='ROI_A_Target_I_ObjectTotalInten', neg='scramble', verbose=False))
-        print(TCA.rank_product(plate, channel='ROI_A_Target_I_ObjectTotalInten', secdata=False))
-        # TCA.plate_channels_analysis(plate, neg='scramble', pos='Suvh1/h2', channels=['ratio_taget_I', 'ratio_taget_II'],
+        # print(TCA.rank_product(plate, channel='ROI_A_Target_I_ObjectTotalInten', secdata=False))
+        # TCA.plate_channels_analysis(plate, neg='scramble', pos='Suvh1/h2', channels=['ROI_AB_Target_I_TotalIntenRatio',
+        #                                                                              'ROI_AB_Target_II_TotalIntenRatio'],
         #                             threshold=50, path=path, tag='0_cleaned', clean=True)
 
-# misc2()
+misc2()
 
 
 def misc():

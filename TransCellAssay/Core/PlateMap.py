@@ -258,7 +258,7 @@ class PlateMap(object):
         Definition for the representation
         :return:
         """
-        return "\nPlateMap: \n" + repr(self.platemap) + "\nFile location ->"+repr(self.__file) + "\n"
+        return "\nPlateMap: \n" + repr(self.platemap) + "\nPlateMap File location :"+repr(self.__file) + "\n"
 
     def __str__(self):
         """
