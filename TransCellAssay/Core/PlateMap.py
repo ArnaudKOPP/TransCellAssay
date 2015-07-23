@@ -103,10 +103,12 @@ class PlateMap(object):
         :param elem: gene to search
         :return: list of coord
         """
-        list_coord = [x for x in zip(*np.where(self.platemap.values == elem))]
-        if len(list_coord) < 1:
-            raise KeyError('This element don\'t exist: %s' % elem)
-        return list_coord
+        if not isinstance(elem, list):
+            elem = [elem]
+        list_wells = []
+        for well in elem:
+            list_wells.extend(self.__search_element(well))
+        return list_wells
 
     def search_well(self, elem):
         """
@@ -114,10 +116,19 @@ class PlateMap(object):
         :param elem: gene to search
         :return: list of Well
         """
-        list_well = [Utils.get_opposite_well_format(x) for x in zip(*np.where(self.platemap.values == elem))]
-        if len(list_well) < 1:
+        if not isinstance(elem, list):
+            elem = [elem]
+        list_wells = []
+        for well in elem:
+            list_wells.extend(self.__search_element(well))
+        res = [Utils.get_opposite_well_format(x) for x in list_wells]
+        return res
+
+    def __search_element(self, elem):
+        list_coord = [x for x in zip(*np.where(self.platemap.values == elem))]
+        if len(list_coord) < 1:
             raise KeyError('This element don\'t exist: %s' % elem)
-        return list_well
+        return list_coord
 
     def as_dict(self):
         """
