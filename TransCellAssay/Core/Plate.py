@@ -190,24 +190,32 @@ class Plate(object):
                 return 0
         return 1
 
-    def get_raw_data(self, replica=None, channel=None, well=None, well_idx=False):
+    def get_raw_data(self, replica=None, channel=None, well=None, well_idx=False, as_dict=False):
         """
-        Return a dict that contain raw data from all replica (or specified replica), we can specified channel (list)
-        and if we want to have well id
+        Return a dict or serie that contain raw data from all replica (or specified replica), we can specified channel
+        (list) and if we want to have well id
         :param replica: replica id
         :param channel: channel list
         :param well: defined or not which well you want, in list [] or simple string format
         :param well_idx: true or false for keeping well id (A1..)
         :return: dict with data
         """
-        data = {}
-        if replica is not None:
-            for key, value in self.replica.items():
-                data[value.get_rep_name()] = value.get_rawdata(channel=channel, well=well, well_idx=well_idx)
+        if as_dict:
+            data = {}
         else:
-            for rep in replica:
-                data[self.replica[rep].get_rep_name()] = rep.get_rawdata(channel=channel, well=well,
-                                                                         well_idx=well_idx)
+            data = None
+        if replica is not None:
+            return self.replica[replica].get_rawdata(channel=channel, well=well, well_idx=well_idx)
+        else:
+            for key, value in self.replica.items():
+                if as_dict:
+                    data[value.get_name()] = value.get_rawdata(channel=channel, well=well, well_idx=well_idx)
+                else:
+                    if data is None:
+                        data = value.get_rawdata(channel=channel, well=well, well_idx=well_idx)
+                    else:
+                        data = data.append(value.get_rawdata(channel=channel, well=well, well_idx=well_idx))
+            return data
 
     def get_agg_data_from_replica_channels(self, by='Median'):
         """

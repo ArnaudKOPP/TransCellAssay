@@ -83,6 +83,9 @@ class RawData(object):
         if self.df is None:
             raise IOError('Empty rawdata')
         # # add well to columns that we want
+        # # check valid channel
+        if channel not in self.get_channel_list():
+            raise ValueError('Wrong Channel')
         if well_idx:
             if not isinstance(channel, list):
                 channel = [channel]
@@ -100,9 +103,6 @@ class RawData(object):
 
         # # Grab data
         if channel is not None:
-            # # check valid channel
-            if channel not in self.get_channel_list():
-                raise ValueError('Wrong Channel')
             if well is not None:
                 for i in well:
                     if data is None:
