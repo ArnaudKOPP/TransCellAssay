@@ -105,9 +105,12 @@ class RawData(object):
         if channel is not None:
             if well is not None:
                 for i in well:
-                    if data is None:
-                        data = self.__get_group(i, channel)
-                    data = data.append(self.__get_group(i, channel))
+                    try:
+                        if data is None:
+                            data = self.__get_group(i, channel)
+                        data = data.append(self.__get_group(i, channel))
+                    except:
+                        pass
                     # # return wells data for channel
                 return data
             else:
@@ -116,9 +119,12 @@ class RawData(object):
         else:
             if well is not None:
                 for i in well:
-                    if data is None:
-                        data = self.__get_group(i)
-                    data = data.append(self.__get_group(i))
+                    try:
+                        if data is None:
+                            data = self.__get_group(i)
+                        data = data.append(self.__get_group(i))
+                    except:
+                        pass
                     # # return wells data for all channel
                 return data
             else:
@@ -153,11 +159,12 @@ class RawData(object):
             array[self.df['Row'][i]][self.df['Column'][i]] = self.df[chan][i]
         return array
 
-    def get_data_channel(self, channel, type_mean='mean'):
+    def get_data_channel(self, channel, type_mean='mean', defsize=None):
         """
         Compute mean or median for each well in matrix format
-        :param channel:
-        :param type_mean:
+        :param channel: Which channel to get
+        :param type_mean: Mean or median
+        :param defsize: you can set the size of plate if you want
         :return:
         """
         if self.df is None:
@@ -169,16 +176,26 @@ class RawData(object):
             tmp = gbdata.mean()
         channel_val = tmp[channel]
         position_value_dict = channel_val.to_dict()  # # dict : key = pos and item are mean
-        if len(position_value_dict) <= 96:
-            data = np.zeros((8, 12))
-        elif len(position_value_dict) <= 384:
-            data = np.zeros((16, 24))
-        elif len(position_value_dict) > 384:
-            raise NotImplementedError('MAX 384 Well plate: bigger plate are not implemented')
+        size = len(position_value_dict)
+        if defsize is None:
+            data = self.__init_array(size)
+        else:
+            data = self.__init_array(defsize)
         for key, elem in position_value_dict.items():
-            pos = TCA.get_opposite_well_format(key)
-            data[pos[0]][pos[1]] = elem
+            try:
+                pos = TCA.get_opposite_well_format(key)
+                data[pos[0]][pos[1]] = elem
+            except IndexError:
+                return self.get_data_channel(channel,type_mean, size*2)
         return data
+
+    def __init_array(self, size):
+        if size <= 96:
+            return np.zeros((8,12))
+        elif size <= 384:
+            return np.zeros((16,24))
+        else:
+            return np.zeros((32,42))
 
     def get_groupby_data(self, key='Well'):
         """

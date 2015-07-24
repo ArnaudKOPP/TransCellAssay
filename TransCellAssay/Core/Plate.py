@@ -308,6 +308,7 @@ class Plate(object):
                 cnt = df
             else:
                 cnt = pd.concat([cnt, df], axis=0)
+        cnt = cnt.fillna(0)
         return cnt
 
     def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,

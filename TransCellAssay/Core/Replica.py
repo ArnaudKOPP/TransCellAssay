@@ -238,6 +238,7 @@ class Replica(object):
         gb_data = self.rawdata.get_groupby_data()
         cnt = gb_data[well_key].count().to_frame()
         cnt.columns = ['Count_'+str(self.name)]
+        cnt = cnt.fillna(0)
         return cnt
 
     def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
