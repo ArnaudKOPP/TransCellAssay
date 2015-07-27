@@ -172,6 +172,7 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, contr
 
     if verbose:
         print("Unpaired SSMD :")
+        print("Perform on : {}".format(plate.name))
         print("Robust version : ", robust)
         print("Systematic Error Corrected Data : ", sec_data)
         print("Data type : ", plate.datatype)
@@ -253,6 +254,7 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
 
         if verbose:
             print("Paired SSMD :")
+            print("Perform on : {}".format(plate.name))
             print("Robust version : ", robust)
             print("Systematic Error Corrected Data : ", sec_data)
             print("Data type : ", plate.datatype)
@@ -326,6 +328,7 @@ def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, control_plate=None
 
     if verbose:
         print('SSMD without replica, or inplate data from plate')
+        print("Perform on : {}".format(plate.name))
         print("Robust version : ", robust)
         print("Systematic Error Corrected Data : ", sec_data)
         print("Data type : ", plate.datatype)

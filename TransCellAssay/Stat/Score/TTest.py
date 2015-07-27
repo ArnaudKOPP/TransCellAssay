@@ -81,6 +81,7 @@ def plate_ttest(plate, neg, sec_data=False, equal_var=False, verbose=False, cont
 
         if verbose:
             print("Unpaired ttest :")
+            print("Perform on : {}".format(plate.name))
             print("Systematic Error Corrected Data : ", sec_data)
             print("Data type : ", plate.datatype)
             print("Equal variance : ", equal_var)

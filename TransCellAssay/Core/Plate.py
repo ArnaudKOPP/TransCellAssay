@@ -208,13 +208,16 @@ class Plate(object):
             return self.replica[replica].get_rawdata(channel=channel, well=well, well_idx=well_idx)
         else:
             for key, value in self.replica.items():
-                if as_dict:
-                    data[value.get_name()] = value.get_rawdata(channel=channel, well=well, well_idx=well_idx)
-                else:
-                    if data is None:
-                        data = value.get_rawdata(channel=channel, well=well, well_idx=well_idx)
+                try:
+                    if as_dict:
+                        data[value.get_name()] = value.get_rawdata(channel=channel, well=well, well_idx=well_idx)
                     else:
-                        data = data.append(value.get_rawdata(channel=channel, well=well, well_idx=well_idx))
+                        if data is None:
+                            data = value.get_rawdata(channel=channel, well=well, well_idx=well_idx)
+                        else:
+                            data = data.append(value.get_rawdata(channel=channel, well=well, well_idx=well_idx))
+                except:
+                    continue
             return data
 
     def get_agg_data_from_replica_channels(self, by='Median'):

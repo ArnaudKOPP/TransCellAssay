@@ -132,6 +132,7 @@ def __unpaired_tstat_score(plate, neg_control, variance='unequal', data_c=True, 
 
     if verbose:
         print("Unpaired t-stat :")
+        print("Perform on : {}".format(plate.name))
         print("Systematic Error Corrected Data : ", data_c)
         print("Data type : ", plate.datatype)
         print("variance parameter : ", variance)
@@ -178,6 +179,7 @@ def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False, robus
 
     if verbose:
         print("Paired t-stat :")
+        print("Perform on : {}".format(plate.name))
         print("Systematic Error Corrected Data : ", sec_data)
         print("Data type : ", plate.datatype)
         print("Robust version : ", robust)
