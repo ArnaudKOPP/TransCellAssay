@@ -424,7 +424,7 @@ def well_count(replica, file_path=None):
     except Exception as e:
         print(e)
 
-def well_sorted(replica, well, channel, file_path=None):
+def well_sorted(replica, well, channel, ascending=True, file_path=None):
     """
 
     :param plate:
@@ -439,7 +439,7 @@ def well_sorted(replica, well, channel, file_path=None):
         pd.options.display.mpl_style = 'default'
 
         df = replica.get_rawdata(channel=channel, well=well)
-        df_sorted = df.sort(inplace=False)
+        df_sorted = df.sort(inplace=False, axis=ascending)
         df_sorted = df_sorted.reset_index()
         df_sorted = df_sorted.drop('index', 1)
         df_sorted.plot()
@@ -451,6 +451,33 @@ def well_sorted(replica, well, channel, file_path=None):
 
     except Exception as e:
         print(e)
+
+def wells_sorted(plate, wells, channel, ascending=True, y_lim=None, file_name=None):
+    assert isinstance(plate, TCA.Plate)
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import matplotlib.ticker as mtick
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for well in wells:
+        wellData = plate.get_raw_data(channel=channel, well=well, as_dict=True)
+        for key, value in wellData.items():
+            value.sort(inplace=True, ascending=ascending)
+            perc = np.linspace(0,100,len(value))
+            plt.plot(perc, value.values, label=str(key)+'_'+str(well))
+    plt.legend()
+    ax.set_ylabel('Well value')
+    ax.set_title("Wells sorted on "+str(channel))
+    if y_lim is not None:
+        ax.axis([0,100, 0, y_lim])
+    fmt = '%.0f%%' # Format you want the ticks, e.g. '40%'
+    xticks = mtick.FormatStrFormatter(fmt)
+    ax.xaxis.set_major_formatter(xticks)
+    if file_name is not None:
+        plt.savefig(file_name)
+    else:
+        plt.show()
 
 def plate_well_count(plate, file_path=None):
     """
