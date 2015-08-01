@@ -35,6 +35,7 @@ def kl(p, q):
     q = np.asarray(q, dtype=np.float)
     return np.nansum(np.where(p != 0, p * np.log(p / q), 0))
 
+
 def CohenEffectSize(group1, group2):
     """
     Determine Effect size
@@ -50,6 +51,25 @@ def CohenEffectSize(group1, group2):
     pooled_var = (n1 * var1 + n2 * var2) / (n1 + n2)
     d = diff / math.sqrt(pooled_var)
     return d
+
+
+def Covariance(xs, ys, meanx=None, meany=None):
+    """
+    Covariance is a measure of the tendency of two variables to vary together.
+    positive when the deviations have the same sign and negative when they have the 
+    opposite sign.
+    """
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+    
+    if meanx is None:
+        meanx = np.mean(xs)
+    if meany is None:
+        meany = np.mean(ys)
+    
+    cov = np.dot(xs-meanx, ys-meany) / len(xs)
+    return cov
+ 
 
 def mad(arr):
     """
