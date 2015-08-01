@@ -35,6 +35,21 @@ def kl(p, q):
     q = np.asarray(q, dtype=np.float)
     return np.nansum(np.where(p != 0, p * np.log(p / q), 0))
 
+def CohenEffectSize(group1, group2):
+    """
+    Determine Effect size
+    Cohen's d statistic : compare the difference between groups to the variability 
+    within groups
+    """
+    diff = group1.var()
+    
+    var1 = group1.var()
+    var2 = group2.var()
+    n1, nk = len(group1), len(group2)
+    
+    pooled_var = (n1 * var1 + n2 * var2) / (n1 + n2)
+    d = diff / math.sqrt(pooled_var)
+    return d
 
 def mad(arr):
     """
