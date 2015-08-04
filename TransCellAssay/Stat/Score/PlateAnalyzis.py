@@ -42,12 +42,12 @@ def plate_channels_analysis(plate, channels, neg=None, pos=None, threshold=50, p
         channels = list(channels)
     for chan in channels:
         log.info('Plate analysis for channel {}'.format(chan))
-        plate_channel_analysis(plate=plate, channel=chan, neg=neg, pos=pos, threshold=threshold, percent=percent,
-                               fixed_threshold=fixed_threshold, path=path, tag=tag, clean=clean)
+        return plate_channel_analysis(plate=plate, channel=chan, neg=neg, pos=pos, threshold=threshold, percent=percent,
+                                      fixed_threshold=fixed_threshold, path=path, tag=tag, clean=clean)
 
 
-def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False, path=None,
-                           tag="", clean=False):
+def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
+                           path=None, tag="", clean=False):
     assert isinstance(plate, TCA.Plate)
     if not len(plate) > 0:
         log.error('Empty Plate Object, add some replica to perform PlateAnalysis')
@@ -231,7 +231,7 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
             ResultatsArray.write(file_path=filepath)
         except Exception as e:
             log.error('Error during writing data from PlateAnalyzis : {}'.format(e))
-    return ResultatsArray
+    return ResultatsArray, ThresholdValue
 
 
 class Result(object):
