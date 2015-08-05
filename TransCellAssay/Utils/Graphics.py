@@ -337,16 +337,10 @@ def systematic_error(array, file_path=None):
     try:
         import matplotlib.pyplot as plt
 
-        rowmean = []
-        rowstd = []
-        colmean = []
-        colstd = []
-        for row in range(array.shape[0]):
-            rowmean.append(np.mean(array[row, :]))
-            rowstd.append(np.std(array[row, :]))
-        for col in range(array.shape[1]):
-            colmean.append(np.mean(array[:, col]))
-            colstd.append(np.std(array[:, col]))
+        rowmean = np.mean(array, axis=1)
+        rowstd = np.std(array, axis=1)
+        colmean = np.mean(array, axis=0)
+        colstd = np.std(array, axis=0)
 
         fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(10, 5))
 
@@ -446,6 +440,7 @@ def well_sorted(replica, well, channel, ascending=True, file_path=None):
 
         if file_path is not None:
             plt.savefig(file_path, dpi=200)
+            plt.close()
         else:
             plt.show(block=True)
 
@@ -476,6 +471,7 @@ def wells_sorted(plate, wells, channel, ascending=True, y_lim=None, file_name=No
     ax.xaxis.set_major_formatter(xticks)
     if file_name is not None:
         plt.savefig(file_name)
+        plt.close()
     else:
         plt.show()
 
@@ -513,18 +509,28 @@ def plate_well_count(plate, file_path=None):
     except Exception as e:
         print(e)
 
-def dual_flashlight_plot(y, x):
+def dual_flashlight_plot(y, x, label_x='x', label_y='y', y_lim=None, x_lim=None, marker='0', color='r', file_path=None):
     """
     x and y array
     :param y: array
     :param x: array
     """
     import matplotlib.pyplot as plt
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    plt.scatter(y.flatten(), x.flatten())
-    plt.show(block=True)
-    pass
+    plt.scatter(y.flatten(), x.flatten(), c=color, marker=marker)
+
+    ax.set_ylabel(label_y)
+    ax.set_xlabel(label_x)
+    if y_lim is not None and x_lim is not None:
+        ax.axis([0,x_lim, 0, y_lim])
+
+    if file_path is not None:
+        plt.savefig(file_path, dpi=200)
+        plt.close()
+    else:
+        plt.show(block=True)
 
 def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', width=0.1, file_path=None):
     """
