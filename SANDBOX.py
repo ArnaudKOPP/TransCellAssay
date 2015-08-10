@@ -100,7 +100,11 @@ def misc():
                                                          datatype='mean'))
         plaque.agg_data_from_replica_channel(channel='AvgIntenCh3')
         # TCA.systematic_error(plaque.array)
-        TCA.heatmap_p(plaque.array)
+
+        arr = plaque.array.copy()
+
+        TCA.lowess_fitting(arr.copy(), verbose=True)
+        TCA.polynomial_fitting(arr.copy(), verbose=True)
         # print(plaque)
         # print(plaque.get_count().transpose())
         # outpath = os.path.join(path, '040815_graph')
@@ -189,6 +193,9 @@ def misc():
         # TCA.plot_3d_per_well(plaque['rep1'].rawdata, x='AvgIntenCh3', y='AvgIntenCh4', z='AvgIntenCh5', skip_wells=x)
 
 misc()
+
+# x =TCA.PlateMap(size=1536)
+# print(x.platemap.values)
 
 #######################################################################################################################
 #######################################################################################################################
