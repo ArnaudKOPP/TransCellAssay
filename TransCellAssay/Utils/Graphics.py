@@ -218,6 +218,7 @@ def plates_heatmap(*args, usesec=False, file_path=None):
 
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
     except Exception as e:
@@ -235,6 +236,7 @@ def heatmap_p(array, file_path=None):
         sns.heatmap(array)
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
     except Exception as e:
@@ -271,6 +273,7 @@ def plate_heatmap_p(plate, both=False, file_path=None):
             i += 1
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
     except Exception as e:
@@ -322,6 +325,7 @@ def plates_heatmap_p(*args, usesec=False, file_path=None):
 
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
     except Exception as e:
@@ -368,6 +372,7 @@ def systematic_error(array, file_path=None):
 
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
     except Exception as e:
@@ -388,6 +393,7 @@ def boxplot_by_wells(rawdata, channel, file_path=None):
         bp = rawdata.df.boxplot(column=channel, by='Well')
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
     except Exception as e:
@@ -412,6 +418,7 @@ def well_count(replica, file_path=None):
 
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
 
@@ -503,6 +510,7 @@ def plate_well_count(plate, file_path=None):
             i += 1
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
 
@@ -594,6 +602,7 @@ def plot_wells(*args, usesec=False, neg=None, pos=None, other=None, marker='o', 
         ax.set_xlabel('Plate/Replica ID')
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
     except Exception as e:
@@ -649,6 +658,7 @@ def plot_wells_distribution(plate, wells, channel, by_name=False, kind='kde', re
                         value.plot(kind=kind, alpha=0.5, legend=True)
         if file_path is not None:
             plt.savefig(file_path)
+            plt.close()
         else:
             plt.show(block=True)
     except Exception as e:

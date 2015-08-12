@@ -23,15 +23,15 @@ def HDV():
     channel = 'AvgIntenCh2'
     neg = 'I'
     pos = 'Cyclosporine I'
-    for j in range(5, 6, 1):
-        path = '/home/arnaud/Desktop/TEST_TCA/'
+    for j in range(8, 9, 1):
+        path = '/home/arnaud/Desktop/HDV/DATA'
         # path = '/home/arnaud/Desktop/HDV prestwick/HDV prestwick pl5/'
 
-        plaque = TCA.Core.Plate(name='HDV prestwick pl'+str(j),
-                                platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "PP_384.csv")))
+        plaque = TCA.Core.Plate(name='target '+str(j),
+                                platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "target_PP_8.csv")))
         for i in ['1', '2', '3']:
             try:
-                file = os.path.join(path, 'HDV prestwick pl'+str(j)+"."+str(i)+".csv")
+                file = os.path.join(path, 'target_'+str(j)+"."+str(i)+".csv")
                 if os.path.isfile(file):
                     plaque + TCA.Core.Replica(name="rep" + i,
                                               fpath=file,
@@ -39,6 +39,30 @@ def HDV():
             except Exception as e:
                 print(e)
                 pass
+        plaque.agg_data_from_replica_channel(channel=channel)
+        # TCA.systematic_error(plaque.array)
+        plaque.cut(1, 15, 1, 23, apply_down=True)
+
+        arr = plaque.array.copy()
+
+        a = TCA.lowess_fitting(arr.copy())
+        b = TCA.lowess_fitting(arr.copy(), max_iteration=10)
+        c = TCA.polynomial_fitting(arr.copy())
+        d = TCA.polynomial_fitting(arr.copy(), degree=5)
+        grand_effect, col_effects, row_effects, e, tbl_org = TCA.median_polish(arr.copy())
+        f = TCA.matrix_error_amendmend(arr.copy())
+        g = TCA.partial_mean_polish(arr.copy())
+
+        TCA.heatmap_p(arr, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/org.jpg")
+        TCA.heatmap_p(a, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/lowess.jpg")
+        TCA.heatmap_p(b, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/lowess_iter10.jpg")
+        TCA.heatmap_p(c, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/poly_deg4.jpg")
+        TCA.heatmap_p(d, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/poly_deg5.jpg")
+        TCA.heatmap_p(e, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/medianpol.jpg")
+        TCA.heatmap_p(f, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/mea.jpg")
+        TCA.heatmap_p(g, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/pmp.jpg")
+
+
         # plaque.check_data_consistency()
         # print(plaque)
         # x = plaque.get_raw_data(channel=channel, well='B16')
@@ -55,7 +79,7 @@ def HDV():
         # print(plaque)
         del plaque
 
-# HDV()
+HDV()
 
 def misc2():
     path = '/home/arnaud/Desktop/Anne/Analyse TAZ plaque du 10072015/'
@@ -104,7 +128,9 @@ def misc():
         arr = plaque.array.copy()
 
         TCA.lowess_fitting(arr.copy(), verbose=True)
+        TCA.lowess_fitting(arr.copy(), verbose=True, max_iteration=10)
         TCA.polynomial_fitting(arr.copy(), verbose=True)
+        TCA.polynomial_fitting(arr.copy(), verbose=True, degree=5)
         # print(plaque)
         # print(plaque.get_count().transpose())
         # outpath = os.path.join(path, '040815_graph')
@@ -192,7 +218,7 @@ def misc():
         # x.remove('F2')
         # TCA.plot_3d_per_well(plaque['rep1'].rawdata, x='AvgIntenCh3', y='AvgIntenCh4', z='AvgIntenCh5', skip_wells=x)
 
-misc()
+# misc()
 
 # x =TCA.PlateMap(size=1536)
 # print(x.platemap.values)
