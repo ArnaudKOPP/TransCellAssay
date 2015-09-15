@@ -130,7 +130,25 @@ def heatmap(array, file_path=None):
     except Exception as e:
         print(e)
 
-def plate_heatmap(plate, both=False, file_path=None):
+def heatmap_p(array, file_path=None):
+    """
+    Output a heatmap with seaborn
+    :param array: numpy array that represent data
+    """
+    try:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        sns.set()
+        sns.heatmap(array)
+        if file_path is not None:
+            plt.savefig(file_path)
+            plt.close()
+        else:
+            plt.show(block=True)
+    except Exception as e:
+        print(e)
+
+def plate_heatmap(plate, both=False, file_path=None, size=3.):
     """
     Plate all heatmap for plate object
     :param both: print data and SECdata
@@ -147,7 +165,7 @@ def plate_heatmap(plate, both=False, file_path=None):
             a = 2
         else:
             a = 1
-        fig = plt.figure(figsize=(2.*b, 2.*a))
+        fig = plt.figure(figsize=(size*b*1.5, size*a))
 
         i = 1
         for key, value in plate.replica.items():
@@ -170,7 +188,7 @@ def plate_heatmap(plate, both=False, file_path=None):
     except Exception as e:
         print(e)
 
-def plates_heatmap(*args, usesec=False, file_path=None):
+def plates_heatmap(*args, usesec=False, file_path=None, size=3.):
     """
     plot heatmap of all replica array from given plate
     :param args: plate object or list of plate
@@ -198,7 +216,7 @@ def plates_heatmap(*args, usesec=False, file_path=None):
         n = np.sum([len(x.replica) for x in screen])
         a = np.floor(n**0.5).astype(int)
         b = np.ceil(1.*n/a).astype(int)
-        fig = plt.figure(figsize=(2.*b, 2.*a))
+        fig = plt.figure(figsize=(size*b*1.5, size*a))
         i = 1
 
         for plate in screen:
@@ -224,25 +242,7 @@ def plates_heatmap(*args, usesec=False, file_path=None):
     except Exception as e:
         print(e)
 
-def heatmap_p(array, file_path=None):
-    """
-    Output a heatmap with seaborn
-    :param array: numpy array that represent data
-    """
-    try:
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-        sns.set()
-        sns.heatmap(array)
-        if file_path is not None:
-            plt.savefig(file_path)
-            plt.close()
-        else:
-            plt.show(block=True)
-    except Exception as e:
-        print(e)
-
-def plate_heatmap_p(plate, both=False, file_path=None):
+def plate_heatmap_p(plate, both=False, file_path=None, size=3.):
     """
     Plate all heatmap for plate object
     :param both: print data and SECdata
@@ -259,7 +259,7 @@ def plate_heatmap_p(plate, both=False, file_path=None):
             a = 2
         else:
             a = 1
-        fig = plt.figure(figsize=(2.*b, 2.*a))
+        fig = plt.figure(figsize=(size*b*1.5, size*a))
 
         i = 1
         for key, value in plate.replica.items():
@@ -272,14 +272,14 @@ def plate_heatmap_p(plate, both=False, file_path=None):
                 sns.heatmap(value.array_c)
             i += 1
         if file_path is not None:
-            plt.savefig(file_path)
+            plt.savefig(file_path, dpi=200)
             plt.close()
         else:
             plt.show(block=True)
     except Exception as e:
         print(e)
 
-def plates_heatmap_p(*args, usesec=False, file_path=None):
+def plates_heatmap_p(*args, usesec=False, file_path=None, size=3.):
     """
     plot heatmap of all replica array from given plate
     :param args: plate object or list of plate
@@ -307,7 +307,7 @@ def plates_heatmap_p(*args, usesec=False, file_path=None):
         n = np.sum([len(x.replica) for x in screen])
         a = np.floor(n**0.5).astype(int)
         b = np.ceil(1.*n/a).astype(int)
-        fig = plt.figure(figsize=(2.*b, 2.*a))
+        fig = plt.figure(figsize=(size*b*1.5, size*a))
         i = 1
 
         for plate in screen:
@@ -482,7 +482,7 @@ def wells_sorted(plate, wells, channel, ascending=True, y_lim=None, file_name=No
     else:
         plt.show()
 
-def plate_well_count(plate, file_path=None):
+def plate_well_count(plate, file_path=None, size=3.):
     """
 
     :param plate:
@@ -498,7 +498,7 @@ def plate_well_count(plate, file_path=None):
 
         b = len(plate.replica)
         a = 1
-        fig = plt.figure(figsize=(2.*b, 2.*a))
+        fig = plt.figure(figsize=(size*b*1.5, size*a))
 
         i = 1
         for key, value in plate.replica.items():
@@ -664,7 +664,7 @@ def plot_wells_distribution(plate, wells, channel, by_name=False, kind='kde', re
     except Exception as e:
         print(e)
 
-def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z'):
+def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z', size=8):
     """
     Plot in 3d three array of data
     :param x: x array
@@ -677,7 +677,7 @@ def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z'):
         from mpl_toolkits.mplot3d import Axes3D
         from mpl_toolkits.mplot3d import proj3d
 
-        fig = plt.figure(figsize=(8, 8))
+        fig = plt.figure(figsize=(size, size))
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
         ax.plot(x, y, z, '.', markersize=4, color='blue', alpha=0.5, label='Point')
@@ -692,7 +692,7 @@ def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z'):
     except Exception as e:
         print(e)
 
-def plot_3d_per_well(rawdata, x, y, z, single_cell=True, skip_wells=[]):
+def plot_3d_per_well(rawdata, x, y, z, single_cell=True, skip_wells=[], size=8):
     """
     Plot in 3d raw data with choosen channels and with different color by well
     :param single_cell: plot all cell or only median
@@ -711,7 +711,7 @@ def plot_3d_per_well(rawdata, x, y, z, single_cell=True, skip_wells=[]):
         from mpl_toolkits.mplot3d import proj3d
 
         wells = rawdata.get_unique_well()
-        fig = plt.figure(figsize=(8, 8))
+        fig = plt.figure(figsize=(size, size))
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
         for well in wells:
