@@ -129,6 +129,12 @@ class Plate(object):
         """
         return self.replica[name]
 
+    def get_replica_listId(self):
+        return [values.name for key, values in self.replica.items()]
+
+    def get_replica_file_location(self):
+        return [values.rawdata.get_file_location() for key, values in self.replica.items()]
+
     def get_all_replica(self):
         """
         Get all replica from plate
@@ -540,8 +546,8 @@ class Plate(object):
             "\n" + repr(self.platemap) +
             "\nData normalized : " + repr(self.isNormalized) +
             "\nData systematic error removed : " + repr(self.isSpatialNormalized) +
-            "\nReplica List ID: " + repr([values.name for key, values in self.replica.items()])+
-            "\nRawData File location: " + repr([values.rawdata.get_file_location() for key, values in self.replica.items()])
+            "\nReplica List ID: " + repr(self.get_replica_listId())+
+            "\nRawData File location: " + repr(self.get_replica_file_location())
         )
 
     def __str__(self):

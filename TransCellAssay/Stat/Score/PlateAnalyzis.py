@@ -36,15 +36,17 @@ def plate_channels_analysis(plate, channels, neg=None, pos=None, threshold=50, p
     :param path: path where file will be saved
     :param tag: add this tag at end of file name
     :param clean: if True, remove all row/Well that don't contain cells
-    :return: return result into a dataframe
+    :return: return result into dict of dataframe, key are channel and value a df with results
     """
     if not isinstance(channels, list):
         channels = list(channels)
+    res = collections.OrderedDict()
     for chan in channels:
         log.info('Plate analysis for channel {}'.format(chan))
-        return plate_channel_analysis(plate=plate, channel=chan, neg=neg, pos=pos, threshold=threshold, percent=percent,
-                                      fixed_threshold=fixed_threshold, path=path, tag=tag, clean=clean)
-
+        res[chan] = plate_channel_analysis(plate=plate, channel=chan, neg=neg, pos=pos, threshold=threshold,
+                                           percent=percent, fixed_threshold=fixed_threshold, path=path, tag=tag,
+                                           clean=clean)
+    return res
 
 def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
                            path=None, tag="", clean=False):

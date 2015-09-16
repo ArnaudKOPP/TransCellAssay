@@ -130,7 +130,7 @@ def heatmap(array, file_path=None):
     except Exception as e:
         print(e)
 
-def heatmap_p(array, file_path=None):
+def heatmap_p(array, annot=True, file_path=None):
     """
     Output a heatmap with seaborn
     :param array: numpy array that represent data
@@ -139,7 +139,7 @@ def heatmap_p(array, file_path=None):
         import matplotlib.pyplot as plt
         import seaborn as sns
         sns.set()
-        sns.heatmap(array)
+        sns.heatmap(array, cmap="YlGnBu", annot=annot, fmt='.1f',)
         if file_path is not None:
             plt.savefig(file_path)
             plt.close()
@@ -265,11 +265,11 @@ def plate_heatmap_p(plate, both=False, file_path=None, size=3.):
         for key, value in plate.replica.items():
             ax = fig.add_subplot(a, b, i)
             sns.set()
-            sns.heatmap(value.array)
+            sns.heatmap(value.array, cmap="YlGnBu")
             if both:
                 ax = fig.add_subplot(a, b, i+b)
                 sns.set()
-                sns.heatmap(value.array_c)
+                sns.heatmap(value.array_c, cmap="YlGnBu")
             i += 1
         if file_path is not None:
             plt.savefig(file_path, dpi=200)
@@ -315,10 +315,10 @@ def plates_heatmap_p(*args, usesec=False, file_path=None, size=3.):
                 ax = fig.add_subplot(a, b, i)
                 if not usesec:
                     sns.set()
-                    sns.heatmap(value.array)
+                    sns.heatmap(value.array, cmap="YlGnBu")
                 else:
                     sns.set()
-                    sns.heatmap(value.array_c)
+                    sns.heatmap(value.array_c, cmap="YlGnBu")
                 ax.set_title(str(plate.name)+' '+str(value.name))
                 i += 1
         fig.set_tight_layout(True)
