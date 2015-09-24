@@ -23,66 +23,72 @@ def HDV():
     channel = 'AvgIntenCh2'
     neg = 'I'
     pos = 'Cyclosporine I'
-    for j in range(8, 9, 1):
-        path = '/home/arnaud/Desktop/HDV/DATA'
-        # path = '/home/arnaud/Desktop/HDV prestwick/HDV prestwick pl5/'
+    for j in range(1, 2, 1):
+        # path = '/home/arnaud/Desktop/HDV/DATA'
+        path = '/home/arnaud/Desktop/HDV prestwick/screen/'
 
-        plaque = TCA.Core.Plate(name='target '+str(j),
-                                platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "target_PP_8.csv")))
+        plaque = TCA.Core.Plate(name='HDV prestwick '+str(j),
+                                platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "PP_pl"+str(j)+".csv")))
         for i in ['1', '2', '3']:
             try:
-                file = os.path.join(path, 'target_'+str(j)+"."+str(i)+".csv")
+                file = os.path.join(path, 'HDV prestwick pl'+str(j)+"."+str(i)+".csv")
                 if os.path.isfile(file):
                     plaque + TCA.Core.Replica(name="rep" + i,
                                               fpath=file,
-                                              datatype='median')
+                                              datatype='mean')
             except Exception as e:
                 print(e)
                 pass
         plaque.agg_data_from_replica_channel(channel=channel)
         # TCA.systematic_error(plaque.array)
-        plaque.cut(1, 15, 1, 23, apply_down=True)
-
-        arr = plaque.array.copy()
-
-        a = TCA.lowess_fitting(arr.copy())
-        b = TCA.lowess_fitting(arr.copy(), max_iteration=10)
-        c = TCA.polynomial_fitting(arr.copy())
-        d = TCA.polynomial_fitting(arr.copy(), degree=5)
-        grand_effect, col_effects, row_effects, e, tbl_org = TCA.median_polish(arr.copy())
-        f = TCA.matrix_error_amendmend(arr.copy())
-        g = TCA.partial_mean_polish(arr.copy())
-
-        TCA.heatmap_p(arr, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/org.jpg")
-        TCA.heatmap_p(a, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/lowess.jpg")
-        TCA.heatmap_p(b, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/lowess_iter10.jpg")
-        TCA.heatmap_p(c, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/poly_deg4.jpg")
-        TCA.heatmap_p(d, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/poly_deg5.jpg")
-        TCA.heatmap_p(e, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/medianpol.jpg")
-        TCA.heatmap_p(f, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/mea.jpg")
-        TCA.heatmap_p(g, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/pmp.jpg")
+        # plaque.cut(1, 15, 1, 23, apply_down=True)
+        #
+        # arr = plaque.array.copy()
+        #
+        # a = TCA.lowess_fitting(arr.copy())
+        # b = TCA.lowess_fitting(arr.copy(), max_iteration=10)
+        # c = TCA.polynomial_fitting(arr.copy())
+        # d = TCA.polynomial_fitting(arr.copy(), degree=5)
+        # grand_effect, col_effects, row_effects, e, tbl_org = TCA.median_polish(arr.copy())
+        # f = TCA.matrix_error_amendmend(arr.copy())
+        # g = TCA.partial_mean_polish(arr.copy())
+        #
+        # TCA.heatmap_p(arr, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/org.jpg")
+        # TCA.heatmap_p(a, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/lowess.jpg")
+        # TCA.heatmap_p(b, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/lowess_iter10.jpg")
+        # TCA.heatmap_p(c, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/poly_deg4.jpg")
+        # TCA.heatmap_p(d, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/poly_deg5.jpg")
+        # TCA.heatmap_p(e, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/medianpol.jpg")
+        # TCA.heatmap_p(f, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/mea.jpg")
+        # TCA.heatmap_p(g, file_path="/home/arnaud/Desktop/Comparaison_methode_normalisation/pmp.jpg")
 
 
         # plaque.check_data_consistency()
         # print(plaque)
+        # print(plaque.get_replica_file_location())
+        # print(plaque.get_replica_listId())
+        # print(plaque.get_file_location())
         # x = plaque.get_raw_data(channel=channel, well='B16')
         # print(x)
         # print(TCA.plate_channel_analysis(plaque, channel=channel, neg=neg, pos=pos, threshold=85, clean=True))
-        # TCA.plate_channel_analysis(plaque, channel=channel, neg=neg, pos=pos, threshold=600, percent=False,
-        #                            fixed_threshold=True, path=path, tag='600_threshold', clean=True)
+        # TCA.plate_channel_analysis(plaque, channel=channel, neg=neg, pos=pos, threshold=88, percent=True, path=path,
+        #                            clean=True, tag='12_%')
         # plaque.agg_data_from_replica_channel(channel=channel)
         # for key, value in plaque.replica.items():
-        #     print(value.array)
+            # print(value.array)
         # print(plaque.get_count())
-        # TCA.plate_heatmap_p(plaque, both=False)
-        # TCA.plot_wells(plaque, neg=neg, pos=pos)
+        TCA.heatmap_p(plaque.array, annot=True)
+        # TCA.RepCor(plaque, channel)
+        # TCA.plate_heatmap_p(plaque, both=False, size=6.)
+        # TCA.systematic_error(plaque.array, file_path=None)
+        # TCA.plot_wells(plaque, neg=neg, pos=pos, file_path=os.path.join(path, "Wells "+plaque.name+".pdf"))
         # print(plaque)
         del plaque
 
-HDV()
+# HDV()
 
 def misc2():
-    path = '/home/arnaud/Desktop/Anne/Analyse TAZ plaque du 10072015/'
+    path = '/home/arnaud/Desktop/Anne/150915 V Lamour U2OS Ku80 53BP1 spot/'
 
     # outpath = os.path.join(path, 'ratio')
     # if not os.path.isdir(outpath):
@@ -90,7 +96,7 @@ def misc2():
 
     PlateList = []
 
-    NameList = ['Acq Juline plaque 3 adjust time.csv']
+    NameList = ['150914 V Lamour Ku80 53BP1.csv']
     for name in NameList:
         plaque = TCA.Core.Plate(name=name[0:-4],
                                 platemap=TCA.Core.PlateMap(),
@@ -103,34 +109,29 @@ def misc2():
 
     for plate in PlateList:
         # print(plate)
-        TCA.plate_channels_analysis(plate, neg='C12', channels=['CircRingAvgIntenRatioCh2'],
-                                    threshold=50, path=path, clean=True)
+        TCA.plate_channels_analysis(plate, neg='A1', pos="B10", channels=['SpotCountCh2', 'SpotCountCh3',
+        'SpotTotalAreaCh2', 'SpotTotalAreaCh3', 'SpotTotalIntenCh2', 'SpotTotalIntenCh3'], threshold=95, percent=True,
+                                    path=path, clean=True)
 
 # misc2()
 
-
 def misc():
-    path = '/home/arnaud/Desktop/xavier_g/'
+    path = '/home/arnaud/Desktop/TEMP/Amelie/'
     PlateList = []
 
     # NameList = ['150630 siP150 Xavier Gaume Pl2.csv', '150629 siP150 Xavier Gaume Pl1.csv']
-    NameList = ['150629 siP150 Xavier Gaume Pl1.csv']
-    for name in NameList:
-        plaque = TCA.Core.Plate(name=name[0:-4],
-                                platemap=TCA.Core.PlateMap(),
-                                replica=TCA.Core.Replica(name="rep1",
-                                                         fpath=os.path.join(path, str(name)),
-                                                         singleCells=True,
-                                                         datatype='mean'))
-        plaque.agg_data_from_replica_channel(channel='AvgIntenCh3')
+    # NameList = ['150629 siP150 Xavier Gaume Pl1.csv']
+    plaque = TCA.Core.Plate(name='Xavier plaque 2',
+                            platemap=TCA.Core.PlateMap(),
+                            replica=TCA.Core.Replica(name="rep1",
+                                                     fpath="/home/arnaud/Desktop/TEMP/Amelie/150923 test differents serums Gaume.csv",
+                                                     singleCells=True,
+                                                     datatype='mean'))
+    # plaque.agg_data_from_replica_channel(channel='AvgIntenCh3')
         # TCA.systematic_error(plaque.array)
 
-        arr = plaque.array.copy()
+        # arr = plaque.array.copy()
 
-        TCA.lowess_fitting(arr.copy(), verbose=True)
-        TCA.lowess_fitting(arr.copy(), verbose=True, max_iteration=10)
-        TCA.polynomial_fitting(arr.copy(), verbose=True)
-        TCA.polynomial_fitting(arr.copy(), verbose=True, degree=5)
         # print(plaque)
         # print(plaque.get_count().transpose())
         # outpath = os.path.join(path, '040815_graph')
@@ -157,17 +158,20 @@ def misc():
         # plot(x="AvgIntenCh3", y="AvgIntenCh5", well=['A4', 'B4', 'C4', 'D4'])
         # plot(x="AvgIntenCh3", y="AvgIntenCh4", well=['E4', 'F4', 'G4', 'H4'])
         # plot(x="AvgIntenCh3", y="AvgIntenCh5", well=['E4', 'F4', 'G4', 'H4'])
-        # plaque.platemap['A2'] = "neg"
-        # plaque.platemap['B2'] = "neg"
-        # plaque.platemap['C2'] = "neg"
-        # plaque.platemap['D2'] = "neg"
+    plaque.platemap['C2'] = "neg"
+    plaque.platemap['C3'] = "neg"
+    # plaque.platemap['C5'] = "neg"
+    # plaque.platemap['D5'] = "neg"
 
-        # channel = ['AvgIntenCh5']
-        # df, avg5Thres = TCA.plate_channels_analysis(plaque, neg="neg", channels=channel, threshold=99, percent=True)
-        # channel = ['AvgIntenCh4']
-        # df, avg4Thres = TCA.plate_channels_analysis(plaque, neg="neg", channels=channel, threshold=1, percent=True)
-        # channel = ['AvgIntenCh3']
-        # df, avg3Thres = TCA.plate_channels_analysis(plaque, neg="neg", channels=channel, threshold=99.5, percent=True)
+    channel = ['AvgIntenCh5']
+    TCA.plate_channels_analysis(plaque, neg="neg", channels=channel, threshold=95, percent=True, clean=True, path=path,
+                                tag="5bis")
+    # channel = ['AvgIntenCh4']
+    # TCA.plate_channels_analysis(plaque, neg="neg", channels=channel, threshold=1, percent=True, clean=True, path=path,
+    #                             tag="5")
+    # channel = ['AvgIntenCh3']
+    # TCA.plate_channels_analysis(plaque, neg="neg", channels=channel, threshold=99.5, percent=True, clean=True,
+    #                             path=path, tag="5")
 
         # TCA.wells_sorted(plaque, channel="AvgIntenCh4", wells=["A2", "B2", "C2", "D2"], ascending=False, y_lim=9000,
         #                  file_name=os.path.join(path, name[0:-4]+"A2_D2"+".pdf"))
@@ -218,7 +222,7 @@ def misc():
         # x.remove('F2')
         # TCA.plot_3d_per_well(plaque['rep1'].rawdata, x='AvgIntenCh3', y='AvgIntenCh4', z='AvgIntenCh5', skip_wells=x)
 
-# misc()
+misc()
 
 # x =TCA.PlateMap(size=1536)
 # print(x.platemap.values)
