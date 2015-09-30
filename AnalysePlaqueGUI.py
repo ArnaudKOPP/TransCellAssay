@@ -12,6 +12,7 @@ import sys
 import collections
 import logging
 import pandas as pd
+import time
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
 
@@ -113,6 +114,10 @@ class MainAppFrame(Frame):
 
         logging.debug(FileDict)
 
+        outpath = os.path.join(self.__dirpath, time.asctime())
+        if not os.path.isdir(outpath):
+            os.makedirs(outpath)
+
         logging.info("Launch analyse :\nneg: {0} \nPos: {1} \nchannel: {2} \nthreshold: {3} \n".format(self.NegCtrl.get(),
             self.PosCtrl.get(), self.ChnVal.get(), self.ThrsVal.get()))
 
@@ -130,11 +135,11 @@ class MainAppFrame(Frame):
             # First for not normalized data
             if self.threshold_type.get() == 'Percent':
                 TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                   threshold=int(self.ThrsVal.get()), percent=True, path=self.__dirpath,
+                                   threshold=int(self.ThrsVal.get()), percent=True, path=outpath,
                                    fixed_threshold=False, tag="_not_normalized")
             else:
                 TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                   threshold=int(self.ThrsVal.get()), percent=False, path=self.__dirpath,
+                                   threshold=int(self.ThrsVal.get()), percent=False, path=outpath,
                                    fixed_threshold=True, tag="_not_normalized")
 
             # normalize your data or not
@@ -150,12 +155,23 @@ class MainAppFrame(Frame):
             # Then normalized data
             if self.threshold_type.get() == 'Percent':
                 TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                   threshold=int(self.ThrsVal.get()), percent=True, path=self.__dirpath,
+                                   threshold=int(self.ThrsVal.get()), percent=True, path=outpath,
                                    fixed_threshold=False, tag="_normalized")
             else:
                 TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                   threshold=int(self.ThrsVal.get()), percent=False, path=self.__dirpath,
+                                   threshold=int(self.ThrsVal.get()), percent=False, path=outpath,
                                    fixed_threshold=True, tag="_normalized")
+
+            file = open(os.path.join(outpath, 'Parameters.txt'), 'w')
+            file.write("Input directory         : "+str(self.__dirpath) + "\n")
+            file.write("Channel                 : "+str(self.ChnVal.get()) + "\n")
+            file.write("Negative ctrl           : "+str(self.NegCtrl.get()) + "\n")
+            file.write("Positive ctrl           : "+str(self.PosCtrl.get()) + "\n")
+            file.write("Threshold value         : "+str(self.ThrsVal.get()) + "\n")
+            file.write("Normalization Method    : "+str(self.Norm.get()) + "\n")
+            file.write("Edge effect corection   : "+str(self.SpatNorm.get()) + "\n")
+            file.write("Threshold type          : "+str(self.threshold_type.get()) + "\n")
+            file.close()
 
             del plaque
 
