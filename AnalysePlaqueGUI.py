@@ -152,15 +152,17 @@ class MainAppFrame(Frame):
                                                     save=True, max_iterations=100, alpha=0.05, epsilon=0.01,
                                                     skip_col=[], skip_row=[], trimmed=0.0)
 
-            # Then normalized data
-            if self.threshold_type.get() == 'Percent':
-                TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                   threshold=int(self.ThrsVal.get()), percent=True, path=outpath,
-                                   fixed_threshold=False, tag="_normalized")
-            else:
-                TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                   threshold=int(self.ThrsVal.get()), percent=False, path=outpath,
-                                   fixed_threshold=True, tag="_normalized")
+            # only if no norm are applied
+            if self.Norm.get() is not '' and self.SpatNorm.get() is not '':
+                # Then normalized data
+                if self.threshold_type.get() == 'Percent':
+                    TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
+                                       threshold=int(self.ThrsVal.get()), percent=True, path=outpath,
+                                       fixed_threshold=False, tag="_normalized")
+                else:
+                    TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
+                                       threshold=int(self.ThrsVal.get()), percent=False, path=outpath,
+                                       fixed_threshold=True, tag="_normalized")
 
             file = open(os.path.join(outpath, 'Parameters.txt'), 'w')
             file.write("Input directory         : "+str(self.__dirpath) + "\n")
