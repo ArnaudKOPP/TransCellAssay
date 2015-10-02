@@ -65,7 +65,7 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
     log.info('Perform plate analysis for {0} on channel {1}'.format(plate.name, channel))
 
     platemap = plate.get_platemap()
-
+    plate.agg_data_from_replica_channel(channel=channel, use_sec_data=False, forced_update=True)
     size = platemap.shape()
     WellKey = 'Well'
     __SIZE__ = (size[0] * size[1])
@@ -133,6 +133,7 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
             PercentCellsReplicas.setdefault(well, []).append(((len_thres / len_total) * 100))
             PercentCells[well] = (len_thres / len_total) * 100
         ResultatsArray.add_data(PercentCells, 'PosCells_' + str(replica.name))
+        ResultatsArray.values[replica.name+'_'+replica.datatype+'_value'] = replica.array.flatten().reshape(__SIZE__, 1)
         i += 1
 
     # ########## p-value and fdr for percent cell

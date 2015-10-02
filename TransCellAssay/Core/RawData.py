@@ -31,6 +31,7 @@ class RawData(object):
     """
     Raw data that contain value in single cell level
     self.df                             # DataFrame (pandas DF) for storing data
+    self.__file                         # File location
     self.__CACHING_gbdata = None        # groupby object (pandas) from DataFrame
     self.__CACHING_gbdata_key = None    # key (channels) of groupby
     """

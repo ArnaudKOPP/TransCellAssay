@@ -41,13 +41,14 @@ class Plate(object):
     self._ce = None                   # col end of cutting operation
     """
 
-    def __init__(self, name, platemap=None, skip=(), replica=None):
+    def __init__(self, name, platemap=None, skip=(), replica=None, datatype='mean'):
         """
         Constructor for init default value
         :param name: name of plate, very important to file this, it will be use for certain function
         :param platemap: platemap object for this plate
         :param skip: Well to skip for all replica
         :param replica: add one or a list of replica
+        :param datatype : mean or median for working array
         """
         log.info('Plate created : {}'.format(name))
         self.replica = collections.OrderedDict()
@@ -60,7 +61,7 @@ class Plate(object):
             self.__add__(replica)
         self.isNormalized = False
         self.isSpatialNormalized = False
-        self.datatype = "median"
+        self.datatype = datatype
         self.array = None
         self.array_c = None
         self.skip_well = skip
@@ -137,7 +138,7 @@ class Plate(object):
 
     def get_all_replica(self):
         """
-        Get all replica from plate
+        Get all replica from plate into a dict
         :return: dict of replica
         """
         return self.replica
@@ -249,25 +250,27 @@ class Plate(object):
         df /= len(self.replica)
         return df.reset_index()
 
-    def agg_data_from_replica_channel(self, channel, use_sec_data=False, forced_update=False):
+    def agg_data_from_replica_channel(self, channel, use_sec_data=False, forced_update=False, datatype=None):
         """
         Compute the mean/median matrix data of all replica
         If replica data is SpatialNorm already, this function will fill array_c
         :param forced_update: Forced update of replica data, to use when you have determine matrix too soon
         :param use_sec_data: use or not sec data from replica
         :param channel: which channel to have into sum up data
+        :param datatype : default to None -> take plate parameters, otherwise compute with given choice
         """
         tmp_array = np.zeros(self.platemap.platemap.shape)
         i = 0
-
+        if datatype is None:
+            datatype=self.datatype
         for key, replica in self.replica.items():
             i += 1
             if replica.array is None:
-                replica.compute_data_channel(channel)
+                replica.compute_data_channel(channel, datatype=datatype)
             else:
                 if forced_update:
-                    replica.compute_data_channel(channel)
-
+                    replica.compute_data_channel(channel, datatype=datatype)
+            self.datatype = datatype
             if not use_sec_data:
                 tmp_array = tmp_array + replica.array
             else:
@@ -309,6 +312,9 @@ class Plate(object):
         self._ce = ce
 
     def get_count(self):
+        """
+        Get count of element (cells) for all wells
+        """
         cnt = None
         for key, value in self.replica.items():
             df = value.get_count()
@@ -501,12 +507,14 @@ class Plate(object):
         """
         if isinstance(to_add, TCA.Core.Replica):
             name = to_add.name
+            to_add.datatype = self.datatype
             self.replica[name] = to_add
         elif isinstance(to_add, TCA.Core.PlateMap):
             self.platemap = to_add
         elif isinstance(to_add, list):
             for elem in to_add:
                 assert isinstance(elem, TCA.Core.Replica)
+                elem.datatype = self.datatype
                 self.replica[elem.name] = elem
         else:
             raise AttributeError("Unsupported Type")

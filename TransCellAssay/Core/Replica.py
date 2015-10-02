@@ -161,7 +161,7 @@ class Replica(object):
         """
         return self.rawdata.get_raw_data(channel=channel, well=well, well_idx=well_idx)
 
-    def compute_data_channel(self, channel):
+    def compute_data_channel(self, channel, datatype='mean'):
         """
         Compute data in matrix form, get mean or median for well and save them in replica object
         :param channel: which channel to keep in matrix
@@ -171,10 +171,8 @@ class Replica(object):
             if self._array_channel is not channel:
                 log.warning('Overwriting previous channel data from {} to {}'.format(
                     self._array_channel, channel))
-        if not self.isNormalized:
-            log.warning('Data are not normalized for replica : {}'.format(self.name))
-
-        self.array = self.rawdata.get_data_channel(channel=channel, type_mean=self.datatype)
+        self.array = self.rawdata.get_data_channel(channel=channel, type_mean=datatype)
+        self.datatype = datatype
         self._array_channel = channel
 
     def get_data_channels(self, by='Median'):
