@@ -7,6 +7,7 @@ attached to this class
 import numpy as np
 import pandas as pd
 import TransCellAssay as TCA
+from TransCellAssay.Core.MasterPlate import MasterPlate
 import os
 import collections
 import logging
@@ -21,24 +22,12 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-class Plate(object):
+class Plate(MasterPlate):
     """
-    Class for manipulating plate and their replica :
+    Class for manipulating plate and their replica, get all attribute and method from MasterPlate
 
     self.replica = {}                 # Dict that contain all replica, key are name and value are replica object
-    self.name = None                  # Name of Plate
     self.platemap = TCA.Core.PlateMap()  # Plate Setup object
-    self.isNormalized = False         # Are replica data normalized
-    self.isSpatialNormalized = False  # Systematic error removed from plate data ( resulting from replica )
-    self.datatype = "median"          # median or mean data, default is median
-    self.array = None                 # matrix that contain data from all replica of interested channel to analyze
-    self.array_c = None               # matrix that contain spatial data corrected from all replica
-    self.skip_well = None             # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
-    self._is_cutted = False           # Bool for know if plate are cutted
-    self._rb = None                   # row begin of cutting operation
-    self._re = None                   # row end of cutting operation
-    self._cb = None                   # col begin of cutting operation
-    self._ce = None                   # col end of cutting operation
     """
 
     def __init__(self, name, platemap=None, skip=(), replica=None, datatype='mean'):
@@ -50,56 +39,15 @@ class Plate(object):
         :param replica: add one or a list of replica
         :param datatype : mean or median for working array
         """
+        super(Plate, self).__init__(name=name, datatype=datatype, skip=skip)
         log.info('Plate created : {}'.format(name))
         self.replica = collections.OrderedDict()
-        self.name = name
         if platemap is not None:
             self.__add__(platemap)
         else:
             self.platemap = TCA.Core.PlateMap()
         if replica is not None:
             self.__add__(replica)
-        self.isNormalized = False
-        self.isSpatialNormalized = False
-        self.datatype = datatype
-        self.array = None
-        self.array_c = None
-        self.skip_well = skip
-        self._is_cutted = False
-        self._rb = None
-        self._re = None
-        self._cb = None
-        self._ce = None
-
-    def set_plate_name(self, name):
-        """
-        Set Name for plate
-        :param name:
-        """
-        self.name = name
-
-    def get_plate_name(self):
-        """
-        Get Name of plate
-        :return: Name of plate
-        """
-        return self.name
-
-    def set_data(self, array, array_type):
-        """
-        Set data matrix into self.array
-        This method is designed for 1Data/Well or for manual analysis
-        :param array: numpy array with good shape
-        :param array_type: median or mean data
-        """
-        __valide_datatype = ['median', 'mean']
-        if isinstance(array, np.ndarray):
-            if array_type not in __valide_datatype:
-                raise ValueError("Must provided data type, possibilities : {}".format(__valide_datatype))
-            self.array = array
-            self.datatype = array_type
-        else:
-            raise AttributeError("Must provided numpy ndarray")
 
     def add_platemap(self, platemap):
         """
@@ -142,27 +90,6 @@ class Plate(object):
         :return: dict of replica
         """
         return self.replica
-
-    def set_skip_well(self, to_skip):
-        """
-        Set the well to skip in neg or pos control
-        :param to_skip: list of well to skip (1,3) or B3
-        """
-        well_list = list()
-        for elem in to_skip:
-            if isinstance(elem, tuple):
-                well_list.append(elem)
-            elif isinstance(elem, str):
-                well_list.append(TCA.get_opposite_well_format(elem))
-            else:
-                pass
-        self.skip_well = well_list
-
-    def get_skip_well(self):
-        """
-        get the well to skip in neg or pos control
-        """
-        return self.skip_well
 
     def check_data_consistency(self, remove=False):
         """
@@ -274,7 +201,7 @@ class Plate(object):
             if not use_sec_data:
                 tmp_array = tmp_array + replica.array
             else:
-                tmp_array = tmp_array + replica.sec_array
+                tmp_array = tmp_array + replica.array_c
 
         if not use_sec_data:
             self.array = tmp_array / i
@@ -294,22 +221,11 @@ class Plate(object):
         if self._is_cutted:
             raise AttributeError('Already cutted')
         log.warning("Cutting operation performed on plate %s" % self.name)
-        if self.array is not None:
-            self.array = self.array[rb: re, cb: ce]
-        else:
-            raise AttributeError('array is empty')
-        if self.array_c is not None:
-            self.array_c = None
-            log.warning('Must reperforme SEC process')
+        self.cut(rb, re, cb, ce)
         if apply_down:
             for key, value in self.replica.items():
                 value.cut(rb, re, cb, ce)
         self.platemap.cut(rb, re, cb, ce)
-        self._is_cutted = True
-        self._rb = rb
-        self._re = re
-        self._cb = cb
-        self._ce = ce
 
     def get_count(self):
         """
@@ -388,7 +304,6 @@ class Plate(object):
         :param skip_row: index of row to skip in MEA or PMP
         :param trimmed: Bscore only for average method only, trimmed the data with specified value, default is 0.0
         """
-        global corrected_data_array
         __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
 
         if algorithm not in __valid_sec_algo:
@@ -403,39 +318,6 @@ class Plate(object):
             self.agg_data_from_replica_channel(channel=None, use_sec_data=True)
             return
 
-        if self.array is None:
-            log.error("Use first : compute_data_from_replicat")
-            raise ValueError()
-        else:
-            if self.isSpatialNormalized:
-                log.warning('SEC already performed -> overwriting previous sec data')
-            if algorithm == 'Bscore':
-                ge, ce, re, corrected_data_array, tbl_org = TCA.median_polish(self.array.copy(), method=method,
-                                                                              max_iterations=max_iterations,
-                                                                              trimmed=trimmed,
-                                                                              verbose=verbose)
-
-            if algorithm == 'BZscore':
-                ge, ce, re, corrected_data_array, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
-                                                                                 max_iterations=max_iterations,
-                                                                                 trimmed=trimmed,
-                                                                                 verbose=verbose)
-
-            if algorithm == 'PMP':
-                corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
-                                                               alpha=alpha, verbose=verbose, epsilon=epsilon,
-                                                               skip_col=skip_col, skip_row=skip_row)
-
-            if algorithm == 'MEA':
-                corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha,
-                                                                  skip_col=skip_col, skip_row=skip_row)
-
-            if algorithm == 'DiffusionModel':
-                corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
-                                                           verbose=verbose)
-            if save:
-                self.array_c = corrected_data_array
-                self.isSpatialNormalized = True
 
     def write_rawdata(self, path, name=None):
         """

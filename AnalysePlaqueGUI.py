@@ -14,7 +14,7 @@ import logging
 import pandas as pd
 import time
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
 
 
 class MainAppFrame(Frame):
@@ -88,20 +88,23 @@ class MainAppFrame(Frame):
                             print("Error in reading  File", e)
 
                     PlateId = well['PlateId/Barcode'][0]
-                    logging.info('Read Plate : {}'.format(PlateId))
 
-                    # # read Data
-                    file = TCA.CSV()
-                    file.load(fpath=os.path.join(root, "Cell.csv"))
+                    ## if file aren't already formatted
+                    if not os.path.isfile(os.path.join(self.__dirpath, PlateId+'.csv')):
+                        logging.info('Read Plate : {}'.format(PlateId))
 
-                    #  # create well format
-                    file.format_well_format()
-                    try:
-                        file.remove_col()
-                        file.remove_nan()
-                    except:
-                        pass
-                    file.write_raw_data(path=self.__dirpath, name=PlateId, frmt='csv')
+                        # # read Data
+                        file = TCA.CSV()
+                        file.load(fpath=os.path.join(root, "Cell.csv"))
+
+                        #  # create well format
+                        file.format_well_format()
+                        try:
+                            file.remove_col()
+                            file.remove_nan()
+                        except:
+                            pass
+                        file.write_raw_data(path=self.__dirpath, name=PlateId, frmt='csv')
 
                     # work only with XXXX01.1.csv file name, all replica must have the same XXXX name
                     if (PlateId+'.csv')[0:-6] in FileDict.keys():

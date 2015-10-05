@@ -6,6 +6,7 @@ Replica implement the notion of technical replica for plate, in real, it represe
 import os
 import numpy as np
 import TransCellAssay as TCA
+from TransCellAssay.Core.MasterPlate import MasterPlate
 import logging
 log = logging.getLogger(__name__)
 
@@ -17,24 +18,10 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-class Replica(object):
+class Replica(MasterPlate):
     """
-    Class for manipulating replica of plate
-
-    self.name = ""                      # Name of replica
+    Class for manipulating replica of plate, get all attribute and method from MasterPlate
     self.rawdata = rawdata              # rawdata object
-    self.isNormalized = False           # are the data normalized
-    self.isSpatialNormalized = False    # systematics error removed or not
-    self.datatype = "median"            # median or mean of data
-    self.array = None                   # matrix that contain mean/median of interested channels to analyze
-    self._array_channel = None          # which channel is stored in data
-    self.array_c = None                 # matrix that contain spatial data corrected
-    self.skip_well = ()                 # list of well to skip in control computation, stored in this form ((1, 1), (5, 16))
-    self._is_cutted = False             # Bool for know if plate are cutted
-    self._rb = None                     # row begin of cutting operation
-    self._re = None                     # row end of cutting operation
-    self._cb = None                     # col begin of cutting operation
-    self._ce = None                     # col end of cutting operation
     """
 
     def __init__(self, name, fpath, singleCells=True, skip=(), datatype='mean'):
@@ -46,25 +33,13 @@ class Replica(object):
         :param skip: Well to skip
         :param datatype: Median or Mean data
         """
+        super(Replica, self).__init__(name=name, datatype=datatype, skip=skip)
         log.debug('Replica created : {}'.format(name))
-        self.name = name
         self.rawdata = None
-        self.isNormalized = False
-        self.isSpatialNormalized = False
-        self.datatype = datatype
-        self._array_channel = None
-        self.array = None
-        self.array_c = None
         if not singleCells:
-            self.set_array_data(fpath)
+            self.set_data(fpath)
         else:
             self.set_rawdata(fpath)
-        self.skip_well = skip
-        self._is_cutted = False
-        self._rb = None
-        self._re = None
-        self._cb = None
-        self._ce = None
 
     def set_rawdata(self, input_file):
         """
@@ -79,59 +54,6 @@ class Replica(object):
         :return: list of channel/component
         """
         return self.rawdata.get_channel_list()
-
-    def set_array_data(self, array, array_type='median'):
-        """
-        Set attribute data matrix into self.array
-        This method is designed for 1Data/Well or for manual analysis
-        :param array: numpy array with good shape like platemap
-        :param array_type: median or mean data
-        """
-        __valid_datatype = ['median', 'mean']
-        if isinstance(array, np.ndarray):
-            if array_type not in __valid_datatype:
-                raise ValueError("Must provided data type, possibilities : {}".format(__valid_datatype))
-            log.info("Import of none single cell data")
-            self.array = array
-            self.datatype = array_type
-        else:
-            raise AttributeError("Must provided numpy ndarray")
-
-    def set_name(self, info):
-        """
-        set name for the replica
-        :param info: info on replica
-        :return:
-        """
-        self.name = info
-
-    def get_name(self):
-        """
-        return name from replica
-        :return: info
-        """
-        return self.name
-
-    def set_skip_well(self, to_skip):
-        """
-        Set the well to skip in neg or pos control
-        :param to_skip: list of well to skip (1,3) or B3
-        """
-        well_list = list()
-        for elem in to_skip:
-            if isinstance(elem, tuple):
-                well_list.append(elem)
-            elif isinstance(elem, str):
-                well_list.append(TCA.get_opposite_well_format(elem))
-            else:
-                pass
-        self.skip_well = well_list
-
-    def get_skip_well(self):
-        """
-        Get the skipped Well
-        """
-        return self.skip_well
 
     def get_valid_well(self, to_check):
         """
@@ -207,27 +129,6 @@ class Replica(object):
             self.compute_data_channel(channel)
             return self.array
 
-    def cut(self, rb, re, cb, ce):
-        """
-        Cut the replica to 'zoom' into a defined zone, for avoiding crappy effect during SEC process
-        :param rb: row begin
-        :param re: row end
-        :param cb: col begin
-        :param ce: col end
-        """
-        if self._is_cutted:
-            raise AttributeError('Already cutted')
-        log.debug('Cutting operation on replica : {0} (param {1}:{2},{3}:{4})'.format(self.name, rb, re, cb, ce))
-        if self.array is not None:
-            self.array = self.array[rb: re, cb: ce]
-        if self.array_c is not None:
-            self.array_c = self.array_c[rb: re, cb: ce]
-        self._is_cutted = True
-        self._rb = rb
-        self._re = re
-        self._cb = cb
-        self._ce = ce
-
     def get_count(self, well_key='Well'):
         """
         Get the count for all well
@@ -293,72 +194,6 @@ class Replica(object):
                 self.isNormalized = True
             log.warning("Choose your channels that you want to work with plate.agg_data_from_replica_channel or "
                         "replica.data_for_channel")
-
-    def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=True,
-                                    max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[], skip_row=[],
-                                    trimmed=0.0):
-        """
-        Apply a spatial normalization for remove edge effect
-        The Bscore method showed a more stable behavior than MEA and PMP only when the number of rows and columns
-        affected by the systematics error, hit percentage and systematic error variance were high (mainly du to a
-        mediocre performance of the t-test in this case). MEA was generally the best method for correcting
-        systematic error within 96-well plates, whereas PMP performed better for 384 /1526 well plates.
-
-        :param alpha: alpha for some algorithm
-        :param algorithm: Bscore, MEA, PMP or diffusion model technics, default = Bscore
-        :param method: median or mean data
-        :param verbose: Output in console
-        :param save: save the result into self.SECData, default = False
-        :param max_iterations: maximum iterations loop, default = 100
-        :param epsilon: epsilon parameters for PMP
-        :param skip_col: index of col to skip in MEA or PMP
-        :param skip_row: index of row to skip in MEA or PMP
-        :param trimmed: Bscore only for average method only, trimmed the data with specified value, default is 0.0
-        """
-        global corrected_data_array
-        __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
-
-        if algorithm not in __valid_sec_algo:
-            log.error('Algorithm is not good choose : {}'.format(__valid_sec_algo))
-            raise ValueError()
-
-        if self.array is None:
-            log.error("Use first : compute_data_for_channel")
-            raise AttributeError()
-
-        else:
-            if self.isSpatialNormalized:
-                log.warning('SEC already performed -> overwriting previous sec data')
-
-            log.debug('Systematic Error Correction processing : {} -> replica {}'.format(algorithm, self.name))
-
-            if algorithm == 'Bscore':
-                ge, ce, re, corrected_data_array, tbl_org = TCA.median_polish(self.array.copy(), method=method,
-                                                                              max_iterations=max_iterations,
-                                                                              trimmed=trimmed,
-                                                                              verbose=verbose)
-
-            if algorithm == 'BZscore':
-                ge, ce, re, corrected_data_array, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
-                                                                                 max_iterations=max_iterations,
-                                                                                 trimmed=trimmed,
-                                                                                 verbose=verbose)
-
-            if algorithm == 'PMP':
-                corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,
-                                                               verbose=verbose, alpha=alpha, epsilon=epsilon,
-                                                               skip_col=skip_col, skip_row=skip_row)
-
-            if algorithm == 'MEA':
-                corrected_data_array = TCA.matrix_error_amendmend(self.array.copy(), verbose=verbose, alpha=alpha,
-                                                                  skip_col=skip_col, skip_row=skip_row)
-
-            if algorithm == 'DiffusionModel':
-                corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
-                                                           verbose=verbose)
-            if save:
-                self.array_c = corrected_data_array
-                self.isSpatialNormalized = True
 
     def write_rawdata(self, path, name=None):
         """

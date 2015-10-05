@@ -138,7 +138,7 @@ USAGE
         parser.add_argument("-i", "--inputFileDirectory", dest="input", action="store",
                             help="File path of csv data file ", required=True)
         parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
-                            help="Output path of xlsx file", required=True)
+                            help="Output path of xlsx file", default=None)
 
         # # format string to float
         def format(x):
@@ -147,11 +147,14 @@ USAGE
         # # Process arguments
         args = parser.parse_args()
         input = args.input
-        output = args.output
-        try:
-            os.stat(output)
-        except:
-            os.mkdir(output)
+        if args.output is None:
+            output = input
+        else:
+            output = args.output
+
+        if not os.path.isdir(output):
+            os.makedirs(output)
+
         print("Beging Processing")
         for root, dirs, filenames in os.walk(input):
             if "Legend.xml" in filenames:

@@ -117,10 +117,10 @@ class Application(tk.Frame):
 
         input = self.dirname
         output = self.dirname
-        try:
-            os.stat(output)
-        except:
-            os.mkdir(output)
+
+        if not os.path.isdir(output):
+            os.makedirs(output)
+
         print("Beging Processing")
         for root, dirs, filenames in os.walk(input):
             if "Legend.xml" in filenames:
