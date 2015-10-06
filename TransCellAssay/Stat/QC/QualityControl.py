@@ -173,10 +173,10 @@ def __replicat_quality_control(replica, channel, neg_well, pos_well, sedt=False,
 
     if sedt:
         if sec_data:
-            if replica.sec_array is None:
+            if replica.array_c is None:
                 raise ValueError("SEC Before")
             else:
-                TCA.systematic_error_detection_test(replica.sec_array)
+                TCA.systematic_error_detection_test(replica.array_c)
         else:
             TCA.systematic_error_detection_test(replica.array, verbose=True)
     qc_data_array['Replicat ID'] = replica.name

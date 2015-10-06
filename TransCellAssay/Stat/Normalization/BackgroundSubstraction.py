@@ -56,7 +56,7 @@ class BackgroundSubstraction(object):
             for plate in self.plate_lst:
                 # iterate on all replicat in the plate
                 for repName, repValue in plate.replicat.items():
-                    repValue.sec_array = repValue.array - self.background
+                    repValue.array_c = repValue.array - self.background
                     repValue.isSpatialNormalized = True
         except Exception as e:
             print(e)

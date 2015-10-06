@@ -76,7 +76,10 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
     ResultatsArray.values['PlateName'] = np.repeat([plate.name], __SIZE__)
 
     if neg is not None:
-        neg_well = plate.platemap.search_well(neg)
+        if not isinstance(neg, list):
+            neg_well = plate.platemap.search_well(neg)
+        else:
+            neg_well = neg
     else:
         log.info('No Negative control provided, only work with fixed_treshold to True')
 

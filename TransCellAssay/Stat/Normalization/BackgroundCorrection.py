@@ -120,7 +120,7 @@ class BackgroundCorrection(object):
             if apply_on == "Plate":
                 # iterate on all plate
                 for plate in self.screen:
-                    plate.sec_array -= self.BackgroundModel
+                    plate.array_c -= self.BackgroundModel
                     plate.isSpatialNormalized = True
             elif apply_on == "Replica":
                 # iterate on all plate
