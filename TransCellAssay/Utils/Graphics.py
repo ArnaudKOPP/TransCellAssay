@@ -440,7 +440,7 @@ def well_sorted(replica, well, channel, ascending=True, file_path=None):
         pd.options.display.mpl_style = 'default'
 
         df = replica.get_rawdata(channel=channel, well=well)
-        df_sorted = df.sort(inplace=False, axis=ascending)
+        df_sorted = df.sort_values(inplace=False, axis=ascending)
         df_sorted = df_sorted.reset_index()
         df_sorted = df_sorted.drop('index', 1)
         df_sorted.plot()
@@ -465,7 +465,7 @@ def wells_sorted(plate, wells, channel, ascending=True, y_lim=None, file_name=No
     for well in wells:
         wellData = plate.get_raw_data(channel=channel, well=well, as_dict=True)
         for key, value in wellData.items():
-            value.sort(inplace=True, ascending=ascending)
+            value.sort_values(inplace=True, ascending=ascending)
             perc = np.linspace(0,100,len(value))
             plt.plot(perc, value.values, label=str(key)+'_'+str(well))
     plt.legend()
