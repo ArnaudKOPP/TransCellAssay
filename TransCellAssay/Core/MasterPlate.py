@@ -114,7 +114,7 @@ class MasterPlate(object):
 
     def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=True,
                                     max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[], skip_row=[],
-                                    trimmed=0.0):
+                                    trimmed=0.0, poly_deg=4, low_max_iter=3, f=2./3.):
         """
         Apply a spatial normalization for remove edge effect
         The Bscore method showed a more stable behavior than MEA and PMP only when the number of rows and columns
@@ -132,9 +132,12 @@ class MasterPlate(object):
         :param skip_col: index of col to skip in MEA or PMP
         :param skip_row: index of row to skip in MEA or PMP
         :param trimmed: Bscore only for average method only, trimmed the data with specified value, default is 0.0
+        :param poly_deg: polynomial degree 4 or 5
+        :param low_max_iter: lowess max iteration
+        :param f: lowess smotting span
         """
         global corrected_data_array
-        __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
+        __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel', 'Lowess', 'Polynomial']
 
         if algorithm not in __valid_sec_algo:
             log.error('Algorithm is not good choose : {}'.format(__valid_sec_algo))
@@ -174,6 +177,15 @@ class MasterPlate(object):
             if algorithm == 'DiffusionModel':
                 corrected_data_array = TCA.diffusion_model(self.array.copy(), max_iterations=max_iterations,
                                                            verbose=verbose)
+
+            if algorithm == 'Lowess':
+                corrected_data_array = TCA.lowess_fitting(self.array.copy(), max_iteration=low_max_iter,
+                                                          skip_col=skip_col, skip_row=skip_row, f=f)
+
+            if algorithm == 'Polynomial':
+                corrected_data_array = TCA.polynomial_fitting(self.array.copy(), degree=poly_deg, skip_col=skip_row,
+                                                              skip_row=skip_col)
+
             if save:
                 self.array_c = corrected_data_array
                 self.isSpatialNormalized = True

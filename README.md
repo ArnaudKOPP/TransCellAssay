@@ -11,7 +11,7 @@ It work on 96, 384 and 1536(depend format) Well plate with acceptable performanc
 * Quality Control for control, data consistency across replica (check if data are missing).
 * Controls based and non-controls based normalization, logarithmic transformation, feature scaling.
 * Systematic Error Detection Test (border effect on plate).
-* Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel and basic background Correction/Well Correction.
+* Systematics error Correction with Bscore, BZscore, PMP, MEA, DiffusionModel, polynomial/lowess fitting.
 * Scoring with SSMD, T-Statistics, T-Test, Rank product, single cell properties.
 
 ## Python Module Dependencies

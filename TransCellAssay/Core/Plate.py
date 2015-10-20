@@ -285,11 +285,12 @@ class Plate(MasterPlate):
         else:
             self.__normalization(channels, method, log_t, neg, pos, skipping_wells, threshold=threshold)
 
-    def systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
-                                    save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
-                                    skip_row=[], trimmed=0.0):
+    def apply_systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
+                                         save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
+                                         skip_row=[], trimmed=0.0, poly_deg=4, low_max_iter=3, f=2./3.):
         """
-        Apply a spatial normalization for remove edge effect
+        Apply a spatial normalization for remove edge effect on all replica (but not to Plate objet himself, use
+        instead systematic_error_correction function for only plate array)
         Resulting matrix are save in plate object if save = True
         Be careful !! if the replica data was already be spatial norm, it will degrade data !!
         :param algorithm: Bscore, MEA, PMP or diffusion model technics, default = Bscore
@@ -303,8 +304,11 @@ class Plate(MasterPlate):
         :param skip_col: index of col to skip in MEA or PMP
         :param skip_row: index of row to skip in MEA or PMP
         :param trimmed: Bscore only for average method only, trimmed the data with specified value, default is 0.0
+        :param poly_deg: polynomial degree 4 or 5
+        :param low_max_iter: lowess max iteration
+        :param f: lowess smotting span
         """
-        __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel']
+        __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel', 'Lowess', 'Polynomial']
 
         if algorithm not in __valid_sec_algo:
             log.error('Algorithm is not good choose : {}'.format(__valid_sec_algo))
@@ -314,7 +318,8 @@ class Plate(MasterPlate):
             for key, value in self.replica.items():
                 value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
                                                   max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
-                                                  skip_col=skip_col, skip_row=skip_row, trimmed=trimmed)
+                                                  skip_col=skip_col, skip_row=skip_row, trimmed=trimmed,
+                                                  poly_deg=poly_deg, low_max_iter=low_max_iter, f=f)
             self.agg_data_from_replica_channel(channel=None, use_sec_data=True)
             return
 
