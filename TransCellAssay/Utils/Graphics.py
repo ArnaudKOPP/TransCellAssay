@@ -130,7 +130,7 @@ def heatmap(array, file_path=None):
     except Exception as e:
         print(e)
 
-def heatmap_p(array, annot=True, file_path=None):
+def heatmap_p(array, annot=True, file_path=None, size=(17, 12), fmt='d'):
     """
     Output a heatmap with seaborn
     :param array: numpy array that represent data
@@ -138,10 +138,13 @@ def heatmap_p(array, annot=True, file_path=None):
     try:
         import matplotlib.pyplot as plt
         import seaborn as sns
+
+        fig = plt.figure(figsize=size)
+
         sns.set()
-        sns.heatmap(array, cmap="YlGnBu", annot=annot, fmt='.1f',)
+        sns.heatmap(array, cmap="YlGnBu", annot=annot, fmt=fmt)
         if file_path is not None:
-            plt.savefig(file_path)
+            plt.savefig(file_path, dpi=500)
             plt.close()
         else:
             plt.show(block=True)

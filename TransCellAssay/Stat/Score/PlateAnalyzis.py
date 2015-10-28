@@ -48,9 +48,10 @@ def plate_channels_analysis(plate, channels, neg=None, pos=None, threshold=50, p
                                            clean=clean)
     return res
 
-def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
+def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
                            path=None, tag="", clean=False):
     assert isinstance(plate, TCA.Plate)
+
     if not len(plate) > 0:
         log.error('Empty Plate Object, add some replica to perform PlateAnalysis')
         return
@@ -58,20 +59,25 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
     if threshold >= 100 and percent:
         log.warning('Threshold cannot be > 100 with percent')
         percent = False
+        fixed_threshold = True
 
     if plate._is_cutted:
         log.error('Plate was cutted, for avoiding undesired effect, plate analysis cannot be performed')
         raise NotImplementedError()
     log.info('Perform plate analysis for {0} on channel {1}'.format(plate.name, channel))
 
+
+    if channel is not None:
+        plate.agg_data_from_replica_channel(channel=channel, use_sec_data=False, forced_update=True)
+
     platemap = plate.get_platemap()
-    plate.agg_data_from_replica_channel(channel=channel, use_sec_data=False, forced_update=True)
     size = platemap.shape()
     WellKey = 'Well'
     __SIZE__ = (size[0] * size[1])
     ResultatsArray = Result(size=__SIZE__)
     x = platemap.as_dict()
 
+    ## Init results dataframe
     ResultatsArray.init_gene_well(x)
     ResultatsArray.values['PlateName'] = np.repeat([plate.name], __SIZE__)
 
@@ -106,56 +112,84 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
                 pass
         ResultatsArray.add_data(CellsCount, 'CellsCount_' + str(replica.name))
 
-        # ########## positive Cell
-        # # threshold value for control
-        if fixed_threshold:
-            ThresholdValue = threshold
-            log.info('     Fixed Threshold value used: {}'.format(ThresholdValue))
-        else:
-            if percent:
-                ControlData = replica.get_rawdata(channel=channel, well=neg_well)
-                ThresholdValue = np.percentile(ControlData, threshold)
-                log.info('     Percent {0} Threshold value used: {1}'.format(threshold, ThresholdValue))
+        if channel is not None:
+            # ########## positive Cell
+            # # threshold value for control
+            if fixed_threshold:
+                ThresholdValue = threshold
+                log.info('     Fixed Threshold value used: {}'.format(ThresholdValue))
             else:
-                ControlData = replica.get_rawdata(channel=channel, well=neg_well)
-                ThresholdValue = np.mean(ControlData)
-                log.info('     Neg Mean Threshold value used: {}'.format(ThresholdValue))
+                if percent:
+                    ControlData = replica.get_rawdata(channel=channel, well=neg_well)
+                    ThresholdValue = np.percentile(ControlData, threshold)
+                    log.info('     Percent {0} Threshold value used: {1}'.format(threshold, ThresholdValue))
+                else:
+                    ControlData = replica.get_rawdata(channel=channel, well=neg_well)
+                    ThresholdValue = np.mean(ControlData)
+                    log.info('     Neg Mean Threshold value used: {}'.format(ThresholdValue))
+
+            # ########## variability
+            well_list = replica.rawdata.get_unique_well()
+            # iterate on well
+            PercentCells = collections.OrderedDict()
+            log.debug("     Determine Positive Cells percentage")
+            for well in well_list:
+                xdata = datagb.get_group(well)[channel]
+                MeanWellsReplicas.setdefault(well, []).append(np.mean(xdata.values))
+                MedianWellsReplicas.setdefault(well, []).append(np.median(xdata.values))
+                len_total = len(xdata.values)
+                len_thres = len(np.extract(xdata.values > ThresholdValue, xdata.values))
+                # # include in dict key is the position and value is a %
+                PercentCellsReplicas.setdefault(well, []).append(((len_thres / len_total) * 100))
+                PercentCells[well] = (len_thres / len_total) * 100
+            ResultatsArray.add_data(PercentCells, 'PosCells_' + str(replica.name))
+            ResultatsArray.values[replica.name+'_'+replica.datatype+'_value'] = replica.array.flatten().reshape(__SIZE__, 1)
+            i += 1
+
+    if channel is not None:
+        # ########## p-value and fdr for percent cell
+        if neg is not None:
+            if len(plate) > 1:
+                log.debug("Perform T-Test on positive Cells percentage")
+                NegData = list()
+                for x in neg_well:
+                    NegData.extend(PercentCellsReplicas[x])
+                ## or this but don't work when data are missing ????
+                # neg_data = [PercentCellsReplicas[x] for x in neg_well]
+                NegData = np.array(NegData).flatten()
+                pvalue = collections.OrderedDict()
+                for key, value in PercentCellsReplicas.items():
+                    x = stats.ttest_ind(value, NegData, equal_var=False)
+                    pvalue[key] = x[1]
+
+                ResultatsArray.add_data(pvalue, 'TTest p-value')
+                ResultatsArray.values["TTest fdr"] = TCA.adjustpvalues(pvalues=ResultatsArray.values["TTest p-value"])
 
         # ########## variability
-        well_list = replica.rawdata.get_unique_well()
-        # iterate on well
-        PercentCells = collections.OrderedDict()
-        log.debug("     Determine Positive Cells percentage")
-        for well in well_list:
-            xdata = datagb.get_group(well)[channel]
-            MeanWellsReplicas.setdefault(well, []).append(np.mean(xdata.values))
-            MedianWellsReplicas.setdefault(well, []).append(np.median(xdata.values))
-            len_total = len(xdata.values)
-            len_thres = len(np.extract(xdata.values > ThresholdValue, xdata.values))
-            # # include in dict key is the position and value is a %
-            PercentCellsReplicas.setdefault(well, []).append(((len_thres / len_total) * 100))
-            PercentCells[well] = (len_thres / len_total) * 100
-        ResultatsArray.add_data(PercentCells, 'PosCells_' + str(replica.name))
-        ResultatsArray.values[replica.name+'_'+replica.datatype+'_value'] = replica.array.flatten().reshape(__SIZE__, 1)
-        i += 1
-
-    # ########## p-value and fdr for percent cell
-    if neg is not None:
         if len(plate) > 1:
-            log.debug("Perform T-Test on positive Cells percentage")
-            NegData = list()
-            for x in neg_well:
-                NegData.extend(PercentCellsReplicas[x])
-            ## or this but don't work when data are missing ????
-            # neg_data = [PercentCellsReplicas[x] for x in neg_well]
-            NegData = np.array(NegData).flatten()
-            pvalue = collections.OrderedDict()
-            for key, value in PercentCellsReplicas.items():
-                x = stats.ttest_ind(value, NegData, equal_var=False)
-                pvalue[key] = x[1]
+            log.debug("Variability determination")
+            MeanSD = dict([(i, np.std(v)) for i, v in MeanWellsReplicas.items()])
+            MedianSD = dict([(i, np.std(v)) for i, v in MedianWellsReplicas.items()])
+            ResultatsArray.add_data(MeanSD, 'Mean std')
+            ResultatsArray.add_data(MedianSD, 'Median std')
 
-            ResultatsArray.add_data(pvalue, 'TTest p-value')
-            ResultatsArray.values["TTest fdr"] = TCA.adjustpvalues(pvalues=ResultatsArray.values["TTest p-value"])
+        MeanWellsReplicas = dict([(i, sum(v) / len(v)) for i, v in MeanWellsReplicas.items()])
+        MedianWellsReplicas = dict([(i, sum(v) / len(v)) for i, v in MedianWellsReplicas.items()])
+        ResultatsArray.add_data(MeanWellsReplicas, 'Mean')
+        ResultatsArray.add_data(MedianWellsReplicas, 'Median')
+
+        # ########## positive cell
+        # determine the mean of replicat
+        MeanPercentCells = dict([(i, sum(v) / len(v)) for i, v in PercentCellsReplicas.items()])
+        ResultatsArray.add_data(MeanPercentCells, 'PositiveCells')
+
+        # ########## determine the standart deviation of % Cells
+        if len(plate) > 1:
+            for key, value in PercentCellsReplicas.items():
+                PercentCellsSDReplicas[key] = np.std(value)
+
+            ResultatsArray.add_data(PercentCellsSDReplicas, 'PositiveCells std')
+
 
     # ########## Cell count and std
     if len(plate) > 1:
@@ -202,42 +236,28 @@ def plate_channel_analysis(plate, channel, neg=None, pos=None, threshold=50, per
         else:
             log.info('No positive control provided, no viability performed')
 
-    # ########## variability
-    if len(plate) > 1:
-        log.debug("Variability determination")
-        MeanSD = dict([(i, np.std(v)) for i, v in MeanWellsReplicas.items()])
-        MedianSD = dict([(i, np.std(v)) for i, v in MedianWellsReplicas.items()])
-        ResultatsArray.add_data(MeanSD, 'Mean std')
-        ResultatsArray.add_data(MedianSD, 'Median std')
 
-    MeanWellsReplicas = dict([(i, sum(v) / len(v)) for i, v in MeanWellsReplicas.items()])
-    MedianWellsReplicas = dict([(i, sum(v) / len(v)) for i, v in MedianWellsReplicas.items()])
-    ResultatsArray.add_data(MeanWellsReplicas, 'Mean')
-    ResultatsArray.add_data(MedianWellsReplicas, 'Median')
-
-    # ########## positive cell
-    # determine the mean of replicat
-    MeanPercentCells = dict([(i, sum(v) / len(v)) for i, v in PercentCellsReplicas.items()])
-    ResultatsArray.add_data(MeanPercentCells, 'PositiveCells')
-
-    # ########## determine the standart deviation of % Cells
-    if len(plate) > 1:
-        for key, value in PercentCellsReplicas.items():
-            PercentCellsSDReplicas[key] = np.std(value)
-
-        ResultatsArray.add_data(PercentCellsSDReplicas, 'PositiveCells std')
-
+    ### Remove row with cellscount is 0
     if clean:
         ResultatsArray.values = ResultatsArray.values[ResultatsArray.values['CellsCount'] > 0]
 
     if path is not None:
         try:
-            filepath = os.path.join(path, 'PlateAnalyzis_' + str(plate.name) + '_' + str(channel) + "_" + str(tag)
-                                    + '.csv')
-            ResultatsArray.write(file_path=filepath)
+            if channel is not None:
+                filepath = os.path.join(path, 'PlateAnalyzis_' + str(plate.name) + '_' + str(channel) + "_" + str(tag)
+                                        + '.csv')
+                ResultatsArray.write(file_path=filepath)
+            else:
+                filepath = os.path.join(path, 'PlateAnalyzis_' + str(plate.name) + "_" + str(tag) + '.csv')
+                ResultatsArray.write(file_path=filepath)
         except Exception as e:
             log.error('Error during writing data from PlateAnalyzis : {}'.format(e))
-    return ResultatsArray, ThresholdValue
+
+    if channel is not None:
+        return ResultatsArray, ThresholdValue
+    else:
+        ResultatsArray.values.drop(['PositiveCells', 'Mean', 'Median'], axis=1, inplace=True)
+        return ResultatsArray
 
 
 class Result(object):
