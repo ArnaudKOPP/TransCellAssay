@@ -242,10 +242,7 @@ class PlateMap(object):
             self.platemap.iloc[int(key[0]), int(key[1])] = str(value)
         # # for 'A1' format
         elif isinstance(key, str):
-            try:
-                self.platemap.loc[str(key[0]), int(key[1:])] = str(value)
-            except:
-                self.platemap.loc[str(key[0]), str(key[1:])] = str(value)
+            self.platemap.loc[str(key[0]), str(key[1:])] = str(value)
 
     def __getitem__(self, position):
         """
@@ -259,10 +256,7 @@ class PlateMap(object):
             return self.platemap.iloc[int(position[0]), int(position[1])]
         # # for 'A1' format
         elif isinstance(position, str):
-            try:
-                return self.platemap.loc[str(position[0]), int(position[1:])]
-            except:
-                return self.platemap.loc[str(position[0]), str(position[1:])]
+            return self.platemap.loc[str(position[0]), str(position[1:])]
 
     def __repr__(self):
         """
