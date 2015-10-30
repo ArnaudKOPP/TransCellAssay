@@ -202,18 +202,20 @@ class PlateMap(object):
             raise ValueError('Expected size : 96, 348 or 1536')
 
     def __generate_empty_96(self):
-        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:8], columns=range(1, 13, 1))
+        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:8],
+                                    columns=[str(x) for x in range(1, 13, 1)])
         self.__fill_empty()
 
     def __generate_empty_384(self):
-        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:16], columns=range(1, 25, 1))
+        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:16],
+                                    columns=[str(x) for x in range(1, 25, 1)])
         self.__fill_empty()
 
     def __generate_empty_1536(self):
         self.platemap = pd.DataFrame(data='Empty',index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
                                                          'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
                                                          'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF'],
-                                     columns=range(1, 49, 1))
+                                     columns=[str(x) for x in range(1, 49, 1)])
         self.__fill_empty()
 
     def __fill_empty(self):
