@@ -13,12 +13,123 @@ import copy
 
 logging.basicConfig(level=logging.INFO, format='[%(process)d/%(processName)s] @ [%(asctime)s] - %(levelname)-8s : %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
-pd.set_option('display.max_rows',40)
-pd.set_option('display.max_columns', 20)
+pd.set_option('display.max_rows',50)
+pd.set_option('display.max_columns', 18)
 pd.set_option('display.width', 1000)
 np.set_printoptions(linewidth=300)
 np.set_printoptions(suppress=True, precision=4)
 
+def DUX4():
+    channel = 'ObjectAvgIntenCh1'
+    neg = 'Neg'
+    pos = 'DUX4+258'
+    DataPath = '/home/arnaud/Desktop/DUX4_siRNA/DATA/'
+    PPPath = '/home/arnaud/Desktop/DUX4_siRNA/BANK/'
+    ResPath = '/home/arnaud/Desktop/DUX4_siRNA/ANALYSE/DTarget'
+    RatioPath = '/home/arnaud/Desktop/DUX4_siRNA/ANALYSE/DTarget_ratio'
+
+    if not os.path.isdir(ResPath):
+        os.makedirs(ResPath)
+
+    if not os.path.isdir(RatioPath):
+        os.makedirs(RatioPath)
+
+    ListDF = []
+    ListDF_ratio = []
+
+    for i in range(1, 2, 1):
+        plaque = TCA.Core.Plate(name='DTarget '+str(i),
+                                platemap = TCA.Core.PlateMap(fpath=os.path.join(PPPath, "PP_Drug_Target"+str(i)+'.csv')))
+        for j in ['1', '2', '3']:
+            file = os.path.join(DataPath, 'DTarget '+str(i)+'.'+str(j)+'.csv')
+            if os.path.isfile(file):
+                plaque + TCA.Core.Replica(name='rep'+str(j), fpath=file)
+
+        plaque.platemap[(1, 22)] = "DUX4+258_"
+        plaque.platemap[(2, 22)] = "Neg_"
+        plaque.platemap[(3, 22)] = "DUX4+258_"
+        plaque.platemap[(4, 22)] = "Neg_"
+        plaque.platemap[(5, 22)] = "DUX4+258_"
+        plaque.platemap[(6, 22)] = "Neg_"
+        plaque.platemap[(7, 22)] = "DUX4+258_"
+        plaque.platemap[(8, 22)] = "Neg_"
+        plaque.platemap[(9, 22)] = "Neg1_"
+        plaque.platemap[(10, 22)] = "Neg1_"
+        plaque.platemap[(11, 22)] = "Neg1_"
+        plaque.platemap[(12, 22)] = "Neg1_"
+        plaque.platemap[(13, 22)] = "PLK1_"
+        plaque.platemap[(14, 22)] = "Non Trans_"
+
+        # print(plaque.platemap)
+
+        # print(plaque.get_count().transpose().reset_index())
+        df = TCA.plate_channel_analysis(plaque, channel=None, neg=neg, pos=pos, threshold=50, percent=False,
+                                    fixed_threshold=True, clean=False)
+
+        plaque['rep1'].array = df.values['CellsCount_rep1'].values.reshape((16, 24))
+        plaque['rep2'].array = df.values['CellsCount_rep2'].values.reshape((16, 24))
+        plaque['rep3'].array = df.values['CellsCount_rep3'].values.reshape((16, 24))
+
+        TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
+                                     verbose=True)
+        TCA.plate_ssmd_score(plaque, neg_control=neg, paired=False, robust_version=True, sec_data=False,
+                                     variance="equal", verbose=True)
+        TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False,
+                                     verbose=True)
+        TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, method='MM',
+                                     verbose=True)
+
+
+        # try:
+        #     TCA.heatmap_p(df.values['CellsCount_rep1'].values.reshape(16, 24),
+        #                     file_path=os.path.join(ResPath, plaque.name+'rep1'+'.pdf'))
+        # except Exception as e:
+        #     pass
+        # try:
+        #     TCA.heatmap_p(df.values['CellsCount_rep2'].values.reshape(16, 24),
+        #                     file_path=os.path.join(ResPath, plaque.name+'rep2'+'.pdf'))
+        # except Exception as e:
+        #     pass
+        # try:
+        #     TCA.heatmap_p(df.values['CellsCount_rep3'].values.reshape(16, 24),
+        #                     file_path=os.path.join(ResPath, plaque.name+'rep3'+'.pdf'))
+        # except Exception as e:
+        #     pass
+        #
+        # ListDF.append(copy.deepcopy(df.values))
+        #
+        # ### RATIO
+        #
+        # for col in ['CellsCount', 'CellsCount_rep1', 'CellsCount_rep2', 'CellsCount_rep3']:
+        #     try:
+        #         df.values[col] = (df.values[col] / (np.mean(df.values[df.values["PlateMap"] == "Neg1"][col]))) * 100
+        #     except Exception as e:
+        #         pass
+        #
+        # ListDF_ratio.append(df.values)
+        #
+        # try:
+        #     TCA.heatmap_p(df.values['CellsCount_rep1'].values.reshape(16, 24),
+        #                     file_path=os.path.join(RatioPath, plaque.name+'rep1'+'.pdf'), fmt='.1f')
+        # except Exception as e:
+        #     pass
+        # try:
+        #     TCA.heatmap_p(df.values['CellsCount_rep2'].values.reshape(16, 24),
+        #                     file_path=os.path.join(RatioPath, plaque.name+'rep2'+'.pdf'), fmt='.1f')
+        # except Exception as e:
+        #     pass
+        # try:
+        #     TCA.heatmap_p(df.values['CellsCount_rep3'].values.reshape(16, 24),
+        #                     file_path=os.path.join(RatioPath, plaque.name+'rep3'+'.pdf'), fmt='.1f')
+        # except Exception as e:
+        #     pass
+
+    # merge all df
+    # DF = pd.concat(ListDF)
+    # DF.to_csv(os.path.join(ResPath, 'CellsCount.csv'), header=True, index=False)
+    # DF_ratio = pd.concat(ListDF_ratio)
+    # DF_ratio.to_csv(os.path.join(RatioPath, 'CellsCount.csv'), header=True, index=False)
+DUX4()
 
 def HDV():
     channel = 'AvgIntenCh2'
@@ -28,19 +139,22 @@ def HDV():
         # path = '/home/arnaud/Desktop/HDV/DATA'
         path = '/home/arnaud/Desktop/HDV prestwick/screen/'
 
-        plaque = TCA.Core.Plate(name='HDV prestwick '+str(j),
+        plaque = TCA.Core.Plate(name='HDV prestwick'+str(j),
                                 platemap=TCA.Core.PlateMap(fpath=os.path.join(path, "PP_pl"+str(j)+".csv")))
         for i in ['1', '2', '3']:
             try:
                 file = os.path.join(path, 'HDV prestwick pl'+str(j)+"."+str(i)+".csv")
                 if os.path.isfile(file):
                     plaque + TCA.Core.Replica(name="rep" + i,
-                                              fpath=file,
-                                              datatype='mean')
+                                              fpath=file)
             except Exception as e:
                 print(e)
                 pass
         plaque.agg_data_from_replica_channel(channel=channel)
+        TCA.plate_ssmd_score(plaque, neg_control=neg, paired=True, robust_version=True, sec_data=False, method='MM',
+                                     verbose=True)
+        TCA.plate_ttest(plaque, neg, verbose=True)
+        # print(plaque.platemap)
         # TCA.systematic_error(plaque.array)
         # plaque.cut(1, 15, 1, 23, apply_down=True)
         #
@@ -71,16 +185,20 @@ def HDV():
         # print(plaque.get_file_location())
         # x = plaque.get_raw_data(channel=channel, well='B16')
         # print(x)
-        # print(TCA.plate_channel_analysis(plaque, channel=channel, neg=neg, pos=pos, threshold=85, clean=True))
-        # TCA.plate_channel_analysis(plaque, channel=channel, neg=neg, pos=pos, threshold=88, percent=True, path=path,
-        #                            clean=True, tag='12_%')
+        # TCA.plate_channel_analysis(plaque, channel=channel, neg=neg, pos=pos, threshold=88, clean=True, path=path, tag="12_%")
+        # print(plaque.get_count())
+        # TCA.plate_channel_analysis(plaque, channel=channel, neg=neg, pos=pos, threshold=600, percent=False, path=path,
+                                #    clean=True, tag='_600', fixed_threshold=True)
         # plaque.agg_data_from_replica_channel(channel=channel)
         # for key, value in plaque.replica.items():
-            # print(value.array)
+        #     print(value.array)
+        # print(TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, sedt=False, sec_data=False,
+        #     use_raw_data=True, dirpath=None, skipping_wells=True))
+        # TCA.wells_sorted(plaque, channel="AvgIntenCh2", wells=["A2", "B2", "C2", "D2"], ascending=False, y_lim=9000)
         # print(plaque.get_count())
-        TCA.heatmap_p(plaque.array, annot=True)
+        # TCA.heatmap_p(plaque.array, annot=True)
         # TCA.RepCor(plaque, channel)
-        # TCA.plate_heatmap_p(plaque, both=False, size=6.)
+        # TCA.plate_heatmap_p(plaque, both=False, size=6., file_path=os.path.join(path, plaque.name+'_'+channel+".pdf"))
         # TCA.systematic_error(plaque.array, file_path=None)
         # TCA.plot_wells(plaque, neg=neg, pos=pos, file_path=os.path.join(path, "Wells "+plaque.name+".pdf"))
         # print(plaque)
@@ -89,7 +207,7 @@ def HDV():
 # HDV()
 
 def misc2():
-    path = '/home/arnaud/Desktop/Anne/150915 V Lamour U2OS Ku80 53BP1 spot/'
+    path = '/home/arnaud/Desktop/TEMP/Anne/TUNEL plaque du 20102015/'
 
     # outpath = os.path.join(path, 'ratio')
     # if not os.path.isdir(outpath):
@@ -97,7 +215,7 @@ def misc2():
 
     PlateList = []
 
-    NameList = ['150914 V Lamour Ku80 53BP1.csv']
+    NameList = ['21102015 Angelique TUNELbis.csv']
     for name in NameList:
         plaque = TCA.Core.Plate(name=name[0:-4],
                                 platemap=TCA.Core.PlateMap(),
@@ -109,89 +227,92 @@ def misc2():
 
 
     for plate in PlateList:
-        # print(plate)
-        TCA.plate_channels_analysis(plate, neg='A1', pos="B10", channels=['SpotCountCh2', 'SpotCountCh3',
-        'SpotTotalAreaCh2', 'SpotTotalAreaCh3', 'SpotTotalIntenCh2', 'SpotTotalIntenCh3'], threshold=95, percent=True,
-                                    path=path, clean=True)
+        for i in [400, 600, 800, 1000, 1500, 2000, 2500, 3000]:
+            TCA.plate_channels_analysis(plate, channels=['AvgIntenCh2'], threshold=i, percent=False, fixed_threshold=True,
+                                        path=path, clean=True, tag='_'+str(i))
 
-# misc2()
+ # misc2()
 
 def misc():
-    path = '/home/arnaud/Desktop/TEMP/Amelie/xavier_g/300915/LigneEF_ctrlF2FD3'
+    path = '/home/arnaud/Desktop/TEMP/Amelie/XG_301015/'
+
     PlateList = []
+    # 'MFGTMP-PC_12:33:47.csv'
+    NameList = ['MFGTMP-PC_151029090001.csv']
+    for plate in NameList:
+        plaque = TCA.Core.Plate(name=plate[0:-4]+"_CTRL_A5_D6",
+                                platemap=TCA.Core.PlateMap(),
+                                replica=TCA.Core.Replica(name="rep1",
+                                                         fpath=os.path.join(path, str(plate))))
 
-    # NameList = ['150630 siP150 Xavier Gaume Pl2.csv', '150629 siP150 Xavier Gaume Pl1.csv']
-    # NameList = ['150629 siP150 Xavier Gaume Pl1.csv']
-    plaque = TCA.Core.Plate(name='150923 test differents serums Gaume ligne EF',
-                            platemap=TCA.Core.PlateMap(),
-                            replica=TCA.Core.Replica(name="rep1",
-                                                     fpath="/home/arnaud/Desktop/TEMP/Amelie/xavier_g/300915/150923 test differents serums Gaume ligne EF.csv",
-                                                     singleCells=True,
-                                                     datatype='mean'))
-    # plaque.agg_data_from_replica_channel(channel='AvgIntenCh3')
+        plaque.agg_data_from_replica_channel(channel='AvgIntenCh3')
+        print(plaque.array)
+        plaque.platemap['A5'] = "neg"
+        plaque.platemap['B6'] = "neg"
+        plaque.platemap['C5'] = "neg"
+        plaque.platemap['D6'] = "neg"
+        # plaque.platemap['G9'] = "neg"
+        # plaque.platemap['G11'] = "neg"
+        # plaque.platemap['H10'] = "neg"
+        # plaque.platemap['H12'] = "neg"
 
-    plaque.platemap['F2'] = "neg"
-    plaque.platemap['F3'] = "neg"
-    # plaque.platemap['C5'] = "neg"
-    # plaque.platemap['D5'] = "neg"
+        print(plaque.platemap.search_well('neg'))
 
-    channel1 = ['AvgIntenCh2']
-    a = TCA.plate_channels_analysis(plaque, neg="neg", channels=channel1, threshold=99.5, percent=True, clean=True, path=path)
-    channel2 = ['AvgIntenCh3']
-    b = TCA.plate_channels_analysis(plaque, neg="neg", channels=channel2, threshold=1, percent=True, clean=True, path=path)
-    channel3 = ['AvgIntenCh4']
-    c = TCA.plate_channels_analysis(plaque, neg="neg", channels=channel3, threshold=2000, percent=False, fixed_threshold=True, clean=True, path=path)
+        channel1 = ['AvgIntenCh3']
+        a = TCA.plate_channels_analysis(plaque, neg="neg", channels=channel1, threshold=99.5, percent=True, clean=True, path=path)
+        channel2 = ['AvgIntenCh4']
+        b = TCA.plate_channels_analysis(plaque, neg="neg", channels=channel2, threshold=1, percent=True, clean=True, path=path)
+        channel3 = ['AvgIntenCh5']
+        c = TCA.plate_channels_analysis(plaque, neg="neg", channels=channel3, threshold=97, percent=True, clean=True, path=path)
 
-    # write txt file for saving intensities values of threshold
-    file = open(os.path.join(path, str(plaque.name)+'_IntensitiesThresholdValues.txt'), 'w')
-    file.write(str(channel1[0])+" : " + str(a[channel1[0]][1]) + "\n")
-    file.write(str(channel2[0])+" : " + str(b[channel2[0]][1]) + "\n")
-    file.write(str(channel3[0])+" : " + str(c[channel3[0]][1]) + "\n")
-    file.close()
-
-
-    plaque.clear_memory(only_cache=True)
-    plaqueCP = copy.deepcopy(plaque)
-    TCA.channel_filtering(plaqueCP, channel=channel1[0], lower=int(a[channel1[0]][1]), include=True, percent=False)
-    TCA.channel_filtering(plaqueCP, channel=channel2[0], upper=int(b[channel2[0]][1]), include=True, percent=False)
-    # TCA.channel_filtering(plaqueCP, channel=channel3[0], lower=int(c[channel3[0]][1]), include=True, percent=False)
-    gb_data = plaqueCP['rep1'].rawdata.get_groupby_data()
-    cnt = gb_data.Well.count().to_frame()
-    cnt.columns = ['Count']
-    cnt.to_csv(os.path.join(path, "CellCnt_GFP+Oct34-_"+plaque.name+'.csv'))
-
-    plaqueCP = copy.deepcopy(plaque)
-    TCA.channel_filtering(plaqueCP, channel=channel1[0], lower=int(a[channel1[0]][1]), include=True, percent=False)
-    # TCA.channel_filtering(plaqueCP, channel=channel2[0], upper=int(b[channel2[0]][1]), include=True, percent=False)
-    TCA.channel_filtering(plaqueCP, channel=channel3[0], lower=int(c[channel3[0]][1]), include=True, percent=False)
-    gb_data = plaqueCP['rep1'].rawdata.get_groupby_data()
-    cnt = gb_data.Well.count().to_frame()
-    cnt.columns = ['Count']
-    cnt.to_csv(os.path.join(path, "CellCnt_GFP+Zscan4+_"+plaque.name+'.csv'))
-
-    plaqueCP = copy.deepcopy(plaque)
-    # TCA.channel_filtering(plaqueCP, channel=channel1[0], lower=int(a[channel1[0]][1]), include=True, percent=False)
-    TCA.channel_filtering(plaqueCP, channel=channel2[0], upper=int(b[channel2[0]][1]), include=True, percent=False)
-    TCA.channel_filtering(plaqueCP, channel=channel3[0], lower=int(c[channel3[0]][1]), include=True, percent=False)
-    gb_data = plaqueCP['rep1'].rawdata.get_groupby_data()
-    cnt = gb_data.Well.count().to_frame()
-    cnt.columns = ['Count']
-    cnt.to_csv(os.path.join(path, "CellCnt_Oct34-Zscan4+"+plaque.name+'.csv'))
-
-    plaqueCP = copy.deepcopy(plaque)
-    TCA.channel_filtering(plaqueCP, channel=channel1[0], lower=int(a[channel1[0]][1]), include=True, percent=False)
-    TCA.channel_filtering(plaqueCP, channel=channel2[0], upper=int(b[channel2[0]][1]), include=True, percent=False)
-    TCA.channel_filtering(plaqueCP, channel=channel3[0], lower=int(c[channel3[0]][1]), include=True, percent=False)
-    gb_data = plaqueCP['rep1'].rawdata.get_groupby_data()
-    cnt = gb_data.Well.count().to_frame()
-    cnt.columns = ['Count']
-    cnt.to_csv(os.path.join(path, "CellCnt_GFP+Oct34-Zscan4+"+plaque.name+'.csv'))
+        # write txt file for saving intensities values of threshold
+        file = open(os.path.join(path, str(plaque.name)+'_IntensitiesThresholdValues.txt'), 'w')
+        file.write(str(channel1[0])+" : " + str(a[channel1[0]][1]) + "\n")
+        file.write(str(channel2[0])+" : " + str(b[channel2[0]][1]) + "\n")
+        file.write(str(channel3[0])+" : " + str(c[channel3[0]][1]) + "\n")
+        file.close()
 
 
-misc()
+        plaque.clear_memory(only_cache=True)
+        plaqueCP = copy.deepcopy(plaque)
+        TCA.channel_filtering(plaqueCP, channel=channel1[0], lower=int(a[channel1[0]][1]), include=True, percent=False)
+        TCA.channel_filtering(plaqueCP, channel=channel2[0], upper=int(b[channel2[0]][1]), include=True, percent=False)
+        gb_data = plaqueCP['rep1'].rawdata.get_groupby_data()
+        cnt = gb_data.Well.count().to_frame()
+        cnt.columns = ['Count']
+        cnt.to_csv(os.path.join(path, "CellCnt_GFP+Oct34-_"+plaque.name+'.csv'))
+
+        plaqueCP = copy.deepcopy(plaque)
+        TCA.channel_filtering(plaqueCP, channel=channel1[0], lower=int(a[channel1[0]][1]), include=True, percent=False)
+        TCA.channel_filtering(plaqueCP, channel=channel3[0], lower=int(c[channel3[0]][1]), include=True, percent=False)
+        gb_data = plaqueCP['rep1'].rawdata.get_groupby_data()
+        cnt = gb_data.Well.count().to_frame()
+        cnt.columns = ['Count']
+        cnt.to_csv(os.path.join(path, "CellCnt_GFP+Zscan4+_"+plaque.name+'.csv'))
+
+        plaqueCP = copy.deepcopy(plaque)
+        TCA.channel_filtering(plaqueCP, channel=channel2[0], upper=int(b[channel2[0]][1]), include=True, percent=False)
+        TCA.channel_filtering(plaqueCP, channel=channel3[0], lower=int(c[channel3[0]][1]), include=True, percent=False)
+        gb_data = plaqueCP['rep1'].rawdata.get_groupby_data()
+        cnt = gb_data.Well.count().to_frame()
+        cnt.columns = ['Count']
+        cnt.to_csv(os.path.join(path, "CellCnt_Oct34-Zscan4+"+plaque.name+'.csv'))
+
+        plaqueCP = copy.deepcopy(plaque)
+        TCA.channel_filtering(plaqueCP, channel=channel1[0], lower=int(a[channel1[0]][1]), include=True, percent=False)
+        TCA.channel_filtering(plaqueCP, channel=channel2[0], upper=int(b[channel2[0]][1]), include=True, percent=False)
+        TCA.channel_filtering(plaqueCP, channel=channel3[0], lower=int(c[channel3[0]][1]), include=True, percent=False)
+        gb_data = plaqueCP['rep1'].rawdata.get_groupby_data()
+        cnt = gb_data.Well.count().to_frame()
+        cnt.columns = ['Count']
+        cnt.to_csv(os.path.join(path, "CellCnt_GFP+Oct34-Zscan4+"+plaque.name+'.csv'))
+
+# misc()
 
 # x =TCA.PlateMap(size=1536)
-# print(x.platemap.values)
+# print(x.platemap)
+# x['B48'] = "CACA"
+# print(x.platemap)
 
 #######################################################################################################################
 #######################################################################################################################
