@@ -85,7 +85,7 @@ class RawData(object):
             raise IOError('Empty rawdata')
         # # add well to columns that we want
         # # check valid channel
-        if channel not in self.get_channel_list():
+        if channel is not None and channel not in self.get_channel_list():
             raise ValueError('Wrong Channel')
         if well_idx:
             if not isinstance(channel, list):
@@ -102,35 +102,21 @@ class RawData(object):
                 if well not in self.get_unique_well():
                     raise ValueError('Wrong Well')
 
+
         # # Grab data
-        if channel is not None:
-            if well is not None:
-                for i in well:
-                    try:
-                        if data is None:
-                            data = self.__get_group(i, channel)
-                        data = data.append(self.__get_group(i, channel))
-                    except:
-                        pass
-                    # # return wells data for channel
-                return data
-            else:
-                # # return channel data for all well
-                return self.df[channel]
+        if well is not None:
+            for i in well:
+                try:
+                    if data is None:
+                        data = self.__get_group(i, channel)
+                    data = data.append(self.__get_group(i, channel))
+                except:
+                    pass
+                # # return wells data for channel
+            return data
         else:
-            if well is not None:
-                for i in well:
-                    try:
-                        if data is None:
-                            data = self.__get_group(i)
-                        data = data.append(self.__get_group(i))
-                    except:
-                        pass
-                    # # return wells data for all channel
-                return data
-            else:
-                # # return all data
-                return self.df
+            # # return channel data for all well
+            return self.df
 
     def get_unique_well(self, well_key='Well'):
         """
