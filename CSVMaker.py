@@ -66,6 +66,10 @@ USAGE
                             help="File path of csv data file ", required=True)
         parser.add_argument("-o", "--outputFileDirectory", dest="output", action="store",
                             help="Output path of csv file", default=None)
+        parser.add_argument("-t", "--filetarget", dest="dest", action="store",default="Well.csv",
+                            help="Create csv from Cells feature or Well feature")
+        parser.add_argument('--remove-col', dest='removecol', action='store_true')
+        parser.add_argument('--remove-nan', dest='removenan', action='store_true')
 
         # # Process arguments
         args = parser.parse_args()
@@ -74,6 +78,7 @@ USAGE
             output = input_dir
         else:
             output = args.output
+        dest = args.dest
 
         if not os.path.isdir(output):
             os.makedirs(output)
@@ -95,13 +100,15 @@ USAGE
                 try:
                     # # read
                     file = TCA.CSV()
-                    file.load(fpath=os.path.join(root, "Cell.csv"))
+                    file.load(fpath=os.path.join(root, dest))
 
                     # # create well
                     file.format_well_format()
                     try:
-                        file.remove_col()
-                        file.remove_nan()
+                        if args.removecol:
+                            file.remove_col()
+                        if args.removenan:
+                            file.remove_nan()
                     except:
                         pass
                     outputfilename = barcode

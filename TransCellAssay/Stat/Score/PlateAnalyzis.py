@@ -21,6 +21,22 @@ __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
+def getEventsCounts(plate):
+    """
+    Get the Events Count from single Cells data
+    :param plate: Plate object with some replica
+    :return: DataFrame with plate count
+    """
+    assert isinstance(plate, TCA.Plate)
+    log.info("Get Events Counts on {}".format(plate.name))
+    df = plate_channel_analysis(plate)
+    for col in ['Viability', 'Toxicity']:
+        try:
+            df.values = df.values.drop([col], axis=1)
+        except Exception as e:
+            log.error(e)
+    return df.values
+
 
 def plate_channels_analysis(plate, channels, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
                             path=None, tag="", clean=False):
@@ -36,8 +52,10 @@ def plate_channels_analysis(plate, channels, neg=None, pos=None, threshold=50, p
     :param path: path where file will be saved
     :param tag: add this tag at end of file name
     :param clean: if True, remove all row/Well that don't contain cells
-    :return: return result into dict of dataframe, key are channel and value a df with results
+    :return: result into dataframe
     """
+    assert isinstance(plate, TCA.Plate)
+
     if not isinstance(channels, list):
         channels = list(channels)
     res = collections.OrderedDict()
@@ -50,6 +68,20 @@ def plate_channels_analysis(plate, channels, neg=None, pos=None, threshold=50, p
 
 def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
                            path=None, tag="", clean=False):
+    """
+    Like plate_channel_analysis, do a plate analysis but for multiple channels and parameters
+    :param plate: plate object
+    :param channel: list of channels
+    :param neg: negative control
+    :param pos: positive control, is optional
+    :param threshold: fixe the percent of positive well found in negative control well
+    :param percent: True if threshold value is percent, False if we want to give a value
+    :param fixed_threshold: use given threshold (value mode) for all well
+    :param path: path where file will be saved
+    :param tag: add this tag at end of file name
+    :param clean: if True, remove all row/Well that don't contain cells
+    :return: result into dataframe
+    """
     assert isinstance(plate, TCA.Plate)
 
     if not len(plate) > 0:
@@ -64,8 +96,9 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
     if plate._is_cutted:
         log.error('Plate was cutted, for avoiding undesired effect, plate analysis cannot be performed')
         raise NotImplementedError()
-    log.info('Perform plate analysis for {0} on channel {1}'.format(plate.name, channel))
 
+    if channel is not None:
+        log.info('Perform plate analysis for {0} on channel {1}'.format(plate.name, channel))
 
     if channel is not None:
         plate.agg_data_from_replica_channel(channel=channel, use_sec_data=False, forced_update=True)
@@ -87,7 +120,8 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
         else:
             neg_well = neg
     else:
-        log.info('No Negative control provided, only work with fixed_treshold to True')
+        if channel is not None:
+            log.info('No Negative control provided, only work with fixed_treshold to True')
 
     CellsCountReplicas = collections.OrderedDict()
     MeanWellsReplicas = collections.OrderedDict()
