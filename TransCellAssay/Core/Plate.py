@@ -450,3 +450,7 @@ class Plate(MasterPlate):
         Definition for the print
         """
         return self.__repr__()
+
+    def __iter__(self):
+        for key, value in self.replica.items():
+            yield key, value

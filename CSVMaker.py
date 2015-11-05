@@ -68,8 +68,8 @@ USAGE
                             help="Output path of csv file", default=None)
         parser.add_argument("-t", "--filetarget", dest="dest", action="store",default="Well.csv",
                             help="Create csv from Cells feature or Well feature")
-        parser.add_argument('--remove-col', dest='removecol', action='store_true')
-        parser.add_argument('--remove-nan', dest='removenan', action='store_true')
+        parser.add_argument('--remove-col', dest='removecol', action='store_true', help="Remove some useless columns")
+        parser.add_argument('--remove-nan', dest='removenan', action='store_true', help="Remove rows where is nan")
 
         # # Process arguments
         args = parser.parse_args()
