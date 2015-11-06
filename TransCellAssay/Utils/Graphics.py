@@ -381,19 +381,19 @@ def systematic_error(array, file_path=None):
     except Exception as e:
         print(e)
 
-def boxplot_by_wells(rawdata, channel, file_path=None):
+def boxplot_by_wells(replica, channel, file_path=None):
     """
     plot the boxplot for each well
-    :param rawdata:
+    :param replica:
     :param channel; whiche channel to display
     """
-    assert isinstance(rawdata, TCA.Core.RawData)
+    assert isinstance(replica, TCA.Core.Replica)
     try:
         import pandas as pd
         import matplotlib.pyplot as plt
 
         pd.options.display.mpl_style = 'default'
-        bp = rawdata.df.boxplot(column=channel, by='Well')
+        bp = replica.df.boxplot(column=channel, by='Well')
         if file_path is not None:
             plt.savefig(file_path)
             plt.close()
@@ -405,7 +405,7 @@ def boxplot_by_wells(rawdata, channel, file_path=None):
 def well_count(replica, file_path=None):
     """
 
-    :param rawdata:
+    :param replica:
     :param file_path:
     :return:
     """
@@ -416,7 +416,7 @@ def well_count(replica, file_path=None):
 
         pd.options.display.mpl_style = 'default'
 
-        dfgb = replica.rawdata.get_groupby_data()
+        dfgb = replica.get_groupby_data()
         dfgb.size().plot(kind='bar')
 
         if file_path is not None:
@@ -507,7 +507,7 @@ def plate_well_count(plate, file_path=None, size=3.):
         for key, value in plate.replica.items():
             assert isinstance(value, TCA.Core.Replica)
             ax = fig.add_subplot(a, b, i)
-            df = value.rawdata.df
+            df = value.df
             df.groupby('Well').size().plot(kind='bar')
             ax.set_title(str(plate.name)+' '+str(value.name))
             i += 1
@@ -695,17 +695,17 @@ def plot_3d_cloud_point(title, x, y, z, x_label='x', y_label='y', z_label='z', s
     except Exception as e:
         print(e)
 
-def plot_3d_per_well(rawdata, x, y, z, single_cell=True, skip_wells=[], size=8):
+def plot_3d_per_well(replica, x, y, z, single_cell=True, skip_wells=[], size=8):
     """
     Plot in 3d raw data with choosen channels and with different color by well
     :param single_cell: plot all cell or only median
-    :param rawdata: raw data object
+    :param replica: replica object
     :param x: x channel
     :param y: y channel
     :param z: z channel
     :param skip_wells: skip some wells if wanted
     """
-    assert isinstance(rawdata, TCA.Core.RawData)
+    assert isinstance(replica, TCA.Core.Replica)
     try:
         import pandas as pd
         import numpy as np
@@ -713,21 +713,21 @@ def plot_3d_per_well(rawdata, x, y, z, single_cell=True, skip_wells=[], size=8):
         from mpl_toolkits.mplot3d import Axes3D
         from mpl_toolkits.mplot3d import proj3d
 
-        wells = rawdata.get_unique_well()
+        wells = replica.get_unique_well()
         fig = plt.figure(figsize=(size, size))
         ax = fig.add_subplot(111, projection='3d')
         plt.rcParams['legend.fontsize'] = 10
         for well in wells:
             if well not in skip_wells :
                 if single_cell:
-                    ax.plot(rawdata.df[x][rawdata.df['Well'] == well].values,
-                            rawdata.df[y][rawdata.df['Well'] == well].values,
-                            rawdata.df[z][rawdata.df['Well'] == well].values, '.', markersize=4, alpha=0.5,
+                    ax.plot(replica.df[x][replica.df['Well'] == well].values,
+                            replica.df[y][replica.df['Well'] == well].values,
+                            replica.df[z][replica.df['Well'] == well].values, '.', markersize=4, alpha=0.5,
                             label=str(well))
                 else:
-                    ax.plot([np.median(rawdata.df[x][rawdata.df['Well'] == well].values)],
-                            [np.median(rawdata.df[y][rawdata.df['Well'] == well].values)],
-                            [np.median(rawdata.df[z][rawdata.df['Well'] == well].values)], '.', markersize=4, alpha=0.5,
+                    ax.plot([np.median(replica.df[x][replica.df['Well'] == well].values)],
+                            [np.median(replica.df[y][replica.df['Well'] == well].values)],
+                            [np.median(replica.df[z][replica.df['Well'] == well].values)], '.', markersize=4, alpha=0.5,
                             label=str(well))
         ax.set_xlabel(x)
         ax.set_ylabel(y)

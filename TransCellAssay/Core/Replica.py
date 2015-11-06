@@ -3,10 +3,11 @@
 Replica implement the notion of technical replica for plate, in real, it represent one plate
 """
 
+import pandas as pd
 import os
 import numpy as np
 import TransCellAssay as TCA
-from TransCellAssay.Core.MasterPlate import MasterPlate
+from TransCellAssay.Core.GenericPlate import GenericPlate
 import logging
 log = logging.getLogger(__name__)
 
@@ -18,13 +19,13 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-class Replica(MasterPlate):
+class Replica(GenericPlate):
     """
     Class for manipulating replica of plate, get all attribute and method from MasterPlate
     self.rawdata = rawdata              # rawdata object
     """
 
-    def __init__(self, name, fpath, singleCells=True, skip=(), datatype='mean'):
+    def __init__(self, name, fpath, FlatFile=True, skip=(), datatype='mean', **kwargs):
         """
         Constructor
         :param name: name of replica
@@ -35,25 +36,51 @@ class Replica(MasterPlate):
         """
         super(Replica, self).__init__(name=name, datatype=datatype, skip=skip)
         log.debug('Replica created : {}'.format(name))
-        self.rawdata = None
-        if not singleCells:
-            self.set_data(fpath)
-        else:
-            self.set_rawdata(fpath)
 
-    def set_rawdata(self, input_file):
-        """
-        Set data in replica
-        :param input_file: csv file
-        """
-        self.rawdata = TCA.RawData(input_file)
+        if not FlatFile:
+            self.set_data(fpath)
+
+        else:
+            if isinstance(fpath, str):
+                if os.path.isfile(fpath):
+                    log.info('Reading RawData %s File' % fpath)
+                    self.df = pd.read_csv(fpath, engine='c', **kwargs)
+                    log.debug('Finished')
+                    self.__file = fpath
+                else:
+                    raise IOError('File don\'t exist')
+
+            elif isinstance(fpath, TCA.InputFile):
+                if fpath.dataframe is not None:
+                    self.df = fpath.dataframe
+                    self.__file = fpath.get_file_path()
+                else:
+                    raise ValueError('Empty Input File')
+            else:
+                raise NotImplementedError('Input types not handled')
+
+        self.RawDataNormMethod = None
+        self.SECNormMethod = None
+        self.__CACHING_gbdata = None
+        self.__CACHING_gbdata_key = None
 
     def get_channels_list(self):
         """
         Get all channels/component in list
         :return: list of channel/component
         """
-        return self.rawdata.get_channel_list()
+        if self.df is not None:
+            return self.df.columns.tolist()
+        else:
+            raise IOError('Empty rawdata')
+
+    def set_rawdata(self, df):
+        """
+        Set data in replica
+        :param input_file: csv file
+        """
+        assert isinstance(df, pd.DataFrame)
+        self.df = df
 
     def get_valid_well(self, to_check):
         """
@@ -73,6 +100,36 @@ class Replica(MasterPlate):
         else:
             raise ValueError('Empty List')
 
+    def df_to_array(self, chan, rowId='Row', colId='Columm'):
+        """
+        To use only with 1data/well Raw data !!
+        :param chan: on which channel to work
+        :param rowId: row Columm name
+        :param colId: column Column name
+        :return:
+        """
+        log.warning("Only to use with 1Data/Well Raw data")
+        size = len(self.df)
+        if size <= 96:
+            array = np.zeros((8, 12))
+        elif size <= 384:
+            array = np.zeros((16, 24))
+        elif size > 384:
+            array = np.zeros((32, 48))
+            log.warning('1536 well plate size')
+        for i in range(size):
+            array[self.df[rowId][i]][self.df[colId][i]] = self.df[chan][i]
+        return array
+
+    def get_unique_well(self, well_key='Well'):
+        """
+        return all unique wells
+        :return:
+        """
+        if self.df is None:
+            raise IOError('Empty rawdata')
+        return self.df[well_key].unique()
+
     def get_rawdata(self, channel=None, well=None, well_idx=False):
         """
         Get Raw data with specified param
@@ -81,7 +138,42 @@ class Replica(MasterPlate):
         :param well_idx: add or not well id
         :return: raw data in pandas dataframe
         """
-        return self.rawdata.get_raw_data(channel=channel, well=well, well_idx=well_idx)
+        if self.df is None:
+            raise IOError('Empty rawdata')
+        # # add well to columns that we want
+        # # check valid channel
+        if channel is not None and channel not in self.get_channels_list():
+            raise ValueError('Wrong Channel')
+        if well_idx:
+            if not isinstance(channel, list):
+                channel = [channel]
+            channel.insert(0, 'Well')
+
+        # # init a empty df
+        data = None
+
+        # # if well not a list -> become a list
+        if well is not None:
+            if not isinstance(well, list):
+                well = [well]
+                if well not in self.get_unique_well():
+                    raise ValueError('Wrong Well')
+
+
+        # # Grab data
+        if well is not None:
+            for i in well:
+                try:
+                    if data is None:
+                        data = self.__get_Well_group(i, channel)
+                    data = data.append(self.__get_Well_group(i, channel))
+                except:
+                    pass
+                # # return wells data for channel
+            return data
+        else:
+            # # return channel data for all well
+            return self.df
 
     def compute_data_channel(self, channel, datatype='mean'):
         """
@@ -93,21 +185,63 @@ class Replica(MasterPlate):
             if self._array_channel is not channel:
                 log.warning('Overwriting previous channel data from {} to {}'.format(
                     self._array_channel, channel))
-        self.array = self.rawdata.get_data_channel(channel=channel, type_mean=datatype)
+        self.array = self.__compute_data_channel(channel=channel, type_mean=datatype)
         self.datatype = datatype
         self._array_channel = channel
 
-    def get_data_channels(self, by='Median'):
+    def __compute_data_channel(self, channel, type_mean='mean', defsize=None):
         """
-        Compute for all
-        :param by : Median or Mean
+        Compute mean or median for each well in matrix format
+        :param channel: Which channel to get
+        :param type_mean: Mean or median
+        :param defsize: you can set the size of plate if you want
         :return:
         """
-        tmp = self.rawdata.get_groupby_data()
-        if by == 'Median':
-            return tmp.median().reset_index()
+        if self.df is None:
+            raise IOError('Empty rawdata')
+        gbdata = self.get_groupby_data()
+        if type_mean is 'median':
+            tmp = gbdata.median()
+        elif type_mean is 'mean':
+            tmp = gbdata.mean()
+        channel_val = tmp[channel]
+        position_value_dict = channel_val.to_dict()  # # dict : key = pos and item are mean
+        size = len(position_value_dict)
+        if defsize is None:
+            data = self.__init_array(size)
         else:
-            return tmp.mean().reset_index()
+            data = self.__init_array(defsize)
+        for key, elem in position_value_dict.items():
+            try:
+                pos = TCA.get_opposite_well_format(key)
+                data[pos[0]][pos[1]] = elem
+            except IndexError:
+                return self.get_data_channel(channel,type_mean, size*2)
+        return data
+
+    def __init_array(self, size):
+        if size <= 96:
+            return np.zeros((8,12))
+        elif size <= 384:
+            return np.zeros((16,24))
+        else:
+            return np.zeros((32,42))
+
+    def get_mean_channels(self):
+        """
+        Compute for all channels the mean for each wells
+        :return: mean for each wells for all channels
+        """
+        tmp = self.get_groupby_data()
+        return tmp.mean().reset_index()
+
+    def get_median_channels(self):
+        """
+        Compute for all channels the median for each wells
+        :return: median for each wells for all channels
+        """
+        tmp = self.get_groupby_data()
+        return tmp.median().reset_index()
 
     def get_data_channel(self, channel, sec=False):
         """
@@ -134,7 +268,7 @@ class Replica(MasterPlate):
         Get the count for all well
         :return:
         """
-        gb_data = self.rawdata.get_groupby_data()
+        gb_data = self.get_groupby_data()
         cnt = gb_data[well_key].count().to_frame()
         cnt.columns = ['Count_'+str(self.name)]
         cnt = cnt.fillna(0)
@@ -160,8 +294,7 @@ class Replica(MasterPlate):
             else:
                 negative = neg
                 positive = pos
-
-            self.rawdata = TCA.rawdata_variability_normalization(self.rawdata, channel=channel,
+            self.df = TCA.rawdata_variability_normalization(self.df, channel=channel,
                                                                  method=method,
                                                                  log2_transf=log_t,
                                                                  neg_control=negative,
@@ -205,6 +338,20 @@ class Replica(MasterPlate):
             name = self.name
         self.rawdata.write_rawdata(path=path, name=name)
 
+    def __write_raw_data(self, filepath, **kwargs):
+        """
+        Save normalized Raw data
+        :param name: Give name to file
+        :param path: Where to write .csv file
+        """
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        if name is not None:
+            fpath = os.path.join(path, name)+'.csv'
+            self.__write_raw_data(fpath, **kwargs)
+            log.info('Writing File : {}'.format(fpath))
+        else:
+            raise Exception("Writing Raw data problem")
 
     def write_data(self, path, channel, sec=False):
         """
@@ -222,30 +369,69 @@ class Replica(MasterPlate):
             np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(channel)) + ".csv",
                            X=self.array, delimiter=",", fmt='%1.4f')
 
-
     def get_file_location(self):
         """
-        get all file location for all replica
+        return file location from data
         :return:
         """
-        return self.rawdata.get_file_location()
+        return self.__file
 
     def clear_memory(self, only_cache=True):
         """
-        Save memory by deleting Raw Data that use a lot of memory
-        :param only_cache: Remove only cache or all
+        Remove some data for saving memory
+        :param only_caching: remove only cache
         """
-        self.rawdata.clear_memory(only_caching=only_cache)
-        log.debug('Saving memory')
+        self.__CACHING_gbdata = None
+        self.__CACHING_gbdata_key = None
+        log.debug('Cache cleared')
+        if not only_caching:
+            self.df = None
+            log.debug('Rawdata cleared')
+
+    def get_groupby_data(self, key='Well'):
+        """
+        Perform a groupby on raw data, a 'caching' is set up for avoid computations if groupby was already performed
+        :param key:
+        :return:
+        """
+        if self.__CACHING_gbdata is not None:
+            if key is self.__CACHING_gbdata_key:
+                return self.__CACHING_gbdata
+            else:
+                self._new_caching(key)
+                return self.__CACHING_gbdata
+        else:
+            self._new_caching(key)
+            return self.__CACHING_gbdata
+
+    def _new_caching(self, key='Well'):
+        self.__CACHING_gbdata = self.df.groupby(key)
+        self.__CACHING_gbdata_key = key
+        log.debug('Created rawdata cache')
+
+    def __get_Well_group(self, key, channel=None):
+        """
+        Get all data for a well
+        :param channel:
+        :param key:
+        :return:
+        """
+        if self.__CACHING_gbdata is None:
+            self._new_caching()
+        if channel is not None:
+            return self.__CACHING_gbdata.get_group(key)[channel]
+        else:
+            return self.__CACHING_gbdata.get_group(key)
 
     def __repr__(self):
         """
         Definition for the representation
         """
         return ("\nReplica ID : " + repr(self.name) +
-                repr(self.rawdata) +
                 "\nData normalized : " + repr(self.isNormalized) +
-                "\nData systematic error removed : " + repr(self.isSpatialNormalized) + "\n")
+                "\nData systematic error removed : " + repr(self.isSpatialNormalized) +
+                "\nRawData File location :"+repr(self.__file) +
+                "\n" + repr(self.df.head()) + "\n")
 
     def __str__(self):
         """

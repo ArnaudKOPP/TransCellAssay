@@ -17,7 +17,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-class MasterPlate(object):
+class GenericPlate(object):
     """
     Bass class for Plate and Replica
     """

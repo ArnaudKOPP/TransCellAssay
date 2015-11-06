@@ -154,12 +154,12 @@ def __replicat_quality_control(replica, channel, neg_well, pos_well, sedt=False,
             posdata = __get_data_control_array(replica.array, c_ref=valid_pos_well)
         else:
             log.warning('1data/well not available, using instead Raw Data')
-            negdata = __get_data_control(replica.rawdata, channel=channel, c_ref=valid_neg_well)
-            posdata = __get_data_control(replica.rawdata, channel=channel, c_ref=valid_pos_well)
+            negdata = __get_data_control(replica, channel=channel, c_ref=valid_neg_well)
+            posdata = __get_data_control(replica, channel=channel, c_ref=valid_pos_well)
     else:
-        if replica.rawdata is not None:
-            negdata = __get_data_control(replica.rawdata, channel=channel, c_ref=valid_neg_well)
-            posdata = __get_data_control(replica.rawdata, channel=channel, c_ref=valid_pos_well)
+        if replica.df is not None:
+            negdata = __get_data_control(replica, channel=channel, c_ref=valid_neg_well)
+            posdata = __get_data_control(replica, channel=channel, c_ref=valid_pos_well)
         else:
             log.warning('Raw Data not available, using instead 1data/well ')
             negdata = __get_data_control_array(replica.array, c_ref=valid_neg_well)
@@ -186,7 +186,7 @@ def __replicat_quality_control(replica, channel, neg_well, pos_well, sedt=False,
     qc_data_array['Pos SD'] = np.std(posdata)
     qc_data_array['AVR'] = __avr(negdata, posdata)
     qc_data_array['Z*Factor'] = __zfactor_prime(negdata, posdata)
-    qc_data_array['ZFactor'] = __zfactor(replica.rawdata.df, channel, negdata, posdata)
+    qc_data_array['ZFactor'] = __zfactor(replica.df, channel, negdata, posdata)
     qc_data_array['SSMD'] = __ssmd(negdata, posdata)
     qc_data_array['CVD'] = __cvd(negdata, posdata)
 
@@ -221,8 +221,8 @@ def __get_data_control(data, channel, c_ref):
         if isinstance(i, tuple):
             i = TCA.get_opposite_well_format(i)
         if datax.empty:
-            datax = data.get_raw_data(channel=channel, well=i)
-        datax = datax.append(data.get_raw_data(channel=channel, well=i))
+            datax = data.get_rawdata(channel=channel, well=i)
+        datax = datax.append(data.get_rawdata(channel=channel, well=i))
     return datax
 
 

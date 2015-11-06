@@ -31,7 +31,7 @@ class RepCor(object):
     def __create_array(plate):
         __SIZE__ = len(plate.platemap.platemap.values.flatten())
         array = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-        for key, rep in plate.replica.items():
+        for key, rep in plate:
             array = np.append(array, rep.array.flatten().reshape(__SIZE__, 1), axis=1)
         return array
 

@@ -31,7 +31,7 @@ def channel_filtering(plate, channel, upper=None, lower=None, include=True, perc
     assert isinstance(plate, TCA.Plate)
 
     log.info('Apply filtering on :{}'.format(plate.name))
-    for key, values in plate.replica.items():
+    for key, values in plate:
         plate[key] = __replica_filtering(values, channel, upper, lower, include, percent)
     plate.agg_data_from_replica_channel(channel, forced_update=True)
     return plate
@@ -39,7 +39,7 @@ def channel_filtering(plate, channel, upper=None, lower=None, include=True, perc
 
 def __replica_filtering(replica, channel, upper=None, lower=None, include=True, percent=False):
     log.debug('Apply filtering on :{}'.format(replica.name))
-    replica.rawdata = __filtering_raw_data(replica.rawdata, channel, upper, lower, include, percent)
+    replica.rawdata = __filtering_raw_data(replica.df, channel, upper, lower, include, percent)
     return replica
 
 
@@ -63,16 +63,16 @@ def __filtering_raw_data(raw_data, channel, upper=None, lower=None, include=True
 def __upper_filter_raw_data(raw_data, channel, threshold, include):
     log.debug('Upper cut')
     if include:
-        raw_data.df = raw_data.df[raw_data.df[channel] <= threshold]
+        raw_data = raw_data[raw_data[channel] <= threshold]
     else:
-        raw_data.df = raw_data.df[raw_data.df[channel] < threshold]
+        raw_data = raw_data[raw_data[channel] < threshold]
     return raw_data
 
 
 def __lower_filter_raw_data(raw_data, channel, threshold, include):
     log.debug('Lower cut')
     if include:
-        raw_data.df = raw_data.df[raw_data.df[channel] >= threshold]
+        raw_data = raw_data[raw_data.df[channel] >= threshold]
     else:
-        raw_data.df = raw_data.df[raw_data.df[channel] > threshold]
+        raw_data = raw_data[raw_data.df[channel] > threshold]
     return raw_data

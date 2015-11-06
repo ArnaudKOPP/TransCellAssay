@@ -130,7 +130,7 @@ class MainAppFrame(Frame):
 
             # load replica into plate
             for key, value in value.items():
-                plaque + TCA.Core.Replica(name=key, fpath=os.path.join(self.__dirpath, value), singleCells=True,
+                plaque + TCA.Core.Replica(name=key, fpath=os.path.join(self.__dirpath, value), FlatFile=True,
                 datatype='mean')
 
             ## Do your analysis here after plate were created

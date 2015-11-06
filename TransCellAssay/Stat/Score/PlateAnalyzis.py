@@ -131,10 +131,10 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
 
     # ########## iterate over replica
     i = 1
-    for k, replica in plate.replica.items():
-        log.debug("Iteration on replica : {0} | {1} | {2}".format(replica.name, __SIZE__, len(replica.rawdata.df)))
+    for k, replica in plate:
+        log.debug("Iteration on replica : {0} | {1} | {2}".format(replica.name, __SIZE__, len(replica.df)))
         # ########## cell count
-        datagb = replica.rawdata.get_groupby_data()
+        datagb = replica.get_groupby_data()
         cellcount = datagb[WellKey].count().to_dict()
         log.debug("     Determine Cells count")
         CellsCount = collections.OrderedDict()
@@ -163,7 +163,7 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
                     log.info('     Neg Mean Threshold value used: {}'.format(ThresholdValue))
 
             # ########## variability
-            well_list = replica.rawdata.get_unique_well()
+            well_list = replica.get_unique_well()
             # iterate on well
             PercentCells = collections.OrderedDict()
             log.debug("     Determine Positive Cells percentage")

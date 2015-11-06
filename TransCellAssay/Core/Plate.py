@@ -7,7 +7,7 @@ attached to this class
 import numpy as np
 import pandas as pd
 import TransCellAssay as TCA
-from TransCellAssay.Core.MasterPlate import MasterPlate
+from TransCellAssay.Core.GenericPlate import GenericPlate
 import os
 import collections
 import logging
@@ -22,7 +22,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-class Plate(MasterPlate):
+class Plate(GenericPlate):
     """
     Class for manipulating plate and their replica, get all attribute and method from MasterPlate
 
