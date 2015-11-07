@@ -103,7 +103,7 @@ class Plate(GenericPlate):
         all_lists = []
         name = []
         for key, value in self.replica.items():
-            all_lists.append(list(value.rawdata.get_unique_well()))
+            all_lists.append(list(value.get_unique_well()))
             name.append(key)
 
         for A, B in zip(all_lists, name):
@@ -163,7 +163,7 @@ class Plate(GenericPlate):
         df = None
         for key, rep in self.replica.items():
             assert isinstance(rep, TCA.Replica)
-            tmp = rep.rawdata.get_groupby_data()
+            tmp = rep.get_groupby_data()
             if by == 'Median':
                 if df is None:
                     df = tmp.median()
@@ -207,7 +207,6 @@ class Plate(GenericPlate):
             self.array = tmp_array / i
         else:
             self.array_c = tmp_array / i
-            self.isSpatialNormalized = True
 
     def cut(self, rb, re, cb, ce, apply_down=True):
         """
@@ -258,8 +257,6 @@ class Plate(GenericPlate):
         for key, value in self.replica.items():
             value.normalization_channels(channels=channel, method=method, log_t=log_t, neg=neg, pos=pos,
                                          skipping_wells=skipping_wells, threshold=threshold)
-        self.isNormalized = True
-        self.agg_data_from_replica_channel(channel, forced_update=True)
 
     def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
                                threshold=None):
@@ -279,11 +276,13 @@ class Plate(GenericPlate):
                 for key, value in self.replica.items():
                     value.normalization_channels(channels=channels, method=method, log_t=log_t, neg=neg, pos=pos,
                                                  skipping_wells=skipping_wells, threshold=threshold)
-                self.isNormalized = True
             except Exception as e:
                 log.error(e)
         else:
             self.__normalization(channels, method, log_t, neg, pos, skipping_wells, threshold=threshold)
+        self.isNormalized = True
+        self.RawDataNormMethod = method
+        self.agg_data_from_replica_channel(channel, forced_update=True)
 
     def apply_systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
                                          save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
@@ -311,9 +310,10 @@ class Plate(GenericPlate):
         __valid_sec_algo = ['Bscore', 'BZscore', 'PMP', 'MEA', 'DiffusionModel', 'Lowess', 'Polynomial']
 
         if algorithm not in __valid_sec_algo:
-            log.error('Algorithm is not good choose : {}'.format(__valid_sec_algo))
+            log.error('Algorithm is not available choose : {}'.format(__valid_sec_algo))
             raise ValueError()
-        log.info('Systematic Error Correction processing {} : {}'.format(self.name, algorithm))
+        log.info('Systematic Error Correction processing {0} : {1}'.format(self.name, algorithm))
+        ## Apply only to replica array and get mean of these replica array_c
         if apply_down:
             for key, value in self.replica.items():
                 value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
@@ -321,8 +321,12 @@ class Plate(GenericPlate):
                                                   skip_col=skip_col, skip_row=skip_row, trimmed=trimmed,
                                                   poly_deg=poly_deg, low_max_iter=low_max_iter, f=f)
             self.agg_data_from_replica_channel(channel=None, use_sec_data=True)
-            return
-
+        else:
+            ## apply sec only on plate.array to get array_c
+            self.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
+                                              max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
+                                              skip_col=skip_col, skip_row=skip_row, trimmed=trimmed,
+                                              poly_deg=poly_deg, low_max_iter=low_max_iter, f=f)
 
     def write_rawdata(self, path, name=None):
         """

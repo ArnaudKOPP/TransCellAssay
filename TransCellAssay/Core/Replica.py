@@ -59,8 +59,6 @@ class Replica(GenericPlate):
             else:
                 raise NotImplementedError('Input types not handled')
 
-        self.RawDataNormMethod = None
-        self.SECNormMethod = None
         self.__CACHING_gbdata = None
         self.__CACHING_gbdata_key = None
 
@@ -301,7 +299,6 @@ class Replica(GenericPlate):
                                                 neg_control=negative,
                                                 pos_control=positive,
                                                 threshold=threshold)
-            self.isNormalized = True
             self.compute_data_channel(channel)
         else:
             log.warning("Data are already normalized, do nothing")
@@ -325,9 +322,11 @@ class Replica(GenericPlate):
             for chan in channels:
                 self.__normalization(channel=chan, method=method, log_t=log_t, neg=neg, pos=pos,
                                      skipping_wells=skipping_wells, threshold=threshold)
-                self.isNormalized = True
+
             log.warning("Choose your channels that you want to work with plate.agg_data_from_replica_channel or "
                         "replica.data_for_channel")
+        self.isNormalized = True
+        self.RawDataNormMethod = method
 
     def write_rawdata(self, path, name=None):
         """

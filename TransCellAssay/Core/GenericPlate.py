@@ -33,6 +33,8 @@ class GenericPlate(object):
         self.datatype = datatype
         self.isNormalized = False
         self.isSpatialNormalized = False
+        self.RawDataNormMethod = None
+        self.SECNormMethod = None
         self.skip_well = skip
         self._is_cutted = False
         self._rb = None
@@ -189,3 +191,6 @@ class GenericPlate(object):
             if save:
                 self.array_c = corrected_data_array
                 self.isSpatialNormalized = True
+                self.SECNormMethod = algorithm
+            else:
+                return corrected_data_array
