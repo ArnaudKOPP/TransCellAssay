@@ -54,28 +54,28 @@ def plate_feature_scaling(plate, channel, mean_scaling=False):
         print(e)
 
 
-def __df_scaling(rawdata, min_val, max_val, channel, mean=False):
+def __df_scaling(replica, min_val, max_val, channel, mean=False):
     """
-    Apply feature scalling on rawdata
-    :param rawdata: rawdata object
+    Apply feature scalling on replica rawdata
+    :param replica: replica object
     :param min_val: min val for inf limit
     :param max_val: max val for sup limit
     :param channel: which channel to work
     :param mean: bool
     :return: normalized raw data
     """
-    assert isinstance(rawdata, TCA.Replica)
-    rawdata.df.loc[:, channel] = (rawdata.df.loc[:, channel] - min(min_val)) / (max(max_val) - min(min_val))
+    assert isinstance(replica, TCA.Replica)
+    replica.df.loc[:, channel] = (replica.df.loc[:, channel] - min(min_val)) / (max(max_val) - min(min_val))
     if mean:
-        rawdata.df.loc[:, channel] *= (sum(max_val) / len(max_val))
-    return rawdata
+        replica.df.loc[:, channel] *= (sum(max_val) / len(max_val))
+    return replica
 
 
 def rawdata_variability_normalization(obj, channel, method=None, log2_transf=True, neg_control=None, pos_control=None,
                                       threshold=None):
     """
     Take a dataframe from replica object and apply desired strategy of variability normalization
-    :param obj: pd.dataframe to normalize
+    :param obj: Plate or replica object
     :param channel: on which channel to normalize
     :param method: which method to apply
     :param log2_transf: apply log2 transformation
@@ -97,111 +97,110 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
 
         if isinstance(obj, TCA.Plate):
             for key, value in obj:
-                value.df = __rd_norm(value.df, channel, method, log2_transf, neg_control, pos_control,
+                value = __rd_norm(value, channel, method, log2_transf, neg_control, pos_control,
                                              threshold)
             log.info('Raw Data normalization processing for plate {} on channel {}'.format(obj.name, channel))
         elif isinstance(obj, TCA.Replica):
-            obj.df = __rd_norm(obj.df, channel, method, log2_transf, neg_control, pos_control,
+            obj = __rd_norm(obj, channel, method, log2_transf, neg_control, pos_control,
                                        threshold)
             log.info('Raw Data normalization processing for replica {} on channel {}'.format(obj.name, channel))
-        elif isinstance(obj, pd.DataFrame):
-            return __rd_norm(obj, channel, method, log2_transf, neg_control, pos_control, threshold)
         else:
-            raise TypeError("Don't take this object, only plate, replica or raw data")
+            raise TypeError("Don't take this object, only Plate or Replica")
     except Exception as e:
         print(e)
 
 
-def __rd_norm(rawdata, channel, method=None, log2_transf=True, neg_control=None, pos_control=None, threshold=None):
+def __rd_norm(replica, channel, method=None, log2_transf=True, neg_control=None, pos_control=None, threshold=None):
     """
-    Function that picked up functions for normalize raw data
+    Function that picked up functions for normalize replica raw data
     """
-    assert isinstance(rawdata, pd.DataFrame)
+    assert isinstance(replica, TCA.Replica)
     if log2_transf:
-        rawdata = __log2_transformation(rawdata, channel)
+        replica = __log2_transformation(replica, channel)
     if method == 'Zscore':
-        rawdata = __zscore_(rawdata, channel)
+        replica = __zscore_(replica, channel)
     if method == 'RobustZscore':
-        rawdata = __robustzscore(rawdata, channel)
+        replica = __robustzscore(replica, channel)
     if method == 'PercentOfSample':
-        rawdata = __percentofsample(rawdata, channel)
+        replica = __percentofsample(replica, channel)
     if method == 'RobustPercentOfSample':
-        rawdata = __robustpercentofsample(rawdata, channel)
+        replica = __robustpercentofsample(replica, channel)
     if method == 'PercentOfControl':
-        rawdata = __percentofcontrol(rawdata, channel, neg_control, pos_control)
+        replica = __percentofcontrol(replica, channel, neg_control, pos_control)
     if method == 'NormalizedPercentInhibition':
-        rawdata = __normalizedpercentinhibition(rawdata, channel, neg_control, pos_control)
+        replica = __normalizedpercentinhibition(replica, channel, neg_control, pos_control)
     if method == 'BackgroundSubstraction':
-        rawdata = __backgroundsubstraction(rawdata, channel, threshold)
-        rawdata.loc[rawdata[channel] < 0, channel] = 0
-    return rawdata
+        replica = __backgroundsubstraction(replica, channel, threshold)
+        # Set to zero value below zero
+        replica.df.loc[replica[channel] < 0, channel] = 0
+    return replica
 
 
-def __log2_transformation(rawdata, channel):
+def __log2_transformation(replica, channel):
     """
-    Apply log2 transformation on rawdata
-    :param rawdata: rawdata object
+    Apply log2 transformation on replica
+    :param replica: replica object
     :param channel: channel to apply
-    :return: transformed rawdata
+    :return: transformed replica rawdata
     """
     log.debug('Perform Log2 transformation')
-    rawdata.loc[:] = rawdata[rawdata[channel] > 0]
-    rawdata.loc[:, channel] = np.log2(rawdata[channel])
-    return rawdata
+    replica.df.loc[:] = replica.df[replica.df[channel] > 0]
+    replica.df.loc[:, channel] = np.log2(replica.df[channel])
+    return replica
 
 
-def __zscore_(rawdata, channel):
+def __zscore_(replica, channel):
     """
-    Apply Zscore normalization on rawdata
-    :param rawdata: rawdata object
+    Apply Zscore normalization on replica
+    :param replica: replica object
     :param channel: channel to apply
-    :return: transformed rawdata
+    :return: transformed replica rawdata
     """
     log.debug('Perform Zscore')
-    rawdata.loc[:, channel] = (rawdata.loc[:, channel] - np.mean(rawdata[channel])) / np.std(rawdata[channel])
-    return rawdata
+    replica.df.loc[:, channel] = (replica.df.loc[:, channel] - np.mean(replica.df[channel])) / np.std(replica.df[channel])
+    return replica
 
 
-def __robustzscore(rawdata, channel):
+def __robustzscore(replica, channel):
     """
-    Apply robust Zscore normalization on rawdata
-    :param rawdata: rawdata object
+    Apply robust Zscore normalization on replica
+    :param replica: replica object
     :param channel: channel to apply
-    :return: transformed rawdata
+    :return: transformed replica rawdata
     """
     log.debug('Perform robustZscore')
-    rawdata.loc[:, channel] = (rawdata.loc[:, channel] - np.median(rawdata[channel])) / mad(rawdata[channel])
-    return rawdata
+    replica.df.loc[:, channel] = (replica.df.loc[:, channel] - np.median(replica.df[channel])) / mad(replica.df[channel])
+    return replica
 
 
-def __percentofsample(rawdata, channel):
+def __percentofsample(replica, channel):
     """
-    Apply percent of sample normalization on rawdata
-    :param rawdata: rawdata object
+    Apply percent of sample normalization on replica
+    :param replica: replica object
     :param channel: channel to apply
-    :return: transformed rawdata
+    :return: transformed replica rawdata
     """
     log.debug('Perform PercentofSample')
-    rawdata.loc[:, channel] = (rawdata.loc[:, channel] / np.mean(rawdata[channel])) * 100
-    return rawdata
+    replica.df.loc[:, channel] = (replica.df.loc[:, channel] / np.mean(replica.df[channel])) * 100
+    return replica
 
 
-def __robustpercentofsample(rawdata, channel):
+def __robustpercentofsample(replica, channel):
     """
-    Apply robust percent of sample normalization on rawdata
-    :param rawdata: rawdata object
+    Apply robust percent of sample normalization on replica
+    :param replica: replica object
     :param channel: channel to apply
-    :return: transformed rawdata
+    :return: transformed replica rawdata
     """
     log.debug('Perform robustPercentofSample')
-    rawdata.loc[:, channel] = (rawdata.loc[:, channel] / np.median(rawdata[channel])) * 100
-    return rawdata
+    replica.df.loc[:, channel] = (replica.df.loc[:, channel] / np.median(replica.df[channel])) * 100
+    return replica
 
 
-def __percentofcontrol(rawdata, channel, neg=None, pos=None):
+def __percentofcontrol(replica, channel, neg=None, pos=None):
     """
-    Apply a percent of control (ration) normalization on rawdata
-    :param rawdata: rawdata object
+    Apply a percent of control (ration) normalization on replica
+    :param replica: replica object
     :param channel: on which channel to work
     :param neg: neg reference
     :param pos: pos reference if neg is not provided
@@ -213,19 +212,19 @@ def __percentofcontrol(rawdata, channel, neg=None, pos=None):
             raise AttributeError("Need Negative or Positive control")
         else:
             # Using positive control
-            pos_data = __get_data_by_wells(rawdata, channel=channel, wells=neg)
-            rawdata.loc[:, channel] = (rawdata.loc[:, channel] / np.mean(pos_data)) * 100
+            pos_data = replica.get_rawdata(channel=channel, well=pos)
+            replica.df.loc[:, channel] = (replica.df.loc[:, channel] / np.mean(pos_data)) * 100
     else:
         # Using negative control
-        neg_data = __get_data_by_wells(rawdata, channel=channel, wells=neg)
-        rawdata.loc[:, channel] = (rawdata.loc[:, channel] / np.mean(neg_data)) * 100
-    return rawdata
+        neg_data = replica.get_rawdata(channel=channel, well=neg)
+        replica.df.loc[:, channel] = (replica.df.loc[:, channel] / np.mean(neg_data)) * 100
+    return replica
 
 
-def __normalizedpercentinhibition(rawdata, channel, neg=None, pos=None):
+def __normalizedpercentinhibition(replica, channel, neg=None, pos=None):
     """
-    Apply a normalized percent inhibition normalization on rawdata
-    :param rawdata: rawdata object
+    Apply a normalized percent inhibition normalization on replica
+    :param replica: replica object
     :param channel: on which channel to work
     :param neg: neg reference
     :param pos: pos reference
@@ -236,40 +235,25 @@ def __normalizedpercentinhibition(rawdata, channel, neg=None, pos=None):
         if pos is None:
             raise AttributeError("Need Negative and Positive control")
         raise AttributeError("Need Negative Control")
-    neg_data = __get_data_by_wells(rawdata, channel=channel, wells=neg)
-    pos_data = __get_data_by_wells(rawdata, channel=channel, wells=pos)
-    rawdata.loc[:, channel] = ((np.mean(pos_data) - rawdata[channel]) / (np.mean(pos_data) - np.mean(neg_data))) * 100
-    return rawdata
+    neg_data = replica.get_rawdata(channel=channel, well=pos)
+    pos_data = replica.get_rawdata(channel=channel, well=neg)
+    replica.df.loc[:, channel] = ((np.mean(pos_data) - replica.df[channel]) / (np.mean(pos_data) - np.mean(neg_data))) * 100
+    return replica
 
 
-def __backgroundsubstraction(rawdata, channel, threshold):
+def __backgroundsubstraction(replica, channel, threshold):
     """
     Apply a background substraction by removing median of well on each wells
-    :param rawdata: rawdata object
+    :param replica: replica object
     :param channel: which channel to apply
     :return: return normalized raw data
     """
-    for well in rawdata.get_unique_well():
-        well_data = __get_data_by_wells(rawdata, channel, well)
+    for well in replica.get_unique_well():
+        well_data = replica.get_rawdata(channel=channel, well=well)
         if threshold is not None:
             background = np.percentile(well_data, threshold)
         else:
             background = np.median(well_data)
         log.debug('{0}  Median substracted : {1}'.format(well, background))
-        rawdata.loc[rawdata['Well'] == str(well), channel] = well_data - background
-    return rawdata
-
-
-def __get_data_by_wells(rawdata, channel, wells):
-    """
-    get all data for specified wellS
-    :param wells: list of wells
-    :return: return dataframe with data specified wells
-    """
-    datagp = rawdata.groupby(by="Well")
-    data = pd.DataFrame()
-    for i in wells:
-        if data.empty:
-            data = datagp.get_group(i)[channel]
-        data = data.append(datagp.get_group(i)[channel])
-    return data
+        replica.df.loc[replica.df['Well'] == str(well), channel] = well_data - background
+    return replica

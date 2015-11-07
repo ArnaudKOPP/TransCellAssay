@@ -294,12 +294,13 @@ class Replica(GenericPlate):
             else:
                 negative = neg
                 positive = pos
-            self.df = TCA.rawdata_variability_normalization(self.df, channel=channel,
-                                                                 method=method,
-                                                                 log2_transf=log_t,
-                                                                 neg_control=negative,
-                                                                 pos_control=positive,
-                                                                 threshold=threshold)
+            TCA.rawdata_variability_normalization(self,
+                                                channel=channel,
+                                                method=method,
+                                                log2_transf=log_t,
+                                                neg_control=negative,
+                                                pos_control=positive,
+                                                threshold=threshold)
             self.isNormalized = True
             self.compute_data_channel(channel)
         else:
