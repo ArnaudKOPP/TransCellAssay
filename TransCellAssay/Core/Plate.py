@@ -270,7 +270,7 @@ class Plate(GenericPlate):
         :param skipping_wells: skip defined wells, use it with poc and npi
         :param threshold: used in background subtraction (median is 50) you can set as you want
         """
-        log.info("Raw data normalization on {0} with {1} method".format(self.name, method))
+        log.info("{0} -> Rawdata normalization with {1} method".format(self.name, method))
         if isinstance(channels, list):
             try:
                 for key, value in self.replica.items():
@@ -282,7 +282,6 @@ class Plate(GenericPlate):
             self.__normalization(channels, method, log_t, neg, pos, skipping_wells, threshold=threshold)
         self.isNormalized = True
         self.RawDataNormMethod = method
-        self.agg_data_from_replica_channel(channel, forced_update=True)
 
     def apply_systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
                                          save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],

@@ -43,7 +43,7 @@ class Replica(GenericPlate):
         else:
             if isinstance(fpath, str):
                 if os.path.isfile(fpath):
-                    log.info('Reading RawData %s File' % fpath)
+                    log.info('Reading FlatFile : %s' % fpath)
                     self.df = pd.read_csv(fpath, engine='c', **kwargs)
                     log.debug('Finished')
                     self.__file = fpath
@@ -285,7 +285,7 @@ class Replica(GenericPlate):
         :param threshold: used in background subtraction (median is 50) you can set as you want
         """
         if not self.isNormalized:
-            log.debug('Raw Data normalization processing for replica {} on channel {}'.format(self.name, channel))
+            log.debug('Replica {} : RawData normalization on channel {}'.format(self.name, channel))
             if skipping_wells:
                 negative = [x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)]
                 positive = [x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)]
@@ -301,7 +301,7 @@ class Replica(GenericPlate):
                                                 threshold=threshold)
             self.compute_data_channel(channel)
         else:
-            log.warning("Data are already normalized, do nothing")
+            log.warning("RawData are already normalized, do nothing")
 
     def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
                                threshold=None):

@@ -99,11 +99,11 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
             for key, value in obj:
                 value = __rd_norm(value, channel, method, log2_transf, neg_control, pos_control,
                                              threshold)
-            log.info('Raw Data normalization processing for plate {} on channel {}'.format(obj.name, channel))
+            log.info('Plate {} : RawData normalization on channel {}'.format(obj.name, channel))
         elif isinstance(obj, TCA.Replica):
             obj = __rd_norm(obj, channel, method, log2_transf, neg_control, pos_control,
                                        threshold)
-            log.info('Raw Data normalization processing for replica {} on channel {}'.format(obj.name, channel))
+            log.info('Replica {} : RawData normalization on channel {}'.format(obj.name, channel))
         else:
             raise TypeError("Don't take this object, only Plate or Replica")
     except Exception as e:
