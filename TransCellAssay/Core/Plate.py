@@ -43,7 +43,10 @@ class Plate(GenericPlate):
         log.info('Plate created : {}'.format(name))
         self.replica = collections.OrderedDict()
         if platemap is not None:
-            self.__add__(platemap)
+            if isinstance(platemap, str):
+                self.platemap = TCA.Core.PlateMap(fpath=platemap)
+            else:
+                self.__add__(platemap)
         else:
             self.platemap = TCA.Core.PlateMap()
         if replica is not None:
