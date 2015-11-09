@@ -14,36 +14,10 @@ __email__ = "kopp.arnaud@gmail.com"
 
 warnings.simplefilter('always', DeprecationWarning)
 
-def array_surf_3d(array):
-    """
-    Make a 3d surface plot of matrix representing plate, give an array(in matrix form) of value (whatever you want)
-    :param array: numpy array
-    :return:show 3d plot
-    """
-    try:
-        import numpy as np
-        from mpl_toolkits.mplot3d import Axes3D
-        from matplotlib import cm
-        import matplotlib.pyplot as plt
-
-        fig = plt.figure()
-        x = np.arange(array.shape[1])
-        y = np.arange(array.shape[0])
-        x, y = np.meshgrid(x, y)
-        z = array
-        ax = fig.gca(projection='3d')
-        surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.cm.Reds,
-                               linewidth=0, antialiased=True,alpha=0.5)
-        fig.colorbar(surf, shrink=0.5, aspect=5)
-        ax.invert_yaxis()
-        plt.show(block=True)
-    except Exception as e:
-        print(e)
-
-def arrays_surf_3d(*args):
+def Arrays3D(*args, sec_data=False):
     """
     Make a 3d surface plot of matrix representing plate, give a list of array (with same size) and limited to 4
-    :param args: list of array, limit to 4
+    :param args: list of object (plate or replica), limit to 4
     :return:show 3d plot
     """
     try:
@@ -59,35 +33,65 @@ def arrays_surf_3d(*args):
         i = 0
 
         for arg in args:
-            assert isinstance(arg, np.ndarray)
-            x = np.arange(arg.shape[1])
-            y = np.arange(arg.shape[0])
-            x, y = np.meshgrid(x, y)
-            z = arg
-            surf = ax.plot_surface(x, y, z, rstride=1, cstride=1,cmap=cmap[i],
+            from TransCellAssay.Core.GenericPlate import GenericPlate
+            assert isinstance(arg, GenericPlate)
+
+            if sec_data & bool(arg.array_c is not None):
+                array = arg.array_c
+            else:
+                array = arg.array
+
+            x = np.arange(array.shape[1])
+            y = np.arange(array.shape[0])
+            x_data, y_data = np.meshgrid(x, y)
+            z = array
+            surf = ax.plot_surface(x_data, y_data, z, rstride=1, cstride=1,cmap=cmap[i],
                                    linewidth=0, antialiased=True,alpha=0.2)
             fig.colorbar(surf, shrink=0.5, aspect=5)
             i += 1
+
         ax.invert_yaxis()
         plt.show(block=True)
     except Exception as e:
         print(e)
 
-def array_hist_3d(array):
+def Array3D(obj, kind="hist", sec_data=False):
     """
-    Make a 3d histogramme plot of matrix representing plate, give an array(in matrix form) of value (whatever you want)
-    :param array: numpy array
-    :return:show 3d plot
+    Make a 3d representation of plaque or replica object
+    param kind: can be a 3d histogram of 3d surface
+    param sec_data: use or not SEC data if available
     """
-    try:
-        import numpy as np
-        from mpl_toolkits.mplot3d import Axes3D
-        import matplotlib.pyplot as plt
+    from TransCellAssay.Core.GenericPlate import GenericPlate
+    assert isinstance(obj, GenericPlate)
 
-        data_array = np.array(array)
-        fig = plt.figure()
+    kind_list = ["hist", "surf"]
+    assert kind in kind_list, "{0} type not available, use instead {1}".format(kind, kind_list)
+
+    if sec_data & bool(obj.array_c is not None):
+        array = obj.array_c
+    else:
+        array = obj.array
+
+    import numpy as np
+    from mpl_toolkits.mplot3d import Axes3D
+    from matplotlib import cm
+    import matplotlib.pyplot as plt
+
+    fig = plt.figure()
+    x = np.arange(array.shape[1])
+    y = np.arange(array.shape[0])
+
+    if kind == "surf":
+        x_data, y_data = np.meshgrid(x, y)
+        z = array
+        ax = fig.gca(projection='3d')
+        surf = ax.plot_surface(x_data, y_data, z, rstride=1, cstride=1, cmap=plt.cm.Reds,
+                               linewidth=0, antialiased=True,alpha=0.5)
+        fig.colorbar(surf, shrink=0.5, aspect=5)
+    else:
         ax = fig.add_subplot(111, projection='3d')
-        x_data, y_data = np.meshgrid(np.arange(data_array.shape[1]), np.arange(data_array.shape[0]))
+        data_array = np.array(array)
+        x_data, y_data = np.meshgrid(x, y)
         #
         # Flatten out the arrays so that they may be passed to "ax.bar3d".
         # Basically, ax.bar3d expects three one-dimensional arrays:
@@ -99,57 +103,47 @@ def array_hist_3d(array):
         y_data = y_data.flatten()
         z_data = data_array.flatten()
         ax.bar3d(x_data, y_data, np.zeros(len(z_data)), 1, 1, z_data, color='b', alpha=0.5)
-        ax.invert_yaxis()
-        plt.show(block=True)
-    except Exception as e:
-        print(e)
 
-def heatmap(array, file_path=None):
-    """
-    Output a heatmap with matplotlib
-    :param array: numpy array that represent data
-    """
-    warnings.warn("Shouldn't use this function anymore! use _p function", DeprecationWarning)
-    try:
-        import matplotlib
-        import pylab
-        import numpy as np
-        import string
+    plt.show(block=True)
 
-        fig, ax = matplotlib.pyplot.subplots()
-        pylab.pcolor(array, cmap=matplotlib.pyplot.cm.Reds, edgecolors='k')
-        pylab.colorbar()
+def HeatMap(obj, render="matplotlib", fpath=None, annot=True, size=(17,12), fmt='d', sec_data=False):
+    """
+    Create a heatmap from plate or replica object
+    """
+    from TransCellAssay.Core.GenericPlate import GenericPlate
+    assert isinstance(obj, GenericPlate)
+
+    render_list = ["matplotlib", "seaborn"]
+    assert render in render_list, "{0} render not available, use instead {1}".format(render, render_list)
+
+    if sec_data & bool(obj.array_c is not None):
+        to_print = obj.array_c
+    else:
+        to_print = obj.array
+
+    if render == "matplotlib":
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots(figsize=size)
+        plt.pcolor(to_print, cmap=plt.cm.Reds, edgecolors='k')
+        plt.colorbar()
 
         # # tab like display
         ax.invert_yaxis()
 
-        if file_path is not None:
-            pylab.savefig(file_path)
-        else:
-            pylab.show(block=True)
-    except Exception as e:
-        print(e)
-
-def heatmap_p(array, annot=True, file_path=None, size=(17, 12), fmt='d'):
-    """
-    Output a heatmap with seaborn
-    :param array: numpy array that represent data
-    """
-    try:
+    else:
         import matplotlib.pyplot as plt
         import seaborn as sns
 
-        fig = plt.figure(figsize=size)
-
+        fig, ax = plt.subplots(figsize=size)
         sns.set()
-        sns.heatmap(array, cmap="YlGnBu", annot=annot, fmt=fmt)
-        if file_path is not None:
-            plt.savefig(file_path, dpi=500)
-            plt.close()
-        else:
-            plt.show(block=True)
-    except Exception as e:
-        print(e)
+        sns.heatmap(to_print, cmap="YlGnBu", annot=annot, fmt=fmt)
+
+    if fpath is not None:
+        plt.savefig(file_path, dpi=500)
+        plt.close()
+    else:
+        plt.show(block=True)
 
 def plate_heatmap(plate, both=False, file_path=None, size=3.):
     """
@@ -171,7 +165,7 @@ def plate_heatmap(plate, both=False, file_path=None, size=3.):
         fig = plt.figure(figsize=(size*b*1.5, size*a))
 
         i = 1
-        for key, value in plate.replica.items():
+        for key, value in plate:
             ax = fig.add_subplot(a, b, i)
             ax.pcolor(value.array, cmap=plt.cm.Reds, edgecolors='k')
             ax.set_title(str(plate.name)+str(value.name))
@@ -334,13 +328,21 @@ def plates_heatmap_p(*args, usesec=False, file_path=None, size=3.):
     except Exception as e:
         print(e)
 
-def systematic_error(array, file_path=None):
+def systematic_error(obj, file_path=None, sec_data=False):
     """
     plot systematic error in cols and rows axis
     :param array: take a numpy array in input
     """
+    from TransCellAssay.Core.GenericPlate import GenericPlate
+    assert isinstance(obj, GenericPlate)
+
+    if sec_data & bool(obj.array_c is not None):
+        array = obj.array_c
+    else:
+        array = obj.array
+
     import numpy as np
-    assert isinstance(array, np.ndarray)
+
     try:
         import matplotlib.pyplot as plt
 
@@ -458,6 +460,8 @@ def well_sorted(replica, well, channel, ascending=True, file_path=None):
         print(e)
 
 def wells_sorted(plate, wells, channel, ascending=True, y_lim=None, file_name=None):
+    """
+    """
     assert isinstance(plate, TCA.Plate)
     import numpy as np
     import matplotlib.pyplot as plt
