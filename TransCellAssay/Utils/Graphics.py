@@ -140,193 +140,130 @@ def HeatMap(obj, render="matplotlib", fpath=None, annot=True, size=(17,12), fmt=
         sns.heatmap(to_print, cmap="YlGnBu", annot=annot, fmt=fmt)
 
     if fpath is not None:
-        plt.savefig(file_path, dpi=500)
+        plt.savefig(fpath, dpi=500)
         plt.close()
     else:
         plt.show(block=True)
 
-def plate_heatmap(plate, both=False, file_path=None, size=3.):
+def HeatMapPlate(plate, sec_data=False, fpath=None, size=3., render="matplotlib"):
     """
-    Plate all heatmap for plate object
-    :param both: print data and SECdata
-    :param plate: plate object with correct data
+    Make heatmap of array from all replica of given plate object
     """
-    warnings.warn("Shouldn't use this function anymore! use _p function", PendingDeprecationWarning)
-    try:
-        import matplotlib
-        import pylab as plt
-        import numpy as np
+    import matplotlib
+    import pylab as plt
+    import numpy as np
 
-        b = len(plate.replica)
-        if both is True:
-            a = 2
-        else:
-            a = 1
-        fig = plt.figure(figsize=(size*b*1.5, size*a))
+    assert isinstance(plate, TCA.Plate)
 
-        i = 1
-        for key, value in plate:
+    render_list = ["matplotlib", "seaborn"]
+    assert render in render_list, "{0} render not available, use instead {1}".format(render, render_list)
+
+    b = len(plate.replica)
+    if sec_data:
+        a = 2
+    else:
+        a = 1
+    fig = plt.figure(figsize=(size*b*1.5, size*a))
+    i = 1
+    for key, value in plate:
+        if render == "matplotlib":
             ax = fig.add_subplot(a, b, i)
             ax.pcolor(value.array, cmap=plt.cm.Reds, edgecolors='k')
-            ax.set_title(str(plate.name)+str(value.name))
+            ax.set_title(str(plate.name)+" "+str(value.name))
             # # tab like display
             ax.invert_yaxis()
-            if both:
+            if sec_data:
                 ax = fig.add_subplot(a, b, i+b)
                 ax.pcolor(value.array_c, cmap=plt.cm.Reds, edgecolors='k')
-                ax.set_title(str(plate.name)+str(value.name))
+                ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
                 # # tab like display
                 ax.invert_yaxis()
             i += 1
-        if file_path is not None:
-            plt.savefig(file_path)
         else:
-            plt.show(block=True)
-    except Exception as e:
-        print(e)
-
-def plates_heatmap(*args, usesec=False, file_path=None, size=3.):
-    """
-    plot heatmap of all replica array from given plate
-    :param args: plate object or list of plate
-    :param usesec: use sec data or not
-    """
-    warnings.warn("Shouldn't use this function anymore! use _p function", PendingDeprecationWarning)
-    try:
-        import matplotlib
-        import pylab as plt
-        import numpy as np
-
-        screen = []
-        for arg in args:
-            if isinstance(arg, TCA.Plate):
-                screen.append(arg)
-            elif isinstance(arg, list):
-                for elem in arg:
-                    if isinstance(elem, TCA.Plate):
-                        screen.append(elem)
-                    else:
-                        raise TypeError('Accept only list of Plate element')
-            else:
-                raise TypeError('Accept only plate or list of plate')
-
-        n = np.sum([len(x.replica) for x in screen])
-        a = np.floor(n**0.5).astype(int)
-        b = np.ceil(1.*n/a).astype(int)
-        fig = plt.figure(figsize=(size*b*1.5, size*a))
-        i = 1
-
-        for plate in screen:
-            for key, value in plate.replica.items():
-                ax = fig.add_subplot(a, b, i)
-                if not usesec:
-                    ax.pcolor(value.array, cmap=plt.cm.Reds, edgecolors='k')
-                    # # tab like display
-                    ax.invert_yaxis()
-                else:
-                    ax.pcolor(value.array_c, cmap=plt.cm.Reds, edgecolors='k')
-                    # # tab like display
-                    ax.invert_yaxis()
-                ax.set_title(str(plate.name)+' '+str(value.name))
-                i += 1
-        fig.set_tight_layout(True)
-
-        if file_path is not None:
-            plt.savefig(file_path)
-            plt.close()
-        else:
-            plt.show(block=True)
-    except Exception as e:
-        print(e)
-
-def plate_heatmap_p(plate, both=False, file_path=None, size=3.):
-    """
-    Plate all heatmap for plate object
-    :param both: print data and SECdata
-    :param plate: plate object with correct data
-    """
-    try:
-        import matplotlib
-        import pylab as plt
-        import numpy as np
-        import seaborn as sns
-
-        b = len(plate.replica)
-        if both is True:
-            a = 2
-        else:
-            a = 1
-        fig = plt.figure(figsize=(size*b*1.5, size*a))
-
-        i = 1
-        for key, value in plate.replica.items():
+            import seaborn as sns
             ax = fig.add_subplot(a, b, i)
+            ax.set_title(str(plate.name)+" "+str(value.name))
             sns.set()
             sns.heatmap(value.array, cmap="YlGnBu")
-            if both:
+            if sec_data:
                 ax = fig.add_subplot(a, b, i+b)
+                ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
                 sns.set()
                 sns.heatmap(value.array_c, cmap="YlGnBu")
             i += 1
-        if file_path is not None:
-            plt.savefig(file_path, dpi=200)
-            plt.close()
-        else:
-            plt.show(block=True)
-    except Exception as e:
-        print(e)
 
-def plates_heatmap_p(*args, usesec=False, file_path=None, size=3.):
+    if fpath is not None:
+        plt.savefig(fpath, dpi=500)
+        plt.close()
+    else:
+        plt.show(block=True)
+
+def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="matplotlib"):
     """
-    plot heatmap of all replica array from given plate
-    :param args: plate object or list of plate
-    :param usesec: use sec data or not
+    Make heatmap from all replica of given plate object
     """
-    try:
-        import matplotlib
-        import pylab as plt
-        import numpy as np
-        import seaborn as sns
+    import matplotlib
+    import pylab as plt
+    import numpy as np
 
-        screen = []
-        for arg in args:
-            if isinstance(arg, TCA.Plate):
-                screen.append(arg)
-            elif isinstance(arg, list):
-                for elem in arg:
-                    if isinstance(elem, TCA.Plate):
-                        screen.append(elem)
-                    else:
-                        raise TypeError('Accept only list of Plate element')
-            else:
-                raise TypeError('Accept only plate or list of plate')
+    render_list = ["matplotlib", "seaborn"]
+    assert render in render_list, "{0} render not available, use instead {1}".format(render, render_list)
 
-        n = np.sum([len(x.replica) for x in screen])
-        a = np.floor(n**0.5).astype(int)
-        b = np.ceil(1.*n/a).astype(int)
-        fig = plt.figure(figsize=(size*b*1.5, size*a))
-        i = 1
-
-        for plate in screen:
-            for key, value in plate.replica.items():
-                ax = fig.add_subplot(a, b, i)
-                if not usesec:
-                    sns.set()
-                    sns.heatmap(value.array, cmap="YlGnBu")
+    screen = []
+    for arg in args:
+        if isinstance(arg, TCA.Plate):
+            screen.append(arg)
+        elif isinstance(arg, list):
+            for elem in arg:
+                if isinstance(elem, TCA.Plate):
+                    screen.append(elem)
                 else:
+                    raise TypeError('Accept only list of Plate element')
+        else:
+            raise TypeError('Accept only plate or list of plate')
+
+    n = np.sum([len(x.replica) for x in screen])
+    if sec_data:
+        n *= 2
+    a = np.floor(n**0.5).astype(int)
+    b = np.ceil(1.*n/a).astype(int)
+    fig = plt.figure(figsize=(size*b*1.5, size*a))
+    i = 1
+
+    for plate in screen:
+        for key, value in plate:
+            if render == "matplotlib":
+                ax = fig.add_subplot(a, b, i)
+                ax.pcolor(value.array, cmap=plt.cm.Reds, edgecolors='k')
+                ax.set_title(str(plate.name)+" "+str(value.name))
+                # # tab like display
+                ax.invert_yaxis()
+                if sec_data:
+                    ax = fig.add_subplot(a, b, i+b+1)
+                    ax.pcolor(value.array_c, cmap=plt.cm.Reds, edgecolors='k')
+                    ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
+                    # # tab like display
+                    ax.invert_yaxis()
+                i += 1
+            else:
+                import seaborn as sns
+                ax = fig.add_subplot(a, b, i)
+                ax.set_title(str(plate.name)+" "+str(value.name))
+                sns.set()
+                sns.heatmap(value.array, cmap="YlGnBu")
+                if sec_data:
+                    ax = fig.add_subplot(a, b, i+b+1)
+                    ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
                     sns.set()
                     sns.heatmap(value.array_c, cmap="YlGnBu")
-                ax.set_title(str(plate.name)+' '+str(value.name))
                 i += 1
-        fig.set_tight_layout(True)
+    fig.set_tight_layout(True)
 
-        if file_path is not None:
-            plt.savefig(file_path)
-            plt.close()
-        else:
-            plt.show(block=True)
-    except Exception as e:
-        print(e)
+    if fpath is not None:
+        plt.savefig(fpath)
+        plt.close()
+    else:
+        plt.show(block=True)
 
 def systematic_error(obj, file_path=None, sec_data=False):
     """
@@ -368,9 +305,9 @@ def systematic_error(obj, file_path=None, sec_data=False):
         ax1.spines["left"].set_visible(False)
 
         ax0.set_ylabel('Mean')
-        ax0.set_title('Mean by row')
+        ax0.set_title('Row Mean')
         ax1.set_ylabel('Mean')
-        ax1.set_title('Mean by Col')
+        ax1.set_title('Col Mean')
 
         plt.tick_params(axis="both", which="both", bottom="off", top="off",
                 labelbottom="on", left="off", right="off", labelleft="on")
@@ -508,7 +445,7 @@ def plate_well_count(plate, file_path=None, size=3.):
         fig = plt.figure(figsize=(size*b*1.5, size*a))
 
         i = 1
-        for key, value in plate.replica.items():
+        for key, value in plate:
             assert isinstance(value, TCA.Core.Replica)
             ax = fig.add_subplot(a, b, i)
             df = value.df
