@@ -423,6 +423,15 @@ class Replica(GenericPlate):
         else:
             return self.__CACHING_gbdata.get_group(key)
 
+    def __iter__(self):
+        """
+        iterate on group with groups key
+        """
+        if self.__CACHING_gbdata is None:
+            self.__new_caching()
+        for key, value in self.__CACHING_gbdata.groups.items():
+            yield key, value
+
     def __repr__(self):
         """
         Definition for the representation

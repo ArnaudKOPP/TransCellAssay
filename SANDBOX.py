@@ -20,10 +20,13 @@ np.set_printoptions(linewidth=300)
 np.set_printoptions(suppress=True, precision=4)
 
 def DUX4_4x():
-    # neg = 'Neg'
-    # pos = 'DUX4+258'
+
     DataPath = "/home/akopp/Documents/DUX4_siRNA/DATA_4x/"
     PPPath = '/home/akopp/Documents/DUX4_siRNA/BANK/'
+    ResPath = "/home/akopp/Documents/DUX4_siRNA/DATA_4x/RESULTAT"
+    if not os.path.isdir(ResPath):
+        os.makedirs(ResPath)
+
     ListDF = []
     for i in range(1, 19, 1):
         plaque = TCA.Core.Plate(name='DTarget '+str(i),
@@ -40,29 +43,15 @@ def DUX4_4x():
         for key, value in plaque:
             value.df.loc[:, "TotalArea"] = value.df.loc[:, "ValidObjectCount"] * value.df.loc[:, "MEAN_ObjectAreaCh1"]
 
-            neg = []
-            ## control neg traité
-            # neg.append(value.rdf[value.df["Well"] == "H2"]["TotalArea"].values)
-            # neg.append(value.df[value.rawdata.df["Well"] == "J2"]["TotalArea"].values)
-            # neg.append(value.rdf[value.df["Well"] == "L2"]["TotalArea"].values)
-            # neg.append(value.df[value.df["Well"] == "N2"]["TotalArea"].values)
-            # neg.append(value.df[value.df["Well"] == "C23"]["TotalArea"].values)
-            # neg.append(value.df[value.df["Well"] == "E23"]["TotalArea"].values)
-            # neg.append(value.df[value.df["Well"] == "G23"]["TotalArea"].values)
-            # neg.append(value.df[value.rdf["Well"] == "I23"]["TotalArea"].values)
+            ## control neg traité alias 'Neg1'
+            # neg = value.df.query("Well == ['H2', 'J2', 'L2', 'N2', 'C23', 'E23', 'G23', 'I23']")["TotalArea"].values
 
-            ## control neg non traité
-            neg.append(value.df[value.df["Well"] == "D2"]["TotalArea"].values)
-            neg.append(value.df[value.df["Well"] == "E2"]["TotalArea"].values)
-            neg.append(value.df[value.df["Well"] == "F2"]["TotalArea"].values)
-            neg.append(value.df[value.df["Well"] == "H2"]["TotalArea"].values)
-            neg.append(value.df[value.df["Well"] == "J23"]["TotalArea"].values)
-            neg.append(value.df[value.df["Well"] == "K23"]["TotalArea"].values)
-            neg.append(value.df[value.df["Well"] == "L23"]["TotalArea"].values)
-            neg.append(value.df[value.df["Well"] == "M23"]["TotalArea"].values)
+            ## control neg non traité alias 'Neg'
+            # neg = value.df.query("Well == ['D2', 'E2', 'F2', 'H2', 'J23', 'K23', 'L23', 'M23']")["TotalArea"].values
 
 
-            value.df.loc[:, "TotalArea_Ratio"] = (value.df.loc[:, "TotalArea"] / (np.mean(neg))) * 100
+
+            # value.df.loc[:, "TotalArea_Ratio"] = (value.df.loc[:, "TotalArea"] / (np.mean(neg))) * 100
             value.df = value.df.dropna(axis=0)
             useless = ['PlateNumber', 'Zposition', 'Status']
             for col in useless:
@@ -77,14 +66,14 @@ def DUX4_4x():
         ListDF.append(DF)
 
     DF = pd.concat(ListDF)
-    DF.loc[:, "MEAN_TotalArea"] = (DF.loc[:, "TotalArea_x"] + DF.loc[:, "TotalArea_y"] + DF.loc[:, "TotalArea"]) /3
-    DF.loc[:, "MEAN_TotalArea_Ratio"] = (DF.loc[:, "TotalArea_Ratio_x"] + DF.loc[:, "TotalArea_Ratio_y"] + DF.loc[:, "TotalArea_Ratio"]) /3
+    # DF.loc[:, "MEAN_TotalArea"] = (DF.loc[:, "TotalArea_x"] + DF.loc[:, "TotalArea_y"] + DF.loc[:, "TotalArea"]) /3
+    # DF.loc[:, "MEAN_TotalArea_Ratio"] = (DF.loc[:, "TotalArea_Ratio_x"] + DF.loc[:, "TotalArea_Ratio_y"] + DF.loc[:, "TotalArea_Ratio"]) /3
     print(DF)
-    # DF.to_csv(os.path.join(DataPath, "ANALYSE_ALT.csv"), header=True, index=False)
+    DF.to_csv(os.path.join(ResPath, "DTarget.csv"), header=True, index=False)
 
-    # # get CTRL mean by plate
+    # get CTRL mean by plate
     # y = DF.query("GeneName == 'Non Trans' or GeneName == 'PLK1' or GeneName == 'Neg' or GeneName == 'DUX4+258' or GeneName == 'Neg1'")
-    # y.groupby(by=['PlateName', 'GeneName']).mean().to_csv('/home/akopp/Documents/DUX4_siRNA/DATA_4x/ANALYSE_CTRL_mean_ALT.csv', index=True, header=True)
+    # y.groupby(by=['PlateName', 'GeneName']).mean().to_csv(os.path.join(ResPath, 'ANALYSE_CTRL_mean_ALT.csv'), index=True, header=True)
 
 
     ## NPI normalization
@@ -97,7 +86,7 @@ def DUX4_4x():
     #         df1.loc[:, (col+'_NPI')] = ((np.mean(df1.query("GeneName == 'Neg'"))[col] - df1.loc[:, col]) / (np.mean(df1.query("GeneName == 'Neg'"))[col] - np.mean(df1.query("GeneName == 'Neg1'"))[col])) * 100
     #     dfList.append(df1)
     # x = pd.concat(dfList)
-    # x.to_csv('/home/akopp/Documents/DUX4_siRNA/DATA_4x/ANALYSE_NPI_A.csv', index=False, header=True)
+    # x.to_csv(os.path.join(ResPath, 'ANALYSE_NPI_A.csv'), index=False, header=True)
     #
     # dfList = []
     # for plate in platelist:
@@ -106,7 +95,7 @@ def DUX4_4x():
     #         df1.loc[:, (col+'_NPI')] = ((np.mean(df1.query("GeneName == 'Neg'"))[col] - df1.loc[:, col]) / (np.mean(df1.query("GeneName == 'Neg'"))[col] - np.mean(df1.query("GeneName == 'DUX4+258'"))[col])) * 100
     #     dfList.append(df1)
     # x = pd.concat(dfList)
-    # x.to_csv('/home/akopp/Documents/DUX4_siRNA/DATA_4x/ANALYSE_NPI_B.csv', index=False, header=True)
+    # x.to_csv(os.path.join(ResPath, 'ANALYSE_NPI_B.csv'), index=False, header=True)
 
 # DUX4_4x()
 
@@ -128,9 +117,11 @@ def DUX4():
     ListDF = []
     ListDF_ratio = []
 
+    PlateList = []
+
     for i in range(8, 9, 1):
         plaque = TCA.Core.Plate(name='DTarget '+str(i),
-                                platemap = TCA.Core.PlateMap(fpath=os.path.join(PPPath, "PP_Drug_Target"+str(i)+'.csv')))
+                                platemap = os.path.join(PPPath, "PP_Drug_Target"+str(i)+'.csv'))
         for j in ['1', '2', '3']:
             file = os.path.join(DataPath, 'DTarget '+str(i)+'.'+str(j)+'.csv')
             if os.path.isfile(file):
@@ -156,14 +147,23 @@ def DUX4():
         #     print(key, value)
 
         # print(plaque.platemap)
-        # plaque.normalization_channels(channels=channel,
-        #                               log_t=False,
-        #                               method='PercentOfControl',
-        #                               neg=plaque.platemap.search_well(neg),
-        #                               pos=plaque.platemap.search_well(pos))
-        # plaque.agg_data_from_replica_channel(channel=channel)
+        plaque.normalization_channels(channels=channel,
+                                      log_t=False,
+                                      method='PercentOfControl',
+                                      neg=plaque.platemap.search_well(neg),
+                                      pos=plaque.platemap.search_well(pos))
+        plaque.agg_data_from_replica_channel(channel=channel)
+        for key, value in plaque:
+            print(value.array)
+        print(plaque.array)
+        plaque.apply_systematic_error_correction()
+        for key, value in plaque:
+            print(value.array_c)
+        print(plaque.array_c)
+        PlateList.append(plaque)
 
-        print(TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=True))
+
+        # print(TCA.plate_quality_control(plaque, channel=channel, cneg=neg, cpos=pos, use_raw_data=True))
 
         # for key, value in plaque:
         #     print(value.array)
@@ -241,7 +241,21 @@ def DUX4():
         #                     file_path=os.path.join(RatioPath, plaque.name+'rep3'+'.pdf'), fmt='.1f')
         # except Exception as e:
         #     pass
-
+    # TCA.HeatMap(plaque, render="seaborn", fmt='.1f', title=plaque.name)
+    # TCA.HeatMap(plaque, render="matplotlib", title=plaque.name)
+    # TCA.Array3D(plaque)
+    # TCA.Array3D(plaque, kind="surf")
+    # TCA.Arrays3D(plaque, plaque['rep1'], plaque['rep2'], plaque['rep3'])
+    # TCA.systematic_error(plaque)
+    # TCA.wells_sorted(plaque, wells=['D2', "F15"], channel=channel)
+    # TCA.boxplot_by_wells(plaque['rep1'], channel=channel)
+    # TCA.well_count(plaque['rep1'])
+    # TCA.HeatMapPlate(PlateList[0], sec_data=True, render="seaborn")
+    # TCA.HeatMapPlates(PlateList, sec_data=True)
+    # TCA.HeatMapPlates(PlateList, sec_data=True, render="seaborn")
+    # TCA.plot_wells(PlateList)
+    # print(TCA.Binning(PlateList[0], chan='ObjectAvgIntenCh1'))
+    # print(PlateList[0].get_count())
     # merge all df
     # DF = pd.concat(ListDF)
     # DF.to_csv(os.path.join(ResPath, 'CellsCount.csv'), header=True, index=False)

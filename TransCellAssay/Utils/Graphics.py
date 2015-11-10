@@ -106,7 +106,7 @@ def Array3D(obj, kind="hist", sec_data=False):
 
     plt.show(block=True)
 
-def HeatMap(obj, render="matplotlib", fpath=None, annot=True, size=(17,12), fmt='d', sec_data=False):
+def HeatMap(obj, render="matplotlib", fpath=None, annot=True, size=(17,12), fmt='d', sec_data=False, title=None):
     """
     Create a heatmap from plate or replica object
     """
@@ -127,7 +127,8 @@ def HeatMap(obj, render="matplotlib", fpath=None, annot=True, size=(17,12), fmt=
         fig, ax = plt.subplots(figsize=size)
         plt.pcolor(to_print, cmap=plt.cm.Reds, edgecolors='k')
         plt.colorbar()
-
+        if title is not None:
+            ax.set_title(str(title))
         # # tab like display
         ax.invert_yaxis()
 
@@ -138,6 +139,8 @@ def HeatMap(obj, render="matplotlib", fpath=None, annot=True, size=(17,12), fmt=
         fig, ax = plt.subplots(figsize=size)
         sns.set()
         sns.heatmap(to_print, cmap="YlGnBu", annot=annot, fmt=fmt)
+        if title is not None:
+            ax.set_title(str(title))
 
     if fpath is not None:
         plt.savefig(fpath, dpi=500)
@@ -229,7 +232,7 @@ def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="matplotlib
     b = np.ceil(1.*n/a).astype(int)
     fig = plt.figure(figsize=(size*b*1.5, size*a))
     i = 1
-    
+
     for plate in screen:
         for key, value in plate:
             if render == "matplotlib":

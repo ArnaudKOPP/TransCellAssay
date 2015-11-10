@@ -233,16 +233,7 @@ class Plate(GenericPlate):
         """
         Get count of element (cells) for all wells
         """
-        cnt = None
-        for key, value in self.replica.items():
-            df = value.get_count()
-            df = df.transpose()
-            if cnt is None:
-                cnt = df
-            else:
-                cnt = pd.concat([cnt, df], axis=0)
-        cnt = cnt.fillna(0)
-        return cnt
+        return TCA.getEventsCounts(self)
 
     def __normalization(self, channel, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
                         threshold=None):
