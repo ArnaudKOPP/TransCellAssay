@@ -229,7 +229,7 @@ def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="matplotlib
     b = np.ceil(1.*n/a).astype(int)
     fig = plt.figure(figsize=(size*b*1.5, size*a))
     i = 1
-
+    
     for plate in screen:
         for key, value in plate:
             if render == "matplotlib":
@@ -239,7 +239,7 @@ def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="matplotlib
                 # # tab like display
                 ax.invert_yaxis()
                 if sec_data:
-                    ax = fig.add_subplot(a, b, i+b+1)
+                    ax = fig.add_subplot(a, b, i+(n/2))
                     ax.pcolor(value.array_c, cmap=plt.cm.Reds, edgecolors='k')
                     ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
                     # # tab like display
@@ -252,7 +252,7 @@ def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="matplotlib
                 sns.set()
                 sns.heatmap(value.array, cmap="YlGnBu")
                 if sec_data:
-                    ax = fig.add_subplot(a, b, i+b+1)
+                    ax = fig.add_subplot(a, b, i+(n/2))
                     ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
                     sns.set()
                     sns.heatmap(value.array_c, cmap="YlGnBu")
