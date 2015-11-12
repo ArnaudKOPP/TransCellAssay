@@ -119,7 +119,7 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
     MedianWellsReplicas = {}
     PercentCellsReplicas = {}
     PercentCellsSDReplicas = {}
-
+    ThresholdVALUE = {}
     # ########## iterate over replica
     i = 1
     for k, replica in plate:
@@ -152,6 +152,8 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
                     ControlData = replica.get_rawdata(channel=channel, well=neg_well)
                     ThresholdValue = np.mean(ControlData)
                     log.info('     Neg Mean Threshold value used: {}'.format(ThresholdValue))
+
+            ThresholdVALUE[k] = ThresholdValue
 
             # ########## variability
             well_list = replica.get_unique_well()
@@ -279,7 +281,7 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
             log.error('Error during writing data from PlateAnalyzis : {}'.format(e))
 
     if channel is not None:
-        return ResultatsArray, ThresholdValue
+        return ResultatsArray, ThresholdVALUE
     else:
         return ResultatsArray
 
