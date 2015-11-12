@@ -151,14 +151,11 @@ class PlateMap(object):
 
     def as_array(self):
         """
-        return platemap as numpy array with genename and well
+        return platemap as numpy array with Well and PlateMap
         :return:
         """
         data = self.as_dict()
-        names = ['Well', 'GeneName']
-        formats = ['object', 'object']
-        dtype = dict(names=names, formats=formats)
-        array = np.array([(key, val) for (key, val) in data.items()], dtype)
+        array = np.array([(key, val) for (key, val) in data.items()], {'formats': ['object', 'object'], 'names': ['Well', 'PlateMap']})
         return array
 
     def as_matrix(self):

@@ -30,11 +30,6 @@ def getEventsCounts(plate):
     assert isinstance(plate, TCA.Plate)
     log.info("Get Events Counts on {}".format(plate.name))
     df = plate_channel_analysis(plate)
-    for col in ['Viability', 'Toxicity']:
-        try:
-            df.values = df.values.drop([col], axis=1)
-        except Exception as e:
-            log.error(e)
     return df.values
 
 
@@ -103,16 +98,12 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
     if channel is not None:
         plate.agg_data_from_replica_channel(channel=channel, use_sec_data=False, forced_update=True)
 
+    WellKey = 'Well'
     platemap = plate.get_platemap()
     size = platemap.shape()
-    WellKey = 'Well'
     __SIZE__ = (size[0] * size[1])
-    ResultatsArray = Result(size=__SIZE__)
-    x = platemap.as_dict()
 
-    ## Init results dataframe
-    ResultatsArray.init_gene_well(x)
-    ResultatsArray.values['PlateName'] = np.repeat([plate.name], __SIZE__)
+    ResultatsArray = Result(plate)
 
     if neg is not None:
         if not isinstance(neg, list):
@@ -123,21 +114,21 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
         if channel is not None:
             log.info('No Negative control provided, only work with fixed_treshold to True')
 
-    CellsCountReplicas = collections.OrderedDict()
-    MeanWellsReplicas = collections.OrderedDict()
-    MedianWellsReplicas = collections.OrderedDict()
-    PercentCellsReplicas = collections.OrderedDict()
-    PercentCellsSDReplicas = collections.OrderedDict()
+    CellsCountReplicas = {}
+    MeanWellsReplicas = {}
+    MedianWellsReplicas = {}
+    PercentCellsReplicas = {}
+    PercentCellsSDReplicas = {}
 
     # ########## iterate over replica
     i = 1
     for k, replica in plate:
-        log.debug("Iteration on replica : {0} | {1} | {2}".format(replica.name, __SIZE__, len(replica.df)))
+        log.debug("Iteration on replica : {0} | {1} cells".format(replica.name, len(replica.df)))
         # ########## cell count
         datagb = replica.get_groupby_data()
         cellcount = datagb[WellKey].count().to_dict()
         log.debug("     Determine Cells count")
-        CellsCount = collections.OrderedDict()
+        CellsCount = {}
         for key, value in cellcount.items():
             try:
                 CellsCountReplicas.setdefault(key, []).append(value)
@@ -165,7 +156,7 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
             # ########## variability
             well_list = replica.get_unique_well()
             # iterate on well
-            PercentCells = collections.OrderedDict()
+            PercentCells = {}
             log.debug("     Determine Positive Cells percentage")
             for well in well_list:
                 xdata = datagb.get_group(well)[channel]
@@ -191,7 +182,7 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
                 ## or this but don't work when data are missing ????
                 # neg_data = [PercentCellsReplicas[x] for x in neg_well]
                 NegData = np.array(NegData).flatten()
-                pvalue = collections.OrderedDict()
+                pvalue = {}
                 for key, value in PercentCellsReplicas.items():
                     x = stats.ttest_ind(value, NegData, equal_var=False)
                     pvalue[key] = x[1]
@@ -290,7 +281,6 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
     if channel is not None:
         return ResultatsArray, ThresholdValue
     else:
-        ResultatsArray.values.drop(['PositiveCells', 'Mean', 'Median'], axis=1, inplace=True)
         return ResultatsArray
 
 
@@ -300,36 +290,16 @@ class Result(object):
     This class store data with dict in input, where key are well and item are data.
     """
 
-    def __init__(self, size=None):
+    def __init__(self, plate):
         """
         Constructor
         if size is not given, init by 386 plate size, defined size if 96 or 1526 plate well
         :return: none init only dataframe
         """
-        if size is None:
-            size = 96
-        self.values = pd.DataFrame(np.zeros(size, dtype=[('PlateName', object), ('PlateMap', object), ('Well', object),
-                                                         ('CellsCount', float), ('PositiveCells', float),
-                                                         ('Mean', float), ('Median', float), ('Viability', float),
-                                                         ('Toxicity', float)]))
+        assert isinstance(plate, TCA.Plate)
 
-        self._genepos_genename = {}  # # To save Well (key) and Gene position (value)
-
-    def init_gene_well(self, gene_list):
-        """
-        Add gene and well into the record Array in the first/second column
-        :param gene_list: Dict with key are Well and Value are geneName
-        :return:
-        """
-        try:
-            i = 0
-            for k, v in gene_list.items():
-                self.values.loc[i, 'PlateMap'] = v
-                self.values.loc[i, 'Well'] = k
-                self._genepos_genename[k] = i
-                i += 1
-        except Exception as e:
-            print(e)
+        __SIZE__ = plate.platemap.shape(alt_frmt=True)
+        self.values = pd.concat([pd.DataFrame(np.repeat([plate.name], __SIZE__), columns=['PlateName']), pd.DataFrame(plate.platemap.as_array())], axis=1)
 
     def add_data(self, datadict, col):
         """
@@ -339,10 +309,9 @@ class Result(object):
         :param col: columns name to insert data
         """
         try:
-            if col not in self.values.columns:
-                self.values[col] = 0
-            for item, value in datadict.items():
-                self.values.loc[self._genepos_genename[item], col] = value
+            x = pd.DataFrame.from_dict(datadict, orient='index').reset_index()
+            x.columns = ["Well", col]
+            self.values = pd.merge(self.values, x, on="Well", how='outer')
         except Exception as e:
             print(e)
 
@@ -377,7 +346,7 @@ class Result(object):
         :return:
         """
         try:
-            return "Result of single Cell properties: \n" + repr(pd.DataFrame(self.values))
+            return "Result of plate properties: \n" + repr(self.values)
         except Exception as e:
             print(e)
 
