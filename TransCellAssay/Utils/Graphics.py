@@ -370,7 +370,7 @@ def well_count(replica, file_path=None):
     except Exception as e:
         print(e)
 
-def well_sorted(replica, well, channel, ascending=True, file_path=None):
+def well_sorted(replica, well, channel, ascending=True, y_lim=None, file_path=None):
     """
 
     :param plate:
@@ -379,16 +379,28 @@ def well_sorted(replica, well, channel, ascending=True, file_path=None):
     """
     assert isinstance(replica, TCA.Core.Replica)
     try:
-        import pandas as pd
+        import numpy as np
         import matplotlib.pyplot as plt
+        import matplotlib.ticker as mtick
 
-        pd.options.display.mpl_style = 'default'
+        # pd.options.display.mpl_style = 'default'
 
-        df = replica.get_rawdata(channel=channel, well=well)
-        df_sorted = df.sort_values(inplace=False, axis=ascending)
-        df_sorted = df_sorted.reset_index()
-        df_sorted = df_sorted.drop('index', 1)
-        df_sorted.plot()
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        data = replica.get_rawdata(channel=channel, well=well)
+        data.sort_values(inplace=True, ascending=ascending)
+        perc = np.linspace(0,100,len(data))
+        plt.plot(perc, data.values, label=str(well)+"_"+str(replica.name))
+
+        plt.legend()
+        ax.set_ylabel('Well value')
+        ax.set_title("Well values sorted on "+str(channel))
+        if y_lim is not None:
+            ax.axis([0,100, 0, y_lim])
+        fmt = '%.0f%%' # Format you want the ticks, e.g. '40%'
+        xticks = mtick.FormatStrFormatter(fmt)
+        ax.xaxis.set_major_formatter(xticks)
 
         if file_path is not None:
             plt.savefig(file_path, dpi=200)
@@ -417,7 +429,7 @@ def wells_sorted(plate, wells, channel, ascending=True, y_lim=None, file_name=No
             plt.plot(perc, value.values, label=str(key)+'_'+str(well))
     plt.legend()
     ax.set_ylabel('Well value')
-    ax.set_title("Wells sorted on "+str(channel))
+    ax.set_title("Wells values sorted on "+str(channel))
     if y_lim is not None:
         ax.axis([0,100, 0, y_lim])
     fmt = '%.0f%%' # Format you want the ticks, e.g. '40%'
@@ -573,18 +585,15 @@ def plot_wells_distribution(plate, wells, channel, by_name=False, kind='kde', re
         import pandas as pd
         import TransCellAssay.Core
 
-        pd.options.display.mpl_style = 'default'
         for Well in wells:
+            if by_name:
+                Well = plate.platemap.search_well(Well)
             rep_series = dict()
             if rep is not None:
-                if by_name:
-                    Well = plate.platemap.search_well(Well)
                 rep_series[rep] = pd.Series(plate[rep].get_rawdata(channel=channel, well=Well))
                 rep_series[rep].name = str(rep)+str(Well)
             else:
                 for key, value in plate.replica.items():
-                    if by_name:
-                        Well = plate.platemap.search_well(Well)
                     rep_series[key] = pd.Series(value.get_rawdata(channel=channel, well=Well))
                     rep_series[key].name = key+str(Well)
             # # Plotting with pandas

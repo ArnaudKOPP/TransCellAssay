@@ -384,7 +384,7 @@ class Replica(GenericPlate):
         self.__CACHING_gbdata = None
         self.__CACHING_gbdata_key = None
         log.debug('Cache cleared')
-        if not only_caching:
+        if not only_cache:
             self.df = None
             log.debug('Rawdata cleared')
 

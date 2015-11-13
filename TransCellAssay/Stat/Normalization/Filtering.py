@@ -17,62 +17,56 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def channel_filtering(plate, channel, upper=None, lower=None, include=True, percent=False):
+def channel_filtering(plate, channel, value, thres="lower", include=True, percent=False):
     """
     Make filtering of raw_data by condition
     :param plate: Plate object
     :param channel: on which channel to apply filtering
-    :param upper: threshold that upper value will be erase
-    :param lower: threshold that lower value will be erase
+    :param value: dict with key are rep name and items the cut_value for each replica
+    :param thres: exclude lower or upper value
     :param include: include or not upper/lower value
     :param percent: Percent or value
     :return: filtered raw data
     """
     assert isinstance(plate, TCA.Plate)
+    assert isinstance(value, dict)
+
+    __valid_thres = ["lower", "upper"]
+    assert thres in __valid_thres, "type must be {}".format(__valid_thres)
 
     log.info('Apply filtering on :{}'.format(plate.name))
     for key, values in plate:
-        plate[key] = __replica_filtering(values, channel, upper, lower, include, percent)
+        plate[key] = __replica_filtering(values, channel, thres, value[key], include, percent)
     plate.agg_data_from_replica_channel(channel, forced_update=True)
     return plate
 
-
-def __replica_filtering(replica, channel, upper=None, lower=None, include=True, percent=False):
+def __replica_filtering(replica, channel, thres, cut_value, include=True, percent=False):
     log.debug('Apply filtering on :{}'.format(replica.name))
-    replica.rawdata = __filtering_raw_data(replica.df, channel, upper, lower, include, percent)
+    replica.df = __filtering_raw_data(replica.df, channel, thres, cut_value, include, percent)
+    replica._new_caching()
     return replica
 
-
-def __filtering_raw_data(raw_data, channel, upper=None, lower=None, include=True, percent=False):
-    if upper is not None:
-        if percent:
-            upper_threshold_value = np.percentile(raw_data.df[channel], upper)
-            raw_data = __upper_filter_raw_data(raw_data, channel, upper_threshold_value, include)
-        else:
-            raw_data = __upper_filter_raw_data(raw_data, channel, upper, include)
-    if lower is not None:
-        if percent:
-            lower_threshold_value = np.percentile(raw_data.df[channel], lower)
-            raw_data = __lower_filter_raw_data(raw_data, channel, lower_threshold_value, include)
-        else:
-            raw_data = __lower_filter_raw_data(raw_data, channel, lower, include)
-    raw_data._new_caching()
-    return raw_data
-
+def __filtering_raw_data(raw_data, channel, thres, value, include=True, percent=False):
+    if percent:
+        value = np.percentile(raw_data.df[channel], value)
+    if thres == "upper":
+        filtered = __upper_filter_raw_data(raw_data, channel, value, include)
+    if thres == "lower":
+        filtered = __lower_filter_raw_data(raw_data, channel, value, include)
+    return filtered
 
 def __upper_filter_raw_data(raw_data, channel, threshold, include):
     log.debug('Upper cut')
     if include:
-        raw_data = raw_data[raw_data[channel] <= threshold]
+        cutted = raw_data[raw_data[channel] <= threshold]
     else:
-        raw_data = raw_data[raw_data[channel] < threshold]
-    return raw_data
-
+        cutted = raw_data[raw_data[channel] < threshold]
+    return cutted
 
 def __lower_filter_raw_data(raw_data, channel, threshold, include):
     log.debug('Lower cut')
     if include:
-        raw_data = raw_data[raw_data.df[channel] >= threshold]
+        cutted = raw_data[raw_data[channel] >= threshold]
     else:
-        raw_data = raw_data[raw_data.df[channel] > threshold]
-    return raw_data
+        cutted = raw_data[raw_data[channel] > threshold]
+    return cutted
