@@ -383,8 +383,6 @@ def well_sorted(replica, well, channel, ascending=True, y_lim=None, file_path=No
         import matplotlib.pyplot as plt
         import matplotlib.ticker as mtick
 
-        # pd.options.display.mpl_style = 'default'
-
         fig = plt.figure()
         ax = fig.add_subplot(111)
 

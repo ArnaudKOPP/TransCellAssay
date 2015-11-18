@@ -147,8 +147,8 @@ class Replica(GenericPlate):
                 channel = [channel]
             channel.insert(0, 'Well')
 
-        # # init a empty df
-        data = None
+        # # init a empty list
+        data = list()
 
         # # if well not a list -> become a list
         if well is not None:
@@ -157,18 +157,16 @@ class Replica(GenericPlate):
                 if well not in self.get_unique_well():
                     raise ValueError('Wrong Well')
 
-
         # # Grab data
         if well is not None:
             for i in well:
                 try:
-                    if data is None:
-                        data = self.__get_Well_group(i, channel)
-                    data = data.append(self.__get_Well_group(i, channel))
+                    x = self.__get_Well_group(i, channel)
+                    data.append(x)
                 except:
                     pass
                 # # return wells data for channel
-            return data
+            return pd.concat(data)
         else:
             # # return channel data for all well
             return self.df

@@ -32,7 +32,7 @@ def ScoringPlate(plate, channel, neg, robust=False, data_c=False, verbose=False)
         return __singleReplicaPlate(plate, neg, robust, data_c, verbose)
     else:
         return __multipleReplicaPlate(plate, neg, robust, data_c, verbose)
-    
+
 def __singleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False):
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
@@ -74,12 +74,12 @@ def __multipleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False
     ssmd4 = TCA.plate_ssmd_score(plate, neg_control=neg, paired=True, robust_version=robust, sec_data=data_c,
                                  method='MM', verbose=verbose)
     tstat1 = TCA.plate_tstat_score(plate, neg_control=neg, paired=False, variance='equal', sec_data=data_c,
-                                   verbose=verbose, robust=True)
+                                   verbose=verbose, robust=robust)
     tstat2 = TCA.plate_tstat_score(plate, neg_control=neg, paired=False, sec_data=data_c, verbose=verbose,
                                    robust=robust)
     tstat3 = TCA.plate_tstat_score(plate, neg_control=neg, paired=True, sec_data=data_c, verbose=verbose,
                                    robust=robust)
-    
+
     ttest1, fdr1 = TCA.plate_ttest(plate, neg, verbose=verbose)
     ttest2, fdr2 = TCA.plate_ttest(plate, neg, equal_var=True, verbose=verbose)
 
@@ -88,8 +88,8 @@ def __multipleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False
 
     x['SSMD Unpaired Unequal'] = ssmd1.flatten().reshape(__SIZE__, 1)
     x['SSMD Unpaired Equal'] = ssmd2.flatten().reshape(__SIZE__, 1)
-    x['SSMD paired UMVUE'] = ssmd3.flatten().reshape(__SIZE__, 1)
-    x['SSMD Unpaired MM'] = ssmd4.flatten().reshape(__SIZE__, 1)
+    x['SSMD Paired UMVUE'] = ssmd3.flatten().reshape(__SIZE__, 1)
+    x['SSMD Paired MM'] = ssmd4.flatten().reshape(__SIZE__, 1)
     x['TStat Unpaired Equal'] = tstat1.flatten().reshape(__SIZE__, 1)
     x['Tstat Unpaired Unequal'] = tstat2.flatten().reshape(__SIZE__, 1)
     x['Tstat Paired'] = tstat3.flatten().reshape(__SIZE__, 1)
