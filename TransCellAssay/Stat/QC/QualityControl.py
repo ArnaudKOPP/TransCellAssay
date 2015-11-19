@@ -216,14 +216,12 @@ def __get_data_control(data, channel, c_ref):
     :param c_ref: a control ref list that we want to search, list of well in this format : A1
     :return: 1D array with data from desired Wells
     """
-    datax = pd.DataFrame()
+    datax = list()
     for i in c_ref:
         if isinstance(i, tuple):
             i = TCA.get_opposite_well_format(i)
-        if datax.empty:
-            datax = data.get_rawdata(channel=channel, well=i)
-        datax = datax.append(data.get_rawdata(channel=channel, well=i))
-    return datax
+        datax.append(data.get_rawdata(channel=channel, well=i))
+    return pd.concat(datax)
 
 
 def __avr(cneg, cpos):

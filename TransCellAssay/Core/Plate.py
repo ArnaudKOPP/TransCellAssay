@@ -140,7 +140,8 @@ class Plate(GenericPlate):
         if as_dict:
             data = {}
         else:
-            data = None
+            data = list()
+
         if replica is not None:
             return self.replica[replica].get_rawdata(channel=channel, well=well, well_idx=well_idx)
         else:
@@ -149,13 +150,13 @@ class Plate(GenericPlate):
                     if as_dict:
                         data[value.get_name()] = value.get_rawdata(channel=channel, well=well, well_idx=well_idx)
                     else:
-                        if data is None:
-                            data = value.get_rawdata(channel=channel, well=well, well_idx=well_idx)
-                        else:
-                            data = data.append(value.get_rawdata(channel=channel, well=well, well_idx=well_idx))
+                        data.append(value.get_rawdata(channel=channel, well=well, well_idx=well_idx))
                 except:
                     continue
-            return data
+            if as_dict:
+                return data
+            else:
+                return pd.concat(data)
 
     def get_agg_data_from_replica_channels(self, by='Median'):
         """
@@ -168,15 +169,9 @@ class Plate(GenericPlate):
             assert isinstance(rep, TCA.Replica)
             tmp = rep.get_groupby_data()
             if by == 'Median':
-                if df is None:
-                    df = tmp.median()
-                else:
-                    df += tmp.median()
+                df += tmp.median()
             else:
-                if df is None:
-                    df = tmp.mean()
-                else:
-                    df += tmp.mean()
+                df += tmp.mean()
         df /= len(self.replica)
         return df.reset_index()
 
