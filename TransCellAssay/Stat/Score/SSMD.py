@@ -313,7 +313,8 @@ def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, control_plate=None
         raise ValueError('Insuficient negative data')
 
     n = len(neg_data)
-    k = 2 * (scipy.special.gamma(((n - 1) / 2) / scipy.special.gamma((n - 2) / 2))) ** 2
+    # k = 2 * (scipy.special.gamma(((n - 1) / 2) / scipy.special.gamma((n - 2) / 2))) ** 2
+    k = n-2.48
 
     if robust:
         if method == 'MM':

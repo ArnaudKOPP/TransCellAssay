@@ -173,7 +173,14 @@ class Application(tk.Frame):
                         data[chan] = data[chan].str.replace(",", ".")
                     data[chan].apply(format)
                     data = data.fillna(0)
-                    list_sheets[i] = workbook.add_worksheet(str(chan))
+
+                    ## if chan is to long, cut it
+                    if len(str(chan)) >= 30:
+                        Chan = ''.join(x for x in str(chan) if not x.islower())
+                    else:
+                        Chan = str(chan)
+
+                    list_sheets[i] = workbook.add_worksheet(Chan)
                     list_sheets[i] = init_plate(list_sheets[i], size)
                     # # put value in cell
                     for pos in range(len(data.Row)):

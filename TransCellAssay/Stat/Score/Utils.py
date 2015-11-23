@@ -37,12 +37,12 @@ def __singleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False):
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
     gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-    final_array = np.append(gene, np.repeat([str(plate.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(gene, plate.platemap._fill_empty(plate.platemap._generate_empty(384)).values.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, np.repeat([str(plate.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
     final_array = np.append(final_array, plate.array.flatten().reshape(__SIZE__, 1), axis=1)
 
     x = pd.DataFrame(final_array)
-    x.columns = ['PlateMap', 'PlateName', 'Well Mean']
-    print(x)
+    x.columns = ['PlateMap', 'Well', 'PlateName', 'Well Mean']
 
     ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, method='MM', robust_version=robust, sec_data=data_c,
                              verbose=verbose)
@@ -59,11 +59,12 @@ def __multipleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
     gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-    final_array = np.append(gene, np.repeat([str(plate.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(gene, plate.platemap._fill_empty(plate.platemap._generate_empty(384)).values.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, np.repeat([str(plate.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
     final_array = np.append(final_array, plate.array.flatten().reshape(__SIZE__, 1), axis=1)
 
     x = pd.DataFrame(final_array)
-    x.columns = ['PlateMap', 'PlateName', 'Well Mean']
+    x.columns = ['PlateMap', 'Well', 'PlateName', 'Well Mean']
 
     ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, paired=False, robust_version=robust, sec_data=data_c,
                              verbose=verbose)

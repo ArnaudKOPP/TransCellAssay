@@ -189,36 +189,35 @@ class PlateMap(object):
         Generate an empty platemap with defined size
         :param size: number of well for plate, only 96,384 or 1536
         """
+        df = self._generate_empty(size=size)
+        self.platemap = self._fill_empty(df)
+
+
+    @staticmethod
+    def _generate_empty(size=96):
         if int(size) == 96:
-            self.__generate_empty_96()
+            df = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:8],
+                            columns=[str(x) for x in range(1, 13, 1)])
+            return df
         elif int(size) == 384:
-            self.__generate_empty_384()
+            df = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:16],
+                            columns=[str(x) for x in range(1, 25, 1)])
+            return df
         elif int(size) == 1536:
-            self.__generate_empty_1536()
+            df = pd.DataFrame(data='Empty',index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+                                                             'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                                                             'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF'],
+                            columns=[str(x) for x in range(1, 49, 1)])
+            return df
         else:
             raise ValueError('Expected size : 96, 348 or 1536')
 
-    def __generate_empty_96(self):
-        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:8],
-                                    columns=[str(x) for x in range(1, 13, 1)])
-        self.__fill_empty()
-
-    def __generate_empty_384(self):
-        self.platemap = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:16],
-                                    columns=[str(x) for x in range(1, 25, 1)])
-        self.__fill_empty()
-
-    def __generate_empty_1536(self):
-        self.platemap = pd.DataFrame(data='Empty',index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-                                                         'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                                         'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF'],
-                                     columns=[str(x) for x in range(1, 49, 1)])
-        self.__fill_empty()
-
-    def __fill_empty(self):
-        for r in self.platemap.index:
-            for c in self.platemap.columns:
-                self.platemap.loc[r, c] = str(r)+str(c)
+    @staticmethod
+    def _fill_empty(df):
+        for r in df.index:
+            for c in df.columns:
+                df.loc[r, c] = str(r)+str(c)
+        return df
 
     def get_file_location(self):
         """

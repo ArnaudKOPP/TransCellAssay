@@ -283,23 +283,23 @@ class Replica(GenericPlate):
         :param threshold: used in background subtraction (median is 50) you can set as you want
         """
         if not self.isNormalized:
-            log.debug('Replica {} : RawData normalization on channel {}'.format(self.name, channel))
-            if skipping_wells:
-                negative = [x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)]
-                positive = [x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)]
-            else:
-                negative = neg
-                positive = pos
-            TCA.rawdata_variability_normalization(self,
+            log.warning("RawData are already normalized on some channel")
+
+        log.debug('Replica {} : RawData normalization on channel {}'.format(self.name, channel))
+        if skipping_wells:
+            negative = [x for x in neg if (TCA.get_opposite_well_format(x) not in self.skip_well)]
+            positive = [x for x in pos if (TCA.get_opposite_well_format(x) not in self.skip_well)]
+        else:
+            negative = neg
+            positive = pos
+        TCA.rawdata_variability_normalization(self,
                                                 channel=channel,
                                                 method=method,
                                                 log2_transf=log_t,
                                                 neg_control=negative,
                                                 pos_control=positive,
                                                 threshold=threshold)
-            self.compute_data_channel(channel)
-        else:
-            log.warning("RawData are already normalized, do nothing")
+        self.compute_data_channel(channel)
 
     def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
                                threshold=None):
