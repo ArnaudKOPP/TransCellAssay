@@ -3,7 +3,6 @@
 Method for making graphics of plate
 """
 import TransCellAssay as TCA
-import warnings
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
@@ -11,8 +10,6 @@ __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-
-warnings.simplefilter('always', DeprecationWarning)
 
 def Arrays3D(*args, sec_data=False):
     """
@@ -106,26 +103,28 @@ def Array3D(obj, kind="hist", sec_data=False):
 
     plt.show(block=True)
 
-def HeatMap(obj, render="seaborn", fpath=None, annot=True, size=(17,12), fmt='d', sec_data=False, title=None):
+def HeatMap(obj, annot=True, size=(17,12), fmt='d', sec_data=False, title=None, render="seaborn", fpath=None,
+            cmap="YlGnBu"):
     """
     Create a heatmap from plate or replica object
     """
     from TransCellAssay.Core.GenericPlate import GenericPlate
+    import numpy as np
     assert isinstance(obj, GenericPlate)
 
     render_list = ["matplotlib", "seaborn"]
     assert render in render_list, "{0} render not available, use instead {1}".format(render, render_list)
 
     if sec_data & bool(obj.array_c is not None):
-        to_print = obj.array_c
+        to_print = np.ma.masked_invalid(obj.array_c)
     else:
-        to_print = obj.array
+        to_print = np.ma.masked_invalid(obj.array)
 
     if render == "matplotlib":
         import matplotlib.pyplot as plt
 
         fig, ax = plt.subplots(figsize=size)
-        plt.pcolormesh(to_print, cmap="YlGnBu", edgecolors='k')
+        plt.pcolormesh(to_print, cmap=cmap, edgecolors='k')
         plt.colorbar()
         if title is not None:
             ax.set_title(str(title))
@@ -138,7 +137,7 @@ def HeatMap(obj, render="seaborn", fpath=None, annot=True, size=(17,12), fmt='d'
 
         fig, ax = plt.subplots(figsize=size)
         sns.set()
-        sns.heatmap(to_print, cmap="YlGnBu", annot=annot, fmt=fmt)
+        sns.heatmap(to_print, cmap=cmap, annot=annot, fmt=fmt)
         if title is not None:
             ax.set_title(str(title))
 
@@ -148,7 +147,7 @@ def HeatMap(obj, render="seaborn", fpath=None, annot=True, size=(17,12), fmt='d'
     else:
         plt.show(block=True)
 
-def HeatMapPlate(plate, sec_data=False, fpath=None, size=3., render="seaborn"):
+def HeatMapPlate(plate, sec_data=False, fpath=None, size=3., render="seaborn", cmap="YlGnBu"):
     """
     Make heatmap of array from all replica of given plate object
     """
@@ -170,14 +169,14 @@ def HeatMapPlate(plate, sec_data=False, fpath=None, size=3., render="seaborn"):
     for key, value in plate:
         if render == "matplotlib":
             ax = fig.add_subplot(a, b, i)
-            plt.pcolormesh(value.array, cmap="YlGnBu", edgecolors='k')
+            plt.pcolormesh(np.ma.masked_invalid(value.array), cmap=cmap, edgecolors='k')
             plt.colorbar()
             ax.set_title(str(plate.name)+" "+str(value.name))
             # # tab like display
             ax.invert_yaxis()
             if sec_data:
                 ax = fig.add_subplot(a, b, i+b)
-                plt.pcolormesh(value.array_c, cmap="YlGnBu", edgecolors='k')
+                plt.pcolormesh(np.ma.masked_invalid(value.array_c), cmap=cmap, edgecolors='k')
                 plt.colorbar()
                 ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
                 # # tab like display
@@ -188,12 +187,12 @@ def HeatMapPlate(plate, sec_data=False, fpath=None, size=3., render="seaborn"):
             ax = fig.add_subplot(a, b, i)
             ax.set_title(str(plate.name)+" "+str(value.name))
             sns.set()
-            sns.heatmap(value.array, cmap="YlGnBu")
+            sns.heatmap(value.array, cmap=cmap)
             if sec_data:
                 ax = fig.add_subplot(a, b, i+b)
                 ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
                 sns.set()
-                sns.heatmap(value.array_c, cmap="YlGnBu")
+                sns.heatmap(value.array_c, cmap=cmap)
             i += 1
 
     if fpath is not None:
@@ -202,7 +201,7 @@ def HeatMapPlate(plate, sec_data=False, fpath=None, size=3., render="seaborn"):
     else:
         plt.show(block=True)
 
-def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="seaborn"):
+def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="seaborn", cmap="YlGnBu"):
     """
     Make heatmap from all replica of given plate object
     """
@@ -237,14 +236,14 @@ def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="seaborn"):
         for key, value in plate:
             if render == "matplotlib":
                 ax = fig.add_subplot(a, b, i)
-                plt.pcolormesh(value.array, cmap="YlGnBu", edgecolors='k')
+                plt.pcolormesh(np.ma.masked_invalid(value.array), cmap=cmap, edgecolors='k')
                 plt.colorbar()
                 ax.set_title(str(plate.name)+" "+str(value.name))
                 # # tab like display
                 ax.invert_yaxis()
                 if sec_data:
                     ax = fig.add_subplot(a, b, i+(n/2))
-                    plt.pcolormesh(value.array_c, cmap="YlGnBu", edgecolors='k')
+                    plt.pcolormesh(np.ma.masked_invalid(value.array_c), cmap=cmap, edgecolors='k')
                     plt.colorbar()
                     ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
                     # # tab like display
@@ -255,12 +254,12 @@ def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="seaborn"):
                 ax = fig.add_subplot(a, b, i)
                 ax.set_title(str(plate.name)+" "+str(value.name))
                 sns.set()
-                sns.heatmap(value.array, cmap="YlGnBu")
+                sns.heatmap(value.array, cmap=cmap)
                 if sec_data:
                     ax = fig.add_subplot(a, b, i+(n/2))
                     ax.set_title(str(plate.name)+" "+str(value.name)+"_SEC")
                     sns.set()
-                    sns.heatmap(value.array_c, cmap="YlGnBu")
+                    sns.heatmap(value.array_c, cmap=cmap)
                 i += 1
     fig.set_tight_layout(True)
 
