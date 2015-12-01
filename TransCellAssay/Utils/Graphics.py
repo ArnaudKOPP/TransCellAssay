@@ -34,9 +34,9 @@ def Arrays3D(*args, sec_data=False):
             assert isinstance(arg, GenericPlate)
 
             if sec_data & bool(arg.array_c is not None):
-                array = arg.array_c
+                array = np.nan_to_num(arg.array_c)
             else:
-                array = arg.array
+                array = np.nan_to_num(arg.array)
 
             x = np.arange(array.shape[1])
             y = np.arange(array.shape[0])
@@ -59,15 +59,16 @@ def Array3D(obj, kind="hist", sec_data=False):
     param sec_data: use or not SEC data if available
     """
     from TransCellAssay.Core.GenericPlate import GenericPlate
+    import numpy as np
     assert isinstance(obj, GenericPlate)
 
     kind_list = ["hist", "surf"]
     assert kind in kind_list, "{0} type not available, use instead {1}".format(kind, kind_list)
 
     if sec_data & bool(obj.array_c is not None):
-        array = obj.array_c
+        array = np.nan_to_num(obj.array_c)
     else:
-        array = obj.array
+        array = np.nan_to_num(obj.array)
 
     import numpy as np
     from mpl_toolkits.mplot3d import Axes3D
@@ -275,12 +276,13 @@ def SystematicError(obj, file_path=None, sec_data=False):
     :param array: take a numpy array in input
     """
     from TransCellAssay.Core.GenericPlate import GenericPlate
+    import numpy as np
     assert isinstance(obj, GenericPlate)
 
     if sec_data & bool(obj.array_c is not None):
-        array = obj.array_c
+        array = np.nan_to_num(obj.array_c)
     else:
-        array = obj.array
+        array = np.nan_to_num(obj.array)
 
     import numpy as np
 
