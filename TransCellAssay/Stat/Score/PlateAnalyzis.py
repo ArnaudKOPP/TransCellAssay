@@ -30,11 +30,11 @@ def getEventsCounts(plate):
     assert isinstance(plate, TCA.Plate)
     log.info("Get Events Counts on {}".format(plate.name))
     df = plate_channel_analysis(plate)
-    return df.values
+    return df
 
 
 def plate_channels_analysis(plate, channels, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
-                            path=None, tag="", clean=False):
+                            clean=False):
     """
     Like plate_channel_analysis, do a plate analysis but for multiple channels and parameters
     :param plate: plate object
@@ -57,12 +57,11 @@ def plate_channels_analysis(plate, channels, neg=None, pos=None, threshold=50, p
     for chan in channels:
         log.info('Plate analysis for channel {}'.format(chan))
         res[chan] = plate_channel_analysis(plate=plate, channel=chan, neg=neg, pos=pos, threshold=threshold,
-                                           percent=percent, fixed_threshold=fixed_threshold, path=path, tag=tag,
-                                           clean=clean)
+                                           percent=percent, fixed_threshold=fixed_threshold, clean=clean)
     return res
 
 def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
-                           path=None, tag="", clean=False):
+                           clean=False):
     """
     Like plate_channel_analysis, do a plate analysis but for multiple channels and parameters
     :param plate: plate object
@@ -72,8 +71,6 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
     :param threshold: fixe the percent of positive well found in negative control well
     :param percent: True if threshold value is percent, False if we want to give a value
     :param fixed_threshold: use given threshold (value mode) for all well
-    :param path: path where file will be saved
-    :param tag: add this tag at end of file name
     :param clean: if True, remove all row/Well that don't contain cells
     :return: result into dataframe
     """
@@ -268,22 +265,10 @@ def plate_channel_analysis(plate, channel=None, neg=None, pos=None, threshold=50
     if clean:
         ResultatsArray.values = ResultatsArray.values[ResultatsArray.values['CellsCount'] > 0]
 
-    if path is not None:
-        try:
-            if channel is not None:
-                filepath = os.path.join(path, 'PlateAnalyzis_' + str(plate.name) + '_' + str(channel) + "_" + str(tag)
-                                        + '.csv')
-                ResultatsArray.write(file_path=filepath)
-            else:
-                filepath = os.path.join(path, 'PlateAnalyzis_' + str(plate.name) + "_" + str(tag) + '.csv')
-                ResultatsArray.write(file_path=filepath)
-        except Exception as e:
-            log.error('Error during writing data from PlateAnalyzis : {}'.format(e))
-
     if channel is not None:
-        return ResultatsArray, ThresholdVALUE
+        return ResultatsArray.values, ThresholdVALUE
     else:
-        return ResultatsArray
+        return ResultatsArray.values
 
 
 class Result(object):
@@ -314,50 +299,5 @@ class Result(object):
             x = pd.DataFrame.from_dict(datadict, orient='index').reset_index()
             x.columns = ["Well", col]
             self.values = pd.merge(self.values, x, on="Well", how='outer')
-        except Exception as e:
-            print(e)
-
-    def write(self, file_path, frmt='csv'):
-        """
-        Save Result Array into csv
-        :param file_path:
-        :param frmt: csv or xlsx format to save
-        """
-        try:
-            if frmt is 'csv':
-                pd.DataFrame(self.values).to_csv(file_path, index=False, header=True)
-            elif frmt is 'xlsx':
-                pd.DataFrame(self.values).to_excel(file_path, sheet_name='Single Cell properties result', index=False,
-                                                   header=True)
-            log.info('Writing : {}'.format(file_path))
-        except:
-            try:
-                if frmt is 'csv':
-                    np.savetxt(fname=file_path, X=self.values, delimiter=';')
-                    log.info('Writing : {}'.format(file_path))
-                else:
-                    log.error("Can't save data in xlsx format")
-                    raise IOError()
-            except Exception as e:
-                log.error('Error in saving results data :', e)
-                raise IOError()
-
-    def __repr__(self):
-        """
-        Definition for the representation
-        :return:
-        """
-        try:
-            return "Result of plate properties: \n" + repr(self.values)
-        except Exception as e:
-            print(e)
-
-    def __str__(self):
-        """
-        Definition for the print
-        :return:
-        """
-        try:
-            return self.__repr__()
         except Exception as e:
             print(e)

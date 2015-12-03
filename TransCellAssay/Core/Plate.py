@@ -271,6 +271,7 @@ class Plate(GenericPlate):
             self.__normalization(channels, method, log_t, neg, pos, skipping_wells, threshold=threshold)
         self.isNormalized = True
         self.RawDataNormMethod = method
+        self.clear_memory()
 
     def apply_systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
                                          save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
