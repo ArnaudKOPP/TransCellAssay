@@ -56,6 +56,8 @@ class Replica(GenericPlate):
                     self.__file = fpath.get_file_path()
                 else:
                     raise ValueError('Empty Input File')
+            elif isinstance(fpath, pd.DataFrame):
+                self.df = fpath
             else:
                 raise NotImplementedError('Input types not handled')
 

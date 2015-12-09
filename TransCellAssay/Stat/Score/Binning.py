@@ -20,7 +20,7 @@ __email__ = "kopp.arnaud@gmail.com"
 
 def Binning(Plate, chan, bins=None, nbins=10):
     """
-    Make binning (intervals) for various channels
+    Make binning (intervals) for various channels, return a dict witj key is replica name and value the df of binning
     param Plate: Plate Object
     param chan: On which channel make the binning
     param bins: default is None, but can provided custom intervals
@@ -28,26 +28,18 @@ def Binning(Plate, chan, bins=None, nbins=10):
     """
     assert isinstance(Plate, TCA.Plate)
     log.info("Binning process on : {}".format(Plate.name))
-    DF = None
 
+    frames = {}
     for key, value in Plate:
         assert chan in value.get_channels_list(), "Given channel {0} -> not in available channels : {1}".format(chan, value.get_channels_list())
         log.debug("Iterate on : {}".format(key))
+
         ## Create Bins
         if bins is None:
             bins = np.linspace(np.min(value.df[chan].values), np.max(value.df[chan].values), nbins)
 
         x = value.df.groupby(by=["Well", pd.cut(value.df[chan], bins)]).count()[chan]
+        x = x.unstack()
+        frames[key] = x
 
-        x.index.names = ['Well', 'Bins']
-        x.name = str(chan)+"_"+str(key)
-
-        if DF is None:
-            DF = x.reset_index()
-        else:
-            DF = pd.merge(DF, x.reset_index(), on=['Well', 'Bins'])
-
-    ## Fill NaN by 0
-    DF = DF.fillna(0)
-
-    return DF
+    return frames
