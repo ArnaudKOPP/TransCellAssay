@@ -18,7 +18,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def Binning(Plate, chan, bins=None, nbins=10):
+def Binning(Plate, chan, bins=None, nbins=10, percent=True):
     """
     Make binning (intervals) for various channels, return a dict witj key is replica name and value the df of binning
     param Plate: Plate Object
@@ -40,6 +40,10 @@ def Binning(Plate, chan, bins=None, nbins=10):
 
         x = value.df.groupby(by=["Well", pd.cut(value.df[chan], bins)]).count()[chan]
         x = x.unstack()
+
+        if percent:
+            x = x.iloc[:, :].apply(lambda a: a / x.sum(axis=1) * 100)
+        
         frames[key] = x
 
     return frames
