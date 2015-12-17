@@ -2,6 +2,6 @@
 __author__ = 'Arnaud KOPP'
 from TransCellAssay.Stat.Normalization import *
 from TransCellAssay.Stat.QC import plate_quality_control
-from TransCellAssay.Stat.Score import plate_channel_analysis, plate_channels_analysis, plate_ssmd_score, \
+from TransCellAssay.Stat.Score import PlateChannelsAnalysis, plate_ssmd_score, \
     plate_tstat_score, rank_product, plate_ttest, ScoringPlate, getEventsCounts, Binning
 from TransCellAssay.Stat.ML import *

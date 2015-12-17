@@ -37,7 +37,6 @@ def channel_filtering(plate, channel, value, thres="lower", include=True, percen
     log.info('Apply filtering on :{}'.format(plate.name))
     for key, values in plate:
         plate[key] = __replica_filtering(values, channel, thres, value[key], include, percent)
-    plate.agg_data_from_replica_channel(channel, forced_update=True)
     return plate
 
 def __replica_filtering(replica, channel, thres, cut_value, include=True, percent=False):
