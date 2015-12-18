@@ -94,6 +94,8 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
         if not isinstance(channels, list):
             channels = [channels]
 
+        ThresholdVALUE = dict([(i, dict([(repname, 0) for repname, rep in plate])) for i in channels])
+
         if neg is not None:
             ## if neg is list -> suppose that its a list of well
             if not isinstance(neg, list):
@@ -142,7 +144,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                         ThresholdValue = np.mean(ControlData)
                         log.info('     Neg Mean Threshold value used: {}'.format(ThresholdValue))
 
-                ThresholdVALUE[repName] = ThresholdValue
+                ThresholdVALUE[chan][repName] = ThresholdValue
 
                 ########### VARIABILITY & % OF POSITIVE CELLS
                 well_list = replica.get_unique_well()
