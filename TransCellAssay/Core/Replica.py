@@ -12,7 +12,7 @@ import logging
 log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
@@ -175,7 +175,8 @@ class Replica(GenericPlate):
 
     def compute_data_channel(self, channel, datatype='mean'):
         """
-        Compute data in matrix form, get mean or median for well and save them in replica object
+        Compute data in matrix form and fill it in .array or .array_c var, get mean or median for well and save them in
+        replica object
         :param channel: which channel to keep in matrix
         :return:
         """

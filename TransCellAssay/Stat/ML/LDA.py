@@ -4,7 +4,7 @@ Linear Discriminant Analysis (LDA)
 """
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"

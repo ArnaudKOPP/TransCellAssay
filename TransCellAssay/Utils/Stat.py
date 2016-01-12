@@ -7,7 +7,7 @@ import numpy as np
 import scipy.stats
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
@@ -39,15 +39,15 @@ def kl(p, q):
 def CohenEffectSize(group1, group2):
     """
     Determine Effect size
-    Cohen's d statistic : compare the difference between groups to the variability 
+    Cohen's d statistic : compare the difference between groups to the variability
     within groups
     """
     diff = group1.var()
-    
+
     var1 = group1.var()
     var2 = group2.var()
     n1, nk = len(group1), len(group2)
-    
+
     pooled_var = (n1 * var1 + n2 * var2) / (n1 + n2)
     d = diff / math.sqrt(pooled_var)
     return d
@@ -56,20 +56,20 @@ def CohenEffectSize(group1, group2):
 def Covariance(xs, ys, meanx=None, meany=None):
     """
     Covariance is a measure of the tendency of two variables to vary together.
-    positive when the deviations have the same sign and negative when they have the 
+    positive when the deviations have the same sign and negative when they have the
     opposite sign.
     """
     xs = np.asarray(xs)
     ys = np.asarray(ys)
-    
+
     if meanx is None:
         meanx = np.mean(xs)
     if meany is None:
         meany = np.mean(ys)
-    
+
     cov = np.dot(xs-meanx, ys-meany) / len(xs)
     return cov
- 
+
 
 def mad(arr):
     """

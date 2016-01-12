@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
@@ -164,20 +164,23 @@ class Plate(GenericPlate):
         :param by: 'Median' or 'Mean'
         :return: dataframe
         """
-        df = None
+        method = ["Median", "Mean"]
+        assert by in method, "Must be {0}".format(method)
+        df = []
         for key, rep in self.replica.items():
             assert isinstance(rep, TCA.Replica)
             tmp = rep.get_groupby_data()
             if by == 'Median':
-                df += tmp.median()
+                df.append(tmp.median())
             else:
-                df += tmp.mean()
-        df /= len(self.replica)
-        return df.reset_index()
+                df.append(tmp.mean())
+        DF = pd.concat(df)
+        return DF.reset_index().groupby(by='Well').mean()
+
 
     def agg_data_from_replica_channel(self, channel, use_sec_data=False, forced_update=False, datatype=None):
         """
-        Compute the mean/median matrix data of all replica
+        Compute the mean/median (defined by .datatype variable ) matrix (.array or .array_c) data of all replica and plate
         If replica data is SpatialNorm already, this function will fill array_c
         :param forced_update: Forced update of replica data, to use when you have determine matrix too soon
         :param use_sec_data: use or not sec data from replica

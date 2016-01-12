@@ -11,7 +11,7 @@ import logging
 log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
@@ -43,7 +43,7 @@ def Binning(Plate, chan, bins=None, nbins=10, percent=True):
 
         if percent:
             x = x.iloc[:, :].apply(lambda a: a / x.sum(axis=1) * 100)
-        
+
         frames[key] = x
 
     return frames

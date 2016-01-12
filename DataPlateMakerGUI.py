@@ -177,6 +177,7 @@ class Application(tk.Frame):
                     ## if chan is to long, cut it
                     if len(str(chan)) >= 30:
                         Chan = ''.join(x for x in str(chan) if not x.islower())
+                        logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
                     else:
                         Chan = str(chan)
 

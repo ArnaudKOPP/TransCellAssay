@@ -31,4 +31,4 @@ This work is under [GPLv3](http://www.gnu.org/licenses/gpl-3.0.html) licence.
 <kopp@igbmc.fr>
 
 
-© 2014-2015 KOPP Arnaud All Rights Reserved
+© 2014-2016 KOPP Arnaud All Rights Reserved

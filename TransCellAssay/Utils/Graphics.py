@@ -5,7 +5,7 @@ Method for making graphics of plate
 import TransCellAssay as TCA
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014-2015 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
@@ -641,8 +641,8 @@ def Replica3ChannelsPlot(replica, x, y, z, single_cell=True, skip_wells=[], size
 def D2Plot(x, y, label_x='x', label_y='y', y_lim=None, x_lim=None, marker='o', color='r', title=None, file_path=None):
     """
     x and y array
-    :param y: array
-    :param x: array
+    :param y: array of value
+    :param x: array of value
     """
     import matplotlib.pyplot as plt
 
@@ -666,9 +666,9 @@ def D2Plot(x, y, label_x='x', label_y='y', y_lim=None, x_lim=None, marker='o', c
 def D3Plot(x, y, z, x_label='x', y_label='y', z_label='z', size=8, color='b', title=None):
     """
     Plot in 3d three array of data
-    :param x: x array
-    :param y: y array
-    :param z: z array
+    :param x: x array of value
+    :param y: y array of value
+    :param z: z array of value
     """
     import numpy as np
     from matplotlib import pyplot as plt
@@ -692,7 +692,9 @@ def D3Plot(x, y, z, x_label='x', y_label='y', z_label='z', size=8, color='b', ti
 
 def PlateRepCor(plate, chan, sec=False):
     """
-    Replicate correlation plots
+    Replicate correlation plots for two or three replica contain in plate object
+    :param plate: take in input a plate object that contain two or three replica
+    :param chan: on which channel make the corelation
     """
     assert  isinstance(plate, TCA.Plate)
     if len(plate) <= 1:
