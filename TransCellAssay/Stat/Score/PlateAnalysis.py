@@ -197,10 +197,10 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                     ResultatsArray.values.loc[:, (chan, "PosCells fdr")] = TCA.adjustpvalues(pvalues=ResultatsArray.values.loc[:, (chan, "PosCells p-value")])
 
             ########### VARIABILITY
-            MeanWellsReplicas = dict([(i, sum(v) / len(v)) for i, v in MeanWellsReplicas.items()])
-            MedianWellsReplicas = dict([(i, sum(v) / len(v)) for i, v in MedianWellsReplicas.items()])
-            ResultatsArray.add_data(MeanWellsReplicas, chan, 'Mean')
-            ResultatsArray.add_data(MedianWellsReplicas, chan, 'Median')
+            Mean = dict([(i, sum(v) / len(v)) for i, v in MeanWellsReplicas.items()])
+            Median = dict([(i, sum(v) / len(v)) for i, v in MedianWellsReplicas.items()])
+            ResultatsArray.add_data(Mean, chan, 'Mean')
+            ResultatsArray.add_data(Median, chan, 'Median')
 
             if len(plate) > 1:
                 log.debug("Variability determination")

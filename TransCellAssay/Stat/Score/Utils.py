@@ -15,11 +15,11 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def ScoringPlate(plate, channel, neg, robust=False, data_c=False, verbose=False):
+def ScoringPlate(plate, channels, neg, robust=False, data_c=False, verbose=False):
     """
     Function for easier making score of Plate
     :param plate:
-    :param channel:
+    :param channels: list format if channels to analysis
     :param neg:
     :param robust:
     :param data_c:
@@ -27,17 +27,22 @@ def ScoringPlate(plate, channel, neg, robust=False, data_c=False, verbose=False)
     :return:
     """
     assert isinstance(plate, TCA.Plate)
-    plate.agg_data_from_replica_channel(channel=channel, forced_update=True)
-    if len(plate) == 1:
-        return __singleReplicaPlate(plate, neg, robust, data_c, verbose)
-    else:
-        return __multipleReplicaPlate(plate, neg, robust, data_c, verbose)
+    DF = []
+    for chan in channels:
+        plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
+        if len(plate) == 1:
+            df = __singleReplicaPlate(plate, neg, robust, data_c, verbose)
+        else:
+            df = __multipleReplicaPlate(plate, neg, robust, data_c, verbose)
+        df.columns = [np.repeat(str(chan), len(df.columns)), df.columns]
+        DF.append(df)
+    return pd.concat(DF, axis=1)
 
 def __singleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False):
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
     gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-    final_array = np.append(gene, plate.platemap._fill_empty(plate.platemap._generate_empty(384)).values.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(gene, plate.platemap._fill_empty(plate.platemap._generate_empty(__SIZE__)).values.flatten().reshape(__SIZE__, 1), axis=1)
     final_array = np.append(final_array, np.repeat([str(plate.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
     final_array = np.append(final_array, plate.array.flatten().reshape(__SIZE__, 1), axis=1)
 
@@ -59,7 +64,7 @@ def __multipleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
     gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-    final_array = np.append(gene, plate.platemap._fill_empty(plate.platemap._generate_empty(384)).values.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(gene, plate.platemap._fill_empty(plate.platemap._generate_empty(__SIZE__)).values.flatten().reshape(__SIZE__, 1), axis=1)
     final_array = np.append(final_array, np.repeat([str(plate.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
     final_array = np.append(final_array, plate.array.flatten().reshape(__SIZE__, 1), axis=1)
 
@@ -92,11 +97,11 @@ def __multipleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False
     x['SSMD Paired UMVUE'] = ssmd3.flatten().reshape(__SIZE__, 1)
     x['SSMD Paired MM'] = ssmd4.flatten().reshape(__SIZE__, 1)
     x['TStat Unpaired Equal'] = tstat1.flatten().reshape(__SIZE__, 1)
-    x['Tstat Unpaired Unequal'] = tstat2.flatten().reshape(__SIZE__, 1)
-    x['Tstat Paired'] = tstat3.flatten().reshape(__SIZE__, 1)
+    x['TStat Unpaired Unequal'] = tstat2.flatten().reshape(__SIZE__, 1)
+    x['TStat Paired'] = tstat3.flatten().reshape(__SIZE__, 1)
     x['TTest UnequalVar'] = ttest1.flatten().reshape(__SIZE__, 1)
-    x['FDR UnequalVal'] = fdr1.flatten().reshape(__SIZE__, 1)
-    x['TTest EqualVa'] = ttest2.flatten().reshape(__SIZE__, 1)
+    x['FDR UnequalVar'] = fdr1.flatten().reshape(__SIZE__, 1)
+    x['TTest EqualVar'] = ttest2.flatten().reshape(__SIZE__, 1)
     x['FDR EqualVar'] = fdr2.flatten().reshape(__SIZE__, 1)
 
     return x
