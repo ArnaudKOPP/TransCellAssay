@@ -32,6 +32,73 @@ def getEventsCounts(plate):
     df = PlateChannelsAnalysis(plate)
     return df
 
+def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold=False):
+    """
+    compute threshold
+    :param plate: plate object
+    :param channel: list of channels
+    :param ctrl: control where determine value of threshold
+    :param threshold: fixe the percent of positive well found in  control well
+    :param percent: True if threshold value is percent, False if we want to give a value
+    :param fixed_threshold: use given threshold (value mode) for all well
+    return a dict with value Chan -> repId -> value
+    """
+    assert isinstance(plate, TCA.Plate)
+    ThresholdVALUE = {}
+
+    if channels is not None:
+
+        if not isinstance(channels, list):
+            channels = [channels]
+
+        ThresholdVALUE = dict([(i, dict([(repname, 0) for repname, rep in plate])) for i in channels])
+
+        if ctrl is not None:
+            ## if neg is list -> suppose that its a list of well
+            if not isinstance(ctrl, list):
+                neg_well = plate.platemap.search_well(ctrl)
+            else:
+                neg_well = ctrl
+        else:
+            if channels is not None:
+                log.warning('No Negative control provided, work only with fixed value of threshold')
+                fixed_threshold = True
+
+        ## iterate over channels
+        for chan in channels:
+
+            for repName, replica in plate:
+                datagb = replica.get_groupby_data()
+                ########### POSITIVE CELLS %
+                # # threshold value for control
+
+                if isinstance(threshold, dict):
+                    THRES = threshold[chan]
+                else:
+                    THRES = threshold
+
+                if THRES >= 100 and percent:
+                    log.warning('Threshold cannot be > 100 with percent')
+                    percent = False
+                    fixed_threshold = True
+
+                if fixed_threshold:
+                    ThresholdValue = THRES
+                    log.debug('     Fixed Threshold value used: {}'.format(ThresholdValue))
+                else:
+                    if percent:
+                        ControlData = replica.get_rawdata(channel=chan, well=neg_well)
+                        ThresholdValue = np.percentile(ControlData, THRES)
+                        log.debug('     Percent {0} Threshold value used: {1}'.format(THRES, ThresholdValue))
+                    else:
+                        ControlData = replica.get_rawdata(channel=chan, well=neg_well)
+                        ThresholdValue = np.mean(ControlData)
+                        log.debug('     Neg Mean Threshold value used: {}'.format(ThresholdValue))
+
+                ThresholdVALUE[chan][repName] = ThresholdValue
+
+    return ThresholdVALUE
+
 
 def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
                           clean=False):
@@ -62,7 +129,6 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
     PM = plate.get_platemap()
     SIZE = PM.shape(alt_frmt=True)
     ResultatsArray = Result(plate)
-    ThresholdVALUE = {}
 
     ## CELLS COUNT STUFF
     CellsCountReplicas = {}
@@ -87,14 +153,13 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
     MeanCellsCount = dict([(i, sum(v) / len(v)) for i, v in CellsCountReplicas.items()])
     ResultatsArray.add_data(MeanCellsCount, "Plate",'CellsCount')
 
+    log.info('Perform plate analysis for {0} on channels :{1}'.format(plate.name, channels))
 
     ## ANALYSING CHANNELS
     if channels is not None:
 
         if not isinstance(channels, list):
             channels = [channels]
-
-        ThresholdVALUE = dict([(i, dict([(repname, 0) for repname, rep in plate])) for i in channels])
 
         if neg is not None:
             ## if neg is list -> suppose that its a list of well
@@ -104,8 +169,12 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                 neg_well = neg
         else:
             if channels is not None:
-                log.info('No Negative control provided, work only with fixed value of threshold')
+                log.info('  No Negative control provided, work only with fixed value of threshold')
                 fixed_threshold = True
+
+        ThresholdVALUE = getThreshold(plate, ctrl=neg, channels=channels, threshold=threshold, percent=percent,
+                        fixed_threshold=False)
+
 
         ## iterate over channels
         for chan in channels:
@@ -114,37 +183,12 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
             MedianWellsReplicas = {}
             PercentCellsReplicas = {}
             PercentCellsSDReplicas = {}
-            log.info('Perform plate analysis for {0} on channel {1}'.format(plate.name, chan))
 
             for repName, replica in plate:
                 datagb = replica.get_groupby_data()
                 ########### POSITIVE CELLS %
                 # # threshold value for control
-
-                if isinstance(threshold, dict):
-                    THRES = threshold[chan]
-                else:
-                    THRES = threshold
-
-                if THRES >= 100 and percent:
-                    log.warning('Threshold cannot be > 100 with percent')
-                    percent = False
-                    fixed_threshold = True
-
-                if fixed_threshold:
-                    ThresholdValue = THRES
-                    log.info('     Fixed Threshold value used: {}'.format(ThresholdValue))
-                else:
-                    if percent:
-                        ControlData = replica.get_rawdata(channel=chan, well=neg_well)
-                        ThresholdValue = np.percentile(ControlData, THRES)
-                        log.info('     Percent {0} Threshold value used: {1}'.format(THRES, ThresholdValue))
-                    else:
-                        ControlData = replica.get_rawdata(channel=chan, well=neg_well)
-                        ThresholdValue = np.mean(ControlData)
-                        log.info('     Neg Mean Threshold value used: {}'.format(ThresholdValue))
-
-                ThresholdVALUE[chan][repName] = ThresholdValue
+                ThresholdValue = ThresholdVALUE[chan][repName]
 
                 ########### VARIABILITY & % OF POSITIVE CELLS
                 well_list = replica.get_unique_well()
@@ -154,7 +198,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                 MedianCells = {}
                 SdCells = {}
                 MadCells = {}
-                log.debug("     Determine Positive Cells percentage")
+                log.debug(" Determine Positive Cells percentage")
                 for well in well_list:
                     xdata = datagb.get_group(well)[chan]
                     len_total = len(xdata.values)
@@ -229,7 +273,10 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                 # ### 0 idx is the neg control
                 temp = list()
                 for neg in neg_well:
-                    temp.extend(CellsCountReplicas[neg])
+                    try:
+                        temp.extend(CellsCountReplicas[neg])
+                    except Exception as e:
+                        pass
                 max_cell = np.mean(temp)
                 ## or this but don't work when data are missing ????
                 # max_cell = np.mean([CellsCountReplicas[neg] for neg in neg_well])
@@ -254,7 +301,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
                     ResultatsArray.add_data(Viability, chan, 'Viability')
                 else:
-                    log.info('No positive control provided, no viability performed')
+                    log.info('  No positive control provided, no viability performed')
 
     ### Remove row with cellscount is 0
     if clean:
