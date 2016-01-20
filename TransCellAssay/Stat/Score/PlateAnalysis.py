@@ -153,11 +153,9 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
     MeanCellsCount = dict([(i, sum(v) / len(v)) for i, v in CellsCountReplicas.items()])
     ResultatsArray.add_data(MeanCellsCount, "Plate",'CellsCount')
 
-    log.info('Perform plate analysis for {0} on channels :{1}'.format(plate.name, channels))
-
     ## ANALYSING CHANNELS
     if channels is not None:
-
+        log.info('Perform plate analysis for {0} on channels :{1}'.format(plate.name, channels))
         if not isinstance(channels, list):
             channels = [channels]
 
