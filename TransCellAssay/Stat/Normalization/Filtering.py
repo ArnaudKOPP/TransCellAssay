@@ -6,6 +6,7 @@ Filtering data with given condition
 import numpy as np
 import TransCellAssay as TCA
 import logging
+import copy
 
 log = logging.getLogger(__name__)
 
@@ -15,6 +16,9 @@ __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
+
+def channelsFiltering(plate):
+    assert isinstance(plate, TCA.Plate)
 
 
 def channel_filtering(plate, channel, value, thres="lower", include=True, percent=False):
@@ -35,9 +39,11 @@ def channel_filtering(plate, channel, value, thres="lower", include=True, percen
     assert thres in __valid_thres, "type must be {}".format(__valid_thres)
 
     log.info('Apply filtering on :{}'.format(plate.name))
-    for key, values in plate:
-        plate[key] = __replica_filtering(values, channel, thres, value[key], include, percent)
-    return plate
+    plate.clear_cache()
+    PlateCopy = copy.deepcopy(plate)
+    for key, values in PlateCopy:
+        PlateCopy[key] = __replica_filtering(values, channel, thres, value[key], include, percent)
+    return PlateCopy
 
 def __replica_filtering(replica, channel, thres, cut_value, include=True, percent=False):
     log.debug('Apply filtering on :{}'.format(replica.name))

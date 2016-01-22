@@ -66,32 +66,29 @@ def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold
 
         ## iterate over channels
         for chan in channels:
+            if isinstance(threshold, dict):
+                THRES = threshold[chan]
+            else:
+                THRES = threshold
+
+            if THRES >= 100 and percent:
+                log.warning('Threshold cannot be > 100 with percent')
+                percent = False
+                fixed_threshold = True
 
             for repName, replica in plate:
                 datagb = replica.get_groupby_data()
-                ########### POSITIVE CELLS %
-                # # threshold value for control
-
-                if isinstance(threshold, dict):
-                    THRES = threshold[chan]
-                else:
-                    THRES = threshold
-
-                if THRES >= 100 and percent:
-                    log.warning('Threshold cannot be > 100 with percent')
-                    percent = False
-                    fixed_threshold = True
 
                 if fixed_threshold:
                     ThresholdValue = THRES
                     log.debug('     Fixed Threshold value used: {}'.format(ThresholdValue))
                 else:
+                    ControlData = replica.get_rawdata(channel=chan, well=neg_well)
                     if percent:
-                        ControlData = replica.get_rawdata(channel=chan, well=neg_well)
                         ThresholdValue = np.percentile(ControlData, THRES)
                         log.debug('     Percent {0} Threshold value used: {1}'.format(THRES, ThresholdValue))
                     else:
-                        ControlData = replica.get_rawdata(channel=chan, well=neg_well)
+                        # Take mean of neg ctrl if fixed_threshold and percent are False
                         ThresholdValue = np.mean(ControlData)
                         log.debug('     Neg Mean Threshold value used: {}'.format(ThresholdValue))
 
@@ -226,7 +223,10 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                     log.debug("Perform T-Test on positive Cells percentage")
                     NegData = list()
                     for x in neg_well:
-                        NegData.extend(PercentCellsReplicas[x])
+                        try:
+                            NegData.extend(PercentCellsReplicas[x])
+                        except:
+                            continue
                     ## or this but don't work when data are missing ????
                     # neg_data = [PercentCellsReplicas[x] for x in neg_well]
                     NegData = np.array(NegData).flatten()
@@ -258,9 +258,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
             # ########## determine the standart deviation of % Cells
             if len(plate) > 1:
-                for key, value in PercentCellsReplicas.items():
-                    PercentCellsSDReplicas[key] = np.std(value)
-
+                PercentCellsSDReplicas = dict([(i, np.std(v)) for i, v in PercentCellsReplicas.items()])
                 ResultatsArray.add_data(PercentCellsSDReplicas, chan, 'PositiveCells std')
 
             # ########## toxicity index

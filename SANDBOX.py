@@ -10,10 +10,11 @@ import cProfile
 import TransCellAssay as TCA
 import logging
 import copy
+import sys
 
 logging.basicConfig(level=logging.INFO, format='[%(process)d/%(processName)s] @ [%(asctime)s] - %(levelname)-8s : %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p')
-pd.set_option('display.max_rows',30)
+pd.set_option('display.max_rows',50)
 pd.set_option('display.max_columns', 15)
 pd.set_option('display.width', 1000)
 np.set_printoptions(linewidth=300)
@@ -219,6 +220,7 @@ def DUX4():
         #                               neg=plaque.platemap.search_well(neg),
         #                               pos=plaque.platemap.search_well(pos))
         print(plaque.get_agg_data_from_replica_channels())
+        print(TCA.Binning(plaque, chan=channel))
         # for key, value in plaque:
         #     print(value.array)
         # print(plaque.array)
@@ -337,7 +339,7 @@ def DUX4():
     # DF_ratio = pd.concat(ListDF_ratio)
     # DF_ratio.to_csv(os.path.join(RatioPath, 'CellsCount.csv'), header=True, index=False)
 
-DUX4()
+# DUX4()
 
 def HDVValidation():
     path = "/home/akopp/Documents/HDV validation2 SiRNA/"
@@ -664,7 +666,7 @@ def XGScreen():
     BankPath = os.path.join(path, "Bank")
     DataPath = os.path.join(path, "Data")
 
-    ResPath = os.path.join(path, 'AnalysePl16')
+    ResPath = os.path.join(path, 'Analyse22012016')
     if not os.path.isdir(ResPath):
         os.makedirs(ResPath)
 
@@ -674,21 +676,20 @@ def XGScreen():
     DF3 = []
     DF4 = []
     DF5 = []
-    DF6 = []
-    DF7 = []
 
-    CNT1 = []
-    CNT2 = []
-    CNT3 = []
-    CNT4 = []
-    for i in range(16, 17, 1):
+    S1 = []
+    S2 = []
+    S3 = []
+    S4 = []
+    S5 = []
+
+    for i in range(1, 2, 1):
         plaque = TCA.Plate(name="XavierGaume_"+str(i), platemap=os.path.join(BankPath, "PP_"+str(i)+".csv"))
 
-        # for j in range(1, 4, 1):
-        #     file = os.path.join(DataPath, 'Screening Gaume '+str(i)+'.'+str(j)+'.csv')
-        #     if os.path.isfile(file):
-        #         plaque + TCA.Core.Replica(name='Rep'+str(j), fpath=file)
-        plaque + TCA.Core.Replica(name="Rep1", fpath=os.path.join(DataPath, "Screening Gaume 16.csv"))
+        for j in range(1, 4, 1):
+            file = os.path.join(DataPath, 'Screening Gaume '+str(i)+'.'+str(j)+'.csv')
+            if os.path.isfile(file):
+                plaque + TCA.Core.Replica(name='Rep'+str(j), fpath=file)
 
         plaque.platemap["A1"] = "Non Transfecté"
         plaque.platemap["B1"] = "Neg1"
@@ -707,86 +708,94 @@ def XGScreen():
         plaque.platemap["G12"] = "Neg1"
         plaque.platemap["H12"] = "NT sans ACLaire"
 
+        # x = TCA.Binning(plaque, chan="SpotCountCh2", bins=[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 51])
+        # lst = []
+        # somme = []
+        # for key, value in x.items():
+        #     somme.append(value.reset_index())
+        #     value.columns = [key+col for col in value.columns]
+        #     lst.append(value)
+        # lst.append(pd.concat(somme).groupby(by="Well").mean())
+        # df = pd.concat(lst, axis=1)
+        # __SIZE__ = 96
+        # df["Well"] = plaque.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
+        # df["Plate"] = np.repeat([str(plaque.name)], __SIZE__).reshape(__SIZE__, 1)
+        # DF.append(df)
+
+
+
+        # df, thres = TCA.PlateChannelsAnalysis(plaque, neg='Neg1', channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"],
+        #                                         threshold={"AvgIntenCh3": 99.8, "AvgIntenCh4": 2, "AvgIntenCh5" : 98},
+        #                                         percent=True, clean=False)
+        # DF1.append(df)
+        #
+        # df = TCA.ScoringPlate(plaque, channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"], neg="Neg1", verbose=False, robust=True)
+        # S1.append(df)
+
         channel1 = 'AvgIntenCh3'
-        df1, thres1 = TCA.plate_channel_analysis(plaque, neg="Neg1", channel=channel1, threshold=99.8, percent=True, clean=True)
-        DF1.append(df1)
-
         channel2 = 'AvgIntenCh4'
-        df2, thres2 = TCA.plate_channel_analysis(plaque, neg="Neg1", channel=channel2, threshold=2, percent=True, clean=True)
-        DF2.append(df2)
-
         channel3 = 'AvgIntenCh5'
-        df3, thres3 = TCA.plate_channel_analysis(plaque, neg="Neg1", channel=channel3, threshold=98, percent=True, clean=True,)
-        DF3.append(df3)
 
-        chan = 'SpotCountCh2'
-        df, thres = TCA.plate_channel_analysis(plaque, neg="Neg1", channel=chan, clean=True)
-        DF4.append(df)
+        ### FILTERING PARTS
+        thres = TCA.getThreshold(plaque, ctrl="Neg1", channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"],
+                                            threshold={"AvgIntenCh3": 99.8, "AvgIntenCh4": 2, "AvgIntenCh5" : 98},
+                                            percent=True)
+        print(thres)
+        print(TCA.PlateAnalysisScoring(plaque, neg="Neg1", channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"],
+                                            threshold={"AvgIntenCh3": 99.8, "AvgIntenCh4": 2, "AvgIntenCh5" : 98},
+                                            percent=True))
 
-        chan = 'SpotTotalAreaCh2'
-        df, thres = TCA.plate_channel_analysis(plaque, neg="Neg1", channel=chan, clean=True)
-        DF5.append(df)
-
-        chan = 'SpotAvgAreaCh2'
-        df, thres = TCA.plate_channel_analysis(plaque, neg="Neg1", channel=chan, clean=True,)
-        DF6.append(df)
-
-        chann = 'ObjectAreaCh1'
-        df, thres = TCA.plate_channel_analysis(plaque, neg="Neg1", channel=chan, clean=True,)
-        DF7.append(df)
-
-        file = open(os.path.join(ResPath, 'IntensitiesThresholdValues.txt'), 'a')
-        file.write(str(plaque.name)+" : "+str(channel1)+" : " + str(thres1) + "\n")
-        file.write(str(plaque.name)+" : "+str(channel2)+" : " + str(thres2) + "\n")
-        file.write(str(plaque.name)+" : "+str(channel3)+" : " + str(thres3) + "\n")
-        file.close()
-
-        plaque.clear_memory()
-
-        plaqueCP = copy.deepcopy(plaque)
-        plaqueCP.platemap = plaque.platemap
-        TCA.channel_filtering(plaqueCP, channel=channel1, value=thres1, thres="lower", include=True, percent=False)
-        TCA.channel_filtering(plaqueCP, channel=channel2, value=thres2, thres="upper", include=True, percent=False)
-        cnt = TCA.getEventsCounts(plaqueCP)
-        CNT1.append(cnt)
-
-        plaqueCP = copy.deepcopy(plaque)
-        plaqueCP.platemap = plaque.platemap
-        TCA.channel_filtering(plaqueCP, channel=channel1, value=thres1, thres="lower", include=True, percent=False)
-        TCA.channel_filtering(plaqueCP, channel=channel3, value=thres3, thres="lower", include=True, percent=False)
-        cnt = TCA.getEventsCounts(plaqueCP)
-        CNT2.append(cnt)
-
-        plaqueCP = copy.deepcopy(plaque)
-        plaqueCP.platemap = plaque.platemap
-        TCA.channel_filtering(plaqueCP, channel=channel2, value=thres2, thres="upper", include=True, percent=False)
-        TCA.channel_filtering(plaqueCP, channel=channel3, value=thres3, thres="lower", include=True, percent=False)
-        cnt = TCA.getEventsCounts(plaqueCP)
-        CNT3.append(cnt)
-
-        plaqueCP = copy.deepcopy(plaque)
-        plaqueCP.platemap = plaque.platemap
-        TCA.channel_filtering(plaqueCP, channel=channel1, value=thres1, thres="lower", include=True, percent=False)
-        TCA.channel_filtering(plaqueCP, channel=channel2, value=thres2, thres="upper", include=True, percent=False)
-        TCA.channel_filtering(plaqueCP, channel=channel3, value=thres3, thres="lower", include=True, percent=False)
-        cnt = TCA.getEventsCounts(plaqueCP)
-        CNT4.append(cnt)
+        # plaqueCP = TCA.channel_filtering(plaque, channel=channel1, value=thres[channel1], thres="lower", include=True, percent=False)
+        # plaqueCP = TCA.channel_filtering(plaqueCP, channel=channel2, value=thres[channel2], thres="upper", include=True, percent=False)
+        # df, thres = TCA.PlateChannelsAnalysis(plaqueCP, neg='Neg1', channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"],
+        #                                     threshold={"AvgIntenCh3": 99.8, "AvgIntenCh4": 2, "AvgIntenCh5" : 98},
+        #                                     percent=True, clean=False)
+        # DF2.append(df)
+        # df = TCA.ScoringPlate(plaqueCP, channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"], neg="Neg1", verbose=False, robust=True)
+        # S2.append(df)
 
 
-    pd.concat(DF1).to_csv(os.path.join(ResPath, 'AvgIntenCh3.csv'), index=False)
-    pd.concat(DF2).to_csv(os.path.join(ResPath, 'AvgIntenCh4.csv'), index=False)
-    pd.concat(DF3).to_csv(os.path.join(ResPath, 'AvgIntenCh5.csv'), index=False)
-    pd.concat(DF4).to_csv(os.path.join(ResPath, 'SpotCountCh2.csv'), index=False)
-    pd.concat(DF5).to_csv(os.path.join(ResPath, 'SpotTotalAreaCh2.csv'), index=False)
-    pd.concat(DF6).to_csv(os.path.join(ResPath, 'SpotAvgAreaCh2.csv'), index=False)
-    pd.concat(DF7).to_csv(os.path.join(ResPath, 'ObjectAreaCh1.csv'), index=False)
+        # plaqueCP = TCA.channel_filtering(plaque, channel=channel1, value=thres[channel1], thres="lower", include=True, percent=False)
+        # plaqueCP = TCA.channel_filtering(plaqueCP, channel=channel3, value=thres[channel3], thres="lower", include=True, percent=False)
+        # df, thres = TCA.PlateChannelsAnalysis(plaqueCP, neg='Neg1', channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"],
+        #                                     threshold={"AvgIntenCh3": 99.8, "AvgIntenCh4": 2, "AvgIntenCh5" : 98},
+        #                                     percent=True, clean=False)
+        # DF3.append(df)
+        # df = TCA.ScoringPlate(plaqueCP, channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"], neg="Neg1", verbose=False, robust=True)
+        # S3.append(df)
 
-    pd.concat(CNT1).to_csv(os.path.join(ResPath, 'GFP+Oct34-.csv'), index=False)
-    pd.concat(CNT2).to_csv(os.path.join(ResPath, 'GFP+Zscan4+.csv'), index=False)
-    pd.concat(CNT3).to_csv(os.path.join(ResPath, 'Oct34-Zscan4+.csv'), index=False)
-    pd.concat(CNT4).to_csv(os.path.join(ResPath, 'GFP+Oct34-Zscan4+.csv'), index=False)
+        # plaqueCP = TCA.channel_filtering(plaque, channel=channel2, value=thres[channel2], thres="upper", include=True, percent=False)
+        # plaqueCP = TCA.channel_filtering(plaqueCP, channel=channel3, value=thres[channel3], thres="lower", include=True, percent=False)
+        # df, thres = TCA.PlateChannelsAnalysis(plaqueCP, neg='Neg1', channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"],
+        #                                     threshold={"AvgIntenCh3": 99.8, "AvgIntenCh4": 2, "AvgIntenCh5" : 98},
+        #                                     percent=True, clean=False)
+        # DF4.append(df)
+        # df = TCA.ScoringPlate(plaqueCP, channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"], neg="Neg1", verbose=False, robust=True)
+        # S4.append(df)
 
-# XGScreen()
+        # plaqueCP = TCA.channel_filtering(plaque, channel=channel1, value=thres[channel1], thres="lower", include=True, percent=False)
+        # plaqueCP = TCA.channel_filtering(plaqueCP, channel=channel2, value=thres[channel2], thres="upper", include=True, percent=False)
+        # plaqueCP = TCA.channel_filtering(plaqueCP, channel=channel3, value=thres[channel3], thres="lower", include=True, percent=False)
+        # df, thres = TCA.PlateChannelsAnalysis(plaqueCP, neg='Neg1', channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"],
+        #                                     threshold={"AvgIntenCh3": 99.8, "AvgIntenCh4": 2, "AvgIntenCh5" : 98},
+        #                                     percent=True, clean=False)
+        # DF5.append(df)
+        # df = TCA.ScoringPlate(plaqueCP, channels=["AvgIntenCh3", "AvgIntenCh4", "AvgIntenCh5"], neg="Neg1", verbose=False, robust=True)
+        # S5.append(df)
+
+    # pd.concat(DF1).to_csv(os.path.join(ResPath, 'Channels.csv'), index=False)
+    # pd.concat(DF2).to_csv(os.path.join(ResPath, 'ChannelsGFP+Oct34-.csv'), index=False)
+    # pd.concat(DF3).to_csv(os.path.join(ResPath, 'ChannelsGFP+Zscan4+.csv'), index=False)
+    # pd.concat(DF4).to_csv(os.path.join(ResPath, 'ChannelsOct34-Zscan4+.csv'), index=False)
+    # pd.concat(DF5).to_csv(os.path.join(ResPath, 'ChannelsGFP+Oct34-Zscan4+.csv'), index=False)
+
+    # pd.concat(S1).to_csv(os.path.join(ResPath, 'Score.csv'), index=False)
+    # pd.concat(S2).to_csv(os.path.join(ResPath, 'ScoreGFP+Oct34-.csv'), index=False)
+    # pd.concat(S3).to_csv(os.path.join(ResPath, 'ScoreGFP+Zscan4+.csv'), index=False)
+    # pd.concat(S4).to_csv(os.path.join(ResPath, 'ScoreOct34-Zscan4+.csv'), index=False)
+    # pd.concat(S5).to_csv(os.path.join(ResPath, 'ScoreGFP+Oct34-Zscan4+.csv'), index=False)
+
+XGScreen()
 
 def Anna():
     FPath = "/home/akopp/Documents/Anna2/"
@@ -841,6 +850,9 @@ def Angelique():
 # print(pm2['D6'])
 # cProfile.run('[TCA.get_opposite_well_format("B12", bignum=True) for i in range(1000)]')
 # cProfile.run('[TCA.get_opposite_well_format("B12") for i in range(1000)]')
+# cProfile.run('[TCA.get_opposite_well_format((20,20), bignum=True) for i in range(1000)]')
+# cProfile.run('[TCA.get_opposite_well_format((4,6)) for i in range(1000)]')
+
 
 ############################
 # ##### FUNCTION POOL ######

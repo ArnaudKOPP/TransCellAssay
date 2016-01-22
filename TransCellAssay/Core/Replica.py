@@ -377,17 +377,13 @@ class Replica(GenericPlate):
         """
         return self.__file
 
-    def clear_memory(self, only_cache=True):
+    def clear_cache(self):
         """
         Remove some data for saving memory
-        :param only_caching: remove only cache
         """
         self.__CACHING_gbdata = None
         self.__CACHING_gbdata_key = None
         log.debug('Cache cleared')
-        if not only_cache:
-            self.df = None
-            log.debug('Rawdata cleared')
 
     def get_groupby_data(self, key='Well'):
         """

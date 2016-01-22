@@ -85,7 +85,7 @@ class Plate(GenericPlate):
         return [values.name for key, values in self.replica.items()]
 
     def get_replica_file_location(self):
-        return [values.rawdata.get_file_location() for key, values in self.replica.items()]
+        return [values.get_file_location() for key, values in self.replica.items()]
 
     def get_all_replica(self):
         """
@@ -358,13 +358,13 @@ class Plate(GenericPlate):
                 np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(value.name)+'_'+str(channel)) + ".csv",
                            X=value.array, delimiter=",", fmt='%1.4f')
 
-    def clear_memory(self, only_cache=True):
+    def clear_cache(self):
         """
         Save memory by deleting Raw Data
         :param only_cache: Remove only cache
         """
         for key, value in self.replica.items():
-            value.clear_memory(only_cache=only_cache)
+            value.clear_cache()
 
     def get_file_location(self):
         """

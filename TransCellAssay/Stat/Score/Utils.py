@@ -14,17 +14,41 @@ __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
+def PlateAnalysisScoring(plate, channels, neg, pos=None, threshold=50, percent=True, fixed_threshold=True, robust=True,
+                        data_c=False, verbose=False):
+    """
+    Function that analysis and scoring channels given
+    :param plate: plate object
+    :param channel: list of channels
+    :param neg: negative control
+    :param pos: positive control, is optional
+    :param threshold: fixe the percent of positive well found in negative control well
+    :param percent: True if threshold value is percent, False if we want to give a value
+    :param fixed_threshold: use given threshold (value mode) for all well
+    :param robust: use mean er median
+    :param data_c: corrected data or not
+    :param verbose: verbose or not
+    :return: result into dataframe
+    """
+    assert isinstance(plate, TCA.Plate)
+
+    df1, thres = TCA.PlateChannelsAnalysis(plate, channels=channels, neg=neg, pos=pos, threshold=threshold, percent=percent,
+                                        fixed_threshold=fixed_threshold, clean=False)
+    df2 = ScoringPlate(plate, channels=channels, neg=neg, robust=robust, data_c=data_c, verbose=verbose)
+
+    return pd.concat([df1,df2], axis=1)
+
 
 def ScoringPlate(plate, channels, neg, robust=False, data_c=False, verbose=False):
     """
     Function for easier making score of Plate
-    :param plate:
+    :param plate: plate object
     :param channels: list format if channels to analysis
-    :param neg:
-    :param robust:
-    :param data_c:
-    :param verbose:
-    :return:
+    :param neg: negative control
+    :param robust: use mean or median
+    :param data_c: corrected data (spatial norm)
+    :param verbose: verbose or not
+    :return: dataframe
     """
     assert isinstance(plate, TCA.Plate)
     DF = []
