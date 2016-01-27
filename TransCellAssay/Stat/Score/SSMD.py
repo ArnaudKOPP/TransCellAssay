@@ -36,7 +36,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, method='UMVUE', variance='unequal',
+def plate_ssmd_score(plate, neg_control, chan, paired=True, robust_version=True, method='UMVUE', variance='unequal',
                      sec_data=True, control_plate=None, inplate_data=False, verbose=False):
     """
     Performed SSMD on plate object
@@ -44,6 +44,7 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
         paired is for plate with replica with great variance between them
     :param plate: Plate Object to analyze
     :param neg_control: negative control reference
+    :param chan: on which channel tested
     :param paired: paired or unpaired statistic
     :param robust_version: use robust version or not
     :param method: which method to use MM or UMVUE
@@ -56,7 +57,11 @@ def plate_ssmd_score(plate, neg_control, paired=True, robust_version=True, metho
     assert isinstance(plate, TCA.Plate)
     if neg_control is None:
         raise ValueError('Must provided negative control')
-    log.info('Perform SSMD on plate : {}'.format(plate.name))
+
+    if plate._array_channel != chan:
+        plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
+
+    log.info('Perform SSMD on plate : {0} over channel {1}'.format(plate.name, chan))
     if len(plate) > 1 and not inplate_data:
         if not paired:
             if robust_version:
@@ -123,15 +128,13 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, contr
         if not neg_position:
             raise Exception("Not Well for control")
         neg_value = __search_unpaired_data(control_plate, neg_position, sec_data)
-        nb_neg_wells = len(neg_value)
     else:
         neg_position = plate.platemap.search_coord(neg_control)
         if not neg_position:
             raise Exception("Not Well for control")
         neg_value = __search_unpaired_data(plate, neg_position, sec_data)
-        nb_neg_wells = len(neg_value)
 
-    nb_rep = len(plate.replica)
+    nb_neg_wells = len(neg_value)
 
     if robust:
         mean_median_neg = np.median(neg_value)
@@ -139,10 +142,10 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, contr
         mean_median_neg = np.mean(neg_value)
     var_neg = np.var(neg_value)
 
-    # k = 2 * (scipy.special.gamma(((len(plate.replica) + len(neg_value) - 2) / 2) /
-    #                              scipy.special.gamma((len(plate.replica) + len(neg_value) - 3) / 2))) ** 2
-
-    k = len(plate.replica) + len(neg_value) - 3.48
+    n = len(plate)
+    N = len(neg_value)
+    k = 2 * (scipy.special.gamma(((n + N) - 2) / 2) / scipy.special.gamma(((n + N) - 3) / 2)) ** 2
+    # k = len(plate) + len(neg_value) - 3.48
 
     # search rep value for ith well
     for i in range(ssmd.shape[0]):
@@ -168,7 +171,7 @@ def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, contr
                 ssmd[i][j] = (mean_rep - mean_median_neg) / np.sqrt(var_rep**2 + var_neg**2)
             elif variance == 'equal':
                 ssmd[i][j] = (mean_rep - mean_median_neg) / np.sqrt(
-                    (2 / k) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2))
+                    (2 / k) * ((n - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2))
 
     if verbose:
         print("Unpaired SSMD :")
@@ -223,7 +226,7 @@ def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=Fal
     if not neg_position:
         raise Exception("Not Well for control")
 
-    n = len(plate.replica)
+    n = len(plate)
     x = (scipy.special.gamma((n - 1) / 2) / scipy.special.gamma((n - 2) / 2)) * np.sqrt(2 / (n - 1))
 
     try:

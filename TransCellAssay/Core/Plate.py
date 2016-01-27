@@ -191,23 +191,36 @@ class Plate(GenericPlate):
         i = 0
         if datatype is None:
             datatype=self.datatype
+        self.datatype = datatype
+        change=False
         for key, replica in self.replica.items():
-            i += 1
-            if replica.array is None:
+            if forced_update:
                 replica.compute_data_channel(channel, datatype=datatype)
+                change=True
             else:
-                if forced_update:
+                if replica.array is None:
                     replica.compute_data_channel(channel, datatype=datatype)
-            self.datatype = datatype
+                else:
+                    replica.compute_data_channel(channel, datatype=datatype)
+                    change=True
+
             if not use_sec_data:
                 tmp_array = tmp_array + replica.array
             else:
                 tmp_array = tmp_array + replica.array_c
+            i += 1
+
+        if change:
+            if self._array_channel != channel:
+                log.warning('Overwriting Data : {0} -> {1} on {2}'.format(
+                    self._array_channel, channel, self.name))
 
         if not use_sec_data:
             self.array = tmp_array / i
         else:
             self.array_c = tmp_array / i
+
+        self._array_channel = channel
 
     def cut(self, rb, re, cb, ce, apply_down=True):
         """

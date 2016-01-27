@@ -180,9 +180,8 @@ class Replica(GenericPlate):
         :param channel: which channel to keep in matrix
         :return:
         """
-        if self.array is not None:
-            if self._array_channel is not channel:
-                log.warning('Overwriting previous channel data from {} to {}'.format(
+        if self._array_channel != channel:
+            log.debug('Overwriting previous channel data from {0} to {1}'.format(
                     self._array_channel, channel))
         self.array = self.__compute_data_channel(channel=channel, type_mean=datatype)
         self.datatype = datatype

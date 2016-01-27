@@ -19,7 +19,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def rank_product(plate, channel, secdata=False, mean_method="mean", rank_method="average"):
+def rank_product(plate, channel, chan, secdata=False, mean_method="mean", rank_method="average"):
     """
     Compute the rank product of plate with replica data
     :param plate: plate object
@@ -31,11 +31,13 @@ def rank_product(plate, channel, secdata=False, mean_method="mean", rank_method=
     :return: return np ndarray with result
     """
     assert isinstance(plate, TCA.Plate)
-    plate.agg_data_from_replica_channel(channel=channel, forced_update=True)
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
+    if plate._array_channel != chan:
+        plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
 
-    log.info('Perform Rank product on plate {}'.format(plate.name))
+    log.info('Perform Rank product on plate : {0} over channel {1}'.format(plate.name, chan))
+
     x = pd.DataFrame(plate.platemap.platemap.values.flatten().reshape(__SIZE__ , 1), columns=['PlateMap'])
     for key, value in plate.replica.items():
         log.debug('Rank : iteration on %s' % value.name)

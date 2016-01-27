@@ -55,14 +55,14 @@ def ScoringPlate(plate, channels, neg, robust=False, data_c=False, verbose=False
     for chan in channels:
         plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
         if len(plate) == 1:
-            df = __singleReplicaPlate(plate, neg, robust, data_c, verbose)
+            df = __singleReplicaPlate(plate, neg, chan, robust, data_c, verbose)
         else:
-            df = __multipleReplicaPlate(plate, neg, robust, data_c, verbose)
+            df = __multipleReplicaPlate(plate, neg, chan, robust, data_c, verbose)
         df.columns = [np.repeat(str(chan), len(df.columns)), df.columns]
         DF.append(df)
     return pd.concat(DF, axis=1)
 
-def __singleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False):
+def __singleReplicaPlate(plate, neg, chan, robust=False, data_c=False, verbose=False):
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
     gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
@@ -73,9 +73,9 @@ def __singleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False):
     x = pd.DataFrame(final_array)
     x.columns = ['PlateMap', 'Well', 'PlateName', 'Well Mean']
 
-    ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, method='MM', robust_version=robust, sec_data=data_c,
+    ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, method='MM', robust_version=robust, sec_data=data_c,
                              verbose=verbose)
-    ssmd2 = TCA.plate_ssmd_score(plate, neg_control=neg, robust_version=robust, sec_data=data_c,
+    ssmd2 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, robust_version=robust, sec_data=data_c,
                              verbose=verbose)
 
     x['SSMD MM'] = ssmd1.flatten().reshape(__SIZE__, 1)
@@ -83,7 +83,7 @@ def __singleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False):
 
     return x
 
-def __multipleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False):
+def __multipleReplicaPlate(plate, neg, chan, robust=False, data_c=False, verbose=False):
 
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
@@ -95,23 +95,23 @@ def __multipleReplicaPlate(plate, neg, robust=False, data_c=False, verbose=False
     x = pd.DataFrame(final_array)
     x.columns = ['PlateMap', 'Well', 'PlateName', 'Well Mean']
 
-    ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, paired=False, robust_version=robust, sec_data=data_c,
+    ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=False, robust_version=robust, sec_data=data_c,
                              verbose=verbose)
-    ssmd2 = TCA.plate_ssmd_score(plate, neg_control=neg, paired=False, robust_version=robust, sec_data=data_c,
+    ssmd2 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=False, robust_version=robust, sec_data=data_c,
                                  variance="equal", verbose=verbose)
-    ssmd3 = TCA.plate_ssmd_score(plate, neg_control=neg, paired=True, robust_version=robust, sec_data=data_c,
+    ssmd3 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=True, robust_version=robust, sec_data=data_c,
                                  verbose=verbose)
-    ssmd4 = TCA.plate_ssmd_score(plate, neg_control=neg, paired=True, robust_version=robust, sec_data=data_c,
+    ssmd4 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=True, robust_version=robust, sec_data=data_c,
                                  method='MM', verbose=verbose)
-    tstat1 = TCA.plate_tstat_score(plate, neg_control=neg, paired=False, variance='equal', sec_data=data_c,
+    tstat1 = TCA.plate_tstat_score(plate, neg_control=neg, chan=chan, paired=False, variance='equal', sec_data=data_c,
                                    verbose=verbose, robust=robust)
-    tstat2 = TCA.plate_tstat_score(plate, neg_control=neg, paired=False, sec_data=data_c, verbose=verbose,
+    tstat2 = TCA.plate_tstat_score(plate, neg_control=neg, chan=chan, paired=False, sec_data=data_c, verbose=verbose,
                                    robust=robust)
-    tstat3 = TCA.plate_tstat_score(plate, neg_control=neg, paired=True, sec_data=data_c, verbose=verbose,
+    tstat3 = TCA.plate_tstat_score(plate, neg_control=neg, chan=chan, paired=True, sec_data=data_c, verbose=verbose,
                                    robust=robust)
 
-    ttest1, fdr1 = TCA.plate_ttest(plate, neg, verbose=verbose)
-    ttest2, fdr2 = TCA.plate_ttest(plate, neg, equal_var=True, verbose=verbose)
+    ttest1, fdr1 = TCA.plate_ttest(plate, neg, chan=chan, verbose=verbose)
+    ttest2, fdr2 = TCA.plate_ttest(plate, neg, chan=chan, equal_var=True, verbose=verbose)
 
     for key, value in plate.replica.items():
         x[value.name] = value.array.flatten().reshape(__SIZE__, 1)
