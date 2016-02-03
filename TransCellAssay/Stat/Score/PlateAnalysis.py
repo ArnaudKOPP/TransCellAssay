@@ -168,7 +168,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                 fixed_threshold = True
 
         ThresholdVALUE = getThreshold(plate, ctrl=neg, channels=channels, threshold=threshold, percent=percent,
-                        fixed_threshold=False)
+                        fixed_threshold=fixed_threshold)
 
 
         ## iterate over channels
@@ -326,7 +326,7 @@ class Result(object):
 
         tmp = pd.DataFrame(plate.platemap.as_array())
         tmp.columns = [['Plate', 'Plate'], ['Well', 'PlateMap']]
-        self.values = pd.concat([pd.DataFrame(np.repeat([plate.name], 96), columns=[['Plate'], ['PlateName']]),
+        self.values = pd.concat([pd.DataFrame(np.repeat([plate.name], __SIZE__), columns=[['Plate'], ['PlateName']]),
                         tmp],
                         axis=1)
 

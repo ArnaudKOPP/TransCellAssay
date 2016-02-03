@@ -99,7 +99,8 @@ class PlateMap(object):
 
     def search_coord(self, elem):
         """
-        Search position of the gene and return coord (list ff multiple)
+        Search position of the gene and return coord (list if multiple)
+        raise keyerror if element not found
         :param elem: gene to search
         :return: list of coord
         """
@@ -113,6 +114,7 @@ class PlateMap(object):
     def search_well(self, elem):
         """
         Search position of the gene and return Well (list if multiple)
+        raise keyerror if element not found
         :param elem: gene to search
         :return: list of Well
         """
