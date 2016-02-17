@@ -419,6 +419,23 @@ class Replica(GenericPlate):
         else:
             return self.__CACHING_gbdata.get_group(key)
 
+    def remove_wells_data(self, wells, key="Well"):
+        """
+        Remove wells from rawdata
+        param wells: list of wells
+        """
+        for well in wells:
+            self.df = self.df[self.df[key] != well]
+
+    def add_wells_data(self, data):
+        """
+        Add rawdata @ df
+        """
+        try:
+            self.df = self.df.appen(data)
+        except Exception as e:
+            print(e)
+
     def __iter__(self):
         """
         iterate on group with groups key
