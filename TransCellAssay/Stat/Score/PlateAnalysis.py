@@ -100,9 +100,9 @@ def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold
 def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
                           clean=False):
     """
-    Like plate_channel_analysis, do a plate analysis but for multiple channels and parameters
+    Do a plate analysis for multiple channels and parameters
     :param plate: plate object
-    :param channel: list of channels
+    :param channel: list of channels to analyse
     :param neg: negative control
     :param pos: positive control, is optional
     :param threshold: fixe the percent of positive well found in negative control well
@@ -125,34 +125,51 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
     PM = plate.get_platemap()
     SIZE = PM.shape(alt_frmt=True)
-    ResultatsArray = Result(plate)
+    NREP = len(plate)
 
-    ## CELLS COUNT STUFF
-    CellsCountReplicas = {}
-    for repName, replica in plate:
-        log.debug("Iteration on replica : {0} | {1} cells".format(replica.name, len(replica.df)))
-        cellcount = replica.get_groupby_data()[__WellKey].count().to_dict()
-        CellsCount = {}
-        for key, value in cellcount.items():
-            try:
-                CellsCountReplicas.setdefault(key, []).append(value)
-                CellsCount[key] = value
-            except KeyError:
-                pass
-        ResultatsArray.add_data(CellsCount, "Plate",'CellsCount_' + str(replica.name))
-    # ########## Cell count and std
-    if len(plate) > 1:
-        MeanCellsCountSD = {}
-        for key, value in CellsCountReplicas.items():
-            MeanCellsCountSD[key] = np.std(value)
-        ResultatsArray.add_data(MeanCellsCountSD, "Plate", 'CellsCount std')
+    ## this array is a basic array for begin some calculations
+    __array_pattern = pd.DataFrame(plate.platemap.as_array())
 
-    MeanCellsCount = dict([(i, sum(v) / len(v)) for i, v in CellsCountReplicas.items()])
-    ResultatsArray.add_data(MeanCellsCount, "Plate",'CellsCount')
+    COUNT = __array_pattern.copy()
+    COUNT.loc[:, 'PlateName'] = np.repeat([plate.name], SIZE)
 
-    ## ANALYSING CHANNELS
+    ######################### CELLS COUNT
+
+    for replicaId, replica in plate:
+        cellcount = replica.get_groupby_data()[__WellKey].count()
+        cellcount.name = replicaId+" CellsCount"
+        COUNT = pd.merge(COUNT, cellcount.reset_index(), how='left', on=__WellKey)
+
+    COUNT.loc[:, "CellsCount Mean"] = COUNT.iloc[:, -NREP:].mean(axis=1)
+    COUNT.loc[:, "CellsCount Std"] = COUNT.iloc[:, -NREP:].std(axis=1)
+
+
+    ########### TOXICITY IF NEG IS GIVEN
+
+    if neg is not None:
+
+        neg_count = COUNT[COUNT.loc[:, "PlateMap"] == neg].iloc[:, 3:3+NREP]
+
+        tmp = COUNT.iloc[:, 3:3+NREP].copy()
+        tmp.columns = [i+" ToxIdx" for i in tmp.columns]
+
+        for i in range(NREP):
+            tmp.iloc[:, i] = (tmp.iloc[:, i] / np.mean(neg_count.iloc[:, i])) * 100
+
+        COUNT = pd.concat([COUNT, tmp], axis=1)
+
+        COUNT.loc[:, "Tox mean"] = COUNT.iloc[:, -NREP:].mean(axis=1)
+        COUNT.loc[:, "Tox std"] = COUNT.iloc[:, -NREP-1:-1].std(axis=1)
+
+        if NREP > 1:
+            negdata = COUNT[COUNT.loc[:, "PlateMap"] == neg].loc[:, "Tox mean"].values
+            COUNT.loc[:, "Tox pvalue"] = COUNT.iloc[:, -NREP-2: -2].apply((lambda x: stats.ttest_ind(x, negdata, equal_var=False)[1]), axis=1)
+            COUNT.loc[:, "Tox fdr"] = TCA.adjustpvalues(pvalues = COUNT.loc[:, "Tox pvalue"])
+
+    ##################### ANALYSING CHANNELS
+    DF = []
     if channels is not None:
-        log.info('Perform plate analysis for {0} on channels :{1}'.format(plate.name, channels))
+        log.info('Perform plate analysis for {0} plate on channels :{1}'.format(plate.name, channels))
         if not isinstance(channels, list):
             channels = [channels]
 
@@ -170,176 +187,103 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
         ThresholdVALUE = getThreshold(plate, ctrl=neg, channels=channels, threshold=threshold, percent=percent,
                         fixed_threshold=fixed_threshold)
 
-
         ## iterate over channels
         for chan in channels:
-            ## these dict are for storing value accross all replica
-            MeanWellsReplicas = {}
-            MedianWellsReplicas = {}
-            PercentCellsReplicas = {}
-            PercentCellsSDReplicas = {}
+            MEAN = __array_pattern.copy()
+            MEDIAN = __array_pattern.copy()
+            STD = __array_pattern.copy()
+            MAD = __array_pattern.copy()
+            PERCENT = __array_pattern.copy()
 
-            for repName, replica in plate:
+
+            for replicaId, replica in plate:
                 datagb = replica.get_groupby_data()
                 ########### POSITIVE CELLS %
                 # # threshold value for control
-                ThresholdValue = ThresholdVALUE[chan][repName]
+                ThresholdValue = ThresholdVALUE[chan][replicaId]
 
                 ########### VARIABILITY & % OF POSITIVE CELLS
-                well_list = replica.get_unique_well()
                 # iterate on well
                 PercentCells = {}
                 MeanCells = {}
                 MedianCells = {}
                 SdCells = {}
                 MadCells = {}
-                log.debug(" Determine Positive Cells percentage")
-                for well in well_list:
+
+                for well in replica.get_unique_well():
                     xdata = datagb.get_group(well)[chan]
                     len_total = len(xdata.values)
                     len_thres = len(np.extract(xdata.values > ThresholdValue, xdata.values))
-                    # # include in dict key is the position and value is a %
-                    PercentCellsReplicas.setdefault(well, []).append(((len_thres / len_total) * 100))
-                    PercentCells[well] = (len_thres / len_total) * 100
 
-                    mean = np.mean(xdata.values)
-                    median = np.median(xdata.values)
-                    MeanWellsReplicas.setdefault(well, []).append(mean)
-                    MedianWellsReplicas.setdefault(well, []).append(median)
+                    # # include in dict key is the position and value is a %
+                    PercentCells[well] = (len_thres / len_total) * 100
                     SdCells[well] = np.std(xdata.values)
                     MadCells[well] = TCA.mad(xdata.values)
-                    MeanCells[well] = mean
-                    MedianCells[well] = median
-                ResultatsArray.add_data(PercentCells, chan, str(replica.name)+'_PosCells')
-                ResultatsArray.add_data(MeanCells, chan, str(replica.name)+'_Mean')
-                ResultatsArray.add_data(SdCells, chan, str(replica.name)+"_Std")
-                ResultatsArray.add_data(MedianCells, chan, str(replica.name)+'_Median')
-                ResultatsArray.add_data(MadCells, chan, str(replica.name)+"_Mad")
+                    MeanCells[well] = np.mean(xdata.values)
+                    MedianCells[well] = np.median(xdata.values)
+
+                mean = pd.DataFrame.from_dict(MeanCells, orient='index').reset_index()
+                mean.columns = [__WellKey, replicaId+" Mean"]
+                MEAN = pd.merge(MEAN, mean, how='left', on=__WellKey)
+
+                median = pd.DataFrame.from_dict(MedianCells, orient='index').reset_index()
+                median.columns = [__WellKey, replicaId+" Median"]
+                MEDIAN = pd.merge(MEDIAN, median, how='left', on=__WellKey)
+
+                std = pd.DataFrame.from_dict(SdCells, orient='index').reset_index()
+                std.columns = [__WellKey, replicaId+" Std"]
+                STD = pd.merge(STD, std, how='left', on=__WellKey)
+
+                mad = pd.DataFrame.from_dict(MadCells, orient='index').reset_index()
+                mad.columns = [__WellKey, replicaId+" Mad"]
+                MAD = pd.merge(MAD, mad, how='left', on=__WellKey)
+
+                percent = pd.DataFrame.from_dict(PercentCells, orient='index').reset_index()
+                percent.columns = [__WellKey, replicaId+" PosCells"]
+                PERCENT = pd.merge(PERCENT, percent, how='left', on=__WellKey)
+
+
+            MEAN.loc[:, "Mean mean"] = MEAN.iloc[:, -NREP:].mean(axis=1)
+            MEDIAN.loc[:, "Median mean"] = MEDIAN.iloc[:, -NREP:].mean(axis=1)
+            PERCENT.loc[:, "PosCells mean"] = PERCENT.iloc[:, -NREP:].mean(axis=1)
+
+            if NREP > 1:
+                MEAN.loc[:, "Mean std"] = MEAN.iloc[:, -NREP-1:-1].std(axis=1)
+                MEDIAN.loc[:, "Median mad"] = MEDIAN.iloc[:, -NREP-1:-1].mad(axis=1)
+                PERCENT.loc[:, "PosCells std"] = PERCENT.iloc[:, -NREP-1: -1].std(axis=1)
 
 
             ########### P-VALUE AND FDR ON % OF POSITIVE CELLS
             if neg is not None:
-                if len(plate) > 1:
-                    log.debug("Perform T-Test on positive Cells percentage")
-                    NegData = list()
-                    for x in neg_well:
-                        try:
-                            NegData.extend(PercentCellsReplicas[x])
-                        except:
-                            continue
-                    ## or this but don't work when data are missing ????
-                    # neg_data = [PercentCellsReplicas[x] for x in neg_well]
-                    NegData = np.array(NegData).flatten()
-                    pvalue = {}
-                    for key, value in PercentCellsReplicas.items():
-                        x = stats.ttest_ind(value, NegData, equal_var=False)
-                        pvalue[key] = x[1]
+                if NREP > 1:
+                    NegData = np.concatenate(PERCENT[PERCENT.loc[:, "PlateMap"] == neg].iloc[:, -NREP-2:-2].values).flatten()
+                    pvalue = PERCENT.iloc[:, -NREP-2: -2].apply((lambda x: stats.ttest_ind(x, NegData, equal_var=False)[1]), axis=1)
+                    PERCENT.loc[:, "PosCells pvalue"] = pvalue
+                    PERCENT.loc[:, "PosCells fdr"] = TCA.adjustpvalues(pvalues=PERCENT.loc[:, "PosCells pvalue"])
 
-                    ResultatsArray.add_data(pvalue, chan, 'PosCells p-value')
-                    ResultatsArray.values.loc[:, (chan, "PosCells fdr")] = TCA.adjustpvalues(pvalues=ResultatsArray.values.loc[:, (chan, "PosCells p-value")])
 
-            ########### VARIABILITY
-            Mean = dict([(i, sum(v) / len(v)) for i, v in MeanWellsReplicas.items()])
-            Median = dict([(i, sum(v) / len(v)) for i, v in MedianWellsReplicas.items()])
-            ResultatsArray.add_data(Mean, chan, 'Mean')
-            ResultatsArray.add_data(Median, chan, 'Median')
+            ### ADD CHANNEL ON TOP OF DF
 
-            if len(plate) > 1:
-                log.debug("Variability determination")
-                MeanSD = dict([(i, np.std(v)) for i, v in MeanWellsReplicas.items()])
-                MedianSD = dict([(i, np.std(v)) for i, v in MedianWellsReplicas.items()])
-                ResultatsArray.add_data(MeanSD, chan, 'Mean std')
-                ResultatsArray.add_data(MedianSD, chan, 'Median std')
+            df = pd.concat([MEAN.iloc[:, 2:], STD.iloc[:, 2:], MEDIAN.iloc[:, 2:],
+                            MAD.iloc[:, 2:], PERCENT.iloc[:, 2:]], axis=1)
+            df.columns = pd.MultiIndex.from_tuples([tuple([chan, c]) for c in df.columns])
+            DF.append(df)
 
-            ########### POSITIVE CELLS
-            # determine the mean of replicat
-            MeanPercentCells = dict([(i, sum(v) / len(v)) for i, v in PercentCellsReplicas.items()])
-            ResultatsArray.add_data(MeanPercentCells, chan, 'PositiveCells')
+    ########### FINAL OPERATION
 
-            # ########## determine the standart deviation of % Cells
-            if len(plate) > 1:
-                PercentCellsSDReplicas = dict([(i, np.std(v)) for i, v in PercentCellsReplicas.items()])
-                ResultatsArray.add_data(PercentCellsSDReplicas, chan, 'PositiveCells std')
+    COUNT.columns = pd.MultiIndex.from_tuples([tuple(["Plate", c]) for c in COUNT.columns])
 
-            # ########## toxicity index
-            if neg is not None:
-                log.debug("Toxicity determination")
-                # ### 0 idx is the max cell of all plate
-                # max_cell = max(MeanCellsCount.values())
-                # ### 0 idx is the neg control
-                temp = list()
-                for neg in neg_well:
-                    try:
-                        temp.extend(CellsCountReplicas[neg])
-                    except Exception as e:
-                        pass
-                max_cell = np.mean(temp)
-                ## or this but don't work when data are missing ????
-                # max_cell = np.mean([CellsCountReplicas[neg] for neg in neg_well])
-                min_cell = min(MeanCellsCount.values())
-                ToxIdx = {}
-                for key, item in MeanCellsCount.items():
-                    ToxIdx[key] = (max_cell - item) / (max_cell - min_cell)
-
-                ResultatsArray.add_data(ToxIdx, chan, 'Toxicity')
-
-            # ########## viability index
-            if neg is not None:
-                if pos is not None:
-                    log.debug("Viability determination")
-                    pos_well = plate.platemap.search_well(pos)
-                    neg_val = [MeanCellsCount[x] for x in neg_well]
-                    pos_val = [MeanCellsCount[x] for x in pos_well]
-                    Viability = {}
-                    for key, item in MeanCellsCount.items():
-                        Viability[key] = (item - np.mean(pos_val) - 3 * np.std(pos_val)) / np.abs(
-                            np.mean(neg_val) - np.mean(pos_val))
-
-                    ResultatsArray.add_data(Viability, chan, 'Viability')
-                else:
-                    log.info('  No positive control provided, no viability performed')
+    if neg is not None:
+        result = pd.concat([COUNT, pd.concat(DF, axis=1)], axis=1)
+    else:
+        result = COUNT
 
     ### Remove row with cellscount is 0
     if clean:
-        ResultatsArray.values = ResultatsArray.values[ResultatsArray.values["Plate"]["CellsCount"] > 0]
+        result = result[result["Plate"]["CellsCount Mean"] > 0]
 
-    ## FINISH RETURN RESULT
+
     if channels is not None:
-        return ResultatsArray.values, ThresholdVALUE
+        return result, ThresholdVALUE
     else:
-        return ResultatsArray.values
-
-class Result(object):
-    """
-    Class Result is especially created for plateAnalyzis.
-    This class store data with dict in input, where key are well and item are data.
-    """
-
-    def __init__(self, plate):
-        """
-        Constructor
-        :return: dataframe
-        """
-        assert isinstance(plate, TCA.Plate)
-
-        __SIZE__ = plate.platemap.shape(alt_frmt=True)
-
-        tmp = pd.DataFrame(plate.platemap.as_array())
-        tmp.columns = [['Plate', 'Plate'], ['Well', 'PlateMap']]
-        self.values = pd.concat([pd.DataFrame(np.repeat([plate.name], __SIZE__), columns=[['Plate'], ['PlateName']]),
-                        tmp],
-                        axis=1)
-
-    def add_data(self, datadict, chan, col):
-        """
-        Insert Value from a dict where key = GeneName/pos and Value are value to insert
-        :param datadict: dict that contain value to insert with key are GeneName or Pos/Well
-        :param chan: plate or channel analyzed
-        :param col: columns name to insert data
-        """
-        try:
-            x = pd.DataFrame.from_dict(datadict, orient='index').reset_index()
-            x.columns = [np.array(['Plate', str(chan)]), np.array(['Well', str(col)])]
-            self.values = pd.merge(self.values, x, how='outer')
-        except Exception as e:
-            print(e)
+        return result

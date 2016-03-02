@@ -5,6 +5,7 @@ Usefull definitions for some functions in project
 
 import numpy as np
 import scipy.stats
+import pandas as pd
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
@@ -218,3 +219,128 @@ def __asquare(data):
 def __cdf(y, mu, varb):
     res = 0.5 * (1 + scipy.stats.norm.cdf((y - mu) / varb))
     return res
+
+def percentile_based_outlier(data, threshold=95):
+    """
+    Based on percentile determine outliers
+    :param data:
+    :param threshold:
+    :return:
+    """
+    diff = (100 - threshold) / 2.0
+    minval, maxval = np.percentile(data, [diff, 100 - diff])
+    return (data < minval) | (data > maxval)
+
+
+## theory behind this : http://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
+
+def outlier_mad_based(data, thresh=2):
+    """
+    Based on mad, determine outliers by row
+    :param data:
+    :param thresh:
+    :return: true for 'correct' value, false for outlier
+    """
+    if isinstance(data, pd.Series):
+        data = data.values
+    if isinstance(data, pd.DataFrame):
+        data = data.values
+    or_shape = data.shape
+    data = data.flatten()
+    if len(data.shape) == 1:
+        data = data[:, None]
+    median = np.median(data, axis=0)
+    diff = np.sum((data - median) ** 2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+    modified_z_score = 0.6745 * diff / med_abs_deviation
+    modified_z_score = modified_z_score.reshape(or_shape)
+    return modified_z_score > thresh
+
+
+def without_outlier_mad_based(data, thresh=2):
+    """
+    Based on mad, determine outliers by row
+    :param data:
+    :param thresh:
+    :return: true for 'correct' value, false for outlier
+    """
+    if isinstance(data, pd.Series):
+        data = data.values
+    if isinstance(data, pd.DataFrame):
+        data = data.values
+    or_shape = data.shape
+    data = data.flatten()
+    if len(data.shape) == 1:
+        data = data[:, None]
+    median = np.median(data, axis=0)
+    diff = np.sum((data - median) ** 2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+    modified_z_score = 0.6745 * diff / med_abs_deviation
+    modified_z_score = modified_z_score.reshape(or_shape)
+    return modified_z_score < thresh
+
+
+def outlier_std_based(data, thresh=2):
+    """
+    Based on mad, determine outliers by row
+    :param data:
+    :param thresh:
+    :return: true for 'correct' value, false for outlier
+    """
+    if isinstance(data, pd.Series):
+        data = data.values
+    if isinstance(data, pd.DataFrame):
+        data = data.values
+    or_shape = data.shape
+    data = data.flatten()
+    if len(data.shape) == 1:
+        data = data[:, None]
+    mean = np.mean(data, axis=0)
+    diff = np.sum((data - mean) ** 2, axis=-1)
+    diff = np.sqrt(diff)
+    std = np.std(diff)
+    modified_z_score = 0.6745 * diff / std
+    modified_z_score = modified_z_score.reshape(or_shape)
+    return modified_z_score > thresh
+
+
+def without_outlier_std_based(data, thresh=2):
+    """
+    Based on mad, determine outliers by row
+    :param data:
+    :param thresh:
+    :return: true for 'correct' value, false for outlier
+    """
+    if isinstance(data, pd.Series):
+        data = data.values
+    if isinstance(data, pd.DataFrame):
+        data = data.values
+    or_shape = data.shape
+    data = data.flatten()
+    if len(data.shape) == 1:
+        data = data[:, None]
+    mean = np.mean(data, axis=0)
+    diff = np.sum((data - mean) ** 2, axis=-1)
+    diff = np.sqrt(diff)
+    std = np.std(diff)
+    modified_z_score = 0.6745 * diff / std
+    modified_z_score = modified_z_score.reshape(or_shape)
+    return modified_z_score < thresh
+
+
+def doubleMADsfromMedian(y,thresh=3.5):
+    # warning: this function does not check for NAs
+    # nor does it address issues when
+    # more than 50% of your data have identical values
+    m = np.median(y)
+    abs_dev = np.abs(y - m)
+    left_mad = np.median(abs_dev[y<=m])
+    right_mad = np.median(abs_dev[y>=m])
+    y_mad = np.zeros(len(y))
+    y_mad[y < m] = left_mad
+    y_mad[y > m] = right_mad
+    modified_z_score = 0.6745 * abs_dev / y_mad
+    modified_z_score[y == m] = 0
+    return modified_z_score > thresh

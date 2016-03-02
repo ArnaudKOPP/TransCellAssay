@@ -73,38 +73,6 @@ def get_masked_array(data_arr, plate_array, to_keep):
     return data
 
 
-def mad_based_outlier(data, thresh=3.5):
-    """
-    Based on mad, determine outliers by row
-    :param data:
-    :param thresh:
-    :return:
-    """
-    or_shape = data.shape
-    data = data.flatten()
-    if len(data.shape) == 1:
-        data = data[:, None]
-    median = np.median(data, axis=0)
-    diff = np.sum((data - median) ** 2, axis=-1)
-    diff = np.sqrt(diff)
-    med_abs_deviation = np.median(diff)
-    modified_z_score = 0.6745 * diff / med_abs_deviation
-    modified_z_score = modified_z_score.reshape(or_shape)
-    return modified_z_score > thresh
-
-
-def percentile_based_outlier(data, threshold=95):
-    """
-    Based on percentile determine outliers
-    :param data:
-    :param threshold:
-    :return:
-    """
-    diff = (100 - threshold) / 2.0
-    minval, maxval = np.percentile(data, [diff, 100 - diff])
-    return (data < minval) | (data > maxval)
-
-
 def dict_to_df(input_dict):
     name = np.array(list(input_dict))
     name = name.flatten().reshape(len(name), 1)
