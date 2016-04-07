@@ -151,9 +151,9 @@ USAGE
             output = input
         else:
             output = args.output
+            if not os.path.isdir(output):
+                os.makedirs(output)
 
-        if not os.path.isdir(output):
-            os.makedirs(output)
 
         print("Beging Processing")
         for root, dirs, filenames in os.walk(input):
@@ -193,7 +193,10 @@ USAGE
                 all_col = data.columns
 
                 # # create new excel file and worksheet
-                workbook = xlsxwriter.Workbook(output + barcode + '-save.xlsx')
+
+                filename = os.path.join(output, barcode+".xlsx")
+                workbook = xlsxwriter.Workbook(filename)
+
                 i = 0
                 list_sheets = ["%s" % x for x in (all_col.difference(skip))]
                 # # put on channel per sheet

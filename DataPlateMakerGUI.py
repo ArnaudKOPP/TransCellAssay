@@ -159,7 +159,9 @@ class Application(tk.Frame):
                 all_col = data.columns
 
                 # # create new excel file and worksheet
-                workbook = xlsxwriter.Workbook(output + barcode + '-save.xlsx')
+                filename = os.path.join(output, barcode+".xlsx")
+                workbook = xlsxwriter.Workbook(filename)
+                
                 i = 0
                 list_sheets = ["%s" % x for x in (all_col - skip)]
                 # # put on channel per sheet

@@ -72,6 +72,11 @@ def Covariance(xs, ys, meanx=None, meany=None):
     return cov
 
 
+from numpy import mean, absolute
+def mad2(data, axis=None):
+    return mean(absolute(data - mean(data, axis)), axis)
+
+
 def mad(arr):
     """
     Median Absolute Deviation: a "Robust" version of standard deviation.

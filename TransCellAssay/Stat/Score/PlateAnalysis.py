@@ -186,6 +186,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
         ThresholdVALUE = getThreshold(plate, ctrl=neg, channels=channels, threshold=threshold, percent=percent,
                         fixed_threshold=fixed_threshold)
+        log.debug("Threshold used : {}".format(ThresholdVALUE))
 
         ## iterate over channels
         for chan in channels:
@@ -273,7 +274,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
     COUNT.columns = pd.MultiIndex.from_tuples([tuple(["Plate", c]) for c in COUNT.columns])
 
-    if neg is not None:
+    if neg is not None or channels is not None:
         result = pd.concat([COUNT, pd.concat(DF, axis=1)], axis=1)
     else:
         result = COUNT

@@ -432,7 +432,7 @@ class Replica(GenericPlate):
         Add rawdata @ df
         """
         try:
-            self.df = self.df.appen(data)
+            self.df = self.df.append(data)
         except Exception as e:
             print(e)
 
@@ -441,9 +441,9 @@ class Replica(GenericPlate):
         iterate on group with groups key
         """
         if self.__CACHING_gbdata is None:
-            self.__new_caching()
+            self._new_caching()
         for key, value in self.__CACHING_gbdata.groups.items():
-            yield key, value
+            yield key, self.df.iloc[value,:]
 
     def __repr__(self):
         """

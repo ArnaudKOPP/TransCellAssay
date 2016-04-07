@@ -95,7 +95,7 @@ USAGE
                     except Exception as e:
                         print("Error in reading  File", e)
 
-                barcode = well['PlateId/Barcode'][0]
+                barcode = well['Plate Name'][0]
 
                 try:
                     # # read
