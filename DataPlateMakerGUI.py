@@ -161,10 +161,13 @@ class Application(tk.Frame):
                 # # create new excel file and worksheet
                 filename = os.path.join(output, barcode+".xlsx")
                 workbook = xlsxwriter.Workbook(filename)
-                
+
                 i = 0
                 list_sheets = ["%s" % x for x in (all_col - skip)]
                 # # put on channel per sheet
+
+                KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2":"MEAN_NMLWHBC2"}
+
                 for chan in all_col:
                     if chan in skip:
                         continue
@@ -178,8 +181,12 @@ class Application(tk.Frame):
 
                     ## if chan is to long, cut it
                     if len(str(chan)) >= 30:
-                        Chan = ''.join(x for x in str(chan) if not x.islower())
-                        logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
+                        if str(chan) in KnowProblematicChanName:
+                            Chan = KnowProblematicChanName[str(chan)]
+                            logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
+                        else:
+                            Chan = ''.join(x for x in str(chan) if not x.islower())
+                            logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
                     else:
                         Chan = str(chan)
 
