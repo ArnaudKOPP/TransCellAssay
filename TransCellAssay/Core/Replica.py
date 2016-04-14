@@ -45,7 +45,6 @@ class Replica(GenericPlate):
                 if os.path.isfile(fpath):
                     log.info('Reading FlatFile : %s' % fpath)
                     self.df = pd.read_csv(fpath, engine='c', **kwargs)
-                    log.debug('Finished')
                     self.__file = fpath
                 else:
                     raise IOError('File don\'t exist')
@@ -403,7 +402,7 @@ class Replica(GenericPlate):
     def _new_caching(self, key='Well'):
         self.__CACHING_gbdata = self.df.groupby(key)
         self.__CACHING_gbdata_key = key
-        log.debug('Created rawdata cache')
+        log.debug('Created {} cache'.format(self.name))
 
     def __get_Well_group(self, key, channel=None):
         """

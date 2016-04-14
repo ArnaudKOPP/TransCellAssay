@@ -72,7 +72,7 @@ def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold
                 THRES = threshold
 
             if THRES >= 100 and percent:
-                log.warning('Threshold cannot be > 100 with percent')
+                log.warning('Threshold cannot be > 100 in %')
                 percent = False
                 fixed_threshold = True
 
@@ -81,16 +81,13 @@ def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold
 
                 if fixed_threshold:
                     ThresholdValue = THRES
-                    log.debug('     Fixed Threshold value used: {}'.format(ThresholdValue))
                 else:
                     ControlData = replica.get_rawdata(channel=chan, well=neg_well)
                     if percent:
                         ThresholdValue = np.percentile(ControlData, THRES)
-                        log.debug('     Percent {0} Threshold value used: {1}'.format(THRES, ThresholdValue))
                     else:
                         # Take mean of neg ctrl if fixed_threshold and percent are False
                         ThresholdValue = np.mean(ControlData)
-                        log.debug('     Neg Mean Threshold value used: {}'.format(ThresholdValue))
 
                 ThresholdVALUE[chan][repName] = ThresholdValue
 
@@ -98,7 +95,7 @@ def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold
 
 
 def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
-                          clean=False):
+                          clean=False,noposcell=False):
     """
     Do a plate analysis for multiple channels and parameters
     :param plate: plate object
@@ -109,6 +106,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
     :param percent: True if threshold value is percent, False if we want to give a value
     :param fixed_threshold: use given threshold (value mode) for all well
     :param clean: if True, remove all row/Well that don't contain cells
+    :param noposcell: If we don't want to compute positive cells %
     :return: result into dataframe
     """
     assert isinstance(plate, TCA.Plate)
@@ -184,9 +182,10 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                 log.info('  No Negative control provided, work only with fixed value of threshold')
                 fixed_threshold = True
 
-        ThresholdVALUE = getThreshold(plate, ctrl=neg, channels=channels, threshold=threshold, percent=percent,
-                        fixed_threshold=fixed_threshold)
-        log.debug("Threshold used : {}".format(ThresholdVALUE))
+        if noposcell is False:
+            ThresholdVALUE = getThreshold(plate, ctrl=neg, channels=channels, threshold=threshold, percent=percent,
+                            fixed_threshold=fixed_threshold)
+            log.debug("Threshold used : {}".format(ThresholdVALUE))
 
         ## iterate over channels
         for chan in channels:
@@ -194,18 +193,21 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
             MEDIAN = __array_pattern.copy()
             STD = __array_pattern.copy()
             MAD = __array_pattern.copy()
-            PERCENT = __array_pattern.copy()
+            if noposcell is False:
+                PERCENT = __array_pattern.copy()
 
 
             for replicaId, replica in plate:
                 datagb = replica.get_groupby_data()
-                ########### POSITIVE CELLS %
-                # # threshold value for control
-                ThresholdValue = ThresholdVALUE[chan][replicaId]
+                if noposcell is False:
+                    ########### POSITIVE CELLS %
+                    # # threshold value for control
+                    ThresholdValue = ThresholdVALUE[chan][replicaId]
 
                 ########### VARIABILITY & % OF POSITIVE CELLS
                 # iterate on well
-                PercentCells = {}
+                if noposcell is False:
+                    PercentCells = {}
                 MeanCells = {}
                 MedianCells = {}
                 SdCells = {}
@@ -213,11 +215,11 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
                 for well in replica.get_unique_well():
                     xdata = datagb.get_group(well)[chan]
-                    len_total = len(xdata.values)
-                    len_thres = len(np.extract(xdata.values > ThresholdValue, xdata.values))
-
-                    # # include in dict key is the position and value is a %
-                    PercentCells[well] = (len_thres / len_total) * 100
+                    if noposcell is False:
+                        len_total = len(xdata.values)
+                        len_thres = len(np.extract(xdata.values > ThresholdValue, xdata.values))
+                        # # include in dict key is the position and value is a %
+                        PercentCells[well] = (len_thres / len_total) * 100
                     SdCells[well] = np.std(xdata.values)
                     MadCells[well] = TCA.mad(xdata.values)
                     MeanCells[well] = np.mean(xdata.values)
@@ -239,34 +241,42 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                 mad.columns = [__WellKey, replicaId+" Mad"]
                 MAD = pd.merge(MAD, mad, how='left', on=__WellKey)
 
-                percent = pd.DataFrame.from_dict(PercentCells, orient='index').reset_index()
-                percent.columns = [__WellKey, replicaId+" PosCells"]
-                PERCENT = pd.merge(PERCENT, percent, how='left', on=__WellKey)
+                if noposcell is False:
+                    percent = pd.DataFrame.from_dict(PercentCells, orient='index').reset_index()
+                    percent.columns = [__WellKey, replicaId+" PosCells"]
+                    PERCENT = pd.merge(PERCENT, percent, how='left', on=__WellKey)
 
 
             MEAN.loc[:, "Mean mean"] = MEAN.iloc[:, -NREP:].mean(axis=1)
             MEDIAN.loc[:, "Median mean"] = MEDIAN.iloc[:, -NREP:].mean(axis=1)
-            PERCENT.loc[:, "PosCells mean"] = PERCENT.iloc[:, -NREP:].mean(axis=1)
+            if noposcell is False:
+                PERCENT.loc[:, "PosCells mean"] = PERCENT.iloc[:, -NREP:].mean(axis=1)
 
             if NREP > 1:
                 MEAN.loc[:, "Mean std"] = MEAN.iloc[:, -NREP-1:-1].std(axis=1)
                 MEDIAN.loc[:, "Median mad"] = MEDIAN.iloc[:, -NREP-1:-1].mad(axis=1)
-                PERCENT.loc[:, "PosCells std"] = PERCENT.iloc[:, -NREP-1: -1].std(axis=1)
+                if noposcell is False:
+                    PERCENT.loc[:, "PosCells std"] = PERCENT.iloc[:, -NREP-1: -1].std(axis=1)
 
 
-            ########### P-VALUE AND FDR ON % OF POSITIVE CELLS
-            if neg is not None:
-                if NREP > 1:
-                    NegData = np.concatenate(PERCENT[PERCENT.loc[:, "PlateMap"] == neg].iloc[:, -NREP-2:-2].values).flatten()
-                    pvalue = PERCENT.iloc[:, -NREP-2: -2].apply((lambda x: stats.ttest_ind(x, NegData, equal_var=False)[1]), axis=1)
-                    PERCENT.loc[:, "PosCells pvalue"] = pvalue
-                    PERCENT.loc[:, "PosCells fdr"] = TCA.adjustpvalues(pvalues=PERCENT.loc[:, "PosCells pvalue"])
+            if noposcell is False:
+                ########### P-VALUE AND FDR ON % OF POSITIVE CELLS
+                if neg is not None:
+                    if NREP > 1:
+                        NegData = np.concatenate(PERCENT[PERCENT.loc[:, "PlateMap"] == neg].iloc[:, -NREP-2:-2].values).flatten()
+                        pvalue = PERCENT.iloc[:, -NREP-2: -2].apply((lambda x: stats.ttest_ind(x, NegData, equal_var=False)[1]), axis=1)
+                        PERCENT.loc[:, "PosCells pvalue"] = pvalue
+                        PERCENT.loc[:, "PosCells fdr"] = TCA.adjustpvalues(pvalues=PERCENT.loc[:, "PosCells pvalue"])
 
+                PERCENT.loc[:, "PosCells Zscore"] = (PERCENT.loc[:, 'PosCells mean'] - PERCENT.loc[:, 'PosCells mean'].mean())/PERCENT.loc[:, 'PosCells mean'].std()
 
             ### ADD CHANNEL ON TOP OF DF
-
-            df = pd.concat([MEAN.iloc[:, 2:], STD.iloc[:, 2:], MEDIAN.iloc[:, 2:],
-                            MAD.iloc[:, 2:], PERCENT.iloc[:, 2:]], axis=1)
+            if noposcell is False:
+                df = pd.concat([MEAN.iloc[:, 2:], STD.iloc[:, 2:], MEDIAN.iloc[:, 2:],
+                                MAD.iloc[:, 2:], PERCENT.iloc[:, 2:]], axis=1)
+            else:
+                df = pd.concat([MEAN.iloc[:, 2:], STD.iloc[:, 2:], MEDIAN.iloc[:, 2:],
+                                MAD.iloc[:, 2:]], axis=1)
             df.columns = pd.MultiIndex.from_tuples([tuple([chan, c]) for c in df.columns])
             DF.append(df)
 
@@ -285,6 +295,9 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
 
     if channels is not None:
-        return result, ThresholdVALUE
+        if noposcell is False:
+            return result, ThresholdVALUE
+        else:
+            return result
     else:
         return result
