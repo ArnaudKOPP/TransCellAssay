@@ -1,9 +1,9 @@
 # TransCellAssay
 
-This Python packages is for analysis of Transfected Cell Assay data in High Throughput Screening environment.   
-Data input is designed to be Single Cell data (1data/Well work well too) in csv/txt file (with extend use of pandas dataframe).
-This package has been designed with the aim to facilitate the development of data analysis pipeline, so programming skills are needed for the moment.
-It was developed and tested on python 3.4 platform and aim to replace CellHTS2 or similar software for our analysis.
+This Python packages is designed to analysis data from High Content Screening assay.   
+Data input are designed to be Single Cell data (1data/Well work well too) in csv/txt file.<br>
+This package has been designed with the aim to facilitate the development of data analysis pipeline, so programming skills are needed to make you own analysis pipeline.<br>
+It was developed and tested on python 3.4 platform and aim to replace CellHTS2 or similar software for our analysis.<br>
 It work on 96, 384 and 1536(depend format) Well plate with acceptable performance.
 
 ## What TCA do :
