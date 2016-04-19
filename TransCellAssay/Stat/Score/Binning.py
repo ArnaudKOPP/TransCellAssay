@@ -36,16 +36,31 @@ def Binning(Plate, chan, bins=None, nbins=10, percent=True):
         assert chan in value.get_channels_list(), "Given channel {0} -> not in available channels : {1}".format(chan, value.get_channels_list())
         log.debug("Iterate on : {}".format(key))
 
-        ## Create Bins
-        if bins is None:
-            bins = np.linspace(np.min(value.df[chan].values), np.max(value.df[chan].values), nbins)
+        x = _dfbinning(value.df, on=chan, key="Well", bins=bins, nbins=nbins, percent=percent)
 
-        x = value.df.groupby(by=["Well", pd.cut(value.df[chan], bins)]).count()[chan]
-        x = x.unstack()
-
-        if percent:
-            x = x.iloc[:, :].apply(lambda a: a / x.sum(axis=1) * 100)
-
-        frames[key] = x.fillna(0)
+        frames[key] = x
 
     return frames
+
+
+def _dfbinning(df, on, key, bins, nbins, percent):
+    """
+    Make the binning for a dataframe
+    param df: dataframe with data
+    param on: on which columns apply he bins
+    param key: key for groupby , here is 'Well' for a big majority
+    param bins: custom bins
+    param nbins: number of bins
+    param percent: apply a percent or not
+    """
+
+    if bins is None:
+        bins = np.linspace(np.min(df.loc[:, on].values), np.max(df.loc[:, on].values), nbins)
+
+    x = df.groupby(by=[key, pd.cut(df.loc[:, on], bins)]).count().loc[:, on]
+    x = x.unstack()
+
+    if percent:
+        x = x.iloc[:, :].apply(lambda a: a / x.sum(axis=1) * 100)
+
+    return x.fillna(0)
