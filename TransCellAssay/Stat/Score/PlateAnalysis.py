@@ -95,7 +95,7 @@ def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold
 
 
 def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
-                          clean=False,noposcell=False):
+                          clean=False,noposcell=False, multiIndexDF=False):
     """
     Do a plate analysis for multiple channels and parameters
     :param plate: plate object
@@ -107,6 +107,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
     :param fixed_threshold: use given threshold (value mode) for all well
     :param clean: if True, remove all row/Well that don't contain cells
     :param noposcell: If we don't want to compute positive cells %
+    :param multiIndexDF: if True, give the dataframe with multiindex level
     :return: result into dataframe
     """
     assert isinstance(plate, TCA.Plate)
@@ -277,12 +278,17 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
             else:
                 df = pd.concat([MEAN.iloc[:, 2:], STD.iloc[:, 2:], MEDIAN.iloc[:, 2:],
                                 MAD.iloc[:, 2:]], axis=1)
-            df.columns = pd.MultiIndex.from_tuples([tuple([chan, c]) for c in df.columns])
+
+            if multiIndexDF:
+                df.columns = pd.MultiIndex.from_tuples([tuple([chan, c]) for c in df.columns])
+            else:
+                df.columns = [str(chan)+" "+col for col in df.columns]
             DF.append(df)
 
     ########### FINAL OPERATION
 
-    COUNT.columns = pd.MultiIndex.from_tuples([tuple(["Plate", c]) for c in COUNT.columns])
+    if multiIndexDF:
+        COUNT.columns = pd.MultiIndex.from_tuples([tuple(["Plate", c]) for c in COUNT.columns])
 
     if neg is not None or channels is not None:
         result = pd.concat([COUNT, pd.concat(DF, axis=1)], axis=1)
