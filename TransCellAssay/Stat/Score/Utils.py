@@ -39,7 +39,7 @@ def PlateAnalysisScoring(plate, channels, neg, pos=None, threshold=50, percent=T
     return pd.concat([df1,df2], axis=1)
 
 
-def ScoringPlate(plate, channels, neg, robust=False, data_c=False, verbose=False):
+def ScoringPlate(plate, neg, channels=None, robust=False, data_c=False, verbose=False):
     """
     Function for easier making score of Plate
     :param plate: plate object
@@ -52,17 +52,31 @@ def ScoringPlate(plate, channels, neg, robust=False, data_c=False, verbose=False
     """
     assert isinstance(plate, TCA.Plate)
     DF = []
-    for chan in channels:
-        plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
+    ## if no channels provided, then make on cellscount
+    if channels is None:
+        plate.use_count_as_data()
         if len(plate) == 1:
-            df = __singleReplicaPlate(plate, neg, chan, robust, data_c, verbose)
+            df = __singleReplicaPlate(plate=plate, neg=neg, robust=robust, data_c=data_c, verbose=verbose)
         else:
-            df = __multipleReplicaPlate(plate, neg, chan, robust, data_c, verbose)
-        df.columns = [np.repeat(str(chan), len(df.columns)), df.columns]
+            df = __multipleReplicaPlate(plate=plate, neg=neg, robust=robust, data_c=data_c, verbose=verbose)
+        df.columns = [np.repeat(str("CellsCount"), len(df.columns)), df.columns]
         DF.append(df)
-    return pd.concat(DF, axis=1)
+        return pd.concat(DF, axis=1)
+    else:
+        for chan in channels:
 
-def __singleReplicaPlate(plate, neg, chan, robust=False, data_c=False, verbose=False):
+            if plate._array_channel != chan:
+                plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
+
+            if len(plate) == 1:
+                df = __singleReplicaPlate(plate, neg, chan, robust, data_c, verbose)
+            else:
+                df = __multipleReplicaPlate(plate, neg, chan, robust, data_c, verbose)
+            df.columns = [np.repeat(str(chan), len(df.columns)), df.columns]
+            DF.append(df)
+        return pd.concat(DF, axis=1)
+
+def __singleReplicaPlate(plate, neg, chan=None, robust=False, data_c=False, verbose=False):
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
     gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
@@ -83,7 +97,7 @@ def __singleReplicaPlate(plate, neg, chan, robust=False, data_c=False, verbose=F
 
     return x
 
-def __multipleReplicaPlate(plate, neg, chan, robust=False, data_c=False, verbose=False):
+def __multipleReplicaPlate(plate, neg, chan=None, robust=False, data_c=False, verbose=False):
 
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 

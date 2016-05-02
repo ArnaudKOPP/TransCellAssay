@@ -25,7 +25,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_ttest(plate, neg, chan, sec_data=False, equal_var=False, verbose=False, control_plate=None):
+def plate_ttest(plate, neg, chan=None, sec_data=False, equal_var=False, verbose=False, control_plate=None):
     """
     Perform t-test against neg reference for all well of plate/replica
     :param plate: Plate object
@@ -40,7 +40,7 @@ def plate_ttest(plate, neg, chan, sec_data=False, equal_var=False, verbose=False
     if neg is None:
         raise ValueError('Must provided negative control')
 
-    if plate._array_channel != chan:
+    if plate._array_channel != chan and chan is not None:
         plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
 
     log.info('Perform T-Test on plate : {0} over channel {1}'.format(plate.name, chan))

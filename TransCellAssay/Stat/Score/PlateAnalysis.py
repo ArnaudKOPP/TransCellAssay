@@ -180,7 +180,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                 neg_well = neg
         else:
             if channels is not None:
-                log.info('  No Negative control provided, work only with fixed value of threshold')
+                log.info('No Negative control provided')
                 fixed_threshold = True
 
         if noposcell is False:
@@ -297,7 +297,10 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
     ### Remove row with cellscount is 0
     if clean:
-        result = result[result["Plate"]["CellsCount Mean"] > 0]
+        if multiIndexDF:
+            result = result[result["Plate"]["CellsCount Mean"] > 0]
+        else:
+            result = result[result["CellsCount Mean"] > 0]
 
 
     if channels is not None:

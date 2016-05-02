@@ -36,7 +36,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_ssmd_score(plate, neg_control, chan, paired=True, robust_version=True, method='UMVUE', variance='unequal',
+def plate_ssmd_score(plate, neg_control, chan=None, paired=True, robust_version=True, method='UMVUE', variance='unequal',
                      sec_data=True, control_plate=None, inplate_data=False, verbose=False):
     """
     Performed SSMD on plate object
@@ -58,30 +58,19 @@ def plate_ssmd_score(plate, neg_control, chan, paired=True, robust_version=True,
     if neg_control is None:
         raise ValueError('Must provided negative control')
 
-    if plate._array_channel != chan:
+    if plate._array_channel != chan and chan is not None:
         plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
 
     log.info('Perform SSMD on plate : {0} over channel {1}'.format(plate.name, chan))
     if len(plate) > 1 and not inplate_data:
         if not paired:
-            if robust_version:
-                score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
-                                        verbose=verbose, control_plate=control_plate)
-            else:
-                score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
-                                        verbose=verbose, robust=False, control_plate=control_plate)
+            score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
+                                        verbose=verbose, robust=robust_version, control_plate=control_plate)
         else:
-            if robust_version:
-                score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose)
-            else:
-                score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose,
-                                      robust=False)
+            score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose,
+                                      robust=robust_version)
     else:
-        if robust_version:
-            score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose,
-                           control_plate=control_plate)
-        else:
-            score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose, robust=False,
+        score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose, robust=robust_version,
                            control_plate=control_plate)
     return score
 

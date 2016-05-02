@@ -177,6 +177,39 @@ class Plate(GenericPlate):
         DF = pd.concat(df)
         return DF.reset_index().groupby(by='Well').mean()
 
+    def get_agg_data_from_replica_channel(self, chan=None, sec_data=False):
+        """
+        get for all rep the data into array format
+        """
+        if chan is not None:
+            plaque.agg_data_from_replica_channel(chan, forced_update=True)
+
+        lst = []
+        namelst = []
+
+        for name, data in self.replica.items():
+            if sec_data:
+                if data.array_c is not None:
+                    lst.append(pd.DataFrame(data.array_c.flatten()))
+                    namelst.append(name)
+                else:
+                    raise AttributeError("Data not corrected")
+            else:
+                if data.array is not None:
+                    lst.append(pd.DataFrame(data.array.flatten()))
+                    namelst.append(name)
+                else:
+                    raise AttributeError("Data not computed")
+
+        res = pd.concat(lst, axis=1)
+        res.columns = namelst
+        return res
+
+    def use_count_as_data(self):
+        cnt = self.get_count()
+        self.array = cnt.loc[:, "CellsCount Mean"].values.reshape((self.platemap.shape()))
+        for name, rep in self.replica.items():
+            rep.array = cnt.loc[:, "{} CellsCount".format(name)].values.reshape((self.platemap.shape()))
 
     def agg_data_from_replica_channel(self, channel, use_sec_data=False, forced_update=False, datatype=None):
         """

@@ -31,7 +31,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_tstat_score(plate, neg_control, chan, variance='unequal', paired=False, sec_data=True, verbose=False, robust=True,
+def plate_tstat_score(plate, neg_control, chan=None, variance='unequal', paired=False, sec_data=True, verbose=False, robust=True,
                       control_plate=None):
     """
     Performed t-stat on plate object
@@ -50,7 +50,7 @@ def plate_tstat_score(plate, neg_control, chan, variance='unequal', paired=False
     if neg_control is None:
         raise ValueError('Must provided negative control')
 
-    if plate._array_channel != chan:
+    if plate._array_channel != chan and chan is not None:
         plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
 
     log.info('Perform T-Stat on plate : {0} over channel {1}'.format(plate.name, chan))

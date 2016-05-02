@@ -212,7 +212,7 @@ class PlateMap(object):
                             columns=[str(x) for x in range(1, 49, 1)])
             return df
         else:
-            raise ValueError('Expected size : 96, 348 or 1536')
+            raise ValueError('Expected size : 96, 384 or 1536')
 
     @staticmethod
     def _fill_empty(df):
