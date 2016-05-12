@@ -26,6 +26,7 @@ import scipy.special
 import TransCellAssay as TCA
 from TransCellAssay.Utils.Stat import mad
 import logging
+from TransCellAssay.Stat.Score.Utils import __get_skelleton, __get_negfrom_array
 log = logging.getLogger(__name__)
 
 
@@ -35,20 +36,6 @@ __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-
-def __get_skelleton(plate):
-    __SIZE__ = len(plate.platemap.platemap.values.flatten())
-
-    gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-    final_array = np.append(gene, plate.platemap._fill_empty(plate.platemap._generate_empty(__SIZE__)).values.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, np.repeat([str(plate.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
-
-    x = pd.DataFrame(final_array)
-    x.columns = ['PlateMap', 'Well', 'PlateName']
-    return x
-
-def __get_negfrom_array(array, neg):
-    return array[array['PlateMap'] == neg].iloc[:, 3:]
 
 
 def plate_ssmdTEST(plate, neg_control, chan=None, sec_data=True, control_plate=None, inplate_data=False):
@@ -70,7 +57,6 @@ def plate_ssmdTEST(plate, neg_control, chan=None, sec_data=True, control_plate=N
     if plate._array_channel != chan and chan is not None:
         plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
 
-    log.info('Perform SSMD on plate : {0} over channel {1}'.format(plate.name, chan))
     if len(plate) > 1 and not inplate_data:
         score = _ssmd_rep(plate, neg_control, sec_data=sec_data,
                                         control_plate=control_plate)
@@ -122,16 +108,18 @@ def _ssmd_rep(plate, neg_control, sec_data=True, control_plate=None):
 
 
     ## computed constant
-    n = len(plate)
-    N = len(neg_data.values.flatten())
+    n = len(plate) # number of replica
+    N = len(neg_data.iloc[:, 1:].values.flatten()) # number of value for negative control
     paired_cst = (scipy.special.gamma((n - 1) / 2) / scipy.special.gamma((n - 2) / 2)) * np.sqrt(2 / (n - 1))
     unpaired_cst = 2 * (scipy.special.gamma(((n + N) - 2) / 2) / scipy.special.gamma(((n + N) - 3) / 2)) ** 2
 
+    negArray = neg_data.iloc[:, 1:].values.flatten()
 
-    DF.loc[:, "SSMD UnPaired UnEqual"] = (DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(neg_data.iloc[:, 1:].values.flatten())) / np.sqrt(DF.iloc[:, 4:4+n+1].var(axis=1)**2 + np.var(neg_data.iloc[:, 1:].values.flatten())**2)
-    DF.loc[:, "SSMD UnPaired Equal"] = (DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(neg_data.iloc[:, 1:].values.flatten())) / np.sqrt((2/unpaired_cst) * ((n-1) * DF.iloc[:, 4:4+n+1].var(axis=1)**2 + (len(neg_data.iloc[:, 1:].values.flatten())+1) * np.var(neg_data.iloc[:, 1:].values.flatten())**2 ))
-    DF.loc[:, "SSMD UnPaired UnEqual R"] = (DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(neg_data.iloc[:, 1:].values.flatten())) / np.sqrt(DF.iloc[:, 4:4+n+1].var(axis=1)**2 + np.var(neg_data.iloc[:, 1:].values.flatten())**2)
-    DF.loc[:, "SSMD UnPaired Equal R"] = (DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(neg_data.iloc[:, 1:].values.flatten())) / np.sqrt((2/unpaired_cst) * ((n-1) * DF.iloc[:, 4:4+n+1].var(axis=1)**2 + (len(neg_data.iloc[:, 1:].values.flatten())+1) * np.var(neg_data.iloc[:, 1:].values.flatten())**2 ))
+
+    DF.loc[:, "SSMD UnPaired UnEqual"] = (DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.sqrt(DF.iloc[:, 4:4+n+1].var(axis=1)**2 + np.var(negArray)**2)
+    DF.loc[:, "SSMD UnPaired Equal"] = (DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.sqrt((2/unpaired_cst) * ((n-1) * DF.iloc[:, 4:4+n+1].var(axis=1)**2 + (N+1) * np.var(negArray)**2 ))
+    DF.loc[:, "SSMD UnPaired UnEqual R"] = (DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / np.sqrt(DF.iloc[:, 4:4+n+1].var(axis=1)**2 + np.var(negArray)**2)
+    DF.loc[:, "SSMD UnPaired Equal R"] = (DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / np.sqrt((2/unpaired_cst) * ((n-1) * DF.iloc[:, 4:4+n+1].var(axis=1)**2 + (N+1) * np.var(negArray)**2 ))
 
 
     x = (DF.iloc[:, 4:4+n+1] - neg_data.iloc[:, 1:].mean())
@@ -176,9 +164,9 @@ def _ssmd_norep(plate, neg_control, sec_data=False, control_plate=None):
     if control_plate is not None:
         DF_ctrl = __get_skelleton(plate)
         if sec_data:
-            DF_ctrl .loc[:, "Well Value"] = control_plate.array_c.flatten().reshape(__SIZE__, 1)
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array_c.flatten().reshape(__SIZE__, 1)
         else:
-            DF_ctrl .loc[:, "Well Value"] =control_platee.array.flatten().reshape(__SIZE__, 1)
+            DF_ctrl.loc[:, "Well Value"] =control_platee.array.flatten().reshape(__SIZE__, 1)
 
         neg_data = __get_negfrom_array(DF_ctrl, neg_control).values.flatten()
     else:

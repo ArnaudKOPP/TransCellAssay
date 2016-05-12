@@ -1,22 +1,16 @@
 # coding=utf-8
 """
-Calculates the T-test for the means of TWO INDEPENDENT samples of scores.
-This is a two-sided test for the null hypothesis that 2 independent samples have identical average (expected) values.
-This test assumes that the populations have identical variances.
-
-We can use this test, if we observe two independent samples from the same or different population, e.g. exam scores of
-boys and girls or of two ethnic groups. The test measures whether the average (expected) value differs significantly
-across samples. If we observe a large p-value, for example larger than 0.05 or 0.1, then we cannot reject the null
-hypothesis of identical average scores. If the p-value is smaller than the threshold, e.g. 1%, 5% or 10%, then we
-reject the null hypothesis of equal averages.
+Function that performed Zscore
 """
-from scipy import stats
-import TransCellAssay as TCA
+
 import numpy as np
 import pandas as pd
+import TransCellAssay as TCA
+from TransCellAssay.Utils.Stat import mad
 from TransCellAssay.Stat.Score.Utils import __get_skelleton, __get_negfrom_array
 import logging
 log = logging.getLogger(__name__)
+
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
@@ -27,13 +21,15 @@ __email__ = "kopp.arnaud@gmail.com"
 
 
 
-def plate_ttestTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None):
+def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None):
     """
-    Perform t-test against neg reference for all well of plate/replica
-    :param plate: Plate object
-    :param neg: negative reference
-    :param sec_data: use sec data
-    :return: numpy array with result
+    Performed zscore on plate object
+    unpaired is for plate with replica without great variance between them
+    paired is for plate with replica with great variance between them
+    :param plate: Plate Object to analyze
+    :param neg_control:  negative control reference
+    :param sec_data: use data with Systematic Error Corrected
+    :return: score data
     """
     assert isinstance(plate, TCA.Plate)
     assert len(plate) > 1
@@ -80,12 +76,9 @@ def plate_ttestTEST(plate, neg_control, chan=None, sec_data=False, control_plate
     else:
         neg_data = __get_negfrom_array(DF, neg_control)
 
-    
-    neg_values = neg_data.iloc[:, 1:].values.flatten()
+    negArray = neg_data.iloc[:, 1:].values.flatten()
 
-    DF.loc[:, "TTest EqualVar P-Val"] = DF.iloc[:, 4:4+n+1].apply(lambda x : stats.ttest_ind(a=x, b=neg_values, equal_var=True)[1], axis=1)
-    DF.loc[:, "TTest EqualVar FDR"] = TCA.adjustpvalues(pvalues=DF.loc[:, "TTest EqualVar P-Val"])
-    DF.loc[:, "TTest UnEqualVar P-Val"] = DF.iloc[:, 4:4+n+1].apply(lambda x : stats.ttest_ind(a=x, b=neg_values, equal_var=False)[1], axis=1)
-    DF.loc[:, "TTest UnEqualVar FDR"] = TCA.adjustpvalues(pvalues=DF.loc[:, "TTest UnEqualVar P-Val"])
+    DF.loc[:, "ZScore"] = ( DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.std(negArray)
+    DF.loc[:, "ZScore R"] = ( DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / mad(negArray)
 
     return DF

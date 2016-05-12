@@ -14,6 +14,26 @@ __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
+
+def __get_skelleton(plate):
+
+    assert isinstance(plate, TCA.Plate)
+    
+    __SIZE__ = len(plate.platemap.platemap.values.flatten())
+
+    gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
+    final_array = np.append(gene, plate.platemap._fill_empty(plate.platemap._generate_empty(__SIZE__)).values.flatten().reshape(__SIZE__, 1), axis=1)
+    final_array = np.append(final_array, np.repeat([str(plate.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
+
+    x = pd.DataFrame(final_array)
+    x.columns = ['PlateMap', 'Well', 'PlateName']
+    return x
+
+def __get_negfrom_array(array, neg):
+    return array[array['PlateMap'] == neg].iloc[:, 3:]
+
+
+
 def PlateAnalysisScoring(plate, channels, neg, pos=None, threshold=50, percent=True, fixed_threshold=True, robust=True,
                         data_c=False, verbose=False):
     """

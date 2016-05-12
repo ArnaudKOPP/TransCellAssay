@@ -18,8 +18,8 @@ may be greater than the cutoff value.
 import numpy as np
 import pandas as pd
 import TransCellAssay as TCA
-from TransCellAssay.Stat.Score.SSMD import __search_paired_data, __search_unpaired_data
 from TransCellAssay.Utils.Stat import mad
+from TransCellAssay.Stat.Score.Utils import __get_skelleton, __get_negfrom_array
 import logging
 log = logging.getLogger(__name__)
 
@@ -30,20 +30,6 @@ __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-
-def __get_skelleton(plate):
-    __SIZE__ = len(plate.platemap.platemap.values.flatten())
-
-    gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
-    final_array = np.append(gene, plate.platemap._fill_empty(plate.platemap._generate_empty(__SIZE__)).values.flatten().reshape(__SIZE__, 1), axis=1)
-    final_array = np.append(final_array, np.repeat([str(plate.name)], __SIZE__).reshape(__SIZE__, 1), axis=1)
-
-    x = pd.DataFrame(final_array)
-    x.columns = ['PlateMap', 'Well', 'PlateName']
-    return x
-
-def __get_negfrom_array(array, neg):
-    return array[array['PlateMap'] == neg].iloc[:, 3:]
 
 
 def plate_tstatTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None):
@@ -100,19 +86,21 @@ def plate_tstatTEST(plate, neg_control, chan=None, sec_data=False, control_plate
         neg_data = __get_negfrom_array(DF_ctrl, neg_control)
     else:
         neg_data = __get_negfrom_array(DF, neg_control)
+    
 
+    negArray = neg_data.iloc[:, 1:].values.flatten()
+    nb_neg_wells = len(neg_data.iloc[:, 1:].values.flatten())
 
-    DF.loc[:, "TStat UnPaired Equal"] = ( DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(neg_data.iloc[:, 1:].values.flatten())) / np.sqrt((DF.iloc[:, 4:4+n+1].var(axis=1)**2 / n) + (np.var(neg_data.iloc[:, 1:].values.flatten())**2)/len(neg_data.iloc[:, 1:].values.flatten()))
-    DF.loc[:, "TStat UnPaired Equal R"] = ( DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(neg_data.iloc[:, 1:].values.flatten())) / np.sqrt((DF.iloc[:, 4:4+n+1].var(axis=1)**2 / n) + (np.var(neg_data.iloc[:, 1:].values.flatten())**2)/len(neg_data.iloc[:, 1:].values.flatten()))
+    DF.loc[:, "TStat UnPaired Equal"] = ( DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.sqrt((DF.iloc[:, 4:4+n+1].var(axis=1)**2 / n) + (np.var(negArray)**2)/nb_neg_wells)
+    DF.loc[:, "TStat UnPaired Equal R"] = ( DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / np.sqrt((DF.iloc[:, 4:4+n+1].var(axis=1)**2 / n) + (np.var(negArray)**2)/nb_neg_wells)
 
 
     nb_rep = n
-    nb_neg_wells = len(neg_data.iloc[:, 1:].values.flatten())
     var_neg = np.var(neg_data.iloc[:, 1:].values.flatten())
     var_rep = DF.iloc[:, 4:4+n+1].var(axis=1)
 
-    DF.loc[:, "TStat UnPaired UnEqual"] = ( DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(neg_data.iloc[:, 1:].values.flatten())) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
-    DF.loc[:, "TStat UnPaired UnEqual R"] = ( DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(neg_data.iloc[:, 1:].values.flatten())) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
+    DF.loc[:, "TStat UnPaired UnEqual"] = ( DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
+    DF.loc[:, "TStat UnPaired UnEqual R"] = ( DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
 
     x = (DF.iloc[:, 4:4+n+1] - neg_data.iloc[:, 1:].mean())
     DF.loc[:, "TStat Paired "] = x.mean(axis=1) / (x.std(axis=1) / np.sqrt(n))
