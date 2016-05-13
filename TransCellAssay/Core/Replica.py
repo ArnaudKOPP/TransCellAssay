@@ -39,6 +39,7 @@ class Replica(GenericPlate):
 
         if not FlatFile:
             self.set_data(fpath)
+            self.__file = None
 
         else:
             if isinstance(fpath, str):

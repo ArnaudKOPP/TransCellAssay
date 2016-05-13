@@ -56,21 +56,15 @@ class GenericPlate(object):
         """
         return self.name
 
-    def set_data(self, array, array_type):
+    def set_data(self, array):
         """
         Set data matrix into self.array
         This method is designed for 1Data/Well or for manual analysis
         :param array: numpy array with good shape
-        :param array_type: median or mean data
         """
-        __valide_datatype = ['median', 'mean']
-        if isinstance(array, np.ndarray):
-            if array_type not in __valide_datatype:
-                raise ValueError("Must provided datatype, possibilities : {}".format(__valide_datatype))
-            self.array = array
-            self.datatype = array_type
-        else:
-            raise AttributeError("Must provided numpy ndarray")
+        assert isinstance(array, np.ndarray)
+        self.array = array
+
 
     def set_skip_well(self, to_skip):
         """

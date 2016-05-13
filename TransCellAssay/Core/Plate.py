@@ -255,6 +255,13 @@ class Plate(GenericPlate):
 
         self._array_channel = channel
 
+
+    def _mean_array(self):
+        tmp_array = np.zeros(self.platemap.platemap.shape)
+        for key, replica in self.replica.items():
+            tmp_array = tmp_array + replica.array
+        self.array = tmp_array / len(self.replica)
+
     def cut(self, rb, re, cb, ce, apply_down=True):
         """
         Cut a plate and replica to 'zoom' into a defined zone, for avoiding crappy effect during SEC process
