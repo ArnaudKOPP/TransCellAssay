@@ -32,7 +32,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_tstatTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None):
+def plate_tstatTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None, outlier=False):
     """
     Performed t-stat on plate object
     unpaired is for plate with replica without great variance between them
@@ -86,26 +86,44 @@ def plate_tstatTEST(plate, neg_control, chan=None, sec_data=False, control_plate
         neg_data = __get_negfrom_array(DF_ctrl, neg_control)
     else:
         neg_data = __get_negfrom_array(DF, neg_control)
-    
 
-    negArray = neg_data.iloc[:, 1:].values.flatten()
-    nb_neg_wells = len(neg_data.iloc[:, 1:].values.flatten())
 
-    DF.loc[:, "TStat UnPaired Equal"] = ( DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.sqrt((DF.iloc[:, 4:4+n+1].var(axis=1)**2 / n) + (np.var(negArray)**2)/nb_neg_wells)
-    DF.loc[:, "TStat UnPaired Equal R"] = ( DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / np.sqrt((DF.iloc[:, 4:4+n+1].var(axis=1)**2 / n) + (np.var(negArray)**2)/nb_neg_wells)
+    ## Outlier removing part
+    temp = DF.iloc[:, 4:4+n]
+    if outlier:
+        mask = temp.apply(TCA.without_outlier_std_based, axis=1) ##Exclude outlier
+        VALUE = temp[mask]
+        DF.iloc[:, 4:4+n] = VALUE
+        DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
+
+        mask = neg_data.apply(TCA.without_outlier_std_based, axis=1)
+        temp = neg_data[mask]
+        temp = temp.apply(lambda x: x.fillna(x.mean()), axis=1)
+        neg_data = temp
+    else:
+        VALUE = temp
+
+    negArray = neg_data.iloc[:,:].values.flatten()
+    nb_neg_wells = len(neg_data.iloc[:,:].values.flatten())
+
+
+    DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
+
+    DF.loc[:, "TStat UnPaired Equal"] = ( VALUE.mean(axis=1) - np.mean(negArray)) / np.sqrt((VALUE.var(axis=1)**2 / n) + (np.var(negArray)**2)/nb_neg_wells)
+    DF.loc[:, "TStat UnPaired Equal R"] = ( VALUE.median(axis=1) - np.median(negArray)) / np.sqrt((VALUE.var(axis=1)**2 / n) + (np.var(negArray)**2)/nb_neg_wells)
 
 
     nb_rep = n
-    var_neg = np.var(neg_data.iloc[:, 1:].values.flatten())
-    var_rep = DF.iloc[:, 4:4+n+1].var(axis=1)
+    var_neg = np.var(neg_data.iloc[:,:].values.flatten())
+    var_rep = VALUE.var(axis=1)
 
-    DF.loc[:, "TStat UnPaired UnEqual"] = ( DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
-    DF.loc[:, "TStat UnPaired UnEqual R"] = ( DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
+    DF.loc[:, "TStat UnPaired UnEqual"] = ( VALUE.mean(axis=1) - np.mean(negArray)) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
+    DF.loc[:, "TStat UnPaired UnEqual R"] = ( VALUE.median(axis=1) - np.median(negArray)) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
 
-    x = (DF.iloc[:, 4:4+n+1] - neg_data.iloc[:, 1:].mean())
+    x = (VALUE - neg_data.iloc[:,:].mean())
     DF.loc[:, "TStat Paired "] = x.mean(axis=1) / (x.std(axis=1) / np.sqrt(n))
 
-    x = (DF.iloc[:, 4:4+n+1] - neg_data.iloc[:, 1:].median())
+    x = (VALUE - neg_data.iloc[:,:].median())
     DF.loc[:, "TStat Paired R"] = x.median(axis=1) / (x.apply(mad, axis=1) / np.sqrt(n))
 
     return DF

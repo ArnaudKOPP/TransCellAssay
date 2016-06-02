@@ -43,6 +43,10 @@ def channel_filtering(plate, channel, value, exclude="lower", include=True, perc
     PlateCopy = copy.deepcopy(plate)
     for key, values in PlateCopy:
         PlateCopy[key] = __replica_filtering(values, channel, exclude, value[key], include, percent)
+
+    if plate.platemap.get_file_location() == 'Not available':
+        PlateCopy.platemap = plate.platemap
+
     return PlateCopy
 
 def __replica_filtering(replica, channel, exclude, cut_value, include=True, percent=False):
@@ -53,7 +57,7 @@ def __replica_filtering(replica, channel, exclude, cut_value, include=True, perc
 
 def __filtering_raw_data(raw_data, channel, exclude, value, include=True, percent=False):
     if percent:
-        value = np.percentile(raw_data.df[channel], value)
+        value = np.percentile(raw_data[channel], value)
     if exclude == "upper":
         filtered = __upper_filter_raw_data(raw_data, channel, value, include)
     if exclude == "lower":

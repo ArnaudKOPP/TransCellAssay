@@ -27,7 +27,7 @@ __email__ = "kopp.arnaud@gmail.com"
 
 
 
-def plate_ttestTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None):
+def plate_ttestTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None, outlier=False):
     """
     Perform t-test against neg reference for all well of plate/replica
     :param plate: Plate object
@@ -80,12 +80,29 @@ def plate_ttestTEST(plate, neg_control, chan=None, sec_data=False, control_plate
     else:
         neg_data = __get_negfrom_array(DF, neg_control)
 
-    
-    neg_values = neg_data.iloc[:, 1:].values.flatten()
 
-    DF.loc[:, "TTest EqualVar P-Val"] = DF.iloc[:, 4:4+n+1].apply(lambda x : stats.ttest_ind(a=x, b=neg_values, equal_var=True)[1], axis=1)
+    ## Outlier removing part
+    temp = DF.iloc[:, 4:4+n]
+    if outlier:
+        mask = temp.apply(TCA.without_outlier_std_based, axis=1) ##Exclude outlier
+        VALUE = temp[mask]
+        DF.iloc[:, 4:4+n] = VALUE
+        DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
+
+        mask = neg_data.apply(TCA.without_outlier_std_based, axis=1)
+        temp = neg_data[mask]
+        temp = temp.apply(lambda x: x.fillna(x.mean()), axis=1)
+        neg_data = temp
+    else:
+        VALUE = temp
+
+    neg_values = neg_data.iloc[:,:].values.flatten()
+
+    DF.loc[:, 'Well Std'] = VALUE .std(axis=1)
+
+    DF.loc[:, "TTest EqualVar P-Val"] = VALUE .apply(lambda x : stats.ttest_ind(a=x, b=neg_values, equal_var=True)[1], axis=1)
     DF.loc[:, "TTest EqualVar FDR"] = TCA.adjustpvalues(pvalues=DF.loc[:, "TTest EqualVar P-Val"])
-    DF.loc[:, "TTest UnEqualVar P-Val"] = DF.iloc[:, 4:4+n+1].apply(lambda x : stats.ttest_ind(a=x, b=neg_values, equal_var=False)[1], axis=1)
+    DF.loc[:, "TTest UnEqualVar P-Val"] = VALUE .apply(lambda x : stats.ttest_ind(a=x, b=neg_values, equal_var=False)[1], axis=1)
     DF.loc[:, "TTest UnEqualVar FDR"] = TCA.adjustpvalues(pvalues=DF.loc[:, "TTest UnEqualVar P-Val"])
 
     return DF

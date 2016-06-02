@@ -15,6 +15,18 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
+
+def quantile_normalization(anarray):
+    """
+    an array with samples in the columns and probes across the rows
+    """
+    A=anarray
+    AA = np.zeros_like(A)
+    I = np.argsort(A,axis=0)
+    AA[I,np.arange(A.shape[1])] = np.mean(A[I,np.arange(A.shape[1])],axis=1)[:,np.newaxis]
+    return AA
+
+
 def kl(p, q):
     """
     Kullback-Leibler divergence D(P || Q) for discrete distributions

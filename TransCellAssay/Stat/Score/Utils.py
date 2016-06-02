@@ -18,7 +18,7 @@ __email__ = "kopp.arnaud@gmail.com"
 def __get_skelleton(plate):
 
     assert isinstance(plate, TCA.Plate)
-    
+
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
     gene = plate.platemap.platemap.values.flatten().reshape(__SIZE__, 1)
@@ -30,7 +30,7 @@ def __get_skelleton(plate):
     return x
 
 def __get_negfrom_array(array, neg):
-    return array[array['PlateMap'] == neg].iloc[:, 3:]
+    return array[array['PlateMap'] == neg].iloc[:, 4:]
 
 
 

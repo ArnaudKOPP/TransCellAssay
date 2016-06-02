@@ -21,7 +21,7 @@ __email__ = "kopp.arnaud@gmail.com"
 
 
 
-def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None):
+def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None, outlier=False):
     """
     Performed zscore on plate object
     unpaired is for plate with replica without great variance between them
@@ -76,9 +76,27 @@ def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=False, control_plat
     else:
         neg_data = __get_negfrom_array(DF, neg_control)
 
-    negArray = neg_data.iloc[:, 1:].values.flatten()
+    ## Outlier removing part
+    temp = DF.iloc[:, 4:4+n]
+    if outlier:
+        mask = temp.apply(TCA.without_outlier_std_based, axis=1) ##Exclude outlier
+        VALUE = temp[mask]
+        DF.iloc[:, 4:4+n] = VALUE
+        DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
 
-    DF.loc[:, "ZScore"] = ( DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.std(negArray)
-    DF.loc[:, "ZScore R"] = ( DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / mad(negArray)
+        mask = neg_data.apply(TCA.without_outlier_std_based, axis=1)
+        temp = neg_data[mask]
+        temp = temp.apply(lambda x: x.fillna(x.mean()), axis=1)
+        neg_data = temp
+    else:
+        VALUE = temp
+
+
+    negArray = neg_data.iloc[:,:].values.flatten()
+
+    DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
+
+    DF.loc[:, "ZScore"] = ( VALUE.mean(axis=1) - np.mean(negArray)) / np.std(negArray)
+    DF.loc[:, "ZScore R"] = ( VALUE.median(axis=1) - np.median(negArray)) / mad(negArray)
 
     return DF

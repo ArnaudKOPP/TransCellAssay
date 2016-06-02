@@ -38,7 +38,7 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_ssmdTEST(plate, neg_control, chan=None, sec_data=True, control_plate=None, inplate_data=False):
+def plate_ssmdTEST(plate, neg_control, chan=None, sec_data=True, control_plate=None, inplate_data=False,outlier=False):
     """
     Performed SSMD on plate object
         unpaired is for plate with replica without great variance between them
@@ -59,13 +59,13 @@ def plate_ssmdTEST(plate, neg_control, chan=None, sec_data=True, control_plate=N
 
     if len(plate) > 1 and not inplate_data:
         score = _ssmd_rep(plate, neg_control, sec_data=sec_data,
-                                        control_plate=control_plate)
+                                        control_plate=control_plate, outlier=outlier)
     else:
         score = _ssmd_norep(plate, neg_control, method=method, sec_data=sec_data,
                            control_plate=control_plate)
     return score
 
-def _ssmd_rep(plate, neg_control, sec_data=True, control_plate=None):
+def _ssmd_rep(plate, neg_control, sec_data=True, control_plate=None,outlier=False):
     """
     performed unpaired SSMD for plate with replica
     :param plate: Plate Object to analyze
@@ -113,21 +113,37 @@ def _ssmd_rep(plate, neg_control, sec_data=True, control_plate=None):
     paired_cst = (scipy.special.gamma((n - 1) / 2) / scipy.special.gamma((n - 2) / 2)) * np.sqrt(2 / (n - 1))
     unpaired_cst = 2 * (scipy.special.gamma(((n + N) - 2) / 2) / scipy.special.gamma(((n + N) - 3) / 2)) ** 2
 
-    negArray = neg_data.iloc[:, 1:].values.flatten()
 
+    ## Outlier removing part
+    temp = DF.iloc[:, 4:4+n]
+    if outlier:
+        mask = temp.apply(TCA.without_outlier_std_based, axis=1) ##Exclude outlier
+        VALUE = temp[mask]
+        DF.iloc[:, 4:4+n] = VALUE
+        DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
 
-    DF.loc[:, "SSMD UnPaired UnEqual"] = (DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.sqrt(DF.iloc[:, 4:4+n+1].var(axis=1)**2 + np.var(negArray)**2)
-    DF.loc[:, "SSMD UnPaired Equal"] = (DF.iloc[:, 4:4+n+1].mean(axis=1) - np.mean(negArray)) / np.sqrt((2/unpaired_cst) * ((n-1) * DF.iloc[:, 4:4+n+1].var(axis=1)**2 + (N+1) * np.var(negArray)**2 ))
-    DF.loc[:, "SSMD UnPaired UnEqual R"] = (DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / np.sqrt(DF.iloc[:, 4:4+n+1].var(axis=1)**2 + np.var(negArray)**2)
-    DF.loc[:, "SSMD UnPaired Equal R"] = (DF.iloc[:, 4:4+n+1].median(axis=1) - np.median(negArray)) / np.sqrt((2/unpaired_cst) * ((n-1) * DF.iloc[:, 4:4+n+1].var(axis=1)**2 + (N+1) * np.var(negArray)**2 ))
+        mask = neg_data.apply(TCA.without_outlier_std_based, axis=1)
+        temp = neg_data[mask]
+        temp = temp.apply(lambda x: x.fillna(x.mean()), axis=1)
+        neg_data = temp
+    else:
+        VALUE = temp
 
+    negArray = neg_data.iloc[:,:].values.flatten()
 
-    x = (DF.iloc[:, 4:4+n+1] - neg_data.iloc[:, 1:].mean())
+    DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
+
+    DF.loc[:, "SSMD UnPaired UnEqual"] = (VALUE.mean(axis=1) - np.mean(negArray)) / np.sqrt(VALUE.var(axis=1)**2 + np.var(negArray)**2)
+    DF.loc[:, "SSMD UnPaired Equal"] = (VALUE.mean(axis=1) - np.mean(negArray)) / np.sqrt((2/unpaired_cst) * ((n-1) * VALUE.var(axis=1)**2 + (N+1) * np.var(negArray)**2 ))
+    DF.loc[:, "SSMD UnPaired UnEqual R"] = (VALUE.median(axis=1) - np.median(negArray)) / np.sqrt(VALUE.var(axis=1)**2 + np.var(negArray)**2)
+    DF.loc[:, "SSMD UnPaired Equal R"] = (VALUE.median(axis=1) - np.median(negArray)) / np.sqrt((2/unpaired_cst) * ((n-1) * VALUE.var(axis=1)**2 + (N+1) * np.var(negArray)**2 ))
+
+    x = (VALUE - neg_data.iloc[:,:].mean())
 
     DF.loc[:, "SSMD Paired UMVUE"] = paired_cst * (x.mean(axis=1) / x.std(axis=1))
     DF.loc[:, "SSMD Paired MM"]  =(x.mean(axis=1) / x.std(axis=1))
 
-    x = (DF.iloc[:, 4:4+n+1] - neg_data.iloc[:, 1:].median())
+    x = (VALUE - neg_data.iloc[:,:].median())
 
     DF.loc[:, "SSMD Paired UMVUE R"] = paired_cst * (x.median(axis=1) / x.apply(mad, axis=1))
     DF.loc[:, "SSMD Paired MM R"] = x.median(axis=1) / x.apply(mad, axis=1)

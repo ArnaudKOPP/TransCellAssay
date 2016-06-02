@@ -409,11 +409,12 @@ def ReplicaWellsSorted(replica, well, channel, ascending=True, y_lim=None, file_
     except Exception as e:
         print(e)
 
-def PlateWellsSorted(plate, wells, channel, ascending=True, y_lim=None, file_name=None):
+def PlateWellsSorted(plate, wells, channel, ascending=True, y_lim=None, file_name=None, rep=None):
     """
     Plot for a plate given wells data sorted
     """
     assert isinstance(plate, TCA.Plate)
+    import pandas as pd
     import numpy as np
     import matplotlib.pyplot as plt
     import matplotlib.ticker as mtick
@@ -421,11 +422,16 @@ def PlateWellsSorted(plate, wells, channel, ascending=True, y_lim=None, file_nam
     fig = plt.figure()
     ax = fig.add_subplot(111)
     for well in wells:
-        wellData = plate.get_raw_data(channel=channel, well=well, as_dict=True)
-        for key, value in wellData.items():
-            value.sort_values(inplace=True, ascending=ascending)
-            perc = np.linspace(0,100,len(value))
-            plt.plot(perc, value.values, label=str(key)+'_'+str(well))
+        wellData = plate.get_raw_data(channel=channel, well=well, as_dict=True, replica=rep)
+        if isinstance(wellData, dict):
+            for key, value in wellData.items():
+                value.sort_values(inplace=True, ascending=ascending)
+                perc = np.linspace(0,100,len(value))
+                plt.plot(perc, value.values, label=str(key)+'_'+str(well))
+        else:
+            wellData.sort_values(inplace=True, ascending=ascending)
+            perc = np.linspace(0,100,len(wellData))
+            plt.plot(perc, wellData.values, label=str(well))
     plt.legend()
     ax.set_ylabel('Well value')
     ax.set_title("Wells values sorted on "+str(channel))
