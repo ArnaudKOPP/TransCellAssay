@@ -80,9 +80,9 @@ def _ssmd_rep(plate, neg_control, sec_data=True, control_plate=None,outlier=Fals
         if plate.array_c is None:
             sec_data = False
             log.warning("sec_data set to False -> data not available")
-
-    if plate.array is None:
-        raise ValueError("Set value first")
+    else:
+        if plate.array is None:
+            raise ValueError("Set value first")
 
     ## put wells value into df
     if sec_data:

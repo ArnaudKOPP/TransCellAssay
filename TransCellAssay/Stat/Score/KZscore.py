@@ -21,7 +21,7 @@ __email__ = "kopp.arnaud@gmail.com"
 
 
 
-def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate=None, outlier=False):
+def plate_kzscoreTEST(plate, chan=None, sec_data=True, control_plate=None, outlier=False):
     """
     Performed zscore on plate object
     unpaired is for plate with replica without great variance between them
@@ -33,11 +33,6 @@ def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate
     """
     assert isinstance(plate, TCA.Plate)
     assert len(plate) > 1
-
-
-    # if no neg was provided raise AttributeError
-    if neg_control is None:
-        raise ValueError('Must provided negative control')
 
     if plate._array_channel != chan and chan is not None:
         plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
@@ -64,17 +59,6 @@ def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate
         for repname, rep in plate:
             DF.loc[:, repname+" Mean"] = rep.array.flatten().reshape(__SIZE__, 1)
 
-    ## search neg data
-    if control_plate is not None:
-        DF_ctrl = __get_skelleton(plate)
-        if sec_data:
-            DF_ctrl.loc[:, "Well Value"] = control_plate.array_c.flatten().reshape(__SIZE__, 1)
-        else:
-            DF_ctrl.loc[:, "Well Value"] = control_platee.array.flatten().reshape(__SIZE__, 1)
-
-        neg_data = __get_negfrom_array(DF_ctrl, neg_control)
-    else:
-        neg_data = __get_negfrom_array(DF, neg_control)
 
     ## Outlier removing part
     temp = DF.iloc[:, 4:4+n]
@@ -84,19 +68,12 @@ def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate
         DF.iloc[:, 4:4+n] = VALUE
         DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
 
-        mask = neg_data.apply(TCA.without_outlier_std_based, axis=1)
-        temp = neg_data[mask]
-        temp = temp.apply(lambda x: x.fillna(x.mean()), axis=1)
-        neg_data = temp
     else:
         VALUE = temp
 
-
-    negArray = neg_data.iloc[:,:].values.flatten()
-
     DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
 
-    DF.loc[:, "ZScore"] = ( VALUE.mean(axis=1) - np.mean(negArray)) / np.std(negArray)
-    DF.loc[:, "ZScore R"] = ( VALUE.median(axis=1) - np.median(negArray)) / mad(negArray)
+    DF.loc[:, "K ZScore"] = ( VALUE.mean(axis=1) - DF.loc[:, "Well Mean"].mean()) / DF.loc[:, "Well Mean"].std()
+    DF.loc[:, "K ZScore R"] = ( VALUE.median(axis=1) - DF.loc[:, "Well Mean"].median()) / TCA.mad(DF.loc[:, "Well Mean"].values.flatten())
 
     return DF

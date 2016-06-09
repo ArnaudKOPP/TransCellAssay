@@ -27,7 +27,7 @@ __email__ = "kopp.arnaud@gmail.com"
 
 
 
-def plate_ttestTEST(plate, neg_control, chan=None, sec_data=False, control_plate=None, outlier=False):
+def plate_ttestTEST(plate, neg_control, chan=None, sec_data=True, control_plate=None, outlier=False):
     """
     Perform t-test against neg reference for all well of plate/replica
     :param plate: Plate object
@@ -54,9 +54,9 @@ def plate_ttestTEST(plate, neg_control, chan=None, sec_data=False, control_plate
         if plate.array_c is None:
             sec_data = False
             log.warning("sec_data set to False -> data not available")
-
-    if plate.array is None:
-        raise ValueError("Set value first")
+    else:
+        if plate.array is None:
+            raise ValueError("Set value first")
 
     ## put wells value into df
     if sec_data:

@@ -262,6 +262,13 @@ class Plate(GenericPlate):
             tmp_array = tmp_array + replica.array
         self.array = tmp_array / len(self.replica)
 
+    def _mean_array_c(self):
+        tmp_array = np.zeros(self.platemap.platemap.shape)
+        for key, replica in self.replica.items():
+            tmp_array = tmp_array + replica.array_c
+        self.array_c = tmp_array / len(self.replica)
+
+
     def cut(self, rb, re, cb, ce, apply_down=True):
         """
         Cut a plate and replica to 'zoom' into a defined zone, for avoiding crappy effect during SEC process
@@ -365,7 +372,7 @@ class Plate(GenericPlate):
                                                   max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
                                                   skip_col=skip_col, skip_row=skip_row, trimmed=trimmed,
                                                   poly_deg=poly_deg, low_max_iter=low_max_iter, f=f)
-            self.agg_data_from_replica_channel(channel=None, use_sec_data=True)
+            self._mean_array_c()
         else:
             ## apply sec only on plate.array to get array_c
             self.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
