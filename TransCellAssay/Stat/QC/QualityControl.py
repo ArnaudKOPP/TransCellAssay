@@ -186,7 +186,13 @@ def __replicat_quality_control(replica, channel, neg_well, pos_well, sedt=False,
     qc_data_array['Pos SD'] = np.std(posdata)
     qc_data_array['AVR'] = __avr(negdata, posdata)
     qc_data_array['Z*Factor'] = __zfactor_prime(negdata, posdata)
-    qc_data_array['ZFactor'] = __zfactor(replica.df, channel, negdata, posdata)
+    try:
+        qc_data_array['ZFactor'] = __zfactor(replica.df[channel], negdata, posdata)
+    except:
+        if sec_data:
+            qc_data_array['ZFactor'] = __zfactor(replica.array_c.flatten(), negdata, posdata)
+        else:
+            qc_data_array['ZFactor'] = __zfactor(replica.array.flatten(), negdata, posdata)
     qc_data_array['SSMD'] = __ssmd(negdata, posdata)
     qc_data_array['CVD'] = __cvd(negdata, posdata)
 
@@ -256,7 +262,7 @@ def __zfactor_prime(cneg, cpos):
     return zfactorprime
 
 
-def __zfactor(data, channel, cneg, cpos):
+def __zfactor(data, cneg, cpos):
     """
     This is the modified version of the Z’-factor, where the mean and std of the
     negative control are substituted with the ones for the test samples. Although Z-factor
@@ -274,7 +280,7 @@ def __zfactor(data, channel, cneg, cpos):
     :param cpos: positive control data
     :return: zfactor value
     """
-    zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data[channel])) / (np.abs(np.mean(cpos) - np.mean(cneg))))
+    zfactor = 1 - ((3 * np.std(cpos) + 3 * np.std(data)) / (np.abs(np.mean(cpos) - np.mean(cneg))))
     return zfactor
 
 
