@@ -120,7 +120,7 @@ def _ssmd_rep(plate, neg_control, sec_data=True, control_plate=None,outlier=Fals
         mask = temp.apply(TCA.without_outlier_std_based, axis=1) ##Exclude outlier
         VALUE = temp[mask]
         DF.iloc[:, 4:4+n] = VALUE
-        DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
+        DF.loc[:, "Well Mean"] = VALUE.nanmean(axis=1)
 
         mask = neg_data.apply(TCA.without_outlier_std_based, axis=1)
         temp = neg_data[mask]
@@ -130,6 +130,7 @@ def _ssmd_rep(plate, neg_control, sec_data=True, control_plate=None,outlier=Fals
         VALUE = temp
 
     negArray = neg_data.iloc[:,:].values.flatten()
+    negArray = negArray[~np.isnan(negArray)]
 
     DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
 
@@ -194,9 +195,9 @@ def _ssmd_norep(plate, neg_control, sec_data=False, control_plate=None):
     k = n-2.48
 
 
-    DF.loc[:, "SSMD Robust MM"] = (DF.loc[:, "Well Value"] - np.median(neg_data)) / (np.sqrt(2) * mad(neg_data))
-    DF.loc[:, "SSMD Robust UMVUE"] = (DF.loc[:, "Well Value"] - np.median(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * mad(neg_data))
-    DF.loc[:, "SSMD MM"] = (DF.loc[:, "Well Value"] - np.mean(neg_data)) / (np.sqrt(2) * np.std(neg_data))
-    DF.loc[:, "SSMD UMVUE"] = (DF.loc[:, "Well Value"] - np.mean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.std(neg_data))
+    DF.loc[:, "SSMD Robust MM"] = (DF.loc[:, "Well Value"] - np.nanmedian(neg_data)) / (np.sqrt(2) * mad(neg_data))
+    DF.loc[:, "SSMD Robust UMVUE"] = (DF.loc[:, "Well Value"] - np.nanmedian(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * mad(neg_data))
+    DF.loc[:, "SSMD MM"] = (DF.loc[:, "Well Value"] - np.nanmean(neg_data)) / (np.sqrt(2) * np.std(neg_data))
+    DF.loc[:, "SSMD UMVUE"] = (DF.loc[:, "Well Value"] - np.nanmean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.std(neg_data))
 
     return DF

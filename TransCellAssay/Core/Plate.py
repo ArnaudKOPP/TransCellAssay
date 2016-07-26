@@ -220,7 +220,7 @@ class Plate(GenericPlate):
         :param channel: which channel to have into sum up data
         :param datatype : default to None -> take plate parameters, otherwise compute with given choice
         """
-        tmp_array = np.zeros(self.platemap.platemap.shape)
+
         i = 0
         if datatype is None:
             datatype=self.datatype
@@ -237,10 +237,6 @@ class Plate(GenericPlate):
                     replica.compute_data_channel(channel, datatype=datatype)
                     change=True
 
-            if not use_sec_data:
-                tmp_array = tmp_array + replica.array
-            else:
-                tmp_array = tmp_array + replica.array_c
             i += 1
 
         if change:
@@ -249,24 +245,30 @@ class Plate(GenericPlate):
                     self._array_channel, channel, self.name))
 
         if not use_sec_data:
-            self.array = tmp_array / i
+            self._mean_array()
         else:
-            self.array_c = tmp_array / i
+            self._mean_array_c()
 
         self._array_channel = channel
 
 
     def _mean_array(self):
-        tmp_array = np.zeros(self.platemap.platemap.shape)
+
+        lst = []
         for key, replica in self.replica.items():
-            tmp_array = tmp_array + replica.array
-        self.array = tmp_array / len(self.replica)
+            lst.append(pd.DataFrame(replica.array.flatten()))
+
+        x = pd.concat(lst, axis=1).mean(axis=1).values.reshape(self.platemap.platemap.shape)
+        self.array = x
+
 
     def _mean_array_c(self):
-        tmp_array = np.zeros(self.platemap.platemap.shape)
+        lst = []
         for key, replica in self.replica.items():
-            tmp_array = tmp_array + replica.array_c
-        self.array_c = tmp_array / len(self.replica)
+            lst.append(pd.DataFrame(replica.array_c.flatten()))
+
+        x = pd.concat(lst, axis=1).mean(axis=1).values.reshape(self.platemap.platemap.shape)
+        self.array_c = x
 
 
     def cut(self, rb, re, cb, ce, apply_down=True):

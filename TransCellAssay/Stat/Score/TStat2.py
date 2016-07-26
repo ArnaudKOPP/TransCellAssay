@@ -104,7 +104,8 @@ def plate_tstatTEST(plate, neg_control, chan=None, sec_data=True, control_plate=
         VALUE = temp
 
     negArray = neg_data.iloc[:,:].values.flatten()
-    nb_neg_wells = len(neg_data.iloc[:,:].values.flatten())
+    negArray = negArray[~np.isnan(negArray)]
+    nb_neg_wells = len(negArray)
 
 
     DF.loc[:, 'Well Std'] = VALUE.std(axis=1)

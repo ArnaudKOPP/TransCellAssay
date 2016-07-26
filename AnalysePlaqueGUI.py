@@ -47,24 +47,10 @@ class MainAppFrame(Frame):
         Combobox(self.master, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid( row=4, column=1, sticky=W, pady=4)
         self.threshold_type.set('Percent')
 
-        # Choice for norm
-        self.Norm = StringVar()
-        Combobox(self.master, textvariable=self.Norm, values=('Zscore', 'RobustZscore', 'PercentOfSample', 'RobustPercentOfSample', 'PercentOfControl', 'RobustPercentOfSample', 'NormalizedPercentInhibition'),
-                state='readonly').grid(row=0, column=2, sticky=W, pady=4)
-
-        # Choice for spatial effect norm
-        self.SpatNorm = StringVar()
-        Combobox(self.master, textvariable=self.SpatNorm, values=('Bscore', 'BZscore', 'PMP', 'MEA'),
-                state='readonly').grid(row=1, column=2, sticky=W, pady=4)
-
         # button of bottom line
         Button(self.master, text='Quit', command=self.master.quit).grid(row=6, column=0, sticky=W, pady=4)
         Button(self.master, text="Browse", command=self.load_dir).grid(row=6, column=1, sticky=W, pady=4)
         Button(self.master, text='Launch', command=self.analyse).grid(row=6, column=2, sticky=W, pady=4)
-
-        # button for log norm or not
-        self.LogNorm = BooleanVar()
-        Checkbutton(self.master, text="Log Norm",onvalue=True, offvalue=False,variable=self.LogNorm).grid(row=0, column=3)
 
     def analyse(self):
         if self.__dirpath is '':
@@ -75,6 +61,8 @@ class MainAppFrame(Frame):
 
         ## Dict for storing plate ant their replica into a 'tree'
         FileDict = collections.OrderedDict()
+
+
         for root, dirs, filenames in os.walk(self.__dirpath):
             if "Legend.xml" in filenames:
                 try:
@@ -106,11 +94,10 @@ class MainAppFrame(Frame):
                             pass
                         file.write_raw_data(path=self.__dirpath, name=PlateId, frmt='csv')
 
-                    # work only with XXXX01.1.csv file name, all replica must have the same XXXX name
-                    if (PlateId+'.csv')[0:-6] in FileDict.keys():
-                        FileDict[(PlateId+'.csv')[0:-6]]["rep"+(PlateId+'.csv')[-5:-4]] = PlateId+'.csv'
-                    else:
-                        FileDict[(PlateId+'.csv')[0:-6]] = {"rep"+(PlateId+'.csv')[-5:-4] : PlateId+'.csv'}
+
+                    FileDict[PlateId] = os.path.join(self.__dirpath, PlateId+".csv")
+
+                    print(FileDict)
 
                 except Exception as e:
                     logging.error(e)
@@ -121,66 +108,74 @@ class MainAppFrame(Frame):
         if not os.path.isdir(outpath):
             os.makedirs(outpath)
 
-        logging.info("Launch analyse :\nneg: {0} \nPos: {1} \nchannel: {2} \nthreshold: {3} \n".format(self.NegCtrl.get(),
-            self.PosCtrl.get(), self.ChnVal.get(), self.ThrsVal.get()))
+
+
+        NegRef = self.NegCtrl.get()
+        if NegRef == '':
+            NegRef = None
+
+        PosRef = self.PosCtrl.get()
+        if PosRef == '':
+            PosRef = None
+
+        ChanRef = self.ChnVal.get()
+        if ChanRef== '':
+            ChanRef = None
+        else:
+            ChanRef = [ChanRef]
+
+        noposcell=False
+        thresRef = self.ThrsVal.get()
+        if thresRef== '':
+            thresRef = None
+            noposcell=True
+
+        if self.threshold_type.get() == 'Percent':
+            thresTypePercent = True
+            thresTypeFixedVal = False
+        else:
+            thresTypePercent = False
+            thresTypeFixedVal = True
+
+
+        logging.info("Launch analyse ")
 
         # Load a plate with their replica
         for key, value in FileDict.items():
             plaque = TCA.Core.Plate(name=key, platemap=TCA.Core.PlateMap(size=int(self.plate_size.get())))
 
-            # load replica into plate
-            for key, value in value.items():
-                plaque + TCA.Core.Replica(name=key, fpath=os.path.join(self.__dirpath, value), FlatFile=True,
-                datatype='mean')
+            plaque + TCA.Core.Replica(name=key, fpath=value, FlatFile=True)
 
             ## Do your analysis here after plate were created
 
-            # First for not normalized data
-            if self.threshold_type.get() == 'Percent':
-                TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                   threshold=int(self.ThrsVal.get()), percent=True, path=outpath,
-                                   fixed_threshold=False, tag="_not_normalized")
+            if ChanRef is not None and noposcell is False:
+                df, thres = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
+                                            neg=NegRef,
+                                            pos=PosRef,
+                                            threshold=thresRef,
+                                            percent=thresTypePercent,
+                                            fixed_threshold=thresTypeFixedVal,
+                                            clean=False,
+                                            noposcell=noposcell,
+                                            multiIndexDF=True)
+
+                df.to_csv(os.path.join(self.__dirpath, key+'.csv'), header=true, index=False)
             else:
-                TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                   threshold=int(self.ThrsVal.get()), percent=False, path=outpath,
-                                   fixed_threshold=True, tag="_not_normalized")
+                df = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
+                                            neg=NegRef,
+                                            pos=PosRef,
+                                            threshold=thresRef,
+                                            percent=thresTypePercent,
+                                            fixed_threshold=thresTypeFixedVal,
+                                            clean=False,
+                                            noposcell=noposcell,
+                                            multiIndexDF=True)
 
-            # normalize your data or not
-            if self.Norm.get() is not '':
-                plaque.normalization_channels(self.ChnVal.get(), method=self.Norm.get(), log_t=self.LogNorm.get(),
-                                                neg=self.NegCtrl.get(), pos=self.PosCtrl.get())
-
-            if self.SpatNorm.get() is not '':
-                plaque.systematic_error_correction(algorithm=self.SpatNorm.get(), method='median', apply_down=True, verbose=False,
-                                                    save=True, max_iterations=100, alpha=0.05, epsilon=0.01,
-                                                    skip_col=[], skip_row=[], trimmed=0.0)
-
-            # only if no norm are applied
-            if self.Norm.get() is not '' and self.SpatNorm.get() is not '':
-                # Then normalized data
-                if self.threshold_type.get() == 'Percent':
-                    TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                       threshold=int(self.ThrsVal.get()), percent=True, path=outpath,
-                                       fixed_threshold=False, tag="_normalized")
-                else:
-                    TCA.plate_channel_analysis(plaque, channel=self.ChnVal.get(), neg=self.NegCtrl.get(), pos=self.PosCtrl.get(),
-                                       threshold=int(self.ThrsVal.get()), percent=False, path=outpath,
-                                       fixed_threshold=True, tag="_normalized")
-
-            file = open(os.path.join(outpath, 'Parameters.txt'), 'w')
-            file.write("Input directory         : "+str(self.__dirpath) + "\n")
-            file.write("Channel                 : "+str(self.ChnVal.get()) + "\n")
-            file.write("Negative ctrl           : "+str(self.NegCtrl.get()) + "\n")
-            file.write("Positive ctrl           : "+str(self.PosCtrl.get()) + "\n")
-            file.write("Threshold value         : "+str(self.ThrsVal.get()) + "\n")
-            file.write("Normalization Method    : "+str(self.Norm.get()) + "\n")
-            file.write("Edge effect corection   : "+str(self.SpatNorm.get()) + "\n")
-            file.write("Threshold type          : "+str(self.threshold_type.get()) + "\n")
-            file.close()
+                df.to_csv(os.path.join(outpath, key+'.csv'), header=True, index=False)
 
             del plaque
 
-        logging.info("  ----->>>  Finished")
+        logging.info("  ----->>>  Finished    \./")
 
     def load_dir(self):
         self.__dirpath = askdirectory()

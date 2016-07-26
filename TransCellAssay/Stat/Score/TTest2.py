@@ -97,6 +97,7 @@ def plate_ttestTEST(plate, neg_control, chan=None, sec_data=True, control_plate=
         VALUE = temp
 
     neg_values = neg_data.iloc[:,:].values.flatten()
+    neg_values = neg_values[~np.isnan(neg_values)]
 
     DF.loc[:, 'Well Std'] = VALUE .std(axis=1)
 

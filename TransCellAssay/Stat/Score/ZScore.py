@@ -93,6 +93,7 @@ def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate
 
 
     negArray = neg_data.iloc[:,:].values.flatten()
+    negArray = negArray[~np.isnan(negArray)]
 
     DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
 
