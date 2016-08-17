@@ -3,7 +3,6 @@
 from tkinter import *
 from tkinter.ttk import *
 from tkinter.filedialog import askdirectory
-# sys.path.append('')
 import TransCellAssay as TCA
 import tkinter.messagebox
 import os
@@ -22,9 +21,8 @@ class MainAppFrame(Frame):
         Frame.__init__(self, master)
         self.__dirpath = ''
         self.master = master
-        self.master.title('Analyse de plaque pour screen')
+        self.master.title('Plate Analyser')
         Label(self.master, text="Neg Ctrl").grid(row=0)
-        Label(self.master, text="Pos Ctrl").grid(row=1)
         Label(self.master, text="Channel").grid(row=2)
         Label(self.master, text="Threshold Value").grid(row=3)
         Label(self.master, text="Threshold type").grid(row=4)
@@ -35,7 +33,6 @@ class MainAppFrame(Frame):
         self.ChnVal = Entry(self.master)
         self.ThrsVal = Entry(self.master)
         self.NegCtrl.grid(row=0, column=1)
-        self.PosCtrl.grid(row=1, column=1)
         self.ChnVal.grid(row=2, column=1)
         self.ThrsVal.grid(row=3, column=1)
 
@@ -49,18 +46,29 @@ class MainAppFrame(Frame):
 
         # button of bottom line
         Button(self.master, text='Quit', command=self.master.quit).grid(row=6, column=0, sticky=W, pady=4)
-        Button(self.master, text="Browse", command=self.load_dir).grid(row=6, column=1, sticky=W, pady=4)
-        Button(self.master, text='Launch', command=self.analyse).grid(row=6, column=2, sticky=W, pady=4)
+        Button(self.master, text="Browse File", command=self.load_dir).grid(row=6, column=1, sticky=W, pady=4)
+        Button(self.master, text='Analyse', command=self.Analyse).grid(row=6, column=2, sticky=W, pady=4)
+        Button(self.master, text='CellsCount', command=self.CellsCount).grid(row=6, column=3, sticky=W, pady=4)
 
-    def analyse(self):
+    def CellsCount(self):
         if self.__dirpath is '':
             tkinter.messagebox.showerror(message="You must select a directory")
             logging.error('Must select a directory')
             return
         logging.info("Format Data : {}".format(self.__dirpath))
 
-        ## Dict for storing plate ant their replica into a 'tree'
-        FileDict = collections.OrderedDict()
+
+        outpath = os.path.join(self.__dirpath, time.asctime())
+        if not os.path.isdir(outpath):
+            os.makedirs(outpath)
+
+
+
+        ChanRef = self.ChnVal.get()
+        if ChanRef== '':
+            ChanRef = None
+        else:
+            ChanRef = [ChanRef]
 
 
         for root, dirs, filenames in os.walk(self.__dirpath):
@@ -92,31 +100,49 @@ class MainAppFrame(Frame):
                             file.remove_nan()
                         except:
                             pass
-                        file.write_raw_data(path=self.__dirpath, name=PlateId, frmt='csv')
 
 
-                    FileDict[PlateId] = os.path.join(self.__dirpath, PlateId+".csv")
+                        logging.info("Make Cells Count on {}".format(PlateId))
 
-                    print(FileDict)
+
+                        plaque = TCA.Core.Plate(name=PlateId, platemap=TCA.Core.PlateMap(size=int(self.plate_size.get())))
+
+                        plaque + TCA.Core.Replica(name="rep1", fpath=file)
+
+                        ## Do your analysis here after plate were created
+                        df = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
+                                                            neg=None,
+                                                            noposcell=True,
+                                                            multiIndexDF=True)
+
+                        df.to_csv(os.path.join(outpath, plaque.name+'.csv'), header=True, index=False)
+
+                        del plaque
+
 
                 except Exception as e:
                     logging.error(e)
 
-        logging.debug(FileDict)
+
+        logging.info("  ----->>>  Finished    \./")
+
+    def Analyse(self):
+        if self.__dirpath is '':
+            tkinter.messagebox.showerror(message="You must select a directory")
+            logging.error('Must select a directory')
+            return
+        logging.info("Format Data : {}".format(self.__dirpath))
+
 
         outpath = os.path.join(self.__dirpath, time.asctime())
         if not os.path.isdir(outpath):
             os.makedirs(outpath)
 
 
-
         NegRef = self.NegCtrl.get()
         if NegRef == '':
             NegRef = None
 
-        PosRef = self.PosCtrl.get()
-        if PosRef == '':
-            PosRef = None
 
         ChanRef = self.ChnVal.get()
         if ChanRef== '':
@@ -129,6 +155,8 @@ class MainAppFrame(Frame):
         if thresRef== '':
             thresRef = None
             noposcell=True
+        else:
+            thresRef = int(thresRef)
 
         if self.threshold_type.get() == 'Percent':
             thresTypePercent = True
@@ -138,42 +166,83 @@ class MainAppFrame(Frame):
             thresTypeFixedVal = True
 
 
-        logging.info("Launch analyse ")
 
-        # Load a plate with their replica
-        for key, value in FileDict.items():
-            plaque = TCA.Core.Plate(name=key, platemap=TCA.Core.PlateMap(size=int(self.plate_size.get())))
+        for root, dirs, filenames in os.walk(self.__dirpath):
+            if "Legend.xml" in filenames:
+                try:
+                    try:
 
-            plaque + TCA.Core.Replica(name=key, fpath=value, FlatFile=True)
+                        well = pd.read_csv((root + "/Plate.csv"))
+                    except:
+                        try:
+                            well = pd.read_csv((root + "/Plate.csv"), decimal=",", sep=";")
+                        except Exception as e:
+                            print("Error in reading  File", e)
 
-            ## Do your analysis here after plate were created
+                    PlateId = well['PlateId/Barcode'][0]
 
-            if ChanRef is not None and noposcell is False:
-                df, thres = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
-                                            neg=NegRef,
-                                            pos=PosRef,
-                                            threshold=thresRef,
-                                            percent=thresTypePercent,
-                                            fixed_threshold=thresTypeFixedVal,
-                                            clean=False,
-                                            noposcell=noposcell,
-                                            multiIndexDF=True)
+                    ## if file aren't already formatted
+                    if not os.path.isfile(os.path.join(self.__dirpath, PlateId+'.csv')):
+                        logging.info('Read Plate : {}'.format(PlateId))
 
-                df.to_csv(os.path.join(self.__dirpath, key+'.csv'), header=true, index=False)
-            else:
-                df = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
-                                            neg=NegRef,
-                                            pos=PosRef,
-                                            threshold=thresRef,
-                                            percent=thresTypePercent,
-                                            fixed_threshold=thresTypeFixedVal,
-                                            clean=False,
-                                            noposcell=noposcell,
-                                            multiIndexDF=True)
+                        # # read Data
+                        file = TCA.CSV()
+                        file.load(fpath=os.path.join(root, "Cell.csv"))
 
-                df.to_csv(os.path.join(outpath, key+'.csv'), header=True, index=False)
+                        #  # create well format
+                        file.format_well_format()
+                        try:
+                            file.remove_col()
+                            file.remove_nan()
+                        except:
+                            pass
 
-            del plaque
+
+                        logging.info("Launch analyse ")
+
+
+                        plaque = TCA.Core.Plate(name=PlateId, platemap=TCA.Core.PlateMap(size=int(self.plate_size.get())))
+
+                        plaque + TCA.Core.Replica(name="rep1", fpath=file)
+
+                        if NegRef is not None:
+                            NegRef = NegRef.split()
+                            for i in NegRef:
+                                plaque.platemap[i] = "Neg"
+                            NegRef = "Neg"
+
+
+                        ## Do your analysis here after plate were created
+
+                        if noposcell is False:
+                            df, thres = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
+                                                            neg=NegRef,
+                                                            threshold=thresRef,
+                                                            percent=thresTypePercent,
+                                                            fixed_threshold=thresTypeFixedVal,
+                                                            clean=False,
+                                                            noposcell=noposcell,
+                                                            multiIndexDF=True)
+
+                            df.to_csv(os.path.join(outpath, plaque.name+'.csv'), header=True, index=False)
+                        else:
+                            df = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
+                                                            neg=NegRef,
+                                                            threshold=thresRef,
+                                                            percent=thresTypePercent,
+                                                            fixed_threshold=thresTypeFixedVal,
+                                                            clean=False,
+                                                            noposcell=noposcell,
+                                                            multiIndexDF=True)
+
+                            df.to_csv(os.path.join(outpath, plaque.name+'.csv'), header=True, index=False)
+
+                        del plaque
+
+
+                except Exception as e:
+                    logging.error(e)
+
 
         logging.info("  ----->>>  Finished    \./")
 
