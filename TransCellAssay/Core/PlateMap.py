@@ -60,14 +60,14 @@ class PlateMap(object):
         :param size: default size for platemap if not file is provided
         :param kwargs: add param for pandas arg reading
         """
-        log.debug('Created PlateMap')
         self.__file = None
         if fpath is not None:
             self.set_platemap(fpath, **kwargs)
             self.__file = fpath
+            log.debug('Created plateMap')
         else:
             self.generate_empty_platemap(size=size)
-            log.debug('Generic platemap created')
+            log.debug('Created generic platemap ')
         self._is_cutted = False
         self._rb = None
         self._re = None

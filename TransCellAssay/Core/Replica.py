@@ -64,6 +64,13 @@ class Replica(GenericPlate):
         self.__CACHING_gbdata = None
         self.__CACHING_gbdata_key = None
 
+    def set_name(self, name):
+        """
+        Set name of replica
+        """
+        if name is not None:
+            self.name = name
+
     def get_channels_list(self):
         """
         Get all channels/component in list

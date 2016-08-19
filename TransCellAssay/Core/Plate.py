@@ -52,6 +52,13 @@ class Plate(GenericPlate):
         if replica is not None:
             self.__add__(replica)
 
+    def set_name(self, name):
+        """
+        Set name of plate
+        """
+        if name is not None:
+            self.name = name
+
     def add_platemap(self, platemap):
         """
         Add the platemap to the plate, equivalent to + operator
@@ -72,6 +79,15 @@ class Plate(GenericPlate):
         :param replica: Give a replica object
         """
         self.__add__(replica)
+
+    def remove_replica(self, id):
+        """
+        remove replica by id
+        """
+        try:
+            self.__sub__(id)
+        except Exception as e:
+            log.error(e)
 
     def get_replica(self, name):
         """
