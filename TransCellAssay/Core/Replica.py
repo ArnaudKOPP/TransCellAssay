@@ -30,6 +30,7 @@ class Replica(GenericPlate):
         Constructor
         :param name: name of replica
         :param fpath: Data for replica object
+        :param FlatFile: if true -> data are a csv file where line are cell
         :param singleCells: Are data single cell type or not
         :param skip: Well to skip
         :param datatype: Median or Mean data
@@ -182,7 +183,7 @@ class Replica(GenericPlate):
 
     def compute_data_channel(self, channel, datatype='mean'):
         """
-        Compute data in matrix form and fill it in .array or .array_c var, get mean or median for well and save them in
+        Compute data in matrix form and fill it in .array var, get mean or median for well and save them in
         replica object
         :param channel: which channel to keep in matrix
         :return:

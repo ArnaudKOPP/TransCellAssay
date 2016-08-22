@@ -19,24 +19,24 @@ __email__ = "kopp.arnaud@gmail.com"
 
 class GenericPlate(object):
     """
-    Bass class for Plate and Replica
+    Generic class for Plate and Replica
     """
 
     def __init__(self, name, datatype='mean', skip=()):
         """
         Constructor
         """
-        self.name = name
-        self.array = None
-        self.array_c = None
-        self._array_channel = None
-        self.datatype = datatype
-        self.isNormalized = False
-        self.isSpatialNormalized = False
-        self.RawDataNormMethod = None
-        self.SECNormMethod = None
-        self.skip_well = skip
-        self._is_cutted = False
+        self.name = name                    # Name of plate
+        self.array = None                   # Array contain mean or median of all well, represent data
+        self.array_c = None                 # Array of data that are corrected (spatial norm)
+        self._array_channel = None          # On which channel data are based
+        self.datatype = datatype            # Data type -> Mean or Median
+        self.isNormalized = False           # Are raw data normalized
+        self.isSpatialNormalized = False    # Are array spatialy corrected
+        self.RawDataNormMethod = None       # Which method are used for raw data normalization
+        self.SECNormMethod = None           # Which method are used for spatial correction
+        self.skip_well = skip               # List of skipped well (not so used)
+        self._is_cutted = False             # Are plate cutted
         self._rb = None
         self._re = None
         self._cb = None

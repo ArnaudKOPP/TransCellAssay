@@ -34,7 +34,7 @@ class Plate(GenericPlate):
         """
         Constructor for init default value
         :param name: name of plate, very important to file this, it will be use for certain function
-        :param platemap: platemap object for this plate
+        :param platemap: platemap object for this plate,  if none, it will be filled with 96 platemap size
         :param skip: Well to skip for all replica
         :param replica: add one or a list of replica
         :param datatype : mean or median for working array
@@ -98,9 +98,15 @@ class Plate(GenericPlate):
         return self.replica[name]
 
     def get_replica_listId(self):
+        """
+        Get the list of replica id
+        """
         return [values.name for key, values in self.replica.items()]
 
     def get_replica_file_location(self):
+        """
+        Get the list of replica file location
+        """
         return [values.get_file_location() for key, values in self.replica.items()]
 
     def get_all_replica(self):
@@ -222,6 +228,9 @@ class Plate(GenericPlate):
         return res
 
     def use_count_as_data(self):
+        """
+        Use cells count from raw data, and fill array member with this data
+        """
         cnt = self.get_count()
         self.array = cnt.loc[:, "CellsCount Mean"].values.reshape((self.platemap.shape()))
         for name, rep in self.replica.items():
@@ -269,6 +278,9 @@ class Plate(GenericPlate):
 
 
     def _mean_array(self):
+        """
+        Compute the mean of data of all replica
+        """
 
         lst = []
         for key, replica in self.replica.items():
@@ -279,6 +291,9 @@ class Plate(GenericPlate):
 
 
     def _mean_array_c(self):
+        """
+        Compute the mean of corrected data of all replica
+        """
         lst = []
         for key, replica in self.replica.items():
             lst.append(pd.DataFrame(replica.array_c.flatten()))
@@ -526,5 +541,8 @@ class Plate(GenericPlate):
         return self.__repr__()
 
     def __iter__(self):
+        """
+        Iterator on replica
+        """
         for key, value in self.replica.items():
             yield key, value
