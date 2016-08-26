@@ -197,8 +197,8 @@ class MainAppFrame(tkinter.Frame):
         menubar.add_cascade(label="Edit", menu=editmenu)
 
         analysemenu = tkinter.Menu(menubar, tearoff=0)
-        analysemenu.add_command(label="Do Analyse", command=donothing)
-        analysemenu.add_command(label="Do CellsCount", command=donothing)
+        analysemenu.add_command(label="Do Analyse", command=self.__Analyse)
+        analysemenu.add_command(label="Do CellsCount", command=self.__cellsCount)
         menubar.add_cascade(label="Analyse", menu=analysemenu)
 
         window.config(menu=menubar)
@@ -231,6 +231,18 @@ class MainAppFrame(tkinter.Frame):
         """
         self.FilePathToOpen = tkinter.filedialog.askopenfilename()
         logging.debug('File loaded : {}'.format(self.FilePathToOpen))
+
+    def selectFiles(self):
+        files = tkinter.filedialog.askopenfilenames(title='Select Input File')
+        fileList = root.tk.splitlist(files)
+        logging.debug("Selected file : {}".format(fileList))
+
+    def selectFileToSave(self):
+        """
+        Get a file to save csv file
+        """
+        self.SaveFilePath = tkinter.filedialog.asksaveasfilename()
+        logging.debug('Save file as : {}'.format(self.SaveFilePath))
 
     ### FUNCTION THAT PERFORM ACTUALLY SOMETHING
 
@@ -398,6 +410,7 @@ class MainAppFrame(tkinter.Frame):
         self.plate_size.set('96')
 
         tkinter.Button(window, text='Create Plate', command=self.__create_plate).grid(row=2, column=1)
+        tkinter.Button(window, text='add file', command=self.selectFiles).grid(row=3, column=0)
 
     def __create_plate(self):
         """
@@ -417,7 +430,6 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Entry(window, textvariable=self.PlateName).grid(row=1, column=1)
         tkinter.Button(window, text='Remove replica', command=lambda: self.PlateToAnalyse.set_name(self.PlateName.get())).grid(row=2, column=0)
 
-
     def __add_platemap(self):
         """
         Function for adding a platemap to plate
@@ -428,7 +440,6 @@ class MainAppFrame(tkinter.Frame):
         window = Toplevel(self)
         tkinter.Button(window, text='Browse file', command=self.load_file).grid(row=1, column=0)
         tkinter.Button(window, text='Add file/replica to plate', command=lambda: self.PlateToAnalyse.add_platemap(TCA.PlateMap(fpath=self.FilePathToOpen))).grid(row=2, column=0)
-
 
     def __add_replica(self):
         """
@@ -446,7 +457,6 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Entry(window, textvariable=repname).grid(row=2, column=1)
         tkinter.Button(window, text='Add file/replica to plate', command=lambda: self.PlateToAnalyse.add_replica(TCA.Replica(name=repname.get(), fpath=self.FilePathToOpen))).grid(row=3, column=0)
 
-
     def __remove_replica(self):
         """
         function for removing a replica
@@ -459,6 +469,104 @@ class MainAppFrame(tkinter.Frame):
         repname = StringVar()
         tkinter.Entry(window, textvariable=repname).grid(row=1, column=1)
         tkinter.Button(window, text='Remove replica', command=lambda: self.PlateToAnalyse.remove_replica(repname.get())).grid(row=2, column=0)
+
+    def __Analyse(self):
+        """
+        Do analyse on current plate
+        """
+        if self.PlateToAnalyse is None:
+            tkinter.messagebox.showerror(message="No existing Plate, create one")
+            return
+        window = Toplevel(self)
+
+        NegRef = self.NegCtrl
+        if NegRef == '':
+            NegRef = None
+
+        if NegRef is not None:
+            NegRef = NegRef.split()
+            for i in NegRef:
+                plaque.platemap[i] = "Neg"
+            NegRef = "Neg"
+
+
+        ChanRef = self.ChnVal
+        if ChanRef== '':
+            ChanRef = None
+        else:
+            ChanRef = [ChanRef]
+
+        noposcell=False
+        thresRef = self.ThrsVal
+        if thresRef== '':
+            thresRef = None
+            noposcell=True
+        else:
+            thresRef = int(thresRef)
+
+        if self.threshold_type == 'Percent':
+            thresTypePercent = True
+            thresTypeFixedVal = False
+        else:
+            thresTypePercent = False
+            thresTypeFixedVal = True
+
+        if noposcell is False:
+            self.CurrentResToSave, thres = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
+                                            neg=NegRef,
+                                            threshold=thresRef,
+                                            percent=thresTypePercent,
+                                            fixed_threshold=thresTypeFixedVal,
+                                            clean=False,
+                                            noposcell=noposcell,
+                                            multiIndexDF=True)
+            logging.info("Threshold value : {}".format(thres))
+
+        else:
+            self.CurrentResToSave = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
+                                            neg=NegRef,
+                                            threshold=thresRef,
+                                            percent=thresTypePercent,
+                                            fixed_threshold=thresTypeFixedVal,
+                                            clean=False,
+                                            noposcell=noposcell,
+                                            multiIndexDF=True)
+
+
+
+        tkinter.Button(window, text="Select where to save", fg="red", command=self.selectFileToSave).pack(padx=10, pady=10)
+        tkinter.Button(window, text="Save analyse results", fg="red", command=self.__saveFile).pack(padx=10, pady=10)
+
+
+    def __cellsCount(self):
+        """
+        Function that perform cellscount
+        """
+        if self.PlateToAnalyse is None:
+            tkinter.messagebox.showerror(message="No existing Plate, create one")
+            return
+        window = Toplevel(self)
+
+        self.CurrentResToSave = TCA.PlateChannelsAnalysis(self.PlateToAnalyse, channels=None,
+                                            neg=None,
+                                            noposcell=True,
+                                            multiIndexDF=True)
+
+
+
+        tkinter.Button(window, text="Select where to save", fg="red", command=self.selectFileToSave).pack(padx=10, pady=10)
+        tkinter.Button(window, text="Save cellscount", fg="red", command=self.__saveFile).pack(padx=10, pady=10)
+
+    def __saveFile(self):
+        """
+        Write csv file
+        """
+        if self.SaveFilePath is None:
+            tkinter.messagebox.showerror(message="No selected file name")
+            return
+
+        self.CurrentResToSave.to_csv(self.SaveFilePath, header=True, index=False)
+
 
 if __name__ == "__main__":
     root = tkinter.Tk()
