@@ -157,28 +157,25 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Label(window, text="Neg Ctrl").grid(row=1, column=0)
         tkinter.Label(window, text="Channel").grid(row=2, column=0)
         tkinter.Label(window, text="Threshold Value").grid(row=3, column=0)
+        # tkinter.Label(window, text="Plate Size").grid(row=5, column=0)
         tkinter.Label(window, text="Threshold type").grid(row=4, column=0)
-        tkinter.Label(window, text="Plate Size").grid(row=5, column=0)
-
-        self.NegCtrl = tkinter.Entry(window).grid(row=1, column=1)
-        self.ChnVal = tkinter.Entry(window).grid(row=2, column=1)
-        self.ThrsVal = tkinter.Entry(window).grid(row=3, column=1)
 
 
-        self.plate_size = StringVar()
-        Combobox(window, textvariable=self.plate_size, values=('96', '384'), state='readonly').grid(row=4, column=1)
-        self.plate_size.set('96')
+        self.NegCtrl = StringVar()
+        self.ChnVal = StringVar()
+        self.ThrsVal = StringVar()
+        tkinter.Entry(window, textvariable=self.NegCtrl).grid(row=1, column=1)
+        tkinter.Entry(window, textvariable=self.ChnVal).grid(row=2, column=1)
+        tkinter.Entry(window, textvariable=self.ThrsVal).grid(row=3, column=1)
+
+
+        # self.plate_size = StringVar()
+        # Combobox(window, textvariable=self.plate_size, values=('96', '384'), state='readonly').grid(row=5, column=1)
+        # self.plate_size.set('96')
 
         self.threshold_type = StringVar()
-        Combobox(window, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid(row=5, column=1)
+        Combobox(window, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid(row=4, column=1)
         self.threshold_type.set('Percent')
-
-
-
-        def donothing():
-            filewin = Toplevel(root)
-            button = Button(filewin, text="Do nothing button")
-            button.pack()
 
 
         menubar = tkinter.Menu(window)
@@ -242,7 +239,7 @@ class MainAppFrame(tkinter.Frame):
         Get a file to save csv file
         """
         self.SaveFilePath = tkinter.filedialog.asksaveasfilename()
-        logging.debug('Save file as : {}'.format(self.SaveFilePath))
+        logging.debug('Save file location choosen : {}'.format(self.SaveFilePath))
 
     ### FUNCTION THAT PERFORM ACTUALLY SOMETHING
 
@@ -410,7 +407,7 @@ class MainAppFrame(tkinter.Frame):
         self.plate_size.set('96')
 
         tkinter.Button(window, text='Create Plate', command=self.__create_plate).grid(row=2, column=1)
-        tkinter.Button(window, text='add file', command=self.selectFiles).grid(row=3, column=0)
+        # tkinter.Button(window, text='add file', command=self.selectFiles).grid(row=3, column=0)
 
     def __create_plate(self):
         """
@@ -428,7 +425,7 @@ class MainAppFrame(tkinter.Frame):
         window = Toplevel(self)
         tkinter.Label(window, text="New plate name").grid(row=1, column=0)
         tkinter.Entry(window, textvariable=self.PlateName).grid(row=1, column=1)
-        tkinter.Button(window, text='Remove replica', command=lambda: self.PlateToAnalyse.set_name(self.PlateName.get())).grid(row=2, column=0)
+        tkinter.Button(window, text='New platename', command=lambda: self.PlateToAnalyse.set_name(self.PlateName.get())).grid(row=2, column=0)
 
     def __add_platemap(self):
         """
@@ -479,32 +476,35 @@ class MainAppFrame(tkinter.Frame):
             return
         window = Toplevel(self)
 
-        NegRef = self.NegCtrl
+        NegRef = self.NegCtrl.get()
+        logging.debug("Negative reference : {}".format(NegRef))
         if NegRef == '':
             NegRef = None
 
         if NegRef is not None:
             NegRef = NegRef.split()
             for i in NegRef:
-                plaque.platemap[i] = "Neg"
+                self.PlateToAnalyse.platemap[i] = "Neg"
             NegRef = "Neg"
 
 
-        ChanRef = self.ChnVal
+        ChanRef = self.ChnVal.get()
+        logging.debug("Channel analysed : {}".format(ChanRef))
         if ChanRef== '':
             ChanRef = None
         else:
             ChanRef = [ChanRef]
 
         noposcell=False
-        thresRef = self.ThrsVal
+        thresRef = self.ThrsVal.get()
+        logging.debug("Threshold used : {}".format(thresRef))
         if thresRef== '':
             thresRef = None
             noposcell=True
         else:
             thresRef = int(thresRef)
 
-        if self.threshold_type == 'Percent':
+        if self.threshold_type.get() == 'Percent':
             thresTypePercent = True
             thresTypeFixedVal = False
         else:
@@ -512,31 +512,32 @@ class MainAppFrame(tkinter.Frame):
             thresTypeFixedVal = True
 
         if noposcell is False:
-            self.CurrentResToSave, thres = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
-                                            neg=NegRef,
-                                            threshold=thresRef,
-                                            percent=thresTypePercent,
-                                            fixed_threshold=thresTypeFixedVal,
-                                            clean=False,
-                                            noposcell=noposcell,
-                                            multiIndexDF=True)
+            self.CurrentResToSave, thres = TCA.PlateChannelsAnalysis(self.PlateToAnalyse,
+                                                                    channels=ChanRef,
+                                                                    neg=NegRef,
+                                                                    threshold=thresRef,
+                                                                    percent=thresTypePercent,
+                                                                    fixed_threshold=thresTypeFixedVal,
+                                                                    clean=False,
+                                                                    noposcell=noposcell,
+                                                                    multiIndexDF=True)
             logging.info("Threshold value : {}".format(thres))
 
         else:
-            self.CurrentResToSave = TCA.PlateChannelsAnalysis(plaque, channels=ChanRef,
-                                            neg=NegRef,
-                                            threshold=thresRef,
-                                            percent=thresTypePercent,
-                                            fixed_threshold=thresTypeFixedVal,
-                                            clean=False,
-                                            noposcell=noposcell,
-                                            multiIndexDF=True)
+            self.CurrentResToSave = TCA.PlateChannelsAnalysis(self.PlateToAnalyse,
+                                                                channels=ChanRef,
+                                                                neg=NegRef,
+                                                                threshold=thresRef,
+                                                                percent=thresTypePercent,
+                                                                fixed_threshold=thresTypeFixedVal,
+                                                                clean=False,
+                                                                noposcell=noposcell,
+                                                                multiIndexDF=True)
 
 
 
         tkinter.Button(window, text="Select where to save", fg="red", command=self.selectFileToSave).pack(padx=10, pady=10)
         tkinter.Button(window, text="Save analyse results", fg="red", command=self.__saveFile).pack(padx=10, pady=10)
-
 
     def __cellsCount(self):
         """
