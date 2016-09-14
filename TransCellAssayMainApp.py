@@ -97,13 +97,11 @@ class MainAppFrame(tkinter.Frame):
     def __init__(self, *args, **kwargs):
         tkinter.Frame.__init__(self, *args, **kwargs)
 
-        self.master.title('TransCellAssay Main App')
+        self.master.title('TransCellAssay analyse Application')
 
         tkinter.Button(self.master, text='CSV File Formatter', command=self.CSVFFFrame).pack(padx=10, pady=5, fill=BOTH)
         tkinter.Button(self.master, text='Format plaque', command=self.FormatPlaqueFrame).pack(padx=10, pady=5, fill=BOTH)
         tkinter.Button(self.master, text='Analyse', command=self.AnalyseFrame).pack(padx=10, pady=5, fill=BOTH)
-        tkinter.Button(self.master, text='QC (beta)', command=self.QualityFrame).pack(padx=10, pady=5, fill=BOTH)
-        tkinter.Button(self.master, text='Graph (beta)', command=self.GraphFrame).pack(padx=10, pady=5, fill=BOTH)
         tkinter.Button(self.master, text='EXIT APP', command=self.master.quit, fg="red").pack(padx=10, pady=5, fill=BOTH)
 
         self.DirPath = None
@@ -154,30 +152,6 @@ class MainAppFrame(tkinter.Frame):
     def AnalyseFrame(self):
         window = Toplevel(self)
 
-        tkinter.Label(window, text="Neg Ctrl").grid(row=1, column=0)
-        tkinter.Label(window, text="Channel").grid(row=2, column=0)
-        tkinter.Label(window, text="Threshold Value").grid(row=3, column=0)
-        # tkinter.Label(window, text="Plate Size").grid(row=5, column=0)
-        tkinter.Label(window, text="Threshold type").grid(row=4, column=0)
-
-
-        self.NegCtrl = StringVar()
-        self.ChnVal = StringVar()
-        self.ThrsVal = StringVar()
-        tkinter.Entry(window, textvariable=self.NegCtrl).grid(row=1, column=1)
-        tkinter.Entry(window, textvariable=self.ChnVal).grid(row=2, column=1)
-        tkinter.Entry(window, textvariable=self.ThrsVal).grid(row=3, column=1)
-
-
-        # self.plate_size = StringVar()
-        # Combobox(window, textvariable=self.plate_size, values=('96', '384'), state='readonly').grid(row=5, column=1)
-        # self.plate_size.set('96')
-
-        self.threshold_type = StringVar()
-        Combobox(window, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid(row=4, column=1)
-        self.threshold_type.set('Percent')
-
-
         menubar = tkinter.Menu(window)
 
         filemenu = tkinter.Menu(menubar, tearoff=0)
@@ -193,6 +167,22 @@ class MainAppFrame(tkinter.Frame):
         editmenu.add_command(label="Edit Plate", command=self.__edit_plate)
         menubar.add_cascade(label="Edit", menu=editmenu)
 
+        normmenu = tkinter.Menu(menubar, tearoff=0)
+        normmenu.add_command(label="Single Cell data Normalization", command=self.__dataNorm)
+        normmenu.add_command(label="Size effect Normalization", command=self.__SizeEffectNorm)
+        menubar.add_cascade(label="Normalization", menu=normmenu)
+
+        graphmenu = tkinter.Menu(menubar, tearoff=0)
+        graphmenu.add_command(label="Heatmap")
+        graphmenu.add_command(label="Density")
+        graphmenu.add_command(label="Wells distribution")
+        menubar.add_cascade(label="Graph", menu=graphmenu)
+
+        qcmenu = tkinter.Menu(menubar, tearoff=0)
+        qcmenu.add_command(label="Neg/Pos")
+        qcmenu.add_command(label="Wells")
+        menubar.add_cascade(label="QC", menu=qcmenu)
+
         analysemenu = tkinter.Menu(menubar, tearoff=0)
         analysemenu.add_command(label="Do Analyse", command=self.__Analyse)
         analysemenu.add_command(label="Do CellsCount", command=self.__cellsCount)
@@ -200,17 +190,32 @@ class MainAppFrame(tkinter.Frame):
 
         window.config(menu=menubar)
 
+        tkinter.Label(window, text="Neg Ctrl").grid(row=1, column=0)
+        tkinter.Label(window, text="Channel").grid(row=2, column=0)
+        tkinter.Label(window, text="Threshold Value").grid(row=3, column=2)
+        tkinter.Label(window, text="Threshold type").grid(row=3, column=0)
 
-    def QualityFrame(self):
-        window = Toplevel(self)
-        tkinter.Button(window, text="Browse File", command=self.load_file).pack(padx=10, pady=10)
-        tkinter.Button(window, text="Do Quality", fg="red").pack(padx=10, pady=10)
+
+        self.NegCtrl = StringVar()
+        self.ChnVal = StringVar()
+        self.ThrsVal = StringVar()
+        tkinter.Entry(window, textvariable=self.NegCtrl).grid(row=1, column=1)
+        tkinter.Entry(window, textvariable=self.ChnVal).grid(row=2, column=1)
+        tkinter.Entry(window, textvariable=self.ThrsVal).grid(row=3, column=3)
 
 
-    def GraphFrame(self):
-        window = Toplevel(self)
-        tkinter.Button(window, text="Browse File", command=self.load_file).pack(padx=10, pady=10)
-        tkinter.Button(window, text="Do Quality", fg="red").pack(padx=10, pady=10)
+        # self.plate_size = StringVar()
+        # Combobox(window, textvariable=self.plate_size, values=('96', '384'), state='readonly').grid(row=5, column=1)
+        # self.plate_size.set('96')
+
+        self.threshold_type = StringVar()
+        Combobox(window, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid(row=3, column=1)
+        self.threshold_type.set('Percent')
+
+        tkinter.Label(window, text="Pos Ctrl").grid(row=1, column=2)
+        self.PosCtrl = StringVar()
+        tkinter.Entry(window, textvariable=self.PosCtrl).grid(row=1, column=3)
+
 
 
     ## function to open dir and file
@@ -568,8 +573,66 @@ class MainAppFrame(tkinter.Frame):
 
         self.CurrentResToSave.to_csv(self.SaveFilePath, header=True, index=False)
 
+    def __dataNorm(self):
+        """
+        single cell data norm
+        """
+        # if self.PlateToAnalyse is None:
+        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
+        #     return
+        window = Toplevel(self)
+
+        tkinter.Label(window, text="Data normalization").grid(row=1, column=0)
+
+        self.dataNorm = StringVar()
+        Combobox(window, textvariable=self.dataNorm, values=("Zscore", "RobustZscore", "PercentOfSample",
+                                                            "RobustPercentOfSample", "PercentOfControl", "RobustPercentOfControl",
+                                                            "NormalizedPercentInhibition"), state='readonly').grid(row=1, column=1)
+        self.dataNorm.set('Zscore')
+
+        self.log2Norm = IntVar()
+        Checkbutton(window, text = "Apply log2 transformation", variable = self.log2Norm).grid(row=2, column=0)
+        self.log2Norm.set(0)
+
+
+        tkinter.Label(window, text="Neg Ctrl").grid(row=3, column=0)
+        tkinter.Label(window, text="Pos Ctrl").grid(row=4, column=0)
+        tkinter.Label(window, text="Channel").grid(row=5, column=0)
+
+        self.NormNeg = StringVar()
+        self.NormPos = StringVar()
+        self.NormChan = StringVar()
+        tkinter.Entry(window, textvariable=self.NormNeg).grid(row=3, column=1)
+        tkinter.Entry(window, textvariable=self.NormPos).grid(row=4, column=1)
+        tkinter.Entry(window, textvariable=self.NormChan).grid(row=5, column=1)
+
+        tkinter.Button(window, text='Apply data norm', command=lambda: self.PlateToAnalyse.normalization_channels(channels=[self.NormChan.get()],
+                                                                    method=self.dataNorm.get(), log_t=self.log2Norm.get(), neg=self.NormNeg.get(), pos=self.NormPos.get()),
+                        fg="red").grid(row=1, column=2)
+
+    def __SizeEffectNorm(self):
+        """
+        single cell data norm
+        """
+        # if self.PlateToAnalyse is None:
+        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
+        #     return
+        window = Toplevel(self)
+
+        tkinter.Label(window, text="Channel").grid(row=0, column=0)
+        self.SideNormChan = StringVar()
+        tkinter.Entry(window, textvariable=self.SideNormChan).grid(row=0, column=1)
+
+        tkinter.Label(window, text="Side Effect normalization").grid(row=1, column=0)
+        self.SideNorm = StringVar()
+        Combobox(window, textvariable=self.SideNorm, values=('Bscore', 'BZscore', 'PMP', 'MEA', 'Lowess', 'Polynomial'), state='readonly').grid(row=1, column=1)
+        self.SideNorm.set('Lowess')
+
+        tkinter.Button(window, text='Apply data norm', command=lambda: self.PlateToAnalyse.systematic_error_correction(algorithm=self.SideNorm.get()), fg="red").grid(row=1, column=2)
+
 
 if __name__ == "__main__":
     root = tkinter.Tk()
+    root.geometry("400x180")
     view = MainAppFrame(root)
     root.mainloop()
