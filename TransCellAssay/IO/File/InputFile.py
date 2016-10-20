@@ -42,17 +42,17 @@ class InputFile(object):
         :param row: column name for row id
         """
         log.debug('Change row format : int -> letters')
-        self.dataframe = self.dataframe.replace({'Row': {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H',
-                                                         8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M', 13: 'N', 14: 'O',
-                                                         15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U', 21: 'V',
-                                                         22: 'W', 23: 'X', 24: 'Y', 25: 'Z',26: 'AA', 27: 'AB',
-                                                         28: 'AC', 29: 'AD', 30: 'AE', 31: 'AF'}})
+        self.dataframe = self.dataframe.replace({'Row': {1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G', 8: 'H',
+                                                         9: 'I', 10: 'J', 11: 'K', 12: 'L', 13: 'M', 14: 'N', 15: 'O',
+                                                         16: 'P', 17: 'Q', 18: 'R', 19: 'S', 20: 'T', 21: 'U', 22: 'V',
+                                                         23: 'W', 24: 'X', 25: 'Y', 26: 'Z',27: 'AA', 28: 'AB',
+                                                         29: 'AC', 30: 'AD', 31: 'AE', 32: 'AF'}})
         # # insert Well columns
         self.dataframe.insert(0, "Well", 0)
         # # put Well value from row and col columns
         log.debug('Create Well column with good frmt')
         # self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x[row], x[col] + 1), axis=1)
-        self.dataframe[col] += 1
+        # self.dataframe[col] += 1
         self.dataframe['Well'] = self.dataframe[row] + self.dataframe[col].astype(str)
         remove = [row, col]
         log.debug('Remove old col and row column')

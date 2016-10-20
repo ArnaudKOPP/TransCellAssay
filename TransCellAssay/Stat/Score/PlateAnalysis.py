@@ -120,7 +120,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
         log.error('Plate was cutted, for avoiding undesired effect, plate analysis cannot be performed')
         raise NotImplementedError()
 
-    __WellKey = 'Well'
+    __WellKey = plate.WellKey
 
     PM = plate.get_platemap()
     SIZE = PM.shape(alt_frmt=True)

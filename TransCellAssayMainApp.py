@@ -155,7 +155,7 @@ class MainAppFrame(tkinter.Frame):
         menubar = tkinter.Menu(window)
 
         filemenu = tkinter.Menu(menubar, tearoff=0)
-        filemenu.add_command(label="New Plate", command=self.__init_plate)
+        filemenu.add_command(label="Create New Source Plate", command=self.__init_plate)
         filemenu.add_command(label="Add data file/replica", command=self.__add_replica)
         filemenu.add_command(label="Add platemap file", command=self.__add_platemap)
         filemenu.add_separator()
@@ -173,9 +173,9 @@ class MainAppFrame(tkinter.Frame):
         menubar.add_cascade(label="Normalization", menu=normmenu)
 
         graphmenu = tkinter.Menu(menubar, tearoff=0)
-        graphmenu.add_command(label="Heatmap")
-        graphmenu.add_command(label="Density")
-        graphmenu.add_command(label="Wells distribution")
+        graphmenu.add_command(label="Heatmap", command=self.__HeatMap)
+        graphmenu.add_command(label="Density", command=self.__DensityKDE)
+        graphmenu.add_command(label="Wells distribution", command=self.__WellsDistribution)
         menubar.add_cascade(label="Graph", menu=graphmenu)
 
         qcmenu = tkinter.Menu(menubar, tearoff=0)
@@ -305,7 +305,7 @@ class MainAppFrame(tkinter.Frame):
                 workbook = xlsxwriter.Workbook(filename)
 
                 i = 0
-                list_sheets = ["%s" % x for x in (all_col - skip)]
+                list_sheets = ["%s" % x for x in (all_col.difference(skip))]
                 # # put on channel per sheet
 
                 KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2":"MEAN_NMLWHBC2"}
@@ -393,7 +393,7 @@ class MainAppFrame(tkinter.Frame):
                             file.remove_nan()
                     except:
                         pass
-                    file.write_raw_data(path=self.DirPath, name=OutputName+".csv")
+                    file.write_raw_data(path=self.DirPath, name=OutputName)
                 except Exception as e:
                     logging.error(e)
 
@@ -407,11 +407,12 @@ class MainAppFrame(tkinter.Frame):
         self.PlateName = StringVar()
         tkinter.Entry(window, textvariable=self.PlateName).grid(row=1, column=1)
 
+        tkinter.Label(window, text="Plate size").grid(row=2, column=0)
         self.plate_size = StringVar()
-        Combobox(window, textvariable=self.plate_size, values=('96', '384'), state='readonly').grid(row=2, column=0)
+        Combobox(window, textvariable=self.plate_size, values=('96', '384'), state='readonly').grid(row=2, column=1)
         self.plate_size.set('96')
 
-        tkinter.Button(window, text='Create Plate', command=self.__create_plate).grid(row=2, column=1)
+        tkinter.Button(window, text='Create Plate', command=self.__create_plate).grid(row=3, column=0)
         # tkinter.Button(window, text='add file', command=self.selectFiles).grid(row=3, column=0)
 
     def __create_plate(self):
@@ -539,6 +540,7 @@ class MainAppFrame(tkinter.Frame):
                                                                 noposcell=noposcell,
                                                                 multiIndexDF=True)
 
+        self.__AnalyseData = self.CurrentResToSave
 
 
         tkinter.Button(window, text="Select where to save", fg="red", command=self.selectFileToSave).pack(padx=10, pady=10)
@@ -557,7 +559,7 @@ class MainAppFrame(tkinter.Frame):
                                             neg=None,
                                             noposcell=True,
                                             multiIndexDF=True)
-
+        self.__CellsCountData = self.CurrentResToSave
 
 
         tkinter.Button(window, text="Select where to save", fg="red", command=self.selectFileToSave).pack(padx=10, pady=10)
@@ -629,6 +631,79 @@ class MainAppFrame(tkinter.Frame):
         self.SideNorm.set('Lowess')
 
         tkinter.Button(window, text='Apply data norm', command=lambda: self.PlateToAnalyse.systematic_error_correction(algorithm=self.SideNorm.get()), fg="red").grid(row=1, column=2)
+
+    def __HeatMap(self):
+        """
+        Perform heatmap
+        """
+        # if self.PlateToAnalyse is None:
+        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
+        #     return
+        window = Toplevel(self)
+
+        tkinter.Label(window, text="Feature to plot").grid(row=1, column=0)
+
+        self.heatmapToplot = StringVar()
+        Combobox(window, textvariable=self.heatmapToplot, values=("CellsCount", "Given Channel"), state='readonly').grid(row=1, column=1)
+        self.heatmapToplot.set('CellsCount')
+
+
+        tkinter.Label(window, text="Channel to plot").grid(row=2, column=0)
+        self.heatmapChanneltoplot = StringVar()
+        tkinter.Entry(window, textvariable=self.heatmapChanneltoplot).grid(row=2, column=1)
+
+        tkinter.Button(window, text='Do Heatmap', command=self.__DoHeatmap, fg="red").grid(row=3, column=0)
+
+    def __DoHeatmap(self):
+        """
+        Do heatmap
+        """
+
+        if self.heatmapToplot.get() == 'CellsCount':
+            self.PlateToAnalyse.use_count_as_data()
+        else:
+            self.PlateToAnalyse.agg_data_from_replica_channel(channel=self.heatmapChanneltoplot.get(), forced_update=True)
+
+        TCA.HeatMapPlate(self.PlateToAnalyse)
+
+    def __DensityKDE(self):
+        """
+        Density or KDE plot
+        """
+        # if self.PlateToAnalyse is None:
+        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
+        #     return
+        window = Toplevel(self)
+
+        tkinter.Label(window, text="Channel").grid(row=0, column=0)
+        self.KdeChan = StringVar()
+        tkinter.Entry(window, textvariable=self.KdeChan).grid(row=0, column=1)
+
+        tkinter.Label(window, text="Wells").grid(row=1, column=0)
+        self.KdeWells = StringVar()
+        tkinter.Entry(window, textvariable=self.KdeWells).grid(row=1, column=1)
+
+        tkinter.Button(window, text='Do Density', command=lambda: TCA.PlateWellsDistribution(self.PlateToAnalyse, wells=self.KdeWells.get().split(), channel=self.KdeChan.get()), fg="red").grid(row=3, column=0)
+
+
+    def __WellsDistribution(self):
+        """
+        Wells distribution plot
+        """
+        # if self.PlateToAnalyse is None:
+        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
+        #     return
+        window = Toplevel(self)
+
+        tkinter.Label(window, text="Channel").grid(row=0, column=0)
+        self.WellsDisChan = StringVar()
+        tkinter.Entry(window, textvariable=self.WellsDisChan).grid(row=0, column=1)
+
+        tkinter.Label(window, text="Wells").grid(row=1, column=0)
+        self.WellsDisWells = StringVar()
+        tkinter.Entry(window, textvariable=self.WellsDisWells).grid(row=1, column=1)
+
+        tkinter.Button(window, text='Do Wells distribution', command=lambda: self.PlateWellsSorted(self.PlateToAnalyse, wells=self.KdeWells.get().split(), channel=self.KdeChan.get()), fg="red").grid(row=3, column=0)
 
 
 if __name__ == "__main__":

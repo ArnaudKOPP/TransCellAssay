@@ -41,6 +41,7 @@ class GenericPlate(object):
         self._re = None
         self._cb = None
         self._ce = None
+        self.WellKey = 'Well'
 
     def set_name(self, name):
         """
