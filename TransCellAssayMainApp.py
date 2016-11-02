@@ -295,7 +295,7 @@ class MainAppFrame(tkinter.Frame):
                     except Exception as e:
                         logging.error("Error in reading File : {}".format(e))
 
-                skip = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column']
+                skip = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column', 'WellId']
 
                 # # get all channel (columns)
                 all_col = data.columns
