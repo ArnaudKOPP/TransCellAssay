@@ -53,7 +53,7 @@ class PlateMap(object):
     self._ce = None                     # col end of cutting operation
     """
 
-    def __init__(self, fpath=None, size=96,**kwargs):
+    def __init__(self, fpath=None, size=96, **kwargs):
         """
         Constructor
         :param fpath: file path from csv file, if no one is provided, a generic platemap is created
@@ -194,22 +194,21 @@ class PlateMap(object):
         df = self._generate_empty(size=size)
         self.platemap = self._fill_empty(df)
 
-
     @staticmethod
     def _generate_empty(size=96):
         if int(size) == 96:
-            df = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:8],
-                            columns=[str(x) for x in range(1, 13, 1)])
+            df = pd.DataFrame(data='Empty', index=list(string.ascii_uppercase)[0:8],
+                              columns=[str(x) for x in range(1, 13, 1)])
             return df
         elif int(size) == 384:
-            df = pd.DataFrame(data='Empty',index=list(string.ascii_uppercase)[0:16],
-                            columns=[str(x) for x in range(1, 25, 1)])
+            df = pd.DataFrame(data='Empty', index=list(string.ascii_uppercase)[0:16],
+                              columns=[str(x) for x in range(1, 25, 1)])
             return df
         elif int(size) == 1536:
-            df = pd.DataFrame(data='Empty',index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+            df = pd.DataFrame(data='Empty', index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
                                                              'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
                                                              'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF'],
-                            columns=[str(x) for x in range(1, 49, 1)])
+                              columns=[str(x) for x in range(1, 49, 1)])
             return df
         else:
             raise ValueError('Expected size : 96, 384 or 1536')

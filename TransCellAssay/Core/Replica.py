@@ -85,7 +85,7 @@ class Replica(GenericPlate):
     def set_rawdata(self, df):
         """
         Set data in replica
-        :param input_file: csv file
+        :param df: csv file
         """
         assert isinstance(df, pd.DataFrame)
         self.df = df
@@ -186,6 +186,7 @@ class Replica(GenericPlate):
         Compute data in matrix form and fill it in .array var, get mean or median for well and save them in
         replica object
         :param channel: which channel to keep in matrix
+        :param datatype: mean or median
         :return:
         """
         if self._array_channel != channel:
@@ -222,16 +223,17 @@ class Replica(GenericPlate):
                 pos = TCA.get_opposite_well_format(key)
                 data[pos[0]][pos[1]] = elem
             except IndexError:
-                return self.get_data_channel(channel,type_mean, size*2)
+                return self.get_data_channel(channel)
         return data
 
-    def __init_array(self, size):
+    @staticmethod
+    def __init_array(size):
         if size <= 96:
-            return np.zeros((8,12))
+            return np.zeros((8, 12))
         elif size <= 384:
-            return np.zeros((16,24))
+            return np.zeros((16, 24))
         else:
-            return np.zeros((32,42))
+            return np.zeros((32, 42))
 
     def get_mean_channels(self):
         """
@@ -303,12 +305,12 @@ class Replica(GenericPlate):
             negative = neg
             positive = pos
         TCA.rawdata_variability_normalization(self,
-                                                channel=channel,
-                                                method=method,
-                                                log2_transf=log_t,
-                                                neg_control=negative,
-                                                pos_control=positive,
-                                                threshold=threshold)
+                                              channel=channel,
+                                              method=method,
+                                              log2_transf=log_t,
+                                              neg_control=negative,
+                                              pos_control=positive,
+                                              threshold=threshold)
         self.compute_data_channel(channel)
 
     def normalization_channels(self, channels, method='Zscore', log_t=True, neg=None, pos=None, skipping_wells=False,
@@ -336,17 +338,7 @@ class Replica(GenericPlate):
         self.isNormalized = True
         self.RawDataNormMethod = method
 
-    def write_rawdata(self, path, name=None):
-        """
-        Save normalized Raw data
-        :param name: Give name to file
-        :param path: Where to write .csv file
-        """
-        if name is None:
-            name = self.name
-        self.rawdata.write_rawdata(path=path, name=name)
-
-    def __write_raw_data(self, filepath, **kwargs):
+    def write_rawdata(self, path, name=None, **kwargs):
         """
         Save normalized Raw data
         :param name: Give name to file
@@ -354,12 +346,12 @@ class Replica(GenericPlate):
         """
         if not os.path.isdir(path):
             os.mkdir(path)
-        if name is not None:
-            fpath = os.path.join(path, name)+'.csv'
-            self.__write_raw_data(fpath, **kwargs)
-            log.info('Writing File : {}'.format(fpath))
-        else:
-            raise Exception("Writing Raw data problem")
+        if name is None:
+            name = self.name
+        try:
+            self.df.to_csv(os.path.join(path, name), **kwargs)
+        except Exception as e:
+            log.error("Writing Raw data problem : {}".format(e))
 
     def write_data(self, path, channel, sec=False):
         """
@@ -372,10 +364,10 @@ class Replica(GenericPlate):
         self.compute_data_channel(channel=channel)
         if sec:
             np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(channel)) + ".csv",
-                           X=self.array_c, delimiter=",", fmt='%1.4f')
+                       X=self.array_c, delimiter=",", fmt='%1.4f')
         else:
             np.savetxt(fname=os.path.join(path, str(self.name)+'_'+str(channel)) + ".csv",
-                           X=self.array, delimiter=",", fmt='%1.4f')
+                       X=self.array, delimiter=",", fmt='%1.4f')
 
     def get_file_location(self):
         """
@@ -451,7 +443,7 @@ class Replica(GenericPlate):
         if self.__CACHING_gbdata is None:
             self._new_caching()
         for key, value in self.__CACHING_gbdata.groups.items():
-            yield key, self.df.iloc[value,:]
+            yield key, self.df.iloc[value, :]
 
     def __repr__(self):
         """

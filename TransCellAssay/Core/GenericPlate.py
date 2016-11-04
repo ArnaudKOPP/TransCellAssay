@@ -66,7 +66,6 @@ class GenericPlate(object):
         assert isinstance(array, np.ndarray)
         self.array = array
 
-
     def set_skip_well(self, to_skip):
         """
         Set the well to skip in neg or pos control

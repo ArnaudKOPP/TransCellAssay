@@ -157,6 +157,7 @@ class Plate(GenericPlate):
         :param channel: channel list
         :param well: defined or not which well you want, in list [] or simple string format
         :param well_idx: true or false for keeping well id (A1..)
+        :param as_dict: export data as dict
         :return: dict with data
         """
         if as_dict:
@@ -204,7 +205,7 @@ class Plate(GenericPlate):
         get for all rep the data into array format
         """
         if chan is not None:
-            plaque.agg_data_from_replica_channel(chan, forced_update=True)
+            self.agg_data_from_replica_channel(chan, forced_update=True)
 
         lst = []
         namelst = []
@@ -248,19 +249,19 @@ class Plate(GenericPlate):
 
         i = 0
         if datatype is None:
-            datatype=self.datatype
+            datatype = self.datatype
         self.datatype = datatype
-        change=False
+        change = False
         for key, replica in self.replica.items():
             if forced_update:
                 replica.compute_data_channel(channel, datatype=datatype)
-                change=True
+                change = True
             else:
                 if replica.array is None:
                     replica.compute_data_channel(channel, datatype=datatype)
                 else:
                     replica.compute_data_channel(channel, datatype=datatype)
-                    change=True
+                    change = True
 
             i += 1
 
@@ -276,7 +277,6 @@ class Plate(GenericPlate):
 
         self._array_channel = channel
 
-
     def _mean_array(self):
         """
         Compute the mean of data of all replica
@@ -289,7 +289,6 @@ class Plate(GenericPlate):
         x = pd.concat(lst, axis=1).mean(axis=1).values.reshape(self.platemap.platemap.shape)
         self.array = x
 
-
     def _mean_array_c(self):
         """
         Compute the mean of corrected data of all replica
@@ -300,7 +299,6 @@ class Plate(GenericPlate):
 
         x = pd.concat(lst, axis=1).mean(axis=1).values.reshape(self.platemap.platemap.shape)
         self.array_c = x
-
 
     def cut(self, rb, re, cb, ce, apply_down=True):
         """
@@ -367,11 +365,11 @@ class Plate(GenericPlate):
             self.__normalization(channels, method, log_t, neg, pos, skipping_wells, threshold=threshold)
         self.isNormalized = True
         self.RawDataNormMethod = method
-        self.clear_memory()
+        self.clear_cache()
 
     def apply_systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
-                                         save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
-                                         skip_row=[], trimmed=0.0, poly_deg=4, low_max_iter=3, f=2./3.):
+                                          save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
+                                          skip_row=[], trimmed=0.0, poly_deg=4, low_max_iter=3, f=2./3.):
         """
         Apply a spatial normalization for remove edge effect on all replica (but not to Plate objet himself, use
         instead systematic_error_correction function for only plate array)
@@ -398,7 +396,7 @@ class Plate(GenericPlate):
             log.error('Algorithm is not available choose : {}'.format(__valid_sec_algo))
             raise ValueError()
         log.info('Systematic Error Correction processing {0} : {1}'.format(self.name, algorithm))
-        ## Apply only to replica array and get mean of these replica array_c
+        # Apply only to replica array and get mean of these replica array_c
         if apply_down:
             for key, value in self.replica.items():
                 value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
@@ -407,16 +405,17 @@ class Plate(GenericPlate):
                                                   poly_deg=poly_deg, low_max_iter=low_max_iter, f=f)
             self._mean_array_c()
         else:
-            ## apply sec only on plate.array to get array_c
+            # apply sec only on plate.array to get array_c
             self.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
-                                              max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
-                                              skip_col=skip_col, skip_row=skip_row, trimmed=trimmed,
-                                              poly_deg=poly_deg, low_max_iter=low_max_iter, f=f)
+                                             max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
+                                             skip_col=skip_col, skip_row=skip_row, trimmed=trimmed,
+                                             poly_deg=poly_deg, low_max_iter=low_max_iter, f=f)
 
     def write_rawdata(self, path, name=None):
         """
         Save normalized raw data
         :param path: path where to save raw data
+        :param name: name of file
         """
         if not os.path.isdir(path):
             os.mkdir(path)
@@ -454,7 +453,6 @@ class Plate(GenericPlate):
     def clear_cache(self):
         """
         Save memory by deleting Raw Data
-        :param only_cache: Remove only cache
         """
         for key, value in self.replica.items():
             value.clear_cache()

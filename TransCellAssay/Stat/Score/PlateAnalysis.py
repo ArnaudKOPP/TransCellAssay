@@ -21,6 +21,7 @@ __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
+
 def getEventsCounts(plate):
     """
     Get the Events Count from single Cells data
@@ -32,11 +33,12 @@ def getEventsCounts(plate):
     df = PlateChannelsAnalysis(plate)
     return df
 
+
 def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold=False):
     """
     compute threshold
     :param plate: plate object
-    :param channel: list of channels
+    :param channels: list of channels
     :param ctrl: control where determine value of threshold
     :param threshold: fixe the percent of positive well found in  control well
     :param percent: True if threshold value is percent, False if we want to give a value
@@ -54,7 +56,7 @@ def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold
         ThresholdVALUE = dict([(i, dict([(repname, 0) for repname, rep in plate])) for i in channels])
 
         if ctrl is not None:
-            ## if neg is list -> suppose that its a list of well
+            # if neg is list -> suppose that its a list of well
             if not isinstance(ctrl, list):
                 neg_well = plate.platemap.search_well(ctrl)
             else:
@@ -64,7 +66,7 @@ def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold
                 log.warning('No Negative control provided, work only with fixed value of threshold')
                 fixed_threshold = True
 
-        ## iterate over channels
+        # iterate over channels
         for chan in channels:
             if isinstance(threshold, dict):
                 THRES = threshold[chan]
@@ -99,7 +101,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
     """
     Do a plate analysis for multiple channels and parameters
     :param plate: plate object
-    :param channel: list of channels to analyse
+    :param channels: list of channels to analyse
     :param neg: negative control
     :param pos: positive control, is optional
     :param threshold: fixe the percent of positive well found in negative control well
