@@ -20,14 +20,14 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-
-def plate_kzscoreTEST(plate, chan=None, sec_data=True, control_plate=None, outlier=False):
+def plate_kzscore(plate, chan=None, sec_data=True, outlier=False):
     """
     Performed zscore on plate object
     unpaired is for plate with replica without great variance between them
     paired is for plate with replica with great variance between them
+    :param outlier: remove or not outlier
+    :param chan: which chan to use
     :param plate: Plate Object to analyze
-    :param neg_control:  negative control reference
     :param sec_data: use data with Systematic Error Corrected
     :return: score data
     """
@@ -49,7 +49,7 @@ def plate_kzscoreTEST(plate, chan=None, sec_data=True, control_plate=None, outli
         if plate.array is None:
             raise ValueError("Set value first")
 
-    ## put wells value into df
+    # put wells value into df
     if sec_data:
         DF.loc[:, "Well Mean"] = plate.array_c.flatten().reshape(__SIZE__, 1)
         for repname, rep in plate:
@@ -59,11 +59,10 @@ def plate_kzscoreTEST(plate, chan=None, sec_data=True, control_plate=None, outli
         for repname, rep in plate:
             DF.loc[:, repname+" Mean"] = rep.array.flatten().reshape(__SIZE__, 1)
 
-
-    ## Outlier removing part
+    # Outlier removing part
     temp = DF.iloc[:, 4:4+n]
     if outlier:
-        mask = temp.apply(TCA.without_outlier_std_based, axis=1) ##Exclude outlier
+        mask = temp.apply(TCA.without_outlier_std_based, axis=1)  # Exclude outlier
         VALUE = temp[mask]
         DF.iloc[:, 4:4+n] = VALUE
         DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)

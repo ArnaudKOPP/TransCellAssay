@@ -26,6 +26,8 @@ William S. Cleveland and Susan J. Devlin: "Locally weighted regression: An
 approach to regression analysis by local fitting", Journal of the American
 Statistical Association, September 1988, volume 83, number 403, pp. 596-610.
 """
+
+
 def __lowess(x, y, iter, f=2./3.):
     """
     lowess(x, y, f=2./3., iter=3) -> yest
@@ -61,6 +63,7 @@ def __lowess(x, y, iter, f=2./3.):
 
     return yest
 
+
 def lowess_fitting(input_array, max_iteration=3, verbose=False, skip_col=[], skip_row=[], f=2./3.):
     array_org = input_array.copy()
     shape = input_array.shape
@@ -90,6 +93,7 @@ def lowess_fitting(input_array, max_iteration=3, verbose=False, skip_col=[], ski
         print(array_org)
         print("")
     return input_array
+
 
 def polynomial_fitting(input_array, degree=4, verbose=False, skip_col=[], skip_row=[]):
     array_org = input_array.copy()

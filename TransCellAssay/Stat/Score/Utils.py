@@ -29,17 +29,17 @@ def __get_skelleton(plate):
     x.columns = ['PlateMap', 'Well', 'PlateName']
     return x
 
+
 def __get_negfrom_array(array, neg):
     return array[array['PlateMap'] == neg].iloc[:, 4:]
 
 
-
 def PlateAnalysisScoring(plate, channels, neg, pos=None, threshold=50, percent=True, fixed_threshold=True, robust=True,
-                        data_c=False, verbose=False):
+                         data_c=False, verbose=False):
     """
     Function that analysis and scoring channels given
     :param plate: plate object
-    :param channel: list of channels
+    :param channels: list of channels
     :param neg: negative control
     :param pos: positive control, is optional
     :param threshold: fixe the percent of positive well found in negative control well
@@ -52,11 +52,11 @@ def PlateAnalysisScoring(plate, channels, neg, pos=None, threshold=50, percent=T
     """
     assert isinstance(plate, TCA.Plate)
 
-    df1, thres = TCA.PlateChannelsAnalysis(plate, channels=channels, neg=neg, pos=pos, threshold=threshold, percent=percent,
-                                        fixed_threshold=fixed_threshold, clean=False)
+    df1, thres = TCA.PlateChannelsAnalysis(plate, channels=channels, neg=neg, pos=pos, threshold=threshold,
+                                           percent=percent, fixed_threshold=fixed_threshold, clean=False)
     df2 = ScoringPlate(plate, channels=channels, neg=neg, robust=robust, data_c=data_c, verbose=verbose)
 
-    return pd.concat([df1,df2], axis=1)
+    return pd.concat([df1, df2], axis=1)
 
 
 def ScoringPlate(plate, neg, channels=None, robust=False, data_c=False, verbose=False):
@@ -72,7 +72,7 @@ def ScoringPlate(plate, neg, channels=None, robust=False, data_c=False, verbose=
     """
     assert isinstance(plate, TCA.Plate)
     DF = []
-    ## if no channels provided, then make on cellscount
+    # if no channels provided, then make on cellscount
     if channels is None:
         plate.use_count_as_data()
         if len(plate) == 1:
@@ -96,6 +96,7 @@ def ScoringPlate(plate, neg, channels=None, robust=False, data_c=False, verbose=
             DF.append(df)
         return pd.concat(DF, axis=1)
 
+
 def __singleReplicaPlate(plate, neg, chan=None, robust=False, data_c=False, verbose=False):
     __SIZE__ = len(plate.platemap.platemap.values.flatten())
 
@@ -108,14 +109,15 @@ def __singleReplicaPlate(plate, neg, chan=None, robust=False, data_c=False, verb
     x.columns = ['PlateMap', 'Well', 'PlateName', 'Well Mean']
 
     ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, method='MM', robust_version=robust, sec_data=data_c,
-                             verbose=verbose)
+                                 verbose=verbose)
     ssmd2 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, robust_version=robust, sec_data=data_c,
-                             verbose=verbose)
+                                 verbose=verbose)
 
     x['SSMD MM'] = ssmd1.flatten().reshape(__SIZE__, 1)
     x['SSMD UMVUE'] = ssmd2.flatten().reshape(__SIZE__, 1)
 
     return x
+
 
 def __multipleReplicaPlate(plate, neg, chan=None, robust=False, data_c=False, verbose=False):
 
@@ -129,15 +131,17 @@ def __multipleReplicaPlate(plate, neg, chan=None, robust=False, data_c=False, ve
     x = pd.DataFrame(final_array)
     x.columns = ['PlateMap', 'Well', 'PlateName', 'Well Mean']
 
-    ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=False, robust_version=robust, sec_data=data_c,
-                             verbose=verbose)
-    ssmd2 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=False, robust_version=robust, sec_data=data_c,
-                                 variance="equal", verbose=verbose)
-    ssmd3 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=True, robust_version=robust, sec_data=data_c,
-                                 verbose=verbose)
-    ssmd4 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=True, robust_version=robust, sec_data=data_c,
+    ssmd1 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=False, robust_version=robust,
+                                 sec_data=data_c, verbose=verbose)
+    ssmd2 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=False, robust_version=robust,
+                                 sec_data=data_c, variance="equal", verbose=verbose)
+    ssmd3 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=True, robust_version=robust,
+                                 sec_data=data_c, verbose=verbose)
+    ssmd4 = TCA.plate_ssmd_score(plate, neg_control=neg, chan=chan, paired=True, robust_version=robust,
+                                 sec_data=data_c,
                                  method='MM', verbose=verbose)
-    tstat1 = TCA.plate_tstat_score(plate, neg_control=neg, chan=chan, paired=False, variance='equal', sec_data=data_c,
+    tstat1 = TCA.plate_tstat_score(plate, neg_control=neg, chan=chan, paired=False, variance='equal',
+                                   sec_data=data_c,
                                    verbose=verbose, robust=robust)
     tstat2 = TCA.plate_tstat_score(plate, neg_control=neg, chan=chan, paired=False, sec_data=data_c, verbose=verbose,
                                    robust=robust)

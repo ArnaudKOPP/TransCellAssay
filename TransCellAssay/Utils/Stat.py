@@ -4,6 +4,7 @@ Usefull definitions for some functions in project
 """
 
 import numpy as np
+from numpy import mean, absolute, math
 import scipy.stats
 import pandas as pd
 
@@ -13,7 +14,6 @@ __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
-
 
 
 def quantile_normalization(anarray):
@@ -59,7 +59,7 @@ def CohenEffectSize(group1, group2):
 
     var1 = group1.var()
     var2 = group2.var()
-    n1, nk = len(group1), len(group2)
+    n1, n2 = len(group1), len(group2)
 
     pooled_var = (n1 * var1 + n2 * var2) / (n1 + n2)
     d = diff / math.sqrt(pooled_var)
@@ -84,7 +84,6 @@ def Covariance(xs, ys, meanx=None, meany=None):
     return cov
 
 
-from numpy import mean, absolute
 def mad2(data, axis=None):
     return mean(absolute(data - mean(data, axis)), axis)
 
@@ -237,6 +236,7 @@ def __cdf(y, mu, varb):
     res = 0.5 * (1 + scipy.stats.norm.cdf((y - mu) / varb))
     return res
 
+
 def percentile_based_outlier(data, threshold=95):
     """
     Based on percentile determine outliers
@@ -249,8 +249,7 @@ def percentile_based_outlier(data, threshold=95):
     return (data < minval) | (data > maxval)
 
 
-## theory behind this : http://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
-
+# theory behind this : http://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
 def outlier_mad_based(data, thresh=2):
     """
     Based on mad, determine outliers by row

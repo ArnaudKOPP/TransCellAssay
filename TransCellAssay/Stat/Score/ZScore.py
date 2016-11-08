@@ -20,12 +20,14 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-
-def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate=None, outlier=False):
+def plate_zscore(plate, neg_control, chan=None, sec_data=True, control_plate=None, outlier=False):
     """
     Performed zscore on plate object
     unpaired is for plate with replica without great variance between them
     paired is for plate with replica with great variance between them
+    :param outlier: remove outlier or not
+    :param control_plate: use neg reference control in other plate
+    :param chan:  on which chan to make it
     :param plate: Plate Object to analyze
     :param neg_control:  negative control reference
     :param sec_data: use data with Systematic Error Corrected
@@ -33,7 +35,6 @@ def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate
     """
     assert isinstance(plate, TCA.Plate)
     assert len(plate) > 1
-
 
     # if no neg was provided raise AttributeError
     if neg_control is None:
@@ -54,7 +55,7 @@ def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate
         if plate.array is None:
             raise ValueError("Set value first")
 
-    ## put wells value into df
+    # put wells value into df
     if sec_data:
         DF.loc[:, "Well Mean"] = plate.array_c.flatten().reshape(__SIZE__, 1)
         for repname, rep in plate:
@@ -64,22 +65,22 @@ def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate
         for repname, rep in plate:
             DF.loc[:, repname+" Mean"] = rep.array.flatten().reshape(__SIZE__, 1)
 
-    ## search neg data
+    # search neg data
     if control_plate is not None:
         DF_ctrl = __get_skelleton(plate)
         if sec_data:
             DF_ctrl.loc[:, "Well Value"] = control_plate.array_c.flatten().reshape(__SIZE__, 1)
         else:
-            DF_ctrl.loc[:, "Well Value"] = control_platee.array.flatten().reshape(__SIZE__, 1)
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array.flatten().reshape(__SIZE__, 1)
 
         neg_data = __get_negfrom_array(DF_ctrl, neg_control)
     else:
         neg_data = __get_negfrom_array(DF, neg_control)
 
-    ## Outlier removing part
+    # Outlier removing part
     temp = DF.iloc[:, 4:4+n]
     if outlier:
-        mask = temp.apply(TCA.without_outlier_std_based, axis=1) ##Exclude outlier
+        mask = temp.apply(TCA.without_outlier_std_based, axis=1)  # Exclude outlier
         VALUE = temp[mask]
         DF.iloc[:, 4:4+n] = VALUE
         DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
@@ -91,13 +92,12 @@ def plate_zscoreTEST(plate, neg_control, chan=None, sec_data=True, control_plate
     else:
         VALUE = temp
 
-
-    negArray = neg_data.iloc[:,:].values.flatten()
+    negArray = neg_data.iloc[:, :].values.flatten()
     negArray = negArray[~np.isnan(negArray)]
 
     DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
 
-    DF.loc[:, "ZScore"] = ( VALUE.mean(axis=1) - np.mean(negArray)) / np.std(negArray)
-    DF.loc[:, "ZScore R"] = ( VALUE.median(axis=1) - np.median(negArray)) / mad(negArray)
+    DF.loc[:, "ZScore"] = (VALUE.mean(axis=1) - np.mean(negArray)) / np.std(negArray)
+    DF.loc[:, "ZScore R"] = (VALUE.median(axis=1) - np.median(negArray)) / mad(negArray)
 
     return DF

@@ -86,7 +86,7 @@ def rawdata_variability_normalization(obj, channel, method=None, log2_transf=Tru
     """
     try:
         __valid_method = ['Zscore', 'RobustZscore', 'PercentOfSample', 'RobustPercentOfSample', 'PercentOfControl',
-            'RobustPercentOfControl', 'NormalizedPercentInhibition', 'BackgroundSubstraction', None]
+                          'RobustPercentOfControl', 'NormalizedPercentInhibition', 'BackgroundSubstraction', None]
 
         if method not in __valid_method:
             raise ValueError("Method don't exist, choose : {}".format(__valid_method))
@@ -137,6 +137,7 @@ def __rd_norm(replica, channel, method=None, log2_transf=True, neg_control=None,
         replica.df.loc[replica[channel] < 0, channel] = 0
     return replica
 
+
 def __log2_transformation(replica, channel):
     """
     Apply log2 transformation on replica
@@ -149,6 +150,7 @@ def __log2_transformation(replica, channel):
     replica.df.loc[:, channel] = np.log2(replica.df[channel])
     return replica
 
+
 def __zscore_(replica, channel):
     """
     Apply Zscore normalization on replica
@@ -159,6 +161,7 @@ def __zscore_(replica, channel):
     log.debug('Perform Zscore')
     replica.df.loc[:, channel] = (replica.df.loc[:, channel] - np.mean(replica.df[channel])) / np.std(replica.df[channel])
     return replica
+
 
 def __robustzscore(replica, channel):
     """
@@ -171,6 +174,7 @@ def __robustzscore(replica, channel):
     replica.df.loc[:, channel] = (replica.df.loc[:, channel] - np.median(replica.df[channel])) / mad(replica.df[channel])
     return replica
 
+
 def __percentofsample(replica, channel):
     """
     Apply percent of sample normalization on replica
@@ -182,6 +186,7 @@ def __percentofsample(replica, channel):
     replica.df.loc[:, channel] = (replica.df.loc[:, channel] / np.mean(replica.df[channel])) * 100
     return replica
 
+
 def __robustpercentofsample(replica, channel):
     """
     Apply robust percent of sample normalization on replica
@@ -192,6 +197,7 @@ def __robustpercentofsample(replica, channel):
     log.debug('Perform robustPercentofSample')
     replica.df.loc[:, channel] = (replica.df.loc[:, channel] / np.median(replica.df[channel])) * 100
     return replica
+
 
 def __percentofcontrol(replica, channel, neg=None, pos=None):
     """
@@ -216,6 +222,7 @@ def __percentofcontrol(replica, channel, neg=None, pos=None):
     replica.df.loc[:, channel] = (replica.df.loc[:, channel] / np.mean(ctrl)) * 100
     return replica
 
+
 def __robustpercentofcontrol(replica, channel, neg=None, pos=None):
     """
     Apply a percent of control (ration) normalization on replica
@@ -239,6 +246,7 @@ def __robustpercentofcontrol(replica, channel, neg=None, pos=None):
     replica.df.loc[:, channel] = (replica.df.loc[:, channel] / np.median(ctrl)) * 100
     return replica
 
+
 def __normalizedpercentinhibition(replica, channel, neg=None, pos=None):
     """
     Apply a normalized percent inhibition normalization on replica
@@ -257,6 +265,7 @@ def __normalizedpercentinhibition(replica, channel, neg=None, pos=None):
     pos_data = replica.get_rawdata(channel=channel, well=neg)
     replica.df.loc[:, channel] = ((np.mean(pos_data) - replica.df[channel]) / (np.mean(pos_data) - np.mean(neg_data))) * 100
     return replica
+
 
 def __backgroundsubstraction(replica, channel, threshold):
     """

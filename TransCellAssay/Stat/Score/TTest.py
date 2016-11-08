@@ -12,8 +12,9 @@ reject the null hypothesis of equal averages.
 """
 from scipy import stats
 import TransCellAssay as TCA
-from TransCellAssay.Stat.Score.SSMD import __search_unpaired_data
 import numpy as np
+import pandas as pd
+from TransCellAssay.Stat.Score.Utils import __get_skelleton, __get_negfrom_array
 import logging
 log = logging.getLogger(__name__)
 
@@ -25,76 +26,88 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_ttest(plate, neg, chan=None, sec_data=False, equal_var=False, verbose=False, control_plate=None):
+def plate_ttest(plate, neg_control, chan=None, sec_data=True, control_plate=None, outlier=False):
     """
     Perform t-test against neg reference for all well of plate/replica
+    :param outlier: remove or not outlier
+    :param control_plate: use neg reference control from other plate
+    :param chan: which chan to use
     :param plate: Plate object
-    :param neg: negative reference
+    :param neg_control: negative reference
     :param sec_data: use sec data
-    :param equal_var: equal variance or not
-    :param verbose: print or not result
     :return: numpy array with result
     """
     assert isinstance(plate, TCA.Plate)
+    assert len(plate) > 1
+
     # if no neg was provided raise AttributeError
-    if neg is None:
+    if neg_control is None:
         raise ValueError('Must provided negative control')
 
     if plate._array_channel != chan and chan is not None:
         plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
 
-    log.info('Perform T-Test on plate : {0} over channel {1}'.format(plate.name, chan))
+    n = len(plate)
+    __SIZE__ = len(plate.platemap.platemap.values.flatten())
+    DF = __get_skelleton(plate)
 
-    if len(plate) > 1:
-
-        ttest_score = np.zeros(plate.platemap.platemap.shape)
-
-        if control_plate is not None:
-            neg_position = control_plate.platemap.search_coord(neg)
-            if not neg_position:
-                raise Exception("Not Well for control")
-            neg_value = __search_unpaired_data(control_plate, neg_position, sec_data)
-        else:
-            neg_position = plate.platemap.search_coord(neg)
-            if not neg_position:
-                raise Exception("Not Well for control")
-            neg_value = __search_unpaired_data(plate, neg_position, sec_data)
-
-        # search rep value for ith well
-        for i in range(ttest_score.shape[0]):
-            for j in range(ttest_score.shape[1]):
-                well_value = []
-                for key, value in plate.replica.items():
-                    if (i, j) in value.skip_well:
-                        continue
-                    try:
-                        if sec_data:
-                            well_value.append(value.array_c[i][j])
-                        else:
-                            well_value.append(value.array[i][j])
-                    except Exception:
-                        raise Exception("Your desired datatype are not available")
-
-                # # performed unpaired t-test
-                ttest_score[i][j] = stats.ttest_ind(neg_value, well_value, equal_var=equal_var)[1]
-
-        # # determine fdr
-        or_shape = ttest_score.shape
-        fdr = TCA.adjustpvalues(pvalues=ttest_score.flatten())
-        fdr = fdr.reshape(or_shape)
-
-        if verbose:
-            print("Unpaired ttest :")
-            print("Perform on : {}".format(plate.name))
-            print("Systematic Error Corrected Data : ", sec_data)
-            print("Data type : ", plate.datatype)
-            print("Equal variance : ", equal_var)
-            print("ttest p-value score :")
-            print(ttest_score)
-            print("fdr score :")
-            print(fdr)
-            print("")
-
+    if sec_data:
+        if plate.array_c is None:
+            sec_data = False
+            log.warning("sec_data set to False -> data not available")
     else:
-        raise ValueError("T-test need at least two replica")
-    return ttest_score, fdr
+        if plate.array is None:
+            raise ValueError("Set value first")
+
+    # put wells value into df
+    if sec_data:
+        DF.loc[:, "Well Mean"] = plate.array_c.flatten().reshape(__SIZE__, 1)
+        for repname, rep in plate:
+            DF.loc[:, repname+" Mean"] = rep.array_c.flatten().reshape(__SIZE__, 1)
+    else:
+        DF.loc[:, "Well Mean"] = plate.array.flatten().reshape(__SIZE__, 1)
+        for repname, rep in plate:
+            DF.loc[:, repname+" Mean"] = rep.array.flatten().reshape(__SIZE__, 1)
+
+    # search neg data
+    if control_plate is not None:
+        DF_ctrl = __get_skelleton(plate)
+        if sec_data:
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array_c.flatten().reshape(__SIZE__, 1)
+        else:
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array.flatten().reshape(__SIZE__, 1)
+
+        neg_data = __get_negfrom_array(DF_ctrl, neg_control)
+    else:
+        neg_data = __get_negfrom_array(DF, neg_control)
+
+
+    # Outlier removing part
+    temp = DF.iloc[:, 4:4+n]
+    if outlier:
+        log.warning("Removing outlier with TTest can be dangerous")
+        mask = temp.apply(TCA.without_outlier_std_based, axis=1)  # Exclude outlier
+        VALUE = temp[mask]
+        DF.iloc[:, 4:4+n] = VALUE
+        DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
+
+        mask = neg_data.apply(TCA.without_outlier_std_based, axis=1)
+        temp = neg_data[mask]
+        temp = temp.apply(lambda x: x.fillna(x.mean()), axis=1)
+        neg_data = temp
+    else:
+        VALUE = temp
+
+    neg_values = neg_data.iloc[:, :].values.flatten()
+    neg_values = neg_values[~np.isnan(neg_values)]
+
+    DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
+
+    DF.loc[:, "TTest EqualVar P-Val"] = VALUE.apply(lambda x: stats.ttest_ind(a=x, b=neg_values, equal_var=True)[1],
+                                                    axis=1)
+    DF.loc[:, "TTest EqualVar FDR"] = TCA.adjustpvalues(pvalues=DF.loc[:, "TTest EqualVar P-Val"])
+    DF.loc[:, "TTest UnEqualVar P-Val"] = VALUE.apply(lambda x: stats.ttest_ind(a=x, b=neg_values, equal_var=False)[1],
+                                                      axis=1)
+    DF.loc[:, "TTest UnEqualVar FDR"] = TCA.adjustpvalues(pvalues=DF.loc[:, "TTest UnEqualVar P-Val"])
+
+    return DF

@@ -96,14 +96,13 @@ def getThreshold(plate, ctrl, channels, threshold, percent=True, fixed_threshold
     return ThresholdVALUE
 
 
-def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50, percent=True, fixed_threshold=False,
-                          clean=False,noposcell=False, multiIndexDF=False):
+def PlateChannelsAnalysis(plate, channels=None, neg=None, threshold=50, percent=True, fixed_threshold=False,
+                          clean=False, noposcell=False, multiIndexDF=False):
     """
     Do a plate analysis for multiple channels and parameters
     :param plate: plate object
     :param channels: list of channels to analyse
     :param neg: negative control
-    :param pos: positive control, is optional
     :param threshold: fixe the percent of positive well found in negative control well
     :param percent: True if threshold value is percent, False if we want to give a value
     :param fixed_threshold: use given threshold (value mode) for all well
@@ -128,13 +127,13 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
     SIZE = PM.shape(alt_frmt=True)
     NREP = len(plate)
 
-    ## this array is a basic array for begin some calculations
+    # this array is a basic array for begin some calculations
     __array_pattern = pd.DataFrame(plate.platemap.as_array())
 
     COUNT = __array_pattern.copy()
     COUNT.loc[:, 'PlateName'] = np.repeat([plate.name], SIZE)
 
-    ######################### CELLS COUNT
+    # CELLS COUNT
 
     for replicaId, replica in plate:
         cellcount = replica.get_groupby_data()[__WellKey].count()
@@ -144,8 +143,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
     COUNT.loc[:, "CellsCount Mean"] = COUNT.iloc[:, -NREP:].mean(axis=1)
     COUNT.loc[:, "CellsCount Std"] = COUNT.iloc[:, -NREP:].std(axis=1)
 
-
-    ########### TOXICITY IF NEG IS GIVEN
+    # TOXICITY IF NEG IS GIVEN
 
     if neg is not None:
 
@@ -164,33 +162,27 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
         if NREP > 1:
             negdata = COUNT[COUNT.loc[:, "PlateMap"] == neg].loc[:, "Tox mean"].values
-            COUNT.loc[:, "Tox pvalue"] = COUNT.iloc[:, -NREP-2: -2].apply((lambda x: stats.ttest_ind(x, negdata, equal_var=False)[1]), axis=1)
-            COUNT.loc[:, "Tox fdr"] = TCA.adjustpvalues(pvalues = COUNT.loc[:, "Tox pvalue"])
+            COUNT.loc[:, "Tox pvalue"] = COUNT.iloc[:, -NREP-2: -2].apply((lambda x: stats.ttest_ind(x, negdata,
+                                                                                                     equal_var=False)[1]), axis=1)
+            COUNT.loc[:, "Tox fdr"] = TCA.adjustpvalues(pvalues=COUNT.loc[:, "Tox pvalue"])
 
-    ##################### ANALYSING CHANNELS
+    # ANALYSING CHANNELS
     DF = []
     if channels is not None:
         log.info('Perform plate analysis for {0} plate on channels :{1}'.format(plate.name, channels))
         if not isinstance(channels, list):
             channels = [channels]
 
-        if neg is not None:
-            ## if neg is list -> suppose that its a list of well
-            if not isinstance(neg, list):
-                neg_well = plate.platemap.search_well(neg)
-            else:
-                neg_well = neg
-        else:
             if channels is not None:
                 log.info('No Negative control provided')
                 fixed_threshold = True
 
         if noposcell is False:
             ThresholdVALUE = getThreshold(plate, ctrl=neg, channels=channels, threshold=threshold, percent=percent,
-                            fixed_threshold=fixed_threshold)
+                                          fixed_threshold=fixed_threshold)
             log.debug("Threshold used : {}".format(ThresholdVALUE))
 
-        ## iterate over channels
+        # iterate over channels
         for chan in channels:
             MEAN = __array_pattern.copy()
             MEDIAN = __array_pattern.copy()
@@ -199,15 +191,14 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
             if noposcell is False:
                 PERCENT = __array_pattern.copy()
 
-
             for replicaId, replica in plate:
                 datagb = replica.get_groupby_data()
                 if noposcell is False:
-                    ########### POSITIVE CELLS %
-                    # # threshold value for control
+                    # POSITIVE CELLS %
+                    # threshold value for control
                     ThresholdValue = ThresholdVALUE[chan][replicaId]
 
-                ########### VARIABILITY & % OF POSITIVE CELLS
+                # VARIABILITY & % OF POSITIVE CELLS
                 # iterate on well
                 if noposcell is False:
                     PercentCells = {}
@@ -221,7 +212,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                     if noposcell is False:
                         len_total = len(xdata.values)
                         len_thres = len(np.extract(xdata.values > ThresholdValue, xdata.values))
-                        # # include in dict key is the position and value is a %
+                        # include in dict key is the position and value is a %
                         PercentCells[well] = (len_thres / len_total) * 100
                     SdCells[well] = np.std(xdata.values)
                     MadCells[well] = TCA.mad(xdata.values)
@@ -249,7 +240,6 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                     percent.columns = [__WellKey, replicaId+" PosCells"]
                     PERCENT = pd.merge(PERCENT, percent, how='left', on=__WellKey)
 
-
             MEAN.loc[:, "Mean mean"] = MEAN.iloc[:, -NREP:].mean(axis=1)
             MEDIAN.loc[:, "Median mean"] = MEDIAN.iloc[:, -NREP:].mean(axis=1)
             if noposcell is False:
@@ -261,9 +251,8 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                 if noposcell is False:
                     PERCENT.loc[:, "PosCells std"] = PERCENT.iloc[:, -NREP-1: -1].std(axis=1)
 
-
             if noposcell is False:
-                ########### P-VALUE AND FDR ON % OF POSITIVE CELLS
+                # P-VALUE AND FDR ON % OF POSITIVE CELLS
                 if neg is not None:
                     if NREP > 1:
                         NegData = np.concatenate(PERCENT[PERCENT.loc[:, "PlateMap"] == neg].iloc[:, -NREP-2:-2].values).flatten()
@@ -273,7 +262,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
 
                 PERCENT.loc[:, "PosCells Zscore"] = (PERCENT.loc[:, 'PosCells mean'] - PERCENT.loc[:, 'PosCells mean'].mean())/PERCENT.loc[:, 'PosCells mean'].std()
 
-            ### ADD CHANNEL ON TOP OF DF
+            # ADD CHANNEL ON TOP OF DF
             if noposcell is False:
                 df = pd.concat([MEAN.iloc[:, 2:], STD.iloc[:, 2:], MEDIAN.iloc[:, 2:],
                                 MAD.iloc[:, 2:], PERCENT.iloc[:, 2:]], axis=1)
@@ -287,7 +276,7 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
                 df.columns = [str(chan)+" "+col for col in df.columns]
             DF.append(df)
 
-    ########### FINAL OPERATION
+    # FINAL OPERATION
 
     if multiIndexDF:
         COUNT.columns = pd.MultiIndex.from_tuples([tuple(["Plate", c]) for c in COUNT.columns])
@@ -297,13 +286,12 @@ def PlateChannelsAnalysis(plate, channels=None, neg=None, pos=None, threshold=50
     else:
         result = COUNT
 
-    ### Remove row with cellscount is 0
+    # Remove row with cellscount is 0
     if clean:
         if multiIndexDF:
             result = result[result["Plate"]["CellsCount Mean"] > 0]
         else:
             result = result[result["CellsCount Mean"] > 0]
-
 
     if channels is not None:
         if noposcell is False:

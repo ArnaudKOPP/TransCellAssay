@@ -21,10 +21,12 @@ used to calculate the SSMD.
 """
 
 import numpy as np
+import pandas as pd
 import scipy.special
 import TransCellAssay as TCA
 from TransCellAssay.Utils.Stat import mad
 import logging
+from TransCellAssay.Stat.Score.Utils import __get_skelleton, __get_negfrom_array
 log = logging.getLogger(__name__)
 
 
@@ -36,22 +38,18 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_ssmd_score(plate, neg_control, chan=None, paired=True, robust_version=True, method='UMVUE', variance='unequal',
-                     sec_data=True, control_plate=None, inplate_data=False, verbose=False):
+def plate_ssmd(plate, neg_control, chan=None, sec_data=True, control_plate=None, inplate_data=False, outlier=False):
     """
     Performed SSMD on plate object
         unpaired is for plate with replica without great variance between them
         paired is for plate with replica with great variance between them
+    :param outlier: remove or not outlier
+    :param control_plate: use neg reference control in other plate
     :param plate: Plate Object to analyze
     :param neg_control: negative control reference
     :param chan: on which channel tested
-    :param paired: paired or unpaired statistic
-    :param robust_version: use robust version or not
-    :param method: which method to use MM or UMVUE
-    :param variance: unequal or equal
     :param sec_data: use data with Systematic Error Corrected
     :param inplate_data: compute SSMD on plate.Data, for plate without replica in preference
-    :param verbose: be verbose or not
     :return: Corrected data
     """
     assert isinstance(plate, TCA.Plate)
@@ -61,272 +59,150 @@ def plate_ssmd_score(plate, neg_control, chan=None, paired=True, robust_version=
     if plate._array_channel != chan and chan is not None:
         plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
 
-    log.info('Perform SSMD on plate : {0} over channel {1}'.format(plate.name, chan))
     if len(plate) > 1 and not inplate_data:
-        if not paired:
-            score = __unpaired_ssmd(plate, neg_control, variance=variance, sec_data=sec_data,
-                                        verbose=verbose, robust=robust_version, control_plate=control_plate)
-        else:
-            score = __paired_ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose,
-                                      robust=robust_version)
+        score = _ssmd_rep(plate, neg_control, sec_data=sec_data,
+                          control_plate=control_plate, outlier=outlier)
     else:
-        score = __ssmd(plate, neg_control, method=method, sec_data=sec_data, verbose=verbose, robust=robust_version,
-                           control_plate=control_plate)
+        score = _ssmd_norep(plate, neg_control, sec_data=sec_data, control_plate=control_plate)
     return score
 
 
-def __search_unpaired_data(plate, ref, sec_data):
-    assert isinstance(plate, TCA.Plate)
-    neg_value = []
-    for key, value in plate.replica.items():
-        # # remove skipped Wells
-        if len(value.skip_well) > 0:
-            valid_neg_position = [x for x in ref if (x not in value.skip_well)]
-        else:
-            valid_neg_position = ref
-        for neg in valid_neg_position:
-            try:
-                if sec_data:
-                    neg_value.append(value.array_c[neg[0]][neg[1]])
-                else:
-                    neg_value.append(value.array[neg[0]][neg[1]])
-            except Exception:
-                raise Exception("Your desired datatype are not available")
-    return neg_value
-
-
-def __unpaired_ssmd(plate, neg_control, variance='unequal', sec_data=True, control_plate=None, verbose=False,
-                    robust=True):
+def _ssmd_rep(plate, neg_control, sec_data=True, control_plate=None, outlier=False):
     """
     performed unpaired SSMD for plate with replica
     :param plate: Plate Object to analyze
     :param neg_control: negative control reference
-    :param variance: unequal or equal
     :param sec_data: use data with Systematic Error Corrected
-    :param verbose: be verbose or not
-    :param robust: if robust, use median, else use mean
     :return:score data
     """
-    if variance not in ['unequal', 'equal']:
-        raise ValueError('Wrong variance choice')
+    __SIZE__ = len(plate.platemap.platemap.values.flatten())
+    DF = __get_skelleton(plate)
 
-    ssmd = np.zeros(plate.platemap.platemap.shape)
+    if sec_data:
+        if plate.array_c is None:
+            sec_data = False
+            log.warning("sec_data set to False -> data not available")
+    else:
+        if plate.array is None:
+            raise ValueError("Set value first")
 
+    # put wells value into df
+    if sec_data:
+        DF.loc[:, "Well Mean"] = plate.array_c.flatten().reshape(__SIZE__, 1)
+        for repname, rep in plate:
+            DF.loc[:, repname+" Mean"] = rep.array_c.flatten().reshape(__SIZE__, 1)
+    else:
+        DF.loc[:, "Well Mean"] = plate.array.flatten().reshape(__SIZE__, 1)
+        for repname, rep in plate:
+            DF.loc[:, repname+" Mean"] = rep.array.flatten().reshape(__SIZE__, 1)
+
+    # search neg data
     if control_plate is not None:
-        neg_position = control_plate.platemap.search_coord(neg_control)
-        if not neg_position:
-            raise Exception("Not Well for control")
-        neg_value = __search_unpaired_data(control_plate, neg_position, sec_data)
+        DF_ctrl = __get_skelleton(plate)
+        if sec_data:
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array_c.flatten().reshape(__SIZE__, 1)
+        else:
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array.flatten().reshape(__SIZE__, 1)
+
+        neg_data = __get_negfrom_array(DF_ctrl, neg_control)
     else:
-        neg_position = plate.platemap.search_coord(neg_control)
-        if not neg_position:
-            raise Exception("Not Well for control")
-        neg_value = __search_unpaired_data(plate, neg_position, sec_data)
+        neg_data = __get_negfrom_array(DF, neg_control)
 
-    nb_neg_wells = len(neg_value)
 
-    if robust:
-        mean_median_neg = np.median(neg_value)
+    # computed constant
+    n = len(plate) # number of replica
+    N = len(neg_data.iloc[:, 1:].values.flatten()) # number of value for negative control
+    paired_cst = (scipy.special.gamma((n - 1) / 2) / scipy.special.gamma((n - 2) / 2)) * np.sqrt(2 / (n - 1))
+    unpaired_cst = 2 * (scipy.special.gamma(((n + N) - 2) / 2) / scipy.special.gamma(((n + N) - 3) / 2)) ** 2
+
+
+    # Outlier removing part
+    temp = DF.iloc[:, 4:4+n]
+    if outlier:
+        mask = temp.apply(TCA.without_outlier_std_based, axis=1)  # Exclude outlier
+        VALUE = temp[mask]
+        DF.iloc[:, 4:4+n] = VALUE
+        DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
+
+        mask = neg_data.apply(TCA.without_outlier_std_based, axis=1)
+        temp = neg_data[mask]
+        temp = temp.apply(lambda x: x.fillna(x.mean()), axis=1)
+        neg_data = temp
     else:
-        mean_median_neg = np.mean(neg_value)
-    var_neg = np.var(neg_value)
+        VALUE = temp
 
-    n = len(plate)
-    N = len(neg_value)
-    k = 2 * (scipy.special.gamma(((n + N) - 2) / 2) / scipy.special.gamma(((n + N) - 3) / 2)) ** 2
-    # k = len(plate) + len(neg_value) - 3.48
+    negArray = neg_data.iloc[:, :].values.flatten()
+    negArray = negArray[~np.isnan(negArray)]
 
-    # search rep value for ith well
-    for i in range(ssmd.shape[0]):
-        for j in range(ssmd.shape[1]):
-            well_value = []
-            for key, value in plate.replica.items():
-                if (i, j) in value.skip_well:
-                    continue
-                try:
-                    if sec_data:
-                        well_value.append(value.array_c[i][j])
-                    else:
-                        well_value.append(value.array[i][j])
-                except Exception:
-                    raise Exception("Your desired datatype are not available")
-            if robust:
-                mean_rep = np.median(well_value)
-            else:
-                mean_rep = np.mean(well_value)
-            var_rep = np.var(well_value)
+    DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
 
-            if variance == 'unequal':
-                ssmd[i][j] = (mean_rep - mean_median_neg) / np.sqrt(var_rep**2 + var_neg**2)
-            elif variance == 'equal':
-                ssmd[i][j] = (mean_rep - mean_median_neg) / np.sqrt(
-                    (2 / k) * ((n - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2))
+    DF.loc[:, "SSMD UnPaired UnEqual"] = (VALUE.mean(axis=1) - np.mean(negArray)) / np.sqrt(
+        VALUE.var(axis=1) ** 2 + np.var(negArray) ** 2)
+    DF.loc[:, "SSMD UnPaired Equal"] = (VALUE.mean(axis=1) - np.mean(negArray)) / np.sqrt(
+        (2 / unpaired_cst) * ((n - 1) * VALUE.var(axis=1) ** 2 + (N + 1) * np.var(negArray) ** 2))
+    DF.loc[:, "SSMD UnPaired UnEqual R"] = (VALUE.median(axis=1) - np.median(negArray)) / np.sqrt(
+        VALUE.var(axis=1) ** 2 + np.var(negArray) ** 2)
+    DF.loc[:, "SSMD UnPaired Equal R"] = (VALUE.median(axis=1) - np.median(negArray)) / np.sqrt(
+        (2 / unpaired_cst) * ((n - 1) * VALUE.var(axis=1) ** 2 + (N + 1) * np.var(negArray) ** 2))
 
-    if verbose:
-        print("Unpaired SSMD :")
-        print("Perform on : {}".format(plate.name))
-        print("Robust version : ", robust)
-        print("Systematic Error Corrected Data : ", sec_data)
-        print("Data type : ", plate.datatype)
-        print("variance parameter : ", variance)
-        print("SSMD score :")
-        print(ssmd)
-        print("")
-    return ssmd
+    x = (VALUE - neg_data.iloc[:, :].mean())
+
+    DF.loc[:, "SSMD Paired UMVUE"] = paired_cst * (x.mean(axis=1) / x.std(axis=1))
+    DF.loc[:, "SSMD Paired MM"] = (x.mean(axis=1) / x.std(axis=1))
+
+    x = (VALUE - neg_data.iloc[:, :].median())
+
+    DF.loc[:, "SSMD Paired UMVUE R"] = paired_cst * (x.median(axis=1) / x.apply(mad, axis=1))
+    DF.loc[:, "SSMD Paired MM R"] = x.median(axis=1) / x.apply(mad, axis=1)
+
+    return DF
 
 
-def __search_paired_data(replica, ref, sec_data):
-    assert isinstance(replica, TCA.Replica)
-    # # remove skipped Wells
-    if len(replica.skip_well) > 0:
-        valid_neg_pos = [x for x in ref if (x not in replica.skip_well)]
-    else:
-        valid_neg_pos = ref
-    neg_value = []
-    for neg_i in valid_neg_pos:
-        try:
-            if sec_data:
-                well_value = replica.array_c[neg_i[0]][neg_i[1]]
-            else:
-                well_value = replica.array[neg_i[0]][neg_i[1]]
-            neg_value.append(well_value)
-        except Exception:
-            raise Exception("Your desired datatype are not available")
-    return neg_value
-
-
-def __paired_ssmd(plate, neg_control, method='UMVUE', sec_data=True, verbose=False, robust=True):
-    """
-    performed paired ssmd for plate with replica
-    :param plate: Plate Object to analyze
-    :param neg_control: negative control reference
-    :param method: which method to use MM or UMVUE
-    :param sec_data: use data with Systematic Error Corrected
-    :param verbose: be verbose or not
-    :param robust: if robust, use median, else use mean
-    :return:score data
-    """
-    if method not in ['UMVUE', 'MM']:
-        raise ValueError('Wrong method choice')
-
-    ssmd = np.zeros(plate.platemap.platemap.shape)
-
-    neg_position = plate.platemap.search_coord(neg_control)
-    if not neg_position:
-        raise Exception("Not Well for control")
-
-    n = len(plate)
-    x = (scipy.special.gamma((n - 1) / 2) / scipy.special.gamma((n - 2) / 2)) * np.sqrt(2 / (n - 1))
-
-    try:
-        for i in range(ssmd.shape[0]):
-            for j in range(ssmd.shape[1]):
-                well_value = []
-                for key, value in plate.replica.items():
-                    if (i, j) in value.skip_well:
-                        continue
-                    if robust:
-                        neg = np.median(__search_paired_data(value, neg_position, sec_data))
-                    else:
-                        neg = np.mean(__search_paired_data(value, neg_position, sec_data))
-                    if sec_data:
-                        well_value.append(value.array_c[i][j] - neg)
-                    else:
-                        well_value.append(value.array[i][j] - neg)
-                if robust:
-                    if method == 'UMVUE':
-                        ssmd[i][j] = x * (np.median(well_value) / mad(well_value))
-                    elif method == 'MM':
-                        ssmd[i][j] = np.median(well_value) / mad(well_value)
-                else:
-                    if method == 'UMVUE':
-                        ssmd[i][j] = x * (np.mean(well_value) / np.std(well_value))
-                    elif method == 'MM':
-                        ssmd[i][j] = np.mean(well_value) / np.std(well_value)
-
-        if verbose:
-            print("Paired SSMD :")
-            print("Perform on : {}".format(plate.name))
-            print("Robust version : ", robust)
-            print("Systematic Error Corrected Data : ", sec_data)
-            print("Data type : ", plate.datatype)
-            print("method parameter : ", method)
-            print("SSMD score :")
-            print(ssmd)
-            print("")
-    except Exception as e:
-        print(e)
-    return ssmd
-
-
-def __ssmd(plate, neg_control, method='UMVUE', sec_data=True, control_plate=None, verbose=False, robust=True):
+def _ssmd_norep(plate, neg_control, sec_data=False, control_plate=None):
     """
     performed SSMD for plate without replica
     take dataMean/Median or SECDatadata from plate object
     :param plate: Plate Object to analyze
     :param neg_control: negative control reference
-    :param method: which method to use MM or UMVUE
     :param sec_data: use data with Systematic Error Corrected
-    :param verbose: be verbose or not
-    :param robust: if robust, use median, else use mean
     :return:score data
     """
-    # TODO make using a control_plate
+    __SIZE__ = len(plate.platemap.platemap.values.flatten())
+    DF = __get_skelleton(plate)
 
-    if method not in ['UMVUE', 'MM']:
-        raise ValueError('Wrong method choice')
+    if sec_data:
+        if plate.array_c is None:
+            sec_data = False
+            log.warning("sec_data set to False -> data not available")
 
-    ps = plate.platemap
-    ssmd = np.zeros(ps.platemap.shape)
+    if plate.array is None:
+        raise ValueError("Set value first")
 
-    neg_well = ps.search_coord(neg_control)
-    # # remove skipped Wells
-    if len(plate.skip_well) > 0:
-        valid_neg_pos = [x for x in neg_well if (x not in plate.skip_well)]
+    # put wells value into df
+    if sec_data:
+        DF.loc[:, "Well Value"] = plate.array_c.flatten().reshape(__SIZE__, 1)
     else:
-        valid_neg_pos = neg_well
-    if not valid_neg_pos:
-        raise Exception("Not Well for control")
-    neg_data = []
+        DF.loc[:, "Well Value"] = plate.array.flatten().reshape(__SIZE__, 1)
 
-    try:
+    # search neg data
+    if control_plate is not None:
+        DF_ctrl = __get_skelleton(plate)
         if sec_data:
-            data = plate.array_c
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array_c.flatten().reshape(__SIZE__, 1)
         else:
-            data = plate.array
-    except Exception as e:
-        raise Exception("Your desired datatype are not available")
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array.flatten().reshape(__SIZE__, 1)
 
-    # grab all neg data
-    for neg_pos in valid_neg_pos:
-        neg_data.append(data[neg_pos[0]][neg_pos[1]])
-    # check if len is sufficient
-    if len(neg_data) < 2:
-        raise ValueError('Insuficient negative data')
+        neg_data = __get_negfrom_array(DF_ctrl, neg_control).values.flatten()
+    else:
+        neg_data = __get_negfrom_array(DF, neg_control).values.flatten()
 
     n = len(neg_data)
     # k = 2 * (scipy.special.gamma(((n - 1) / 2) / scipy.special.gamma((n - 2) / 2))) ** 2
     k = n-2.48
 
-    if robust:
-        if method == 'MM':
-            ssmd = (data - np.median(neg_data)) / (np.sqrt(2) * mad(neg_data))
-        elif method == 'UMVUE':
-            ssmd = (data - np.median(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * mad(neg_data))
-    else:
-        if method == 'MM':
-            ssmd = (data - np.mean(neg_data)) / (np.sqrt(2) * np.std(neg_data))
-        elif method == 'UMVUE':
-            ssmd = (data - np.mean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.std(neg_data))
+    DF.loc[:, "SSMD Robust MM"] = (DF.loc[:, "Well Value"] - np.nanmedian(neg_data)) / (np.sqrt(2) * mad(neg_data))
+    DF.loc[:, "SSMD Robust UMVUE"] = (DF.loc[:, "Well Value"] - np.nanmedian(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * mad(neg_data))
+    DF.loc[:, "SSMD MM"] = (DF.loc[:, "Well Value"] - np.nanmean(neg_data)) / (np.sqrt(2) * np.std(neg_data))
+    DF.loc[:, "SSMD UMVUE"] = (DF.loc[:, "Well Value"] - np.nanmean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.std(neg_data))
 
-    if verbose:
-        print('SSMD without replica, or inplate data from plate')
-        print("Perform on : {}".format(plate.name))
-        print("Robust version : ", robust)
-        print("Systematic Error Corrected Data : ", sec_data)
-        print("Data type : ", plate.datatype)
-        print("method parameter : ", method)
-        print("SSMD score :")
-        print(ssmd)
-        print("")
-    return ssmd
+    return DF

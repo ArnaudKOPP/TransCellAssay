@@ -16,12 +16,13 @@ may be greater than the cutoff value.
 """
 
 import numpy as np
+import pandas as pd
 import TransCellAssay as TCA
-from TransCellAssay.Stat.Score.SSMD import __search_paired_data, __search_unpaired_data
 from TransCellAssay.Utils.Stat import mad
+from TransCellAssay.Stat.Score.Utils import __get_skelleton, __get_negfrom_array
 import logging
-log = logging.getLogger(__name__)
 
+log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
 __copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
@@ -31,21 +32,22 @@ __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
 
-def plate_tstat_score(plate, neg_control, chan=None, variance='unequal', paired=False, sec_data=True, verbose=False, robust=True,
-                      control_plate=None):
+def plate_tstat(plate, neg_control, chan=None, sec_data=True, control_plate=None, outlier=False):
     """
     Performed t-stat on plate object
     unpaired is for plate with replica without great variance between them
     paired is for plate with replica with great variance between them
+    :param outlier: remove or not outlier
+    :param control_plate: use neg reference control from other plate
+    :param chan: which chan to use
     :param plate: Plate Object to analyze
     :param neg_control:  negative control reference
-    :param variance: unequal or equal variance
-    :param paired: paired or unpaired
     :param sec_data: use data with Systematic Error Corrected
-    :param verbose: be verbose or not
     :return: score data
     """
     assert isinstance(plate, TCA.Plate)
+    assert len(plate) > 1
+
     # if no neg was provided raise AttributeError
     if neg_control is None:
         raise ValueError('Must provided negative control')
@@ -53,141 +55,81 @@ def plate_tstat_score(plate, neg_control, chan=None, variance='unequal', paired=
     if plate._array_channel != chan and chan is not None:
         plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
 
-    log.info('Perform T-Stat on plate : {0} over channel {1}'.format(plate.name, chan))
-    if len(plate) > 1:
-        if paired:
-            score = __paired_tstat_score(plate, neg_control, sec_data=sec_data, verbose=verbose, robust=robust)
-        else:
-            score = __unpaired_tstat_score(plate, neg_control, variance=variance, data_c=sec_data,
-                                           verbose=verbose, robust=robust, control_plate=control_plate)
+    n = len(plate)
+    __SIZE__ = len(plate.platemap.platemap.values.flatten())
+    DF = __get_skelleton(plate)
+
+    if sec_data:
+        if plate.array_c is None:
+            sec_data = False
+            log.warning("sec_data set to False -> data not available")
     else:
-        raise ValueError("T-Stat need at least two replica")
-    return score
+        if plate.array is None:
+            raise ValueError("Set value first")
 
+    # put wells value into df
+    if sec_data:
+        DF.loc[:, "Well Mean"] = plate.array_c.flatten().reshape(__SIZE__, 1)
+        for repname, rep in plate:
+            DF.loc[:, repname + " Mean"] = rep.array_c.flatten().reshape(__SIZE__, 1)
+    else:
+        DF.loc[:, "Well Mean"] = plate.array.flatten().reshape(__SIZE__, 1)
+        for repname, rep in plate:
+            DF.loc[:, repname + " Mean"] = rep.array.flatten().reshape(__SIZE__, 1)
 
-def __unpaired_tstat_score(plate, neg_control, variance='unequal', data_c=True, verbose=False, robust=True,
-                           control_plate=None):
-    """
-    performed unpaired t-stat score
-
-    variance :
-        - unequal : Welch t-test
-        - equal : two sample t-test
-    :param plate: Plate Object to analyze
-    :param neg_control: negative control reference
-    :param variance: unequal or equal variance
-    :param data_c: use data with Systematic Error Corrected
-    :param verbose: be verbose or not
-    :return: score data
-    """
-    ttest_score = np.zeros(plate.platemap.platemap.shape)
-
+    # search neg data
     if control_plate is not None:
-        neg_position = control_plate.platemap.search_coord(neg_control)
-        if not neg_position:
-            raise Exception("Not Well for control")
-        neg_value = __search_unpaired_data(control_plate, neg_position, data_c)
-        nb_neg_wells = len(neg_value)
+        DF_ctrl = __get_skelleton(plate)
+        if sec_data:
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array_c.flatten().reshape(__SIZE__, 1)
+        else:
+            DF_ctrl.loc[:, "Well Value"] = control_plate.array.flatten().reshape(__SIZE__, 1)
+
+        neg_data = __get_negfrom_array(DF_ctrl, neg_control)
     else:
-        neg_position = plate.platemap.search_coord(neg_control)
-        if not neg_position:
-            raise Exception("Not Well for control")
-        neg_value = __search_unpaired_data(plate, neg_position, data_c)
-        nb_neg_wells = len(neg_value)
+        neg_data = __get_negfrom_array(DF, neg_control)
 
-    nb_rep = len(plate.replica)
+    # Outlier removing part
+    temp = DF.iloc[:, 4:4 + n]
+    if outlier:
+        mask = temp.apply(TCA.without_outlier_std_based, axis=1)  # Exclude outlier
+        VALUE = temp[mask]
+        DF.iloc[:, 4:4 + n] = VALUE
+        DF.loc[:, "Well Mean"] = VALUE.mean(axis=1)
 
-    if robust:
-        mean_neg = np.median(neg_value)
+        mask = neg_data.apply(TCA.without_outlier_std_based, axis=1)
+        temp = neg_data[mask]
+        temp = temp.apply(lambda x: x.fillna(x.mean()), axis=1)
+        neg_data = temp
     else:
-        mean_neg = np.mean(neg_value)
-    var_neg = np.var(neg_value)
+        VALUE = temp
 
-    # search rep value for ith well
-    for i in range(ttest_score.shape[0]):
-        for j in range(ttest_score.shape[1]):
-            well_value = []
-            for key, value in plate.replica.items():
-                if (i, j) in value.skip_well:
-                    continue
-                try:
-                    if data_c:
-                        well_value.append(value.array_c[i][j])
-                    else:
-                        well_value.append(value.array[i][j])
-                except Exception:
-                    raise Exception("Your desired datatype are not available")
+    negArray = neg_data.iloc[:, :].values.flatten()
+    negArray = negArray[~np.isnan(negArray)]
+    nb_neg_wells = len(negArray)
 
-            if robust:
-                mean_rep = np.median(well_value)
-            else:
-                mean_rep = np.mean(well_value)
-            var_rep = np.var(well_value)
+    DF.loc[:, 'Well Std'] = VALUE.std(axis=1)
 
-            # # performed unpaired t-test
-            if variance == 'unequal':
-                ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt(
-                    (var_rep**2 / nb_rep) + (var_neg**2 / nb_neg_wells))
-            elif variance == 'equal':
-                ttest_score[i][j] = (mean_rep - mean_neg) / np.sqrt((2 / (nb_rep + nb_neg_wells - 2)) * (
-                    (nb_rep - 1) * var_rep**2 + (nb_neg_wells - 1) * var_neg**2) * ((1 / nb_rep) * (1 / nb_neg_wells)))
-            else:
-                raise ValueError('Variance attribute must be unequal or equal.')
+    DF.loc[:, "TStat UnPaired Equal"] = (VALUE.mean(axis=1) - np.mean(negArray)) / np.sqrt(
+        (VALUE.var(axis=1) ** 2 / n) + (np.var(negArray) ** 2) / nb_neg_wells)
+    DF.loc[:, "TStat UnPaired Equal R"] = (VALUE.median(axis=1) - np.median(negArray)) / np.sqrt(
+        (VALUE.var(axis=1) ** 2 / n) + (np.var(negArray) ** 2) / nb_neg_wells)
 
-    if verbose:
-        print("Unpaired t-stat :")
-        print("Perform on : {}".format(plate.name))
-        print("Systematic Error Corrected Data : ", data_c)
-        print("Data type : ", plate.datatype)
-        print("variance parameter : ", variance)
-        print("Robust version : ", robust)
-        print("t-stat score :")
-        print(ttest_score)
-        print("")
-    return ttest_score
+    nb_rep = n
+    var_neg = np.var(neg_data.iloc[:, :].values.flatten())
+    var_rep = VALUE.var(axis=1)
 
+    DF.loc[:, "TStat UnPaired UnEqual"] = (VALUE.mean(axis=1) - np.mean(negArray)) / np.sqrt(
+        (2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep ** 2 + (nb_neg_wells - 1) * var_neg ** 2) * (
+            (1 / nb_rep) * (1 / nb_neg_wells)))
+    DF.loc[:, "TStat UnPaired UnEqual R"] = (VALUE.median(axis=1) - np.median(negArray)) / np.sqrt(
+        (2 / (nb_rep + nb_neg_wells - 2)) * ((nb_rep - 1) * var_rep ** 2 + (nb_neg_wells - 1) * var_neg ** 2) * (
+            (1 / nb_rep) * (1 / nb_neg_wells)))
 
-def __paired_tstat_score(plate, neg_control, sec_data=True, verbose=False, robust=True):
-    """
-    performed paired t-stat score
-    :param plate: Plate Object to analyze
-    :param neg_control: negative control reference
-    :param sec_data: use data with Systematic Error Corrected
-    :param verbose: be verbose or not
-    :return: score data
-    """
-    ttest_score = np.zeros(plate.platemap.platemap.shape)
+    x = (VALUE - neg_data.iloc[:, :].mean())
+    DF.loc[:, "TStat Paired "] = x.mean(axis=1) / (x.std(axis=1) / np.sqrt(n))
 
-    neg_position = plate.platemap.search_coord(neg_control)
-    if not neg_position:
-        raise Exception("Not Well for control")
+    x = (VALUE - neg_data.iloc[:, :].median())
+    DF.loc[:, "TStat Paired R"] = x.median(axis=1) / (x.apply(mad, axis=1) / np.sqrt(n))
 
-    for i in range(ttest_score.shape[0]):
-        for j in range(ttest_score.shape[1]):
-            well_value = []
-            for key, value in plate.replica.items():
-                if (i, j) in value.skip_well:
-                    continue
-                neg_median = np.median(__search_paired_data(value, neg_position, sec_data))
-                try:
-                    if sec_data:
-                        well_value.append(value.array_c[i][j] - neg_median)
-                    else:
-                        well_value.append(value.array[i][j] - neg_median)
-                except Exception:
-                    raise Exception("Your desired datatype are not available")
-            if robust:
-                ttest_score[i][j] = np.median(well_value) / (mad(well_value) / np.sqrt(len(plate.replica)))
-            else:
-                ttest_score[i][j] = np.mean(well_value) / (np.std(well_value) / np.sqrt(len(plate.replica)))
-
-    if verbose:
-        print("Paired t-stat :")
-        print("Perform on : {}".format(plate.name))
-        print("Systematic Error Corrected Data : ", sec_data)
-        print("Data type : ", plate.datatype)
-        print("Robust version : ", robust)
-        print("t-stat score :")
-        print(ttest_score)
-        print("")
-    return ttest_score
+    return DF

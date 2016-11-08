@@ -23,7 +23,7 @@ __email__ = "kopp.arnaud@gmail.com"
 def diffusion_model(array, max_iterations=100, verbose=False):
     """
     Performed the DiffusionModel Process
-    :param array: numpy array represente matrix to normalize
+    :param array: numpy array represent matrix to normalize
     :param max_iterations: max iterations in process
     :param verbose: print result
     :return: result array

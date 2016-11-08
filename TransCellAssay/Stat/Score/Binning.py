@@ -33,7 +33,8 @@ def Binning(Plate, chan, bins=None, nbins=10, percent=True):
 
     frames = collections.OrderedDict()
     for key, value in Plate:
-        assert chan in value.get_channels_list(), "Given channel {0} -> not in available channels : {1}".format(chan, value.get_channels_list())
+        assert chan in value.get_channels_list(), "Given channel {0} -> not in available channels : {1}".format(chan,
+                                                                                                                value.get_channels_list())
         log.debug("Iterate on : {}".format(key))
 
         x = _dfbinning(value.df, on=chan, key="Well", bins=bins, nbins=nbins, percent=percent)

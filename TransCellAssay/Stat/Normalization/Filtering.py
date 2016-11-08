@@ -17,9 +17,6 @@ __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
-def channelsFiltering(plate):
-    assert isinstance(plate, TCA.Plate)
-
 
 def channel_filtering(plate, channel, value, exclude="lower", include=True, percent=False):
     """
@@ -49,11 +46,13 @@ def channel_filtering(plate, channel, value, exclude="lower", include=True, perc
 
     return PlateCopy
 
+
 def __replica_filtering(replica, channel, exclude, cut_value, include=True, percent=False):
     log.debug('Apply filtering on :{}'.format(replica.name))
     replica.df = __filtering_raw_data(replica.df, channel, exclude, cut_value, include, percent)
     replica._new_caching()
     return replica
+
 
 def __filtering_raw_data(raw_data, channel, exclude, value, include=True, percent=False):
     if percent:
@@ -64,6 +63,7 @@ def __filtering_raw_data(raw_data, channel, exclude, value, include=True, percen
         filtered = __lower_filter_raw_data(raw_data, channel, value, include)
     return filtered
 
+
 def __upper_filter_raw_data(raw_data, channel, threshold, include):
     log.debug('Upper cut')
     if include:
@@ -71,6 +71,7 @@ def __upper_filter_raw_data(raw_data, channel, threshold, include):
     else:
         cutted = raw_data[raw_data[channel] < threshold]
     return cutted
+
 
 def __lower_filter_raw_data(raw_data, channel, threshold, include):
     log.debug('Lower cut')
