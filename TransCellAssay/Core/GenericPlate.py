@@ -108,9 +108,8 @@ class GenericPlate(object):
         self._cb = cb
         self._ce = ce
 
-    def systematic_error_correction(self, algorithm='Bscore', method='median', verbose=False, save=True,
-                                    max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[], skip_row=[],
-                                    trimmed=0.0, poly_deg=4, low_max_iter=3, f=2./3.):
+    def systematic_error_correction(self, algorithm='Bscore', verbose=False, save=True, max_iterations=100, alpha=0.05,
+                                    epsilon=0.01, skip_col=[], skip_row=[], poly_deg=4, low_max_iter=3, f=2./3.):
         """
         Apply a spatial normalization for remove edge effect
         The Bscore method showed a more stable behavior than MEA and PMP only when the number of rows and columns
@@ -120,14 +119,12 @@ class GenericPlate(object):
 
         :param alpha: alpha for some algorithm
         :param algorithm: Bscore, MEA, PMP or diffusion model technics, default = Bscore
-        :param method: median or mean data
         :param verbose: Output in console
         :param save: save the result into self.SECData, default = False
         :param max_iterations: maximum iterations loop, default = 100
         :param epsilon: epsilon parameters for PMP
         :param skip_col: index of col to skip in MEA or PMP
         :param skip_row: index of row to skip in MEA or PMP
-        :param trimmed: Bscore only for average method only, trimmed the data with specified value, default is 0.0
         :param poly_deg: polynomial degree 4 or 5
         :param low_max_iter: lowess max iteration
         :param f: lowess smotting span
@@ -150,16 +147,13 @@ class GenericPlate(object):
             log.debug('Systematic Error Correction processing : {} -> replica {}'.format(algorithm, self.name))
 
             if algorithm == 'Bscore':
-                ge, ce, re, corrected_data_array, tbl_org = TCA.median_polish(self.array.copy(), method=method,
-                                                                              max_iterations=max_iterations,
-                                                                              trimmed=trimmed,
-                                                                              verbose=verbose)
+                ge, ce, re, corrected_data_array, tbl_org = TCA.bscore(self.array.copy(), max_iterations=max_iterations,
+                                                                       eps=epsilon, verbose=verbose)
 
             if algorithm == 'BZscore':
-                ge, ce, re, corrected_data_array, tbl_org = TCA.bz_median_polish(self.array.copy(), method=method,
-                                                                                 max_iterations=max_iterations,
-                                                                                 trimmed=trimmed,
-                                                                                 verbose=verbose)
+                ge, ce, re, corrected_data_array, tbl_org = TCA.bzscore(self.array.copy(),
+                                                                        max_iterations=max_iterations, eps=epsilon,
+                                                                        verbose=verbose)
 
             if algorithm == 'PMP':
                 corrected_data_array = TCA.partial_mean_polish(self.array.copy(), max_iteration=max_iterations,

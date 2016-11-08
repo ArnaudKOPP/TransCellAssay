@@ -367,16 +367,15 @@ class Plate(GenericPlate):
         self.RawDataNormMethod = method
         self.clear_cache()
 
-    def apply_systematic_error_correction(self, algorithm='Bscore', method='median', apply_down=True, verbose=False,
+    def apply_systematic_error_correction(self, algorithm='Bscore', apply_down=True, verbose=False,
                                           save=True, max_iterations=100, alpha=0.05, epsilon=0.01, skip_col=[],
-                                          skip_row=[], trimmed=0.0, poly_deg=4, low_max_iter=3, f=2./3.):
+                                          skip_row=[], poly_deg=4, low_max_iter=3, f=2./3.):
         """
         Apply a spatial normalization for remove edge effect on all replica (but not to Plate objet himself, use
         instead systematic_error_correction function for only plate array)
         Resulting matrix are save in plate object if save = True
         Be careful !! if the replica data was already be spatial norm, it will degrade data !!
         :param algorithm: Bscore, MEA, PMP or diffusion model technics, default = Bscore
-        :param method: for Bscore : use median or average method
         :param apply_down: apply strategies to replica, if true apply SEC on replica !! not re-use function on plate
         :param verbose: verbose : output the result ?
         :param save: save: save the residual into self.SECData , default = False
@@ -385,7 +384,6 @@ class Plate(GenericPlate):
         :param epsilon: epsilon parameters for PMP
         :param skip_col: index of col to skip in MEA or PMP
         :param skip_row: index of row to skip in MEA or PMP
-        :param trimmed: Bscore only for average method only, trimmed the data with specified value, default is 0.0
         :param poly_deg: polynomial degree 4 or 5
         :param low_max_iter: lowess max iteration
         :param f: lowess smotting span
@@ -399,17 +397,17 @@ class Plate(GenericPlate):
         # Apply only to replica array and get mean of these replica array_c
         if apply_down:
             for key, value in self.replica.items():
-                value.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
+                value.systematic_error_correction(algorithm=algorithm, verbose=verbose, save=save,
                                                   max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
-                                                  skip_col=skip_col, skip_row=skip_row, trimmed=trimmed,
-                                                  poly_deg=poly_deg, low_max_iter=low_max_iter, f=f)
+                                                  skip_col=skip_col, skip_row=skip_row, poly_deg=poly_deg,
+                                                  low_max_iter=low_max_iter, f=f)
             self._mean_array_c()
         else:
             # apply sec only on plate.array to get array_c
-            self.systematic_error_correction(algorithm=algorithm, method=method, verbose=verbose, save=save,
+            self.systematic_error_correction(algorithm=algorithm, verbose=verbose, save=save,
                                              max_iterations=max_iterations, alpha=alpha, epsilon=epsilon,
-                                             skip_col=skip_col, skip_row=skip_row, trimmed=trimmed,
-                                             poly_deg=poly_deg, low_max_iter=low_max_iter, f=f)
+                                             skip_col=skip_col, skip_row=skip_row, poly_deg=poly_deg,
+                                             low_max_iter=low_max_iter, f=f)
 
     def write_rawdata(self, path, name=None):
         """

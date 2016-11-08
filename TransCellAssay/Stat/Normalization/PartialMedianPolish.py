@@ -124,7 +124,6 @@ def partial_mean_polish(input_array, epsilon=0.01, max_iteration=50, verbose=Fal
         print("PMP methods for removing systematics error")
         print(u'\u03B1'" for T-Test : ", alpha)
         print(u'\u03B5'" : ", epsilon)
-        print("Max Iteration : ", max_iteration)
         print("-----Normalized Table-------")
         print(input_array)
         print("-----Original Table-------")
