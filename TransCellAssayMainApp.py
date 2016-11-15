@@ -15,6 +15,9 @@ import xlsxwriter
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
 
+DEBUG = True
+
+
 # # **pretty ugly**
 def FP_init_sheet(worksheet, size):
     """
@@ -93,61 +96,157 @@ def FP_init_sheet(worksheet, size):
 
 
 class MainAppFrame(tkinter.Frame):
-
     def __init__(self, *args, **kwargs):
         tkinter.Frame.__init__(self, *args, **kwargs)
 
         self.master.title('TransCellAssay analyse Application')
 
         tkinter.Button(self.master, text='CSV File Formatter', command=self.CSVFFFrame).pack(padx=10, pady=5, fill=BOTH)
-        tkinter.Button(self.master, text='Format plaque', command=self.FormatPlaqueFrame).pack(padx=10, pady=5, fill=BOTH)
+        tkinter.Button(self.master, text='Format plaque', command=self.FormatPlaqueFrame).pack(padx=10, pady=5,
+                                                                                               fill=BOTH)
         tkinter.Button(self.master, text='Analyse', command=self.AnalyseFrame).pack(padx=10, pady=5, fill=BOTH)
-        tkinter.Button(self.master, text='EXIT APP', command=self.master.quit, fg="red").pack(padx=10, pady=5, fill=BOTH)
+        tkinter.Button(self.master, text='BATCH mode', command=self.BatchModeFrame).pack(padx=10, pady=5, fill=BOTH)
+        tkinter.Button(self.master, text='EXIT APP', command=self.master.quit, fg="red").pack(padx=10, pady=5,
+                                                                                              fill=BOTH)
 
         self.DirPath = None
         self.FilePathToOpen = None
 
         self.PlateToAnalyse = None
 
-
     ### FUNCTION FOR GUI
 
     def CSVFFFrame(self):
         window = Toplevel(self)
         tkinter.Button(window, text="Browse Directory", command=self.load_dir).pack(padx=10, pady=10, fill=BOTH)
-        tkinter.Button(window, text="Do CSV file Formatting", command=self.__DoCSVFile, fg="red").pack(padx=10, pady=10, fill=BOTH)
+        tkinter.Button(window, text="Do CSV file Formatting", command=self.__DoCSVFile, fg="red").pack(padx=10, pady=10,
+                                                                                                       fill=BOTH)
 
         self.RemoveCol = IntVar()
         self.RemoveNan = IntVar()
-        Checkbutton(window, text = "Remove Useless Columns", variable = self.RemoveCol).pack(padx=10, pady=10, fill=BOTH)
-        Checkbutton(window, text = "Remove NaN values", variable = self.RemoveNan).pack(padx=10, pady=10, fill=BOTH)
+        Checkbutton(window, text="Remove Useless Columns", variable=self.RemoveCol).pack(padx=10, pady=10, fill=BOTH)
+        Checkbutton(window, text="Remove NaN values", variable=self.RemoveNan).pack(padx=10, pady=10, fill=BOTH)
         self.RemoveCol.set(1)
         self.RemoveNan.set(1)
 
         Label(window, text="Which csv file use", foreground="black", background="white").pack()
 
         self.CSV_Target = StringVar()
-        Combobox(window, textvariable=self.CSV_Target, values=('Well.csv', 'Cell.csv'), state='readonly').pack(padx=10, pady=10, fill=BOTH)
+        Combobox(window, textvariable=self.CSV_Target, values=('Well.csv', 'Cell.csv'), state='readonly').pack(padx=10,
+                                                                                                               pady=10,
+                                                                                                               fill=BOTH)
         self.CSV_Target.set('Cell.csv')
 
         Label(window, text="Which name to use", foreground="black", background="white").pack()
 
         self.CSV_OutputName = StringVar()
-        Combobox(window, textvariable=self.CSV_OutputName, values=('PlateID/Barcode', 'Plate Name', 'Both'), state='readonly').pack(padx=10, pady=10, fill=BOTH)
+        Combobox(window, textvariable=self.CSV_OutputName, values=('PlateID/Barcode', 'Plate Name', 'Both'),
+                 state='readonly').pack(padx=10, pady=10, fill=BOTH)
         self.CSV_OutputName.set('Both')
-
 
     def FormatPlaqueFrame(self):
         window = Toplevel(self)
         tkinter.Button(window, text="Browse Directory", command=self.load_dir).pack(padx=10, pady=10, fill=BOTH)
-        tkinter.Button(window, text="Do Format Plaque", command=self.__DoFormatPlaque, fg="red").pack(padx=10, pady=10, fill=BOTH)
+        tkinter.Button(window, text="Do Format Plaque", command=self.__DoFormatPlaque, fg="red").pack(padx=10, pady=10,
+                                                                                                      fill=BOTH)
 
         Label(window, text="Which name to use", foreground="black", background="white").pack()
 
         self.FP_OutputName = StringVar()
-        Combobox(window, textvariable=self.FP_OutputName, values=('PlateID/Barcode', 'Plate Name', 'Both'), state='readonly').pack(padx=10, pady=10, fill=BOTH)
+        Combobox(window, textvariable=self.FP_OutputName, values=('PlateID/Barcode', 'Plate Name', 'Both'),
+                 state='readonly').pack(padx=10, pady=10, fill=BOTH)
         self.FP_OutputName.set('Both')
 
+    def BatchModeFrame(self):
+        window = Toplevel(self)
+
+        tkinter.Label(window, text="Input Plate Name").grid(row=1, column=0)
+        tkinter.Label(window, text="XXX{0}.{1}.csv").grid(row=1, column=2)
+
+        tkinter.Label(window, text="PlateMap Name").grid(row=2, column=0)
+        tkinter.Label(window, text="PP_{0}.csv or PP.csv").grid(row=2, column=2)
+
+        tkinter.Label(window, text="N of plate").grid(row=3, column=0)
+        tkinter.Label(window, text="Number of source plate").grid(row=3, column=2)
+
+        tkinter.Label(window, text="N of replica").grid(row=4, column=0)
+        tkinter.Label(window, text="Number of replica for each source plate").grid(row=4, column=2)
+
+        tkinter.Label(window, text="Neg Ctrl").grid(row=5, column=0)
+
+        tkinter.Label(window, text="Channels").grid(row=6, column=0)
+        tkinter.Label(window, text="Which channels to analyse (multiple is possible").grid(row=6, column=2)
+
+        tkinter.Label(window, text="Threshold Value").grid(row=7, column=0)
+        tkinter.Label(window, text="Threshold Value for positive cells").grid(row=7, column=2)
+
+        self.BatchInPlateName = StringVar()
+        self.BatchPlateMapName = StringVar()
+        self.BatchNPlate = StringVar()
+        self.BatchNRep = StringVar()
+        self.BatchNegCtrl = StringVar()
+        self.BatchChnVal = StringVar()
+        self.BatchThrsVal = StringVar()
+        tkinter.Entry(window, textvariable=self.BatchInPlateName).grid(row=1, column=1)
+        tkinter.Entry(window, textvariable=self.BatchPlateMapName).grid(row=2, column=1)
+        tkinter.Entry(window, textvariable=self.BatchNPlate).grid(row=3, column=1)
+        tkinter.Entry(window, textvariable=self.BatchNRep).grid(row=4, column=1)
+        tkinter.Entry(window, textvariable=self.BatchNegCtrl).grid(row=5, column=1)
+        tkinter.Entry(window, textvariable=self.BatchChnVal).grid(row=6, column=1)
+        tkinter.Entry(window, textvariable=self.BatchThrsVal).grid(row=7, column=1)
+
+        tkinter.Label(window, text="Threshold type").grid(row=8, column=0)
+        self.BatchThrsType = StringVar()
+        Combobox(window, textvariable=self.BatchThrsType, values=('Percent', 'value'), state='readonly').grid(row=8,
+                                                                                                              column=1)
+        self.BatchThrsType.set('Percent')
+
+        self.BatchUseCellCount = IntVar()
+        Checkbutton(window, text="Use Cells count for analysis", variable=self.BatchUseCellCount).grid(row=9, column=0)
+        self.BatchUseCellCount.set(0)
+
+        tkinter.Button(window, text="Set Directory", command=self.load_dir).grid(row=10, column=1)
+
+        tkinter.Button(window, text="GO Batch Analysis", command=self._DoBatchAnalyse).grid(row=11, column=1)
+
+    def _DoBatchAnalyse(self):
+        DF = []
+        thresfile = open(os.path.join(self.DirPath, "ThresholdValue_{}.csv".format(time.asctime())), 'a')
+
+        for i in range(1, int(self.BatchNPlate.get()) + 1, 1):
+            plaque = TCA.Plate(name="Plate nb{}".format(i),
+                               platemap=os.path.join(self.DirPath, self.BatchPlateMapName.get().format(i)))
+
+            for j in range(1, int(self.BatchNRep.get()) + 1, 1):
+                file = os.path.join(self.DirPath, self.BatchInPlateName.get().format(i, j))
+                if os.path.isfile(file):
+                    plaque + TCA.Core.Replica(name='Rep' + str(j), fpath=file)
+                else:
+                    logging.warning("File doesn't exist : {}".format(file))
+
+            if self.BatchUseCellCount.get():
+                plaque.use_count_as_data()
+
+            try:
+                if self.BatchThrsType.get() == 'Percent':
+                    df, thres = TCA.PlateChannelsAnalysis(plaque, channels=self.BatchChnVal.get().split(),
+                                                          neg=self.BatchNegCtrl.get(),
+                                                          threshold=100 - int(self.BatchThrsVal.get()),
+                                                          percent=True)
+                else:
+                    df, thres = TCA.PlateChannelsAnalysis(plaque, channels=self.BatchChnVal.get().split(),
+                                                          neg=self.BatchNegCtrl.get(),
+                                                          threshold=int(self.BatchThrsVal.get()),
+                                                          percent=False, fixed_threshold=True)
+            except Exception as e:
+                logging.error(e)
+
+            thresfile.write("{0} @ {1}%: {2}\n".format(plaque.name, int(self.BatchThrsVal.get()), thres))
+            DF.append(df)
+
+        pd.concat(DF).to_csv(os.path.join(self.DirPath, "Resultat_@{0}.csv".format(int(self.BatchThrsVal.get()))),
+                             index=False, header=True)
+        thresfile.close
 
     def AnalyseFrame(self):
         window = Toplevel(self)
@@ -192,31 +291,24 @@ class MainAppFrame(tkinter.Frame):
 
         tkinter.Label(window, text="Neg Ctrl").grid(row=1, column=0)
         tkinter.Label(window, text="Channel").grid(row=2, column=0)
-        tkinter.Label(window, text="Threshold Value").grid(row=3, column=2)
         tkinter.Label(window, text="Threshold type").grid(row=3, column=0)
-
+        tkinter.Label(window, text="Threshold Value").grid(row=4, column=0)
 
         self.NegCtrl = StringVar()
         self.ChnVal = StringVar()
         self.ThrsVal = StringVar()
         tkinter.Entry(window, textvariable=self.NegCtrl).grid(row=1, column=1)
         tkinter.Entry(window, textvariable=self.ChnVal).grid(row=2, column=1)
-        tkinter.Entry(window, textvariable=self.ThrsVal).grid(row=3, column=3)
-
+        tkinter.Entry(window, textvariable=self.ThrsVal).grid(row=4, column=1)
 
         # self.plate_size = StringVar()
         # Combobox(window, textvariable=self.plate_size, values=('96', '384'), state='readonly').grid(row=5, column=1)
         # self.plate_size.set('96')
 
         self.threshold_type = StringVar()
-        Combobox(window, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid(row=3, column=1)
+        Combobox(window, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid(row=3,
+                                                                                                               column=1)
         self.threshold_type.set('Percent')
-
-        tkinter.Label(window, text="Pos Ctrl").grid(row=1, column=2)
-        self.PosCtrl = StringVar()
-        tkinter.Entry(window, textvariable=self.PosCtrl).grid(row=1, column=3)
-
-
 
     ## function to open dir and file
 
@@ -276,7 +368,6 @@ class MainAppFrame(tkinter.Frame):
                 else:
                     OutputName = "{0}-{1}".format(well['PlateId/Barcode'][0], well['Plate Name'][0])
 
-
                 nbrow = well['NumberOfRows'][0]
                 nbcol = well['NumberOfColumns'][0]
 
@@ -301,14 +392,14 @@ class MainAppFrame(tkinter.Frame):
                 all_col = data.columns
 
                 # # create new excel file and worksheet
-                filename = os.path.join(self.DirPath, OutputName+".xlsx")
+                filename = os.path.join(self.DirPath, OutputName + ".xlsx")
                 workbook = xlsxwriter.Workbook(filename)
 
                 i = 0
                 list_sheets = ["%s" % x for x in (all_col.difference(skip))]
                 # # put on channel per sheet
 
-                KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2":"MEAN_NMLWHBC2"}
+                KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLWHBC2"}
 
                 for chan in all_col:
                     if chan in skip:
@@ -382,7 +473,7 @@ class MainAppFrame(tkinter.Frame):
                     file = TCA.CSV()
                     file.load(fpath=os.path.join(root, self.CSV_Target.get()))
 
-                    # # create well
+                    #  # create well
                     file.format_well_format()
                     try:
                         if self.RemoveCol.get():
@@ -419,7 +510,8 @@ class MainAppFrame(tkinter.Frame):
         """
         create a plate object
         """
-        self.PlateToAnalyse = TCA.Plate(name=self.PlateName.get(), platemap=TCA.Core.PlateMap(size=self.plate_size.get()))
+        self.PlateToAnalyse = TCA.Plate(name=self.PlateName.get(),
+                                        platemap=TCA.Core.PlateMap(size=self.plate_size.get()))
 
     def __edit_plate(self):
         """
@@ -431,7 +523,8 @@ class MainAppFrame(tkinter.Frame):
         window = Toplevel(self)
         tkinter.Label(window, text="New plate name").grid(row=1, column=0)
         tkinter.Entry(window, textvariable=self.PlateName).grid(row=1, column=1)
-        tkinter.Button(window, text='New platename', command=lambda: self.PlateToAnalyse.set_name(self.PlateName.get())).grid(row=2, column=0)
+        tkinter.Button(window, text='New platename',
+                       command=lambda: self.PlateToAnalyse.set_name(self.PlateName.get())).grid(row=2, column=0)
 
     def __add_platemap(self):
         """
@@ -442,7 +535,9 @@ class MainAppFrame(tkinter.Frame):
             return
         window = Toplevel(self)
         tkinter.Button(window, text='Browse file', command=self.load_file).grid(row=1, column=0)
-        tkinter.Button(window, text='Add file/replica to plate', command=lambda: self.PlateToAnalyse.add_platemap(TCA.PlateMap(fpath=self.FilePathToOpen))).grid(row=2, column=0)
+        tkinter.Button(window, text='Add file/replica to plate',
+                       command=lambda: self.PlateToAnalyse.add_platemap(TCA.PlateMap(fpath=self.FilePathToOpen))).grid(
+            row=2, column=0)
 
     def __add_replica(self):
         """
@@ -458,7 +553,8 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Label(window, text="Replica name").grid(row=2, column=0)
         repname = StringVar()
         tkinter.Entry(window, textvariable=repname).grid(row=2, column=1)
-        tkinter.Button(window, text='Add file/replica to plate', command=lambda: self.PlateToAnalyse.add_replica(TCA.Replica(name=repname.get(), fpath=self.FilePathToOpen))).grid(row=3, column=0)
+        tkinter.Button(window, text='Add file/replica to plate', command=lambda: self.PlateToAnalyse.add_replica(
+            TCA.Replica(name=repname.get(), fpath=self.FilePathToOpen))).grid(row=3, column=0)
 
     def __remove_replica(self):
         """
@@ -471,7 +567,8 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Label(window, text="Replica name to remove").grid(row=1, column=0)
         repname = StringVar()
         tkinter.Entry(window, textvariable=repname).grid(row=1, column=1)
-        tkinter.Button(window, text='Remove replica', command=lambda: self.PlateToAnalyse.remove_replica(repname.get())).grid(row=2, column=0)
+        tkinter.Button(window, text='Remove replica',
+                       command=lambda: self.PlateToAnalyse.remove_replica(repname.get())).grid(row=2, column=0)
 
     def __Analyse(self):
         """
@@ -493,20 +590,19 @@ class MainAppFrame(tkinter.Frame):
                 self.PlateToAnalyse.platemap[i] = "Neg"
             NegRef = "Neg"
 
-
         ChanRef = self.ChnVal.get()
         logging.debug("Channel analysed : {}".format(ChanRef))
-        if ChanRef== '':
+        if ChanRef == '':
             ChanRef = None
         else:
             ChanRef = [ChanRef]
 
-        noposcell=False
+        noposcell = False
         thresRef = self.ThrsVal.get()
         logging.debug("Threshold used : {}".format(thresRef))
-        if thresRef== '':
+        if thresRef == '':
             thresRef = None
-            noposcell=True
+            noposcell = True
         else:
             thresRef = int(thresRef)
 
@@ -519,31 +615,31 @@ class MainAppFrame(tkinter.Frame):
 
         if noposcell is False:
             self.CurrentResToSave, thres = TCA.PlateChannelsAnalysis(self.PlateToAnalyse,
-                                                                    channels=ChanRef,
-                                                                    neg=NegRef,
-                                                                    threshold=thresRef,
-                                                                    percent=thresTypePercent,
-                                                                    fixed_threshold=thresTypeFixedVal,
-                                                                    clean=False,
-                                                                    noposcell=noposcell,
-                                                                    multiIndexDF=True)
+                                                                     channels=ChanRef,
+                                                                     neg=NegRef,
+                                                                     threshold=thresRef,
+                                                                     percent=thresTypePercent,
+                                                                     fixed_threshold=thresTypeFixedVal,
+                                                                     clean=False,
+                                                                     noposcell=noposcell,
+                                                                     multiIndexDF=True)
             logging.info("Threshold value : {}".format(thres))
 
         else:
             self.CurrentResToSave = TCA.PlateChannelsAnalysis(self.PlateToAnalyse,
-                                                                channels=ChanRef,
-                                                                neg=NegRef,
-                                                                threshold=thresRef,
-                                                                percent=thresTypePercent,
-                                                                fixed_threshold=thresTypeFixedVal,
-                                                                clean=False,
-                                                                noposcell=noposcell,
-                                                                multiIndexDF=True)
+                                                              channels=ChanRef,
+                                                              neg=NegRef,
+                                                              threshold=thresRef,
+                                                              percent=thresTypePercent,
+                                                              fixed_threshold=thresTypeFixedVal,
+                                                              clean=False,
+                                                              noposcell=noposcell,
+                                                              multiIndexDF=True)
 
         self.__AnalyseData = self.CurrentResToSave
 
-
-        tkinter.Button(window, text="Select where to save", fg="red", command=self.selectFileToSave).pack(padx=10, pady=10)
+        tkinter.Button(window, text="Select where to save", fg="red", command=self.selectFileToSave).pack(padx=10,
+                                                                                                          pady=10)
         tkinter.Button(window, text="Save analyse results", fg="red", command=self.__saveFile).pack(padx=10, pady=10)
 
     def __cellsCount(self):
@@ -556,13 +652,13 @@ class MainAppFrame(tkinter.Frame):
         window = Toplevel(self)
 
         self.CurrentResToSave = TCA.PlateChannelsAnalysis(self.PlateToAnalyse, channels=None,
-                                            neg=None,
-                                            noposcell=True,
-                                            multiIndexDF=True)
+                                                          neg=None,
+                                                          noposcell=True,
+                                                          multiIndexDF=True)
         self.__CellsCountData = self.CurrentResToSave
 
-
-        tkinter.Button(window, text="Select where to save", fg="red", command=self.selectFileToSave).pack(padx=10, pady=10)
+        tkinter.Button(window, text="Select where to save", fg="red", command=self.selectFileToSave).pack(padx=10,
+                                                                                                          pady=10)
         tkinter.Button(window, text="Save cellscount", fg="red", command=self.__saveFile).pack(padx=10, pady=10)
 
     def __saveFile(self):
@@ -579,23 +675,25 @@ class MainAppFrame(tkinter.Frame):
         """
         single cell data norm
         """
-        # if self.PlateToAnalyse is None:
-        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
-        #     return
+        if not DEBUG:
+            if self.PlateToAnalyse is None:
+                tkinter.messagebox.showerror(message="No existing Plate, create one")
+                return
         window = Toplevel(self)
 
         tkinter.Label(window, text="Data normalization").grid(row=1, column=0)
 
         self.dataNorm = StringVar()
         Combobox(window, textvariable=self.dataNorm, values=("Zscore", "RobustZscore", "PercentOfSample",
-                                                            "RobustPercentOfSample", "PercentOfControl", "RobustPercentOfControl",
-                                                            "NormalizedPercentInhibition"), state='readonly').grid(row=1, column=1)
+                                                             "RobustPercentOfSample", "PercentOfControl",
+                                                             "RobustPercentOfControl",
+                                                             "NormalizedPercentInhibition"), state='readonly').grid(
+            row=1, column=1)
         self.dataNorm.set('Zscore')
 
         self.log2Norm = IntVar()
-        Checkbutton(window, text = "Apply log2 transformation", variable = self.log2Norm).grid(row=2, column=0)
+        Checkbutton(window, text="Apply log2 transformation", variable=self.log2Norm).grid(row=2, column=0)
         self.log2Norm.set(0)
-
 
         tkinter.Label(window, text="Neg Ctrl").grid(row=3, column=0)
         tkinter.Label(window, text="Pos Ctrl").grid(row=4, column=0)
@@ -608,17 +706,22 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Entry(window, textvariable=self.NormPos).grid(row=4, column=1)
         tkinter.Entry(window, textvariable=self.NormChan).grid(row=5, column=1)
 
-        tkinter.Button(window, text='Apply data norm', command=lambda: self.PlateToAnalyse.normalization_channels(channels=[self.NormChan.get()],
-                                                                    method=self.dataNorm.get(), log_t=self.log2Norm.get(), neg=self.NormNeg.get(), pos=self.NormPos.get()),
-                        fg="red").grid(row=1, column=2)
+        tkinter.Button(window, text='Apply data norm',
+                       command=lambda: self.PlateToAnalyse.normalization_channels(channels=[self.NormChan.get()],
+                                                                                  method=self.dataNorm.get(),
+                                                                                  log_t=self.log2Norm.get(),
+                                                                                  neg=self.NormNeg.get(),
+                                                                                  pos=self.NormPos.get()),
+                       fg="red").grid(row=1, column=2)
 
     def __SizeEffectNorm(self):
         """
         single cell data norm
         """
-        # if self.PlateToAnalyse is None:
-        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
-        #     return
+        if not DEBUG:
+            if self.PlateToAnalyse is None:
+                tkinter.messagebox.showerror(message="No existing Plate, create one")
+                return
         window = Toplevel(self)
 
         tkinter.Label(window, text="Channel").grid(row=0, column=0)
@@ -627,30 +730,36 @@ class MainAppFrame(tkinter.Frame):
 
         tkinter.Label(window, text="Side Effect normalization").grid(row=1, column=0)
         self.SideNorm = StringVar()
-        Combobox(window, textvariable=self.SideNorm, values=('Bscore', 'BZscore', 'PMP', 'MEA', 'Lowess', 'Polynomial'), state='readonly').grid(row=1, column=1)
+        Combobox(window, textvariable=self.SideNorm, values=('Bscore', 'BZscore', 'PMP', 'MEA', 'Lowess', 'Polynomial'),
+                 state='readonly').grid(row=1, column=1)
         self.SideNorm.set('Lowess')
 
-        tkinter.Button(window, text='Apply data norm', command=lambda: self.PlateToAnalyse.systematic_error_correction(algorithm=self.SideNorm.get()), fg="red").grid(row=1, column=2)
+        tkinter.Button(window, text='Apply data norm',
+                       command=lambda: self.PlateToAnalyse.systematic_error_correction(algorithm=self.SideNorm.get()),
+                       fg="red").grid(row=1, column=2)
 
     def __HeatMap(self):
         """
         Perform heatmap
         """
-        # if self.PlateToAnalyse is None:
-        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
-        #     return
+        if not DEBUG:
+            if self.PlateToAnalyse is None:
+                tkinter.messagebox.showerror(message="No existing Plate, create one")
+                return
         window = Toplevel(self)
 
         tkinter.Label(window, text="Feature to plot").grid(row=1, column=0)
 
         self.heatmapToplot = StringVar()
-        Combobox(window, textvariable=self.heatmapToplot, values=("CellsCount", "Given Channel"), state='readonly').grid(row=1, column=1)
+        Combobox(window, textvariable=self.heatmapToplot, values=("CellsCount", "Given Channel"),
+                 state='readonly').grid(row=1, column=1)
         self.heatmapToplot.set('CellsCount')
-
 
         tkinter.Label(window, text="Channel to plot").grid(row=2, column=0)
         self.heatmapChanneltoplot = StringVar()
         tkinter.Entry(window, textvariable=self.heatmapChanneltoplot).grid(row=2, column=1)
+
+        logging.debug("Heatmap plot")
 
         tkinter.Button(window, text='Do Heatmap', command=self.__DoHeatmap, fg="red").grid(row=3, column=0)
 
@@ -658,11 +767,11 @@ class MainAppFrame(tkinter.Frame):
         """
         Do heatmap
         """
-
         if self.heatmapToplot.get() == 'CellsCount':
             self.PlateToAnalyse.use_count_as_data()
         else:
-            self.PlateToAnalyse.agg_data_from_replica_channel(channel=self.heatmapChanneltoplot.get(), forced_update=True)
+            self.PlateToAnalyse.agg_data_from_replica_channel(channel=self.heatmapChanneltoplot.get(),
+                                                              forced_update=True)
 
         TCA.HeatMapPlate(self.PlateToAnalyse)
 
@@ -670,9 +779,10 @@ class MainAppFrame(tkinter.Frame):
         """
         Density or KDE plot
         """
-        # if self.PlateToAnalyse is None:
-        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
-        #     return
+        if not DEBUG:
+            if self.PlateToAnalyse is None:
+                tkinter.messagebox.showerror(message="No existing Plate, create one")
+                return
         window = Toplevel(self)
 
         tkinter.Label(window, text="Channel").grid(row=0, column=0)
@@ -683,16 +793,22 @@ class MainAppFrame(tkinter.Frame):
         self.KdeWells = StringVar()
         tkinter.Entry(window, textvariable=self.KdeWells).grid(row=1, column=1)
 
-        tkinter.Button(window, text='Do Density', command=lambda: TCA.PlateWellsDistribution(self.PlateToAnalyse, wells=self.KdeWells.get().split(), channel=self.KdeChan.get()), fg="red").grid(row=3, column=0)
+        logging.debug("Density plot")
 
+        tkinter.Button(window, text='Do Density',
+                       command=lambda: TCA.PlateWellsDistribution(self.PlateToAnalyse,
+                                                                  wells=self.KdeWells.get().split(),
+                                                                  channel=self.KdeChan.get()),
+                       fg="red").grid(row=3, column=0)
 
     def __WellsDistribution(self):
         """
         Wells distribution plot
         """
-        # if self.PlateToAnalyse is None:
-        #     tkinter.messagebox.showerror(message="No existing Plate, create one")
-        #     return
+        if not DEBUG:
+            if self.PlateToAnalyse is None:
+                tkinter.messagebox.showerror(message="No existing Plate, create one")
+                return
         window = Toplevel(self)
 
         tkinter.Label(window, text="Channel").grid(row=0, column=0)
@@ -703,11 +819,17 @@ class MainAppFrame(tkinter.Frame):
         self.WellsDisWells = StringVar()
         tkinter.Entry(window, textvariable=self.WellsDisWells).grid(row=1, column=1)
 
-        tkinter.Button(window, text='Do Wells distribution', command=lambda: self.PlateWellsSorted(self.PlateToAnalyse, wells=self.KdeWells.get().split(), channel=self.KdeChan.get()), fg="red").grid(row=3, column=0)
+        logging.debug("Wells distribution plot ")
+
+        tkinter.Button(window, text='Do Wells distribution',
+                       command=lambda: TCA.PlateWellsSorted(self.PlateToAnalyse,
+                                                            wells=self.WellsDisWells.get().split(),
+                                                            channel=self.WellsDisChan.get()), fg="red").grid(row=3,
+                                                                                                             column=0)
 
 
 if __name__ == "__main__":
     root = tkinter.Tk()
-    root.geometry("400x180")
+    root.geometry("400x200")
     view = MainAppFrame(root)
     root.mainloop()
