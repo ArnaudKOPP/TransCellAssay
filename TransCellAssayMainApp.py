@@ -104,7 +104,7 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Button(self.master, text='CSV File Formatter', command=self.CSVFFFrame).pack(padx=10, pady=5, fill=BOTH)
         tkinter.Button(self.master, text='Format plaque', command=self.FormatPlaqueFrame).pack(padx=10, pady=5,
                                                                                                fill=BOTH)
-        tkinter.Button(self.master, text='Analyse', command=self.AnalyseFrame).pack(padx=10, pady=5, fill=BOTH)
+        tkinter.Button(self.master, text='Plate Analyse', command=self.AnalyseFrame).pack(padx=10, pady=5, fill=BOTH)
         tkinter.Button(self.master, text='BATCH mode', command=self.BatchModeFrame).pack(padx=10, pady=5, fill=BOTH)
         tkinter.Button(self.master, text='EXIT APP', command=self.master.quit, fg="red").pack(padx=10, pady=5,
                                                                                               fill=BOTH)
@@ -114,13 +114,11 @@ class MainAppFrame(tkinter.Frame):
 
         self.PlateToAnalyse = None
 
-    ### FUNCTION FOR GUI
+    # FUNCTION FOR GUI
 
     def CSVFFFrame(self):
         window = Toplevel(self)
         tkinter.Button(window, text="Browse Directory", command=self.load_dir).pack(padx=10, pady=10, fill=BOTH)
-        tkinter.Button(window, text="Do CSV file Formatting", command=self.__DoCSVFile, fg="red").pack(padx=10, pady=10,
-                                                                                                       fill=BOTH)
 
         self.RemoveCol = IntVar()
         self.RemoveNan = IntVar()
@@ -129,7 +127,7 @@ class MainAppFrame(tkinter.Frame):
         self.RemoveCol.set(1)
         self.RemoveNan.set(1)
 
-        Label(window, text="Which csv file use", foreground="black", background="white").pack()
+        Label(window, text="Which csv file use").pack()
 
         self.CSV_Target = StringVar()
         Combobox(window, textvariable=self.CSV_Target, values=('Well.csv', 'Cell.csv'), state='readonly').pack(padx=10,
@@ -137,25 +135,29 @@ class MainAppFrame(tkinter.Frame):
                                                                                                                fill=BOTH)
         self.CSV_Target.set('Cell.csv')
 
-        Label(window, text="Which name to use", foreground="black", background="white").pack()
+        Label(window, text="Which name to use").pack()
 
         self.CSV_OutputName = StringVar()
         Combobox(window, textvariable=self.CSV_OutputName, values=('PlateID/Barcode', 'Plate Name', 'Both'),
                  state='readonly').pack(padx=10, pady=10, fill=BOTH)
         self.CSV_OutputName.set('Both')
 
+        tkinter.Button(window, text="Do CSV file Formatting", command=self.__DoCSVFile, fg="red").pack(padx=10, pady=10,
+                                                                                                       fill=BOTH)
+
     def FormatPlaqueFrame(self):
         window = Toplevel(self)
         tkinter.Button(window, text="Browse Directory", command=self.load_dir).pack(padx=10, pady=10, fill=BOTH)
-        tkinter.Button(window, text="Do Format Plaque", command=self.__DoFormatPlaque, fg="red").pack(padx=10, pady=10,
-                                                                                                      fill=BOTH)
 
-        Label(window, text="Which name to use", foreground="black", background="white").pack()
+        Label(window, text="Which name to use").pack()
 
         self.FP_OutputName = StringVar()
         Combobox(window, textvariable=self.FP_OutputName, values=('PlateID/Barcode', 'Plate Name', 'Both'),
                  state='readonly').pack(padx=10, pady=10, fill=BOTH)
         self.FP_OutputName.set('Both')
+
+        tkinter.Button(window, text="Do Format Plaque", command=self.__DoFormatPlaque, fg="red").pack(padx=10, pady=10,
+                                                                                                      fill=BOTH)
 
     def BatchModeFrame(self):
         window = Toplevel(self)
@@ -207,46 +209,30 @@ class MainAppFrame(tkinter.Frame):
 
         tkinter.Button(window, text="Set Directory", command=self.load_dir).grid(row=10, column=1)
 
-        tkinter.Button(window, text="GO Batch Analysis", command=self._DoBatchAnalyse).grid(row=11, column=1)
+        self.Batchlog2Norm = IntVar()
+        Checkbutton(window, text="Apply log2 transformation", variable=self.Batchlog2Norm).grid(row=11, column=0)
+        self.Batchlog2Norm.set(0)
 
-    def _DoBatchAnalyse(self):
-        DF = []
-        thresfile = open(os.path.join(self.DirPath, "ThresholdValue_{}.csv".format(time.asctime())), 'a')
+        tkinter.Label(window, text="Data normalization").grid(row=12, column=0)
+        self.BatchdataNorm = StringVar()
+        Combobox(window, textvariable=self.BatchdataNorm, values=("", "Zscore", "RobustZscore", "PercentOfSample",
+                                                                  "RobustPercentOfSample", "PercentOfControl",
+                                                                  "RobustPercentOfControl"),
+                 state='readonly').grid(row=12, column=1)
+        self.BatchdataNorm.set("")
 
-        for i in range(1, int(self.BatchNPlate.get()) + 1, 1):
-            plaque = TCA.Plate(name="Plate nb{}".format(i),
-                               platemap=os.path.join(self.DirPath, self.BatchPlateMapName.get().format(i)))
+        tkinter.Label(window, text="Side Effect normalization").grid(row=13, column=0)
+        self.BatchSideEffectNorm = StringVar()
+        Combobox(window, textvariable=self.BatchSideEffectNorm,
+                 values=("", "Bscore", "BZscore", "PMP", "MEA", "Lowess", "Polynomial"),
+                 state='readonly').grid(row=13, column=1)
+        self.BatchSideEffectNorm.set("")
 
-            for j in range(1, int(self.BatchNRep.get()) + 1, 1):
-                file = os.path.join(self.DirPath, self.BatchInPlateName.get().format(i, j))
-                if os.path.isfile(file):
-                    plaque + TCA.Core.Replica(name='Rep' + str(j), fpath=file)
-                else:
-                    logging.warning("File doesn't exist : {}".format(file))
+        tkinter.Label(window, text="Mean and SD choice").grid(row=14, column=0)
+        self.BatchMeanSD = StringVar()
+        tkinter.Entry(window, textvariable=self.BatchMeanSD).grid(row=14, column=1)
 
-            if self.BatchUseCellCount.get():
-                plaque.use_count_as_data()
-
-            try:
-                if self.BatchThrsType.get() == 'Percent':
-                    df, thres = TCA.PlateChannelsAnalysis(plaque, channels=self.BatchChnVal.get().split(),
-                                                          neg=self.BatchNegCtrl.get(),
-                                                          threshold=100 - int(self.BatchThrsVal.get()),
-                                                          percent=True)
-                else:
-                    df, thres = TCA.PlateChannelsAnalysis(plaque, channels=self.BatchChnVal.get().split(),
-                                                          neg=self.BatchNegCtrl.get(),
-                                                          threshold=int(self.BatchThrsVal.get()),
-                                                          percent=False, fixed_threshold=True)
-            except Exception as e:
-                logging.error(e)
-
-            thresfile.write("{0} @ {1}%: {2}\n".format(plaque.name, int(self.BatchThrsVal.get()), thres))
-            DF.append(df)
-
-        pd.concat(DF).to_csv(os.path.join(self.DirPath, "Resultat_@{0}.csv".format(int(self.BatchThrsVal.get()))),
-                             index=False, header=True)
-        thresfile.close
+        tkinter.Button(window, text="GO Batch Analysis", command=self._DoBatchAnalyse).grid(row=15, column=1)
 
     def AnalyseFrame(self):
         window = Toplevel(self)
@@ -310,7 +296,7 @@ class MainAppFrame(tkinter.Frame):
                                                                                                                column=1)
         self.threshold_type.set('Percent')
 
-    ## function to open dir and file
+    # function to open dir and file
 
     def load_dir(self):
         """
@@ -338,7 +324,7 @@ class MainAppFrame(tkinter.Frame):
         self.SaveFilePath = tkinter.filedialog.asksaveasfilename()
         logging.debug('Save file location choosen : {}'.format(self.SaveFilePath))
 
-    ### FUNCTION THAT PERFORM ACTUALLY SOMETHING
+    # FUNCTION THAT PERFORM ACTUALLY SOMETHING
 
     def __DoFormatPlaque(self):
         """
@@ -686,8 +672,7 @@ class MainAppFrame(tkinter.Frame):
         self.dataNorm = StringVar()
         Combobox(window, textvariable=self.dataNorm, values=("Zscore", "RobustZscore", "PercentOfSample",
                                                              "RobustPercentOfSample", "PercentOfControl",
-                                                             "RobustPercentOfControl",
-                                                             "NormalizedPercentInhibition"), state='readonly').grid(
+                                                             "RobustPercentOfControl"), state='readonly').grid(
             row=1, column=1)
         self.dataNorm.set('Zscore')
 
@@ -696,22 +681,19 @@ class MainAppFrame(tkinter.Frame):
         self.log2Norm.set(0)
 
         tkinter.Label(window, text="Neg Ctrl").grid(row=3, column=0)
-        tkinter.Label(window, text="Pos Ctrl").grid(row=4, column=0)
-        tkinter.Label(window, text="Channel").grid(row=5, column=0)
+        tkinter.Label(window, text="Channel").grid(row=4, column=0)
 
         self.NormNeg = StringVar()
         self.NormPos = StringVar()
         self.NormChan = StringVar()
         tkinter.Entry(window, textvariable=self.NormNeg).grid(row=3, column=1)
-        tkinter.Entry(window, textvariable=self.NormPos).grid(row=4, column=1)
-        tkinter.Entry(window, textvariable=self.NormChan).grid(row=5, column=1)
+        tkinter.Entry(window, textvariable=self.NormChan).grid(row=4, column=1)
 
         tkinter.Button(window, text='Apply data norm',
                        command=lambda: self.PlateToAnalyse.normalization_channels(channels=[self.NormChan.get()],
                                                                                   method=self.dataNorm.get(),
                                                                                   log_t=self.log2Norm.get(),
-                                                                                  neg=self.NormNeg.get(),
-                                                                                  pos=self.NormPos.get()),
+                                                                                  neg=self.NormNeg.get()),
                        fg="red").grid(row=1, column=2)
 
     def __SizeEffectNorm(self):
@@ -737,6 +719,111 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Button(window, text='Apply data norm',
                        command=lambda: self.PlateToAnalyse.systematic_error_correction(algorithm=self.SideNorm.get()),
                        fg="red").grid(row=1, column=2)
+
+    def _DoBatchAnalyse(self):
+        DF_BeforeNorm = []
+        DF_AfterNorm = []
+        thresfile = open(os.path.join(self.DirPath, "ThresholdValue_{}.csv".format(time.asctime())), 'a')
+
+        for i in range(1, int(self.BatchNPlate.get()) + 1, 1):
+            plaque = TCA.Plate(name="Plate nb{}".format(i),
+                               platemap=os.path.join(self.DirPath, self.BatchPlateMapName.get().format(i)))
+
+            for j in range(1, int(self.BatchNRep.get()) + 1, 1):
+                file = os.path.join(self.DirPath, self.BatchInPlateName.get().format(i, j))
+                if os.path.isfile(file):
+                    plaque + TCA.Core.Replica(name='Rep' + str(j), fpath=file)
+                else:
+                    logging.warning("File doesn't exist : {}".format(file))
+
+            if self.BatchUseCellCount.get():
+                plaque.use_count_as_data()
+
+            try:
+                if self.BatchThrsType.get() == 'Percent':
+                    df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                          channels=self.BatchChnVal.get().split(),
+                                                          neg=self.BatchNegCtrl.get(),
+                                                          threshold=100 - int(self.BatchThrsVal.get()),
+                                                          percent=True)
+                else:
+                    df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                          channels=self.BatchChnVal.get().split(),
+                                                          neg=self.BatchNegCtrl.get(),
+                                                          threshold=int(self.BatchThrsVal.get()),
+                                                          percent=False,
+                                                          fixed_threshold=True)
+            except Exception as e:
+                logging.error(e)
+
+            thresfile.write("{0} @ {1}%: {2}\n".format(plaque.name, int(self.BatchThrsVal.get()), thres))
+            DF_BeforeNorm.append(df)
+
+            # Normalized part
+            if self.BatchdataNorm.get() != "":
+                plaque.normalization_channels(channels=self.BatchChnVal.get().split(),
+                                              method=self.BatchdataNorm.get(),
+                                              neg=self.BatchNegCtrl.get(),
+                                              log_t=bool(self.Batchlog2Norm.get()))
+
+            if self.BatchSideEffectNorm.get() != "":
+                plaque.apply_systematic_error_correction(algorithm=self.BatchSideEffectNorm.get(),
+                                                         apply_down=True,
+                                                         max_iterations=10)
+
+            if self.BatchdataNorm.get() or self.BatchSideEffectNorm.get() != "":
+                try:
+                    if self.BatchThrsType.get() == 'Percent':
+                        df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                              channels=self.BatchChnVal.get().split(),
+                                                              neg=self.BatchNegCtrl.get(),
+                                                              threshold=100 - int(self.BatchThrsVal.get()),
+                                                              percent=True)
+                    else:
+                        df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                              channels=self.BatchChnVal.get().split(),
+                                                              neg=self.BatchNegCtrl.get(),
+                                                              threshold=int(self.BatchThrsVal.get()),
+                                                              percent=False,
+                                                              fixed_threshold=True)
+                except Exception as e:
+                    logging.error(e)
+
+            thresfile.write("{0} Normalized @ {1}%: {2}\n".format(plaque.name, int(self.BatchThrsVal.get()), thres))
+            DF_AfterNorm.append(df)
+
+        beforenorm = pd.concat(DF_BeforeNorm)
+        beforenorm.to_csv(
+            os.path.join(self.DirPath, "Resultat_@{0}.csv".format(int(self.BatchThrsVal.get()))),
+            index=False, header=True)
+
+        if self.BatchMeanSD.get() != "":
+            x = beforenorm[beforenorm.PlateMap.isin(self.BatchMeanSD.get().split())]
+            x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
+                os.path.join(self.DirPath, "Resultat_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
+                index=False, header=True)
+            x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
+                os.path.join(self.DirPath, "Resultat_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
+                index=False, header=True)
+
+        if self.BatchdataNorm.get() or self.BatchSideEffectNorm.get() != "":
+            afternorm = pd.concat(DF_AfterNorm)
+            afternorm.to_csv(
+                os.path.join(self.DirPath, "Resultat_Normalized_@{0}.csv".format(int(self.BatchThrsVal.get()))),
+                index=False, header=True)
+
+            if self.BatchMeanSD.get() != "":
+                x = afternorm[afternorm.PlateMap.isin(self.BatchMeanSD.get().split())]
+                x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
+                    os.path.join(self.DirPath, "Resultat_Normalized_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
+                    index=False, header=True)
+                x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
+                    os.path.join(self.DirPath, "Resultat_Normalized_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
+                    index=False, header=True)
+
+        thresfile.close
+
+    # FUNCTION FOR GRAPHIC OUTPUT
 
     def __HeatMap(self):
         """
@@ -830,6 +917,6 @@ class MainAppFrame(tkinter.Frame):
 
 if __name__ == "__main__":
     root = tkinter.Tk()
-    root.geometry("400x200")
+    root.geometry("300x200")
     view = MainAppFrame(root)
     root.mainloop()
