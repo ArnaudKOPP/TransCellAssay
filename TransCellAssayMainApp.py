@@ -258,9 +258,10 @@ class MainAppFrame(tkinter.Frame):
         menubar.add_cascade(label="Normalization", menu=normmenu)
 
         graphmenu = tkinter.Menu(menubar, tearoff=0)
-        graphmenu.add_command(label="Heatmap", command=self.__HeatMap)
-        graphmenu.add_command(label="Density", command=self.__DensityKDE)
-        graphmenu.add_command(label="Wells distribution", command=self.__WellsDistribution)
+        graphmenu.add_command(label="Plate Heatmap", command=self.__HeatMap)
+        graphmenu.add_command(label="Value density KDE", command=self.__DensityKDE)
+        graphmenu.add_command(label="Value distribution", command=self.__WellsDistribution)
+        graphmenu.add_command(label="Value histogramme", command=self.__Histogramme)
         menubar.add_cascade(label="Graph", menu=graphmenu)
 
         qcmenu = tkinter.Menu(menubar, tearoff=0)
@@ -914,6 +915,31 @@ class MainAppFrame(tkinter.Frame):
                                                             channel=self.WellsDisChan.get()), fg="red").grid(row=3,
                                                                                                              column=0)
 
+    def __Histogramme(self):
+        if not DEBUG:
+            if self.PlateToAnalyse is None:
+                tkinter.messagebox.showerror(message="No existing Plate, create one")
+                return
+        window = Toplevel(self)
+        tkinter.Label(window, text="Channel").grid(row=0, column=0)
+        self.WellsHistChan = StringVar()
+        tkinter.Entry(window, textvariable=self.WellsHistChan).grid(row=0, column=1)
+
+        tkinter.Label(window, text="Wells").grid(row=1, column=0)
+        self.WellsHistWells = StringVar()
+        tkinter.Entry(window, textvariable=self.WellsHistWells).grid(row=1, column=1)
+
+        tkinter.Label(window, text="bins").grid(row=2, column=0)
+        self.WellsHistbins = StringVar()
+        self.WellsHistbins.set("100")
+        tkinter.Entry(window, textvariable=self.WellsHistbins).grid(row=2, column=1)
+
+        tkinter.Button(window, text='Do Wells distribution',
+                       command=lambda: TCA.PlateWellsDistribution(self.PlateToAnalyse,
+                                                                  wells=self.WellsHistWells.get().split(),
+                                                                  channel=self.WellsHistChan.get(),
+                                                                  bins=int(self.WellsHistbins.get())),
+                       fg="red").grid(row=3, column=0)
 
 if __name__ == "__main__":
     root = tkinter.Tk()
