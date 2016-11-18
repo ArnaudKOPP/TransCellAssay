@@ -99,7 +99,7 @@ class MainAppFrame(tkinter.Frame):
     def __init__(self, *args, **kwargs):
         tkinter.Frame.__init__(self, *args, **kwargs)
 
-        self.master.title('TransCellAssay analyse Application')
+        self.master.title('TCA Analysis App')
 
         tkinter.Button(self.master, text='CSV File Formatter', command=self.CSVFFFrame).pack(padx=10, pady=5, fill=BOTH)
         tkinter.Button(self.master, text='Format plaque', command=self.FormatPlaqueFrame).pack(padx=10, pady=5,
@@ -114,7 +114,7 @@ class MainAppFrame(tkinter.Frame):
 
         self.PlateToAnalyse = None
 
-    # FUNCTION FOR GUI
+    # FUNCTION FOR MAIN TASKS
 
     def CSVFFFrame(self):
         window = Toplevel(self)
@@ -244,12 +244,15 @@ class MainAppFrame(tkinter.Frame):
         filemenu.add_command(label="Add data file/replica", command=self.__add_replica)
         filemenu.add_command(label="Add platemap file", command=self.__add_platemap)
         filemenu.add_separator()
+        filemenu.add_command(label="Print Plate Status", command=self.showPlate)
+        filemenu.add_separator()
         filemenu.add_command(label="Exit", command=window.quit)
         menubar.add_cascade(label="File", menu=filemenu)
 
         editmenu = tkinter.Menu(menubar, tearoff=0)
         editmenu.add_command(label="Remove replica", command=self.__remove_replica)
-        editmenu.add_command(label="Edit Plate", command=self.__edit_plate)
+        editmenu.add_command(label="Remove PlateMap", command=self.__remove_platemap)
+        editmenu.add_command(label="Edit PlateName", command=self.__edit_plate)
         menubar.add_cascade(label="Edit", menu=editmenu)
 
         normmenu = tkinter.Menu(menubar, tearoff=0)
@@ -287,10 +290,6 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Entry(window, textvariable=self.NegCtrl).grid(row=1, column=1)
         tkinter.Entry(window, textvariable=self.ChnVal).grid(row=2, column=1)
         tkinter.Entry(window, textvariable=self.ThrsVal).grid(row=4, column=1)
-
-        # self.plate_size = StringVar()
-        # Combobox(window, textvariable=self.plate_size, values=('96', '384'), state='readonly').grid(row=5, column=1)
-        # self.plate_size.set('96')
 
         self.threshold_type = StringVar()
         Combobox(window, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid(row=3,
@@ -499,6 +498,20 @@ class MainAppFrame(tkinter.Frame):
         """
         self.PlateToAnalyse = TCA.Plate(name=self.PlateName.get(),
                                         platemap=TCA.Core.PlateMap(size=self.plate_size.get()))
+
+    def __remove_platemap(self):
+        if self.PlateToAnalyse is None:
+            tkinter.messagebox.showerror(message="No existing Plate, create one")
+            return
+        window = Toplevel(self)
+        tkinter.Label(window, text="New platemap size").grid(row=0, column=0)
+        newplatemapsize = StringVar()
+        Combobox(window, textvariable=newplatemapsize, values=('96', '384'), state='readonly').grid(row=0, column=1)
+        newplatemapsize.set('96')
+
+        tkinter.Button(window, text='New platemap',
+                       command=lambda: self.PlateToAnalyse.add_platemap(
+                           TCA.PlateMap(size=int(newplatemapsize.get())))).grid(row=2, column=0)
 
     def __edit_plate(self):
         """
@@ -816,7 +829,8 @@ class MainAppFrame(tkinter.Frame):
             if self.BatchMeanSD.get() != "":
                 x = afternorm[afternorm.PlateMap.isin(self.BatchMeanSD.get().split())]
                 x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
-                    os.path.join(self.DirPath, "Resultat_Normalized_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
+                    os.path.join(self.DirPath,
+                                 "Resultat_Normalized_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
                     index=False, header=True)
                 x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
                     os.path.join(self.DirPath, "Resultat_Normalized_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
@@ -940,6 +954,9 @@ class MainAppFrame(tkinter.Frame):
                                                                   channel=self.WellsHistChan.get(),
                                                                   bins=int(self.WellsHistbins.get())),
                        fg="red").grid(row=3, column=0)
+
+    def showPlate(self):
+        print(self.PlateToAnalyse)
 
 if __name__ == "__main__":
     root = tkinter.Tk()

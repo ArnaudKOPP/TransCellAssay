@@ -526,7 +526,7 @@ class Plate(GenericPlate):
             "\n" + repr(self.platemap) +
             "\nData normalized : " + repr(self.isNormalized) +
             "\nData systematic error removed : " + repr(self.isSpatialNormalized) +
-            "\nReplica List ID: " + repr(self.get_replica_listId())+
+            "\nReplica List ID: " + repr(self.get_replica_listId()) +
             "\nRawData File location: " + repr(self.get_replica_file_location())
         )
 
