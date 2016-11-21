@@ -7,7 +7,6 @@ import tkinter.messagebox
 import TransCellAssay as TCA
 import os
 import os.path
-import sys
 import logging
 import pandas as pd
 import time
@@ -232,7 +231,16 @@ class MainAppFrame(tkinter.Frame):
         self.BatchMeanSD = StringVar()
         tkinter.Entry(window, textvariable=self.BatchMeanSD).grid(row=14, column=1)
 
-        tkinter.Button(window, text="GO Batch Analysis", command=self._DoBatchAnalyse).grid(row=15, column=1)
+        tkinter.Label(window, text="Pos ctrl").grid(row=15, column=0)
+        tkinter.Label(window, text="If you want to get the QC output").grid(row=15, column=2)
+        self.BatchPosqc = StringVar()
+        tkinter.Entry(window, textvariable=self.BatchPosqc).grid(row=15, column=1)
+
+        self.Batchqcnormdata = IntVar()
+        Checkbutton(window, text="Use normalized data for QC", variable=self.Batchqcnormdata).grid(row=15, column=4)
+        self.Batchqcnormdata.set(0)
+
+        tkinter.Button(window, text="GO Batch Analysis", command=self._DoBatchAnalyse).grid(row=16, column=1)
 
     def AnalyseFrame(self):
         window = Toplevel(self)
@@ -268,8 +276,8 @@ class MainAppFrame(tkinter.Frame):
         menubar.add_cascade(label="Graph", menu=graphmenu)
 
         qcmenu = tkinter.Menu(menubar, tearoff=0)
-        qcmenu.add_command(label="Neg/Pos")
-        qcmenu.add_command(label="Wells")
+        qcmenu.add_command(label="Neg/Pos", command=self.__qc)
+        qcmenu.add_command(label="Wells", command=lambda: print("Do nothing"))
         menubar.add_cascade(label="QC", menu=qcmenu)
 
         analysemenu = tkinter.Menu(menubar, tearoff=0)
@@ -734,10 +742,53 @@ class MainAppFrame(tkinter.Frame):
                        command=lambda: self.PlateToAnalyse.systematic_error_correction(algorithm=self.SideNorm.get()),
                        fg="red").grid(row=1, column=2)
 
+    def __qc(self):
+        if not DEBUG:
+            if self.PlateToAnalyse is None:
+                tkinter.messagebox.showerror(message="No existing Plate, create one")
+                return
+        window = Toplevel(self)
+
+        tkinter.Label(window, text="Channel").grid(row=0, column=0)
+        self.QCchan = StringVar()
+        tkinter.Entry(window, textvariable=self.QCchan).grid(row=0, column=1)
+
+        tkinter.Label(window, text="Neg ctrl").grid(row=1, column=0)
+        self.QCneg = StringVar()
+        tkinter.Entry(window, textvariable=self.QCneg).grid(row=1, column=1)
+
+        tkinter.Label(window, text="Pos ctrl").grid(row=2, column=0)
+        self.QCpos = StringVar()
+        tkinter.Entry(window, textvariable=self.QCpos).grid(row=2, column=1)
+
+        self.QCnormdata = IntVar()
+        Checkbutton(window, text="Use normalized data", variable=self.QCnormdata).grid(row=3, column=0)
+        self.QCnormdata.set(0)
+
+        tkinter.Button(window, text='Launch QC',
+                       command=self.__do_QC,
+                       fg="red").grid(row=4, column=0)
+
+    def __do_QC(self):
+        if not DEBUG:
+            if self.PlateToAnalyse is None:
+                tkinter.messagebox.showerror(message="No existing Plate, create one")
+                return
+
+        qc = TCA.plate_quality_control(self.PlateToAnalyse,
+                                       channel=self.QCchan.get(),
+                                       cneg=self.QCneg.get(),
+                                       cpos=self.QCpos.get(),
+                                       sec_data=bool(self.QCnormdata.get()))
+        self.selectFileToSave()
+
+        qc.to_csv(self.SaveFilePath)
+
     def _DoBatchAnalyse(self):
         DF_BeforeNorm = []
         DF_AfterNorm = []
         thresfile = open(os.path.join(self.DirPath, "ThresholdValue_{}.csv".format(time.asctime())), 'a')
+        QCdata = []
 
         for i in range(1, int(self.BatchNPlate.get()) + 1, 1):
             plaque = TCA.Plate(name="Plate nb{}".format(i),
@@ -753,22 +804,19 @@ class MainAppFrame(tkinter.Frame):
             if self.BatchUseCellCount.get():
                 plaque.use_count_as_data()
 
-            try:
-                if self.BatchThrsType.get() == 'Percent':
-                    df, thres = TCA.PlateChannelsAnalysis(plaque,
-                                                          channels=self.BatchChnVal.get().split(),
-                                                          neg=self.BatchNegCtrl.get(),
-                                                          threshold=100 - int(self.BatchThrsVal.get()),
-                                                          percent=True)
-                else:
-                    df, thres = TCA.PlateChannelsAnalysis(plaque,
-                                                          channels=self.BatchChnVal.get().split(),
-                                                          neg=self.BatchNegCtrl.get(),
-                                                          threshold=int(self.BatchThrsVal.get()),
-                                                          percent=False,
-                                                          fixed_threshold=True)
-            except Exception as e:
-                logging.error(e)
+            if self.BatchThrsType.get() == 'Percent':
+                df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                      channels=self.BatchChnVal.get().split(),
+                                                      neg=self.BatchNegCtrl.get(),
+                                                      threshold=100 - int(self.BatchThrsVal.get()),
+                                                      percent=True)
+            else:
+                df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                      channels=self.BatchChnVal.get().split(),
+                                                      neg=self.BatchNegCtrl.get(),
+                                                      threshold=int(self.BatchThrsVal.get()),
+                                                      percent=False,
+                                                      fixed_threshold=True)
 
             thresfile.write("{0} @ {1}%: {2}\n".format(plaque.name, int(self.BatchThrsVal.get()), thres))
             DF_BeforeNorm.append(df)
@@ -786,30 +834,38 @@ class MainAppFrame(tkinter.Frame):
                                                          max_iterations=10)
 
             if self.BatchdataNorm.get() or self.BatchSideEffectNorm.get() != "":
-                try:
-                    if self.BatchThrsType.get() == 'Percent':
-                        df, thres = TCA.PlateChannelsAnalysis(plaque,
-                                                              channels=self.BatchChnVal.get().split(),
-                                                              neg=self.BatchNegCtrl.get(),
-                                                              threshold=100 - int(self.BatchThrsVal.get()),
-                                                              percent=True)
-                    else:
-                        df, thres = TCA.PlateChannelsAnalysis(plaque,
-                                                              channels=self.BatchChnVal.get().split(),
-                                                              neg=self.BatchNegCtrl.get(),
-                                                              threshold=int(self.BatchThrsVal.get()),
-                                                              percent=False,
-                                                              fixed_threshold=True)
-                except Exception as e:
-                    logging.error(e)
+                if self.BatchThrsType.get() == 'Percent':
+                    df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                          channels=self.BatchChnVal.get().split(),
+                                                          neg=self.BatchNegCtrl.get(),
+                                                          threshold=100 - int(self.BatchThrsVal.get()),
+                                                          percent=True)
+                else:
+                    df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                          channels=self.BatchChnVal.get().split(),
+                                                          neg=self.BatchNegCtrl.get(),
+                                                          threshold=int(self.BatchThrsVal.get()),
+                                                          percent=False,
+                                                          fixed_threshold=True)
 
             thresfile.write("{0} Normalized @ {1}%: {2}\n".format(plaque.name, int(self.BatchThrsVal.get()), thres))
             DF_AfterNorm.append(df)
+
+            if self.BatchPosqc.get() != "":
+                qc = TCA.plate_quality_control(plate=plaque,
+                                               channel=self.BatchChnVal.get().split()[0],
+                                               cneg=self.BatchNegCtrl.get(),
+                                               cpos=self.BatchPosqc.get(),
+                                               sec_data=bool(self.Batchqcnormdata.get()))
+                QCdata.append(qc)
 
         beforenorm = pd.concat(DF_BeforeNorm)
         beforenorm.to_csv(
             os.path.join(self.DirPath, "Resultat_@{0}.csv".format(int(self.BatchThrsVal.get()))),
             index=False, header=True)
+
+        if self.BatchPosqc.get() != "":
+            pd.concat(QCdata).to_csv(os.path.join(self.DirPath, "QC.csv"), index=False,header=True)
 
         if self.BatchMeanSD.get() != "":
             x = beforenorm[beforenorm.PlateMap.isin(self.BatchMeanSD.get().split())]
@@ -836,7 +892,7 @@ class MainAppFrame(tkinter.Frame):
                     os.path.join(self.DirPath, "Resultat_Normalized_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
                     index=False, header=True)
 
-        thresfile.close
+        thresfile.close()
 
     # FUNCTION FOR GRAPHIC OUTPUT
 
