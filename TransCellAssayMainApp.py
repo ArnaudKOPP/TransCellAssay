@@ -977,13 +977,18 @@ class MainAppFrame(tkinter.Frame):
         self.WellsDisWells = StringVar()
         tkinter.Entry(window, textvariable=self.WellsDisWells).grid(row=1, column=1)
 
+        self.WellsDisPool = IntVar()
+        Checkbutton(window, text="Pool replica", variable=self.WellsDisPool).grid(row=2, column=0)
+        self.WellsDisPool.set(0)
+
         logging.debug("Wells distribution plot ")
 
         tkinter.Button(window, text='Do Wells distribution',
                        command=lambda: TCA.PlateWellsSorted(self.PlateToAnalyse,
                                                             wells=self.WellsDisWells.get().split(),
-                                                            channel=self.WellsDisChan.get()), fg="red").grid(row=3,
-                                                                                                             column=0)
+                                                            channel=self.WellsDisChan.get(),
+                                                            pool=bool(self.WellsDisPool.get())),
+                       fg="red").grid(row=3, column=0)
 
     def __Histogramme(self):
         if not DEBUG:

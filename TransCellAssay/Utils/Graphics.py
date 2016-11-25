@@ -11,9 +11,11 @@ __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
 __email__ = "kopp.arnaud@gmail.com"
 
+
 def Arrays3D(*args, sec_data=False):
     """
     Make a 3d surface plot of matrix representing plate, give a list of array (with same size) and limited to 4
+    :param sec_data: use or not norm data
     :param args: list of object (plate or replica), limit to 4
     :return:show 3d plot
     """
@@ -52,11 +54,15 @@ def Arrays3D(*args, sec_data=False):
     except Exception as e:
         print(e)
 
+
 def Array3D(obj, kind="hist", sec_data=False):
     """
     Make a 3d representation of plaque or replica object
     param kind: can be a 3d histogram of 3d surface
     param sec_data: use or not SEC data if available
+    :param obj: plate or replica
+    :param kind: hist or surf
+    :param sec_data: use norm data or not
     """
     from TransCellAssay.Core.GenericPlate import GenericPlate
     import numpy as np
@@ -104,10 +110,20 @@ def Array3D(obj, kind="hist", sec_data=False):
 
     plt.show(block=True)
 
-def HeatMap(obj, annot=True, size=(17,12), fmt='d', sec_data=False, title=None, render="seaborn", fpath=None,
+
+def HeatMap(obj, annot=True, size=(17, 12), fmt='d', sec_data=False, title=None, render="seaborn", fpath=None,
             cmap="YlGnBu"):
     """
     Create a heatmap from plate or replica object
+    :param obj: plate or replica
+    :param annot: if seaborn is use, get value into heatmap
+    :param size: size of output if writing
+    :param fmt: decimal or int
+    :param sec_data: use norm data or not
+    :param title: set a title or not
+    :param render: seaborn or matplotlib
+    :param fpath: file path if writing
+    :param cmap: color map choixe
     """
     from TransCellAssay.Core.GenericPlate import GenericPlate
     import numpy as np
@@ -148,9 +164,16 @@ def HeatMap(obj, annot=True, size=(17,12), fmt='d', sec_data=False, title=None, 
     else:
         plt.show(block=True)
 
+
 def HeatMapPlate(plate, sec_data=False, fpath=None, size=3., render="seaborn", cmap="YlGnBu"):
     """
     Make heatmap of array from all replica of given plate object
+    :param plate: plate
+    :param sec_data: use norm data or not
+    :param fpath: file path for writing graph
+    :param size: size of output
+    :param render: seaborn or matplotlib
+    :param cmap: color map
     """
     import matplotlib.pylab as plt
     import numpy as np
@@ -202,9 +225,16 @@ def HeatMapPlate(plate, sec_data=False, fpath=None, size=3., render="seaborn", c
     else:
         plt.show(block=True)
 
+
 def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="seaborn", cmap="YlGnBu"):
     """
     Make heatmap from all replica of given plate object
+    :param args: list of plate or multiple plate
+    :param sec_data: use norm data or not
+    :param fpath: file path for writing
+    :param size: size of output
+    :param render: seaborn of matplotlib
+    :param cmap: color map
     """
     import matplotlib.pylab as plt
     import numpy as np
@@ -270,10 +300,13 @@ def HeatMapPlates(*args, sec_data=False, fpath=None, size=3., render="seaborn", 
     else:
         plt.show(block=True)
 
+
 def SystematicError(obj, file_path=None, sec_data=False):
     """
     plot systematic error in cols and rows axis
-    :param array: take a numpy array in input
+    :param file_path: file path
+    :param sec_data: use norm data or not
+    :param obj: plate or replica
     """
     from TransCellAssay.Core.GenericPlate import GenericPlate
     import numpy as np
@@ -326,11 +359,13 @@ def SystematicError(obj, file_path=None, sec_data=False):
     except Exception as e:
         print(e)
 
+
 def ReplicaBoxPlotWells(replica, channel, file_path=None):
     """
     plot the boxplot for each well
-    :param replica:
-    :param channel; whiche channel to display
+    :param replica: replica object
+    :param channel: which channel to display
+    :param file_path: file path for writing
     """
     assert isinstance(replica, TCA.Core.Replica)
     try:
@@ -346,11 +381,12 @@ def ReplicaBoxPlotWells(replica, channel, file_path=None):
     except Exception as e:
         print(e)
 
+
 def ReplicaWellsCount(replica, file_path=None):
     """
     Plot the count in wells for the replica
-    :param replica:
-    :param file_path:
+    :param replica: replica object
+    :param file_path: file path
     :return:
     """
     assert isinstance(replica, TCA.Core.Replica)
@@ -370,11 +406,16 @@ def ReplicaWellsCount(replica, file_path=None):
     except Exception as e:
         print(e)
 
+
 def ReplicaWellsSorted(replica, well, channel, ascending=True, y_lim=None, file_path=None):
     """
     Plot for replica the wells
-    :param plate:
-    :param file_path:
+    :param well: list of wells
+    :param channel: channel to plot
+    :param ascending: sorting sense
+    :param y_lim: y_lim if wanted
+    :param replica: replica object
+    :param file_path: file path for writing
     :return:
     """
     assert isinstance(replica, TCA.Core.Replica)
@@ -409,12 +450,20 @@ def ReplicaWellsSorted(replica, well, channel, ascending=True, y_lim=None, file_
     except Exception as e:
         print(e)
 
-def PlateWellsSorted(plate, wells, channel, ascending=True, y_lim=None, file_name=None, rep=None):
+
+def PlateWellsSorted(plate, wells, channel, ascending=True, y_lim=None, file_name=None, rep=None, pool=False):
     """
     Plot for a plate given wells data sorted
+    :param plate: plate object
+    :param wells: list of wells
+    :param channel: channel to plot
+    :param ascending: sorting sense
+    :param y_lim: y lim if wanted
+    :param file_name: file name for writing
+    :param rep: specifie some replica
+    :param pool: pool or not replica
     """
     assert isinstance(plate, TCA.Plate)
-    import pandas as pd
     import numpy as np
     import matplotlib.pyplot as plt
     import matplotlib.ticker as mtick
@@ -422,16 +471,18 @@ def PlateWellsSorted(plate, wells, channel, ascending=True, y_lim=None, file_nam
     fig = plt.figure()
     ax = fig.add_subplot(111)
     for well in wells:
-        wellData = plate.get_raw_data(channel=channel, well=well, as_dict=True, replica=rep)
-        if isinstance(wellData, dict):
+        if pool:
+            wellData = plate.get_raw_data(channel=channel, well=well, as_dict=False, replica=rep)
+            wellData.sort_values(inplace=True, ascending=ascending)
+            perc = np.linspace(0, 100, len(wellData))
+            plt.plot(perc, wellData.values, label=str(well))
+        else:
+            wellData = plate.get_raw_data(channel=channel, well=well, as_dict=True, replica=rep)
             for key, value in wellData.items():
                 value.sort_values(inplace=True, ascending=ascending)
                 perc = np.linspace(0,100,len(value))
                 plt.plot(perc, value.values, label=str(key)+'_'+str(well))
-        else:
-            wellData.sort_values(inplace=True, ascending=ascending)
-            perc = np.linspace(0,100,len(wellData))
-            plt.plot(perc, wellData.values, label=str(well))
+
     plt.legend()
     ax.set_ylabel('Well value')
     ax.set_title("Wells values sorted on "+str(channel))
@@ -446,11 +497,13 @@ def PlateWellsSorted(plate, wells, channel, ascending=True, y_lim=None, file_nam
     else:
         plt.show()
 
+
 def PlateWellsCount(plate, file_path=None, size=3.):
     """
     Plot for plate the wells count
-    :param plate:
-    :param file_path:
+    :param plate: plate object
+    :param file_path: file path for writing
+    :param size: size of output
     :return:
     """
     assert isinstance(plate, TCA.Core.Plate)
@@ -479,9 +532,11 @@ def PlateWellsCount(plate, file_path=None, size=3.):
     except Exception as e:
         print(e)
 
+
 def PlatesWellsScatter(*args, usesec=False, neg=None, pos=None, other=None, marker='o', width=0.1, file_path=None):
     """
     Plot from all replica from given plate, the array value
+    :param file_path: file path for writing
     :param args: plate object
     :param usesec: use sec data
     :param neg: neg in green
@@ -547,10 +602,13 @@ def PlatesWellsScatter(*args, usesec=False, neg=None, pos=None, other=None, mark
     except Exception as e:
         print(e)
 
+
 def PlateWellsDistribution(plate, wells, channel, by_name=False, kind='kde', rep=None, pool=False, bins=100,
                             file_path=None):
     """
     Plot distribution of multiple well with kde or hist
+    :param kind: hist or kde
+    :param bins: number of bins for hist
     :param plate: Plate with replica
     :param wells: list of wells to plot distribution
     :param channel: which channel to plot
@@ -600,9 +658,11 @@ def PlateWellsDistribution(plate, wells, channel, by_name=False, kind='kde', rep
     except Exception as e:
         print(e)
 
+
 def Replica3ChannelsPlot(replica, x, y, z, single_cell=True, skip_wells=[], size=8):
     """
     Plot in 3d raw data with choosen channels and with different color by well
+    :param size: size of output writing
     :param single_cell: plot all cell or only median
     :param replica: replica object
     :param x: x channel
@@ -644,9 +704,18 @@ def Replica3ChannelsPlot(replica, x, y, z, single_cell=True, skip_wells=[], size
     except Exception as e:
         print(e)
 
+
 def D2Plot(x, y, label_x='x', label_y='y', y_lim=None, x_lim=None, marker='o', color='r', title=None, file_path=None):
     """
     x and y array
+    :param label_x: label for x
+    :param label_y: label for y
+    :param y_lim: y axe lim
+    :param x_lim: x axe lim
+    :param marker: type of marker O . ...
+    :param color: color of point
+    :param title: title of plot
+    :param file_path: file path for writing
     :param y: array of value
     :param x: array of value
     """
@@ -669,9 +738,16 @@ def D2Plot(x, y, label_x='x', label_y='y', y_lim=None, x_lim=None, marker='o', c
     else:
         plt.show(block=True)
 
+
 def D3Plot(x, y, z, x_label='x', y_label='y', z_label='z', size=8, color='b', title=None):
     """
     Plot in 3d three array of data
+    :param x_label: x label
+    :param y_label: y label
+    :param z_label: z label
+    :param size: size of output
+    :param color: color of point
+    :param title: title of plot
     :param x: x array of value
     :param y: y array of value
     :param z: z array of value
@@ -696,13 +772,15 @@ def D3Plot(x, y, z, x_label='x', y_label='y', z_label='z', size=8, color='b', ti
     ax.legend(loc='upper right')
     plt.show(block=True)
 
+
 def PlateRepCor(plate, chan, sec=False):
     """
     Replicate correlation plots for two or three replica contain in plate object
+    :param sec: use norm data or not
     :param plate: take in input a plate object that contain two or three replica
     :param chan: on which channel make the corelation
     """
-    assert  isinstance(plate, TCA.Plate)
+    assert isinstance(plate, TCA.Plate)
     if len(plate) <= 1:
         raise Exception('Plate must contain at least two replica')
     plate.agg_data_from_replica_channel(channel=chan, forced_update=True)
