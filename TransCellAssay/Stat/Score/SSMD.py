@@ -180,9 +180,13 @@ def _ssmd_norep(plate, neg_control, sec_data=False, control_plate=None):
 
     # put wells value into df
     if sec_data:
-        DF.loc[:, "Well Value"] = plate.array_c.flatten().reshape(__SIZE__, 1)
+        DF.loc[:, "Well Mean"] = plate.array_c.flatten().reshape(__SIZE__, 1)
+        for repname, rep in plate:
+            DF.loc[:, repname + " Mean"] = rep.array_c.flatten().reshape(__SIZE__, 1)
     else:
-        DF.loc[:, "Well Value"] = plate.array.flatten().reshape(__SIZE__, 1)
+        DF.loc[:, "Well Mean"] = plate.array.flatten().reshape(__SIZE__, 1)
+        for repname, rep in plate:
+            DF.loc[:, repname + " Mean"] = rep.array.flatten().reshape(__SIZE__, 1)
 
     # search neg data
     if control_plate is not None:
@@ -200,9 +204,11 @@ def _ssmd_norep(plate, neg_control, sec_data=False, control_plate=None):
     # k = 2 * (scipy.special.gamma(((n - 1) / 2) / scipy.special.gamma((n - 2) / 2))) ** 2
     k = n-2.48
 
-    DF.loc[:, "SSMD Robust MM"] = (DF.loc[:, "Well Value"] - np.nanmedian(neg_data)) / (np.sqrt(2) * mad(neg_data))
-    DF.loc[:, "SSMD Robust UMVUE"] = (DF.loc[:, "Well Value"] - np.nanmedian(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * mad(neg_data))
-    DF.loc[:, "SSMD MM"] = (DF.loc[:, "Well Value"] - np.nanmean(neg_data)) / (np.sqrt(2) * np.std(neg_data))
-    DF.loc[:, "SSMD UMVUE"] = (DF.loc[:, "Well Value"] - np.nanmean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.std(neg_data))
+    print(neg_data)
+
+    DF.loc[:, "SSMD Robust MM"] = (DF.loc[:, "Well Mean"] - np.median(neg_data)) / (np.sqrt(2) * mad(neg_data))
+    DF.loc[:, "SSMD Robust UMVUE"] = (DF.loc[:, "Well Mean"] - np.median(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * mad(neg_data))
+    DF.loc[:, "SSMD MM"] = (DF.loc[:, "Well Mean"] - np.mean(neg_data)) / (np.sqrt(2) * np.std(neg_data))
+    DF.loc[:, "SSMD UMVUE"] = (DF.loc[:, "Well Mean"] - np.mean(neg_data)) / (np.sqrt((2 / k) * (len(neg_data))) * np.std(neg_data))
 
     return DF
