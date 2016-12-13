@@ -56,7 +56,7 @@ def _dfbinning(df, on, key, bins, nbins, percent):
     """
 
     if bins is None:
-        bins = np.linspace(np.min(df.loc[:, on].values), np.max(df.loc[:, on].values), nbins)
+        bins = np.linspace(np.min(df.loc[:, on].values)-1, np.max(df.loc[:, on].values), nbins)
 
     x = df.groupby(by=[key, pd.cut(df.loc[:, on], bins)]).count().loc[:, on]
     x = x.unstack()
