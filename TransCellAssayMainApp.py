@@ -945,8 +945,9 @@ class MainAppFrame(tkinter.Frame):
                     index=False, header=True)
         pd.concat(ScoringDataWithoutNorm).to_csv(os.path.join(self.DirPath, "ScoringWithoutNorm.csv"),
                                                  index=False, header=True)
-        pd.concat(ScoringDataWithNorm).to_csv(os.path.join(self.DirPath, "ScoringWithNorm.csv"),
-                                              index=False, header=True)
+        if self.BatchdataNorm.get() or self.BatchSideEffectNorm.get() != "":
+            pd.concat(ScoringDataWithNorm).to_csv(os.path.join(self.DirPath, "ScoringWithNorm.csv"),
+                                                  index=False, header=True)
         thresfile.close()
 
     # FUNCTION FOR GRAPHIC OUTPUT

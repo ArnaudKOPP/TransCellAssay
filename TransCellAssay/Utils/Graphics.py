@@ -604,9 +604,10 @@ def PlatesWellsScatter(*args, usesec=False, neg=None, pos=None, other=None, mark
 
 
 def PlateWellsDistribution(plate, wells, channel, by_name=False, kind='kde', rep=None, pool=False, bins=100,
-                            file_path=None):
+                            file_path=None, bw_method=0.1):
     """
     Plot distribution of multiple well with kde or hist
+    :param bw_method: bandwith for kde
     :param kind: hist or kde
     :param bins: number of bins for hist
     :param plate: Plate with replica
@@ -643,13 +644,13 @@ def PlateWellsDistribution(plate, wells, channel, by_name=False, kind='kde', rep
                 if kind == 'hist':
                     pooled_data.plot(kind=kind, alpha=0.5, legend=True, bins=bins)
                 else:
-                    pooled_data.plot(kind=kind, alpha=0.5, legend=True)
+                    pooled_data.plot(kind=kind, alpha=0.5, legend=True, bw_method=bw_method)
             else:
                 for key, value in rep_series.items():
                     if kind == 'hist':
                         value.plot(kind=kind, alpha=0.5, legend=True, bins=bins)
                     else:
-                        value.plot(kind=kind, alpha=0.5, legend=True)
+                        value.plot(kind=kind, alpha=0.5, legend=True, bw_method=bw_method)
         if file_path is not None:
             plt.savefig(file_path)
             plt.close()
