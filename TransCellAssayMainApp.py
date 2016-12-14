@@ -1067,6 +1067,7 @@ class MainAppFrame(tkinter.Frame):
 
         tkinter.Button(window, text='Do Wells distribution',
                        command=lambda: TCA.PlateWellsDistribution(self.PlateToAnalyse,
+                                                                  kind='hist',
                                                                   wells=self.WellsHistWells.get().split(),
                                                                   channel=self.WellsHistChan.get(),
                                                                   bins=int(self.WellsHistbins.get())),
