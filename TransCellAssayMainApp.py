@@ -344,7 +344,7 @@ class MainAppFrame(tkinter.Frame):
 
     def __DoFormatPlaque(self):
         """
-        Function that perform format plaque on selected directory
+        Function that perform ''format plaque'' on selected directory
         """
         if self.DirPath is None:
             tkinter.messagebox.showerror(message="Empty directory, choose one")
@@ -429,12 +429,12 @@ class MainAppFrame(tkinter.Frame):
                     list_sheets[i] = FP_init_sheet(list_sheets[i], size)
                     # # put value in cell
                     for pos in range(len(data.Row)):
-                        row = int(data.Row[pos]) + 1
+                        row = int(data.Row[pos])
                         try:
-                            col = int(data.Column[pos]) + 1
+                            col = int(data.Column[pos])
                         except:
                             try:
-                                col = int(data.Column[pos]) + 1
+                                col = int(data.Column[pos])
                             except Exception as e:
                                 print(e)
                         tmp = data.loc[[pos]]
