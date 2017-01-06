@@ -129,14 +129,14 @@ class Replica(GenericPlate):
             array[self.df[rowId][i]][self.df[colId][i]] = self.df[chan][i]
         return array
 
-    def get_unique_well(self, well_key='Well'):
+    def get_unique_well(self):
         """
         return all unique wells
         :return:
         """
         if self.df is None:
             raise IOError('Empty rawdata')
-        return self.df[well_key].unique()
+        return self.df[self.WellKey].unique()
 
     def get_rawdata(self, channel=None, well=None, well_idx=False):
         """
@@ -271,13 +271,13 @@ class Replica(GenericPlate):
             self.compute_data_channel(channel)
             return self.array
 
-    def get_count(self, well_key='Well'):
+    def get_count(self):
         """
         Get the count for all well
         :return:
         """
         gb_data = self.get_groupby_data()
-        cnt = gb_data[well_key].count().to_frame()
+        cnt = gb_data[self.WellKey].count().to_frame()
         cnt.columns = ['Count_'+str(self.name)]
         cnt = cnt.fillna(0)
         return cnt
@@ -381,51 +381,44 @@ class Replica(GenericPlate):
         Remove some data for saving memory
         """
         self.__CACHING_gbdata = None
-        self.__CACHING_gbdata_key = None
         log.debug('Cache cleared')
 
-    def get_groupby_data(self, key='Well'):
+    def get_groupby_data(self):
         """
         Perform a groupby on raw data, a 'caching' is set up for avoid computations if groupby was already performed
-        :param key:
         :return:
         """
         if self.__CACHING_gbdata is not None:
-            if key is self.__CACHING_gbdata_key:
-                return self.__CACHING_gbdata
-            else:
-                self._new_caching(key)
-                return self.__CACHING_gbdata
+            return self.__CACHING_gbdata
         else:
-            self._new_caching(key)
+            self._new_caching()
             return self.__CACHING_gbdata
 
-    def _new_caching(self, key='Well'):
-        self.__CACHING_gbdata = self.df.groupby(key)
-        self.__CACHING_gbdata_key = key
+    def _new_caching(self):
+        self.__CACHING_gbdata = self.df.groupby(self.WellKey)
         log.debug('Created {} cache'.format(self.name))
 
-    def __get_Well_group(self, key, channel=None):
+    def __get_Well_group(self, Well, channel=None):
         """
         Get all data for a well
         :param channel:
-        :param key:
+        :param Well:
         :return:
         """
         if self.__CACHING_gbdata is None:
             self._new_caching()
         if channel is not None:
-            return self.__CACHING_gbdata.get_group(key)[channel]
+            return self.__CACHING_gbdata.get_group(Well)[channel]
         else:
-            return self.__CACHING_gbdata.get_group(key)
+            return self.__CACHING_gbdata.get_group(Well)
 
-    def remove_wells_data(self, wells, key="Well"):
+    def remove_wells_data(self, wells):
         """
         Remove wells from rawdata
         param wells: list of wells
         """
         for well in wells:
-            self.df = self.df[self.df[key] != well]
+            self.df = self.df[self.df[self.WellKey] != well]
 
     def add_wells_data(self, data):
         """

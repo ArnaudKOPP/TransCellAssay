@@ -10,7 +10,6 @@ import os.path
 import logging
 import pandas as pd
 import time
-import xlsxwriter
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
 
@@ -355,7 +354,6 @@ class MainAppFrame(tkinter.Frame):
             if "Legend.xml" in filenames:
 
                 try:
-
                     well = pd.read_csv((root + "/Plate.csv"))
                 except:
                     try:
@@ -375,31 +373,18 @@ class MainAppFrame(tkinter.Frame):
 
                 logging.info('Work on {}'.format(OutputName))
 
-                if nbrow * nbcol > 96:
-                    size = 396
-                else:
-                    size = 96
-
-                try:
-                    data = pd.read_csv((root + "/Well.csv"))
-                except:
-                    try:
-                        data = pd.read_csv((root + "/Well.csv"), decimal=",", sep=";")
-                    except Exception as e:
-                        logging.error("Error in reading File : {}".format(e))
+                data = TCA.CSV()
+                data.load(os.path.join(root, "Well.csv"))
+                data.is1Datawell = True
 
                 skip = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column', 'WellId']
 
                 # # get all channel (columns)
-                all_col = data.columns
+                all_col = data.get_col()
 
                 # # create new excel file and worksheet
                 filename = os.path.join(self.DirPath, OutputName + ".xlsx")
-                workbook = xlsxwriter.Workbook(filename)
-
-                i = 0
-                list_sheets = ["%s" % x for x in (all_col.difference(skip))]
-                # # put on channel per sheet
+                workbook = pd.ExcelWriter(filename)
 
                 KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLWHBC2"}
 
@@ -409,12 +394,14 @@ class MainAppFrame(tkinter.Frame):
 
                     logging.debug('Work on {} channel'.format(chan))
 
-                    if data[chan].dtypes == 'object':
-                        data[chan] = data[chan].str.replace(",", ".")
-                    data[chan].apply(format)
-                    data = data.fillna(0)
+                    if data.dataframe[chan].dtypes == 'object':
+                        data.dataframe[chan] = data.dataframe[chan].str.replace(",", ".")
+                    # data.dataframe[chan].apply(format)
+                    data.dataframe = data.dataframe.fillna(0)
 
-                    ## if chan is to long, cut it
+                    array = data.df_to_array(chan, size=nbrow*nbcol)
+
+                    # # if chan is to long, cut it
                     if len(str(chan)) >= 30:
                         if str(chan) in KnowProblematicChanName:
                             Chan = KnowProblematicChanName[str(chan)]
@@ -425,23 +412,9 @@ class MainAppFrame(tkinter.Frame):
                     else:
                         Chan = str(chan)
 
-                    list_sheets[i] = workbook.add_worksheet(Chan)
-                    list_sheets[i] = FP_init_sheet(list_sheets[i], size)
-                    # # put value in cell
-                    for pos in range(len(data.Row)):
-                        row = int(data.Row[pos])
-                        try:
-                            col = int(data.Column[pos])
-                        except:
-                            try:
-                                col = int(data.Column[pos])
-                            except Exception as e:
-                                print(e)
-                        tmp = data.loc[[pos]]
-                        val = float(tmp[str(chan)])
-                        list_sheets[i].write_number(row, col, val)
-                    i += 1
-                workbook.close()
+                    pd.DataFrame(array).to_excel(workbook, Chan)
+
+                workbook.save()
 
                 logging.info('Finish {}'.format(OutputName))
 

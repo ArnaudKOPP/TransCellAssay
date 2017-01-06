@@ -281,5 +281,5 @@ def __backgroundsubstraction(replica, channel, threshold):
         else:
             background = np.median(well_data)
         log.debug('{0}  Median substracted : {1}'.format(well, background))
-        replica.df.loc[replica.df['Well'] == str(well), channel] = well_data - background
+        replica.df.loc[replica.df[replica.WellKey] == str(well), channel] = well_data - background
     return replica

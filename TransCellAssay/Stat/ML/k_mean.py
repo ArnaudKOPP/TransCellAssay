@@ -23,7 +23,7 @@ class k_mean_clustering():
     def __init__(self, plate):
         assert isinstance(plate, TCA.Plate)
         self.rawData = plate.get_agg_data_from_replica_channels()
-        self.rawData = self.rawData.drop(['Well'], axis=1)
+        self.rawData = self.rawData.drop([plate.WellKey], axis=1)
 
     def do_cluster(self, n_cluster=10):
         """

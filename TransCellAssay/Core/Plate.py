@@ -198,7 +198,7 @@ class Plate(GenericPlate):
             else:
                 df.append(tmp.mean())
         DF = pd.concat(df)
-        return DF.reset_index().groupby(by='Well').mean()
+        return DF.reset_index().groupby(by=self.WellKey).mean()
 
     def get_agg_data_from_replica_channel(self, chan=None, sec_data=False):
         """

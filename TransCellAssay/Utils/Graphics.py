@@ -372,7 +372,7 @@ def ReplicaBoxPlotWells(replica, channel, file_path=None):
         import pandas as pd
         import matplotlib.pyplot as plt
 
-        bp = replica.df.boxplot(column=channel, by='Well')
+        bp = replica.df.boxplot(column=channel, by=replica.WellKey)
         if file_path is not None:
             plt.savefig(file_path)
             plt.close()
@@ -520,7 +520,7 @@ def PlateWellsCount(plate, file_path=None, size=3.):
             assert isinstance(value, TCA.Core.Replica)
             ax = fig.add_subplot(a, b, i)
             df = value.df
-            df.groupby('Well').size().plot(kind='bar')
+            df.groupby(plate.WellKey).size().plot(kind='bar')
             ax.set_title(str(plate.name)+' '+str(value.name))
             i += 1
         if file_path is not None:
@@ -686,15 +686,15 @@ def Replica3ChannelsPlot(replica, x, y, z, single_cell=True, skip_wells=[], size
         for well in wells:
             if well not in skip_wells :
                 if single_cell:
-                    ax.plot(replica.df[x][replica.df['Well'] == well].values,
-                            replica.df[y][replica.df['Well'] == well].values,
-                            replica.df[z][replica.df['Well'] == well].values, '.', markersize=4, alpha=0.5,
+                    ax.plot(replica.df[x][replica.df[replica.WellKey] == well].values,
+                            replica.df[y][replica.df[replica.WellKey] == well].values,
+                            replica.df[z][replica.df[replica.WellKey] == well].values, '.', markersize=4, alpha=0.5,
                             label=str(well))
                 else:
-                    ax.plot([np.median(replica.df[x][replica.df['Well'] == well].values)],
-                            [np.median(replica.df[y][replica.df['Well'] == well].values)],
-                            [np.median(replica.df[z][replica.df['Well'] == well].values)], '.', markersize=4, alpha=0.5,
-                            label=str(well))
+                    ax.plot([np.median(replica.df[x][replica.df[replica.WellKey] == well].values)],
+                            [np.median(replica.df[y][replica.df[replica.WellKey] == well].values)],
+                            [np.median(replica.df[z][replica.df[replica.WellKey] == well].values)], '.', markersize=4,
+                            alpha=0.5, label=str(well))
         ax.set_xlabel(x)
         ax.set_ylabel(y)
         ax.set_zlabel(z)

@@ -7,6 +7,7 @@ import numpy as np
 import os
 import re
 import logging
+
 log = logging.getLogger(__name__)
 
 __author__ = "Arnaud KOPP"
@@ -27,6 +28,7 @@ class InputFile(object):
         self.is1Datawell = False
         self.__col = None
         self.__filepath = None
+        self.WellKey = 'WellId'
 
     def load(self, fpath):
         """
@@ -35,35 +37,25 @@ class InputFile(object):
         """
         raise NotImplementedError
 
-    def format_well_format(self, row='Row', col='Column'):
+    def format_well_format(self):
         """
-        Format data
-        :param col: column name for col id
-        :param row: column name for row id
+        Format data by removing some blank space and to have a good well if format
         """
-        log.debug('Change row format : int -> letters')
-        self.dataframe = self.dataframe.replace({'Row': {1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G', 8: 'H',
-                                                         9: 'I', 10: 'J', 11: 'K', 12: 'L', 13: 'M', 14: 'N', 15: 'O',
-                                                         16: 'P', 17: 'Q', 18: 'R', 19: 'S', 20: 'T', 21: 'U', 22: 'V',
-                                                         23: 'W', 24: 'X', 25: 'Y', 26: 'Z',27: 'AA', 28: 'AB',
-                                                         29: 'AC', 30: 'AD', 31: 'AE', 32: 'AF'}})
-        # # insert Well columns
-        self.dataframe.insert(0, "Well", 0)
-        # # put Well value from row and col columns
-        log.debug('Create Well column with good frmt')
-        # self.dataframe['Well'] = self.dataframe.apply(lambda x: '%s%.3g' % (x[row], x[col] + 1), axis=1)
-        # self.dataframe[col] += 1
-        self.dataframe['Well'] = self.dataframe[row] + self.dataframe[col].astype(str)
-        remove = [row, col]
-        log.debug('Remove old col and row column')
-        self.dataframe = self.dataframe.drop(remove, axis=1)
+        log.debug('Formatting Well')
+        # remove some blank space
+        self.dataframe.loc[:, self.WellKey] = self.dataframe.loc[:, self.WellKey].apply(
+            lambda x: re.sub('(\s)(?<!$)', '', x))
+        # pass to B01 to B1
+        self.dataframe.loc[:, self.WellKey] = self.dataframe.loc[:, self.WellKey].apply(
+            lambda x: re.sub('(0)(?<!$)', '', x))
+        self.rename_col(self.WellKey, 'Well')
 
     def get_col(self):
         """
         Get all Columns
         """
         if self.__col is None:
-            self.__col = self.dataframe.columns()
+            self.__col = self.dataframe.columns.tolist()
         return self.__col
 
     def remove_col(self, to_remove=[]):
@@ -72,8 +64,8 @@ class InputFile(object):
         :param to_remove: list of col to remove
         """
         # columns that we can remove because useless
-        useless = ['PlateNumber', 'FieldNumber', 'CellNumber', 'X', 'Y', 'Z', 'Width', 'Height', 'PixelSizeX',
-                   'PixelSizeY', 'PixelSizeZ'] + to_remove
+        useless = ['X', 'Y', 'Z', 'Width', 'Height', 'PixelSizeX', 'PixelSizeY', 'PixelSizeZ', 'Row',
+                   'Column'] + to_remove
         for col in useless:
             try:
                 self.dataframe = self.dataframe.drop([col], axis=1)
@@ -103,18 +95,11 @@ class InputFile(object):
         else:
             log.warning('Not in dataframe {}'.format(colname))
 
-    def formatting(self, cp_format=False):
+    def formatting(self):
         """
         Format string into float
-        :param cp_format: if cell profiler output, then apply a formatting of well
         :return:
         """
-
-        def __cp_well_format(x):
-            """
-            format from F05 to F5
-            """
-            return re.sub('(0)(?<!$)', '', x)
 
         def __str_to_flt(x):
             return float(x)
@@ -124,9 +109,6 @@ class InputFile(object):
             self.dataframe[chan].apply(__str_to_flt)
             if self.dataframe[chan].dtypes == 'object':
                 self.dataframe[chan] = self.dataframe[chan].str.replace(",", ".")
-
-        if cp_format:
-            self.dataframe['Well'] = self.dataframe['Well'].apply(__cp_well_format())
 
     def write_raw_data(self, path, name, frmt='csv', **kwargs):
         """
@@ -152,21 +134,28 @@ class InputFile(object):
         """
         Change shape in list from 1Data/well to numpy matrix
         :param channel: which channel to have in matrix format
-        :param size: size/len of data 96 , 384 or 1526
+        :param size: size/len of data 6, 24, 96, 384 or 1536
         :return: numpy array
         """
         if self.is1Datawell:
             if self.dataframe is not None:
                 if size is None:
                     size = len(self.dataframe)
-                if size == 96:
+                elif size == 6:
+                    array = np.zeros((2, 3))
+                elif size == 24:
+                    array = np.zeros((4, 6))
+                elif size == 96:
                     array = np.zeros((8, 12))
                 elif size == 384:
                     array = np.zeros((16, 24))
                 else:
                     array = np.zeros((24, 48))
                 for i in range(size):
-                    array[self.dataframe['Row'][i]][self.dataframe['Column'][i]] = self.dataframe[channel][i]
+                    try:
+                        array[self.dataframe['Row'][i]][self.dataframe['Column'][i]] = self.dataframe[channel][i]
+                    except:
+                        pass
                 return array
             else:
                 raise Exception('Empty raw data')
