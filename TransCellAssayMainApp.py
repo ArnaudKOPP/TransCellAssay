@@ -4,6 +4,7 @@ import tkinter
 from tkinter import *
 from tkinter.ttk import *
 import tkinter.messagebox
+import tkinter.filedialog
 import TransCellAssay as TCA
 import os
 import os.path
@@ -15,6 +16,25 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(m
 
 DEBUG = True
 
+#################
+## input file col name
+Col_PlateIDBarcode = 'PlateId/Barcode'
+Col_PlateName = 'Plate Name'
+Col_PlateNumber = 'PlateNumber'
+Col_Well = 'Well'
+Col_CP_PlateName = 'Metadata_Plate'
+Col_CP_Well = 'Metadata_Well'
+Col_nrows = 'NumberOfRows'
+Col_ncol = 'NumberOfColumns'
+## Input file name
+InputCell = 'Cell.csv'
+InputWell = 'Well.csv'
+InputPlate = 'Plate.csv'
+##col to skip
+Skip_FormatPlaque = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column', 'WellId']
+## format plaque
+KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLWHBC2"}
+#################
 
 # # **pretty ugly**
 def FP_init_sheet(worksheet, size):
@@ -118,17 +138,28 @@ class MainAppFrame(tkinter.Frame):
         window = Toplevel(self)
         tkinter.Button(window, text="Browse Directory", command=self.load_dir).pack(padx=10, pady=10, fill=BOTH)
 
+        # remove or not useless col
         self.RemoveCol = IntVar()
-        self.RemoveNan = IntVar()
-        Checkbutton(window, text="Remove Useless Columns", variable=self.RemoveCol).pack(padx=10, pady=10, fill=BOTH)
-        Checkbutton(window, text="Remove NaN values", variable=self.RemoveNan).pack(padx=10, pady=10, fill=BOTH)
+        Checkbutton(window, text="Remove Useless Columns", variable=self.RemoveCol).pack(padx=5, pady=5, fill=BOTH)
         self.RemoveCol.set(1)
+
+        # remove or not Nan in file, can be dangerous regarding your data
+        self.RemoveNan = IntVar()
+        Checkbutton(window, text="Remove NaN values", variable=self.RemoveNan).pack(padx=5, pady=5, fill=BOTH)
         self.RemoveNan.set(0)
+
+        self.ReplaceNan = IntVar()
+        Checkbutton(window, text="Replace NaN values by 0", variable=self.ReplaceNan).pack(padx=5, pady=5, fill=BOTH)
+        self.ReplaceNan.set(0)
+
+        self.Cellprofilerinput = IntVar()
+        Checkbutton(window, text="CellProfiler input data", variable=self.Cellprofilerinput).pack(padx=5, pady=5, fill=BOTH)
+        self.Cellprofilerinput.set(0)
 
         Label(window, text="Which csv file use").pack()
 
         self.CSV_Target = StringVar()
-        Combobox(window, textvariable=self.CSV_Target, values=('Well.csv', 'Cell.csv'), state='readonly').pack(padx=10,
+        Combobox(window, textvariable=self.CSV_Target, values=(InputWell, InputCell), state='readonly').pack(padx=10,
                                                                                                                pady=10,
                                                                                                                fill=BOTH)
         self.CSV_Target.set('Cell.csv')
@@ -136,7 +167,7 @@ class MainAppFrame(tkinter.Frame):
         Label(window, text="Which name to use").pack()
 
         self.CSV_OutputName = StringVar()
-        Combobox(window, textvariable=self.CSV_OutputName, values=('PlateID/Barcode', 'Plate Name', 'Both'),
+        Combobox(window, textvariable=self.CSV_OutputName, values=(Col_PlateIDBarcode, Col_PlateName, 'Both'),
                  state='readonly').pack(padx=10, pady=10, fill=BOTH)
         self.CSV_OutputName.set('Both')
 
@@ -150,7 +181,7 @@ class MainAppFrame(tkinter.Frame):
         Label(window, text="Which name to use").pack()
 
         self.FP_OutputName = StringVar()
-        Combobox(window, textvariable=self.FP_OutputName, values=('PlateID/Barcode', 'Plate Name', 'Both'),
+        Combobox(window, textvariable=self.FP_OutputName, values=(Col_PlateIDBarcode, Col_PlateName, 'Both'),
                  state='readonly').pack(padx=10, pady=10, fill=BOTH)
         self.FP_OutputName.set('Both')
 
@@ -351,72 +382,65 @@ class MainAppFrame(tkinter.Frame):
 
         logging.info("Start processing")
         for root, dirs, filenames in os.walk(self.DirPath):
-            if "Legend.xml" in filenames:
+            if "Plate.csv" in filenames:
+                plateId = pd.read_csv(os.path.join(root, InputPlate))
 
-                try:
-                    well = pd.read_csv((root + "/Plate.csv"))
-                except:
-                    try:
-                        well = pd.read_csv((root + "/Plate.csv"), decimal=",", sep=";")
-                    except Exception as e:
-                        print("Error in reading  File", e)
+                # # read data
+                inputdata = pd.read_csv(os.path.join(root, InputWell))
 
-                if self.FP_OutputName.get() == 'PlateID/Barcode':
-                    OutputName = well['PlateId/Barcode'][0]
-                elif self.FP_OutputName.get() == 'Plate Name':
-                    OutputName = well['Plate Name'][0]
-                else:
-                    OutputName = "{0}-{1}".format(well['PlateId/Barcode'][0], well['Plate Name'][0])
-
-                nbrow = well['NumberOfRows'][0]
-                nbcol = well['NumberOfColumns'][0]
-
-                logging.info('Work on {}'.format(OutputName))
-
-                data = TCA.CSV()
-                data.load(os.path.join(root, "Well.csv"))
-                data.is1Datawell = True
-
-                skip = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column', 'WellId']
-
-                # # get all channel (columns)
-                all_col = data.get_col()
-
-                # # create new excel file and worksheet
-                filename = os.path.join(self.DirPath, OutputName + ".xlsx")
-                workbook = pd.ExcelWriter(filename)
-
-                KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLWHBC2"}
-
-                for chan in all_col:
-                    if chan in skip:
-                        continue
-
-                    logging.debug('Work on {} channel'.format(chan))
-
-                    if data.dataframe[chan].dtypes == 'object':
-                        data.dataframe[chan] = data.dataframe[chan].str.replace(",", ".")
-                    # data.dataframe[chan].apply(format)
-                    data.dataframe = data.dataframe.fillna(0)
-
-                    array = data.df_to_array(chan, size=nbrow*nbcol)
-
-                    # # if chan is to long, cut it
-                    if len(str(chan)) >= 30:
-                        if str(chan) in KnowProblematicChanName:
-                            Chan = KnowProblematicChanName[str(chan)]
-                            logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
-                        else:
-                            Chan = ''.join(x for x in str(chan) if not x.islower())
-                            logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
+                for i in range(len(plateId)):
+                    if self.FP_OutputName.get() == 'PlateID/Barcode':
+                        OutputName = plateId[Col_PlateIDBarcode][i]
+                    elif self.FP_OutputName.get() == 'Plate Name':
+                        OutputName = plateId[Col_PlateName][i]
                     else:
-                        Chan = str(chan)
+                        OutputName = "{0}-{1}".format(plateId[Col_PlateIDBarcode][i], plateId[Col_PlateName][i])
+                    platenumber = plateId[Col_PlateNumber][i]
 
-                    pd.DataFrame(array).to_excel(workbook, Chan)
+                    nbrow = plateId[Col_nrows][i]
+                    nbcol = plateId[Col_ncol][i]
 
-                workbook.save()
+                    logging.info('Work on {}'.format(OutputName))
 
-                logging.info('Finish {}'.format(OutputName))
+                    data = TCA.CSV()
+                    data.dataframe = inputdata[inputdata[Col_PlateNumber] == platenumber].reset_index(drop=True)
+                    data.is1Datawell = True
+
+                    skip = Skip_FormatPlaque
+
+                    # # get all channel (columns)
+                    all_col = data.get_col()
+
+                    # # create new excel file and worksheet
+                    filename = os.path.join(self.DirPath, OutputName + ".xlsx")
+                    workbook = pd.ExcelWriter(filename)
+
+                    for chan in all_col:
+                        if chan in skip:
+                            continue
+
+                        logging.debug('Work on {} channel'.format(chan))
+
+                        if data.dataframe[chan].dtypes == 'object':
+                            data.dataframe[chan] = data.dataframe[chan].str.replace(",", ".")
+
+                        array = data.df_to_array(chan, size=nbrow*nbcol)
+
+                        # # if chan is to long, cut it
+                        if len(str(chan)) >= 30:
+                            if str(chan) in KnowProblematicChanName:
+                                Chan = KnowProblematicChanName[str(chan)]
+                                logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
+                            else:
+                                Chan = ''.join(x for x in str(chan) if not x.islower())
+                                logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
+                        else:
+                            Chan = str(chan)
+
+                        pd.DataFrame(array).to_excel(workbook, Chan)
+
+                    workbook.save()
+                    logging.info('Finish {}'.format(OutputName))
 
     def __DoCSVFile(self):
         """
@@ -426,42 +450,55 @@ class MainAppFrame(tkinter.Frame):
             tkinter.messagebox.showerror(message="Empty directory, choose one")
             self.load_dir()
 
-        for root, dirs, filenames in os.walk(self.DirPath):
-            if "Plate.csv" in filenames:
-                try:
-                    well = pd.read_csv((root + "/Plate.csv"))
-                except:
-                    try:
-                        well = pd.read_csv((root + "/Plate.csv"), decimal=",", sep=";")
-                    except Exception as e:
-                        print("Error in reading  File", e)
+        if self.Cellprofilerinput.get():
+            lstfile = [each for each in os.listdir(self.DirPath) if each.endswith(InputCell)]
 
-                if self.CSV_OutputName.get() == 'PlateID/Barcode':
-                    OutputName = well['PlateId/Barcode'][0]
-                elif self.CSV_OutputName.get() == 'Plate Name':
-                    OutputName = well['Plate Name'][0]
-                else:
-                    OutputName = "{0}-{1}".format(well['PlateId/Barcode'][0], well['Plate Name'][0])
+            for inFile in lstfile:
+                file = TCA.CSV()
+                file.load(os.path.join(self.DirPath, inFile))
 
-                try:
-                    # # read
-                    file = TCA.CSV()
-                    file.load(fpath=os.path.join(root, self.CSV_Target.get()))
+                file.rename_col(colname=Col_CP_PlateName, newcolname=Col_PlateName)
+                file.rename_col(colname=Col_CP_Well, newcolname=Col_Well)
+                file.format_well_format()
 
-                    #  # create well
-                    file.format_well_format()
-                    try:
-                        if self.RemoveCol.get():
-                            logging.debug("Remove useless columns")
-                            file.remove_col()
-                        if self.RemoveNan.get():
-                            logging.debug("Remove Nan values")
-                            file.remove_nan()
-                    except:
-                        pass
-                    file.write_raw_data(path=self.DirPath, name=OutputName)
-                except Exception as e:
-                    logging.error(e)
+                uniquePlate = file.dataframe[Col_PlateName].unique()
+
+                for plate in uniquePlate:
+                    df = file.dataframe[file.dataframe[Col_PlateName] == plate].reset_index()
+                    df.to_csv(os.path.join(self.DirPath, plate+'.csv'))
+
+
+        else:
+            for root, dirs, filenames in os.walk(self.DirPath):
+                if InputPlate in filenames:
+                    plateId = pd.read_csv(os.path.join(root, InputPlate))
+
+                    # # read data
+                    inputdata = pd.read_csv(os.path.join(root, self.CSV_Target.get()))
+
+                    for i in range(len(plateId)):
+                        if self.CSV_OutputName.get() == 'PlateID/Barcode':
+                            OutputName = plateId[Col_PlateIDBarcode][i]
+                        elif self.CSV_OutputName.get() == 'Plate Name':
+                            OutputName = plateId[Col_PlateName][i]
+                        else:
+                            OutputName = "{0}-{1}".format(plateId[Col_PlateIDBarcode][i], plateId[Col_PlateName][i])
+                        platenumber = plateId[Col_PlateNumber][0]
+
+                        #  # create well in good format
+                        file = TCA.CSV()
+                        file.dataframe = inputdata[inputdata[Col_PlateNumber] == platenumber]
+                        file.format_well_format()
+                        try:
+                            if self.RemoveCol.get():
+                                file.remove_col()
+                            if self.RemoveNan.get():
+                                file.remove_nan()
+                            if self.ReplaceNan.get():
+                                file.replace_nan()
+                        except:
+                            pass
+                        file.write_raw_data(path=self.DirPath, name=OutputName)
 
     def __init_plate(self):
         """

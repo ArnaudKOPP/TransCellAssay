@@ -65,12 +65,28 @@ class InputFile(object):
         """
         # columns that we can remove because useless
         useless = ['X', 'Y', 'Z', 'Width', 'Height', 'PixelSizeX', 'PixelSizeY', 'PixelSizeZ', 'Row',
-                   'Column'] + to_remove
+                   'Column', 'Status'] + to_remove
         for col in useless:
-            try:
-                self.dataframe = self.dataframe.drop([col], axis=1)
-            except:
-                log.warning("Column {} impossible to remove".format(col))
+            if col in self.dataframe.columns.unique():
+                try:
+                    self.dataframe = self.dataframe.drop([col], axis=1)
+                    log.debug("Column {}  removed".format(col))
+                except Exception as e:
+                    log.warning("Column {} impossible to remove".format(col))
+                    log.error(e)
+
+    def replace_nan(self, by=0):
+        """
+        Replace all NaN by 0 or input choosed
+        :param by: by what replace nan
+        :return:
+        """
+        try:
+            self.dataframe.fillna(by, inplace=True)
+            log.debug("Replace Nan by {0}".format(by))
+        except Exception as e:
+            log.error(e)
+            pass
 
     def remove_nan(self):
         """
@@ -80,7 +96,8 @@ class InputFile(object):
         try:
             self.dataframe = self.dataframe.dropna(axis=0)
             log.debug('Removed Nan on data')
-        except:
+        except Exception as e:
+            log.error(e)
             pass
 
     def rename_col(self, colname, newcolname):
@@ -153,7 +170,7 @@ class InputFile(object):
                     array = np.zeros((24, 48))
                 for i in range(size):
                     try:
-                        array[self.dataframe['Row'][i]][self.dataframe['Column'][i]] = self.dataframe[channel][i]
+                        array[self.dataframe['Row'][i]-1][self.dataframe['Column'][i]-1] = self.dataframe[channel][i]
                     except:
                         pass
                 return array
