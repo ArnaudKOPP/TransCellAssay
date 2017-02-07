@@ -11,6 +11,7 @@ import os.path
 import logging
 import pandas as pd
 import time
+import string
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m/%d/%Y %I:%M:%S')
 
@@ -30,87 +31,11 @@ Col_ncol = 'NumberOfColumns'
 InputCell = 'Cell.csv'
 InputWell = 'Well.csv'
 InputPlate = 'Plate.csv'
-##col to skip
+## col to skip
 Skip_FormatPlaque = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column', 'WellId']
 ## format plaque
 KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLWHBC2"}
 #################
-
-# # **pretty ugly**
-def FP_init_sheet(worksheet, size):
-    """
-    Init plate label in excel sheet
-    """
-    if int(size) == 96:
-        # print("96 wells")
-        worksheet.write('A1', "")
-        worksheet.write('A2', "A")
-        worksheet.write('A3', "B")
-        worksheet.write('A4', "C")
-        worksheet.write('A5', "D")
-        worksheet.write('A6', "E")
-        worksheet.write('A7', "F")
-        worksheet.write('A8', "G")
-        worksheet.write('A9', "H")
-
-        worksheet.write('B1', "1")
-        worksheet.write('C1', "2")
-        worksheet.write('D1', "3")
-        worksheet.write('E1', "4")
-        worksheet.write('F1', "5")
-        worksheet.write('G1', "6")
-        worksheet.write('H1', "7")
-        worksheet.write('I1', "8")
-        worksheet.write('J1', "9")
-        worksheet.write('K1', "10")
-        worksheet.write('L1', "11")
-        worksheet.write('M1', "12")
-        return worksheet
-    elif int(size) == 384:
-        # print("384 Wells")
-        worksheet.write('A1', "")
-        worksheet.write('A2', "A")
-        worksheet.write('A3', "B")
-        worksheet.write('A4', "C")
-        worksheet.write('A5', "D")
-        worksheet.write('A6', "E")
-        worksheet.write('A7', "F")
-        worksheet.write('A8', "G")
-        worksheet.write('A9', "H")
-        worksheet.write('A10', "I")
-        worksheet.write('A11', "J")
-        worksheet.write('A12', "K")
-        worksheet.write('A13', "L")
-        worksheet.write('A14', "M")
-        worksheet.write('A15', "N")
-        worksheet.write('A16', "O")
-        worksheet.write('A17', "P")
-
-        worksheet.write('B1', "1")
-        worksheet.write('C1', "2")
-        worksheet.write('D1', "3")
-        worksheet.write('E1', "4")
-        worksheet.write('F1', "5")
-        worksheet.write('G1', "6")
-        worksheet.write('H1', "7")
-        worksheet.write('I1', "8")
-        worksheet.write('J1', "9")
-        worksheet.write('K1', "10")
-        worksheet.write('L1', "11")
-        worksheet.write('M1', "12")
-        worksheet.write('N1', "13")
-        worksheet.write('O1', "14")
-        worksheet.write('P1', "15")
-        worksheet.write('Q1', "16")
-        worksheet.write('R1', "17")
-        worksheet.write('S1', "18")
-        worksheet.write('T1', "19")
-        worksheet.write('U1', "20")
-        worksheet.write('V1', "21")
-        worksheet.write('W1', "22")
-        worksheet.write('X1', "23")
-        worksheet.write('Y1', "24")
-        return worksheet
 
 
 class MainAppFrame(tkinter.Frame):
@@ -436,8 +361,19 @@ class MainAppFrame(tkinter.Frame):
                                 logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
                         else:
                             Chan = str(chan)
-
-                        pd.DataFrame(array).to_excel(workbook, Chan)
+                        if (nbrow * nbcol) == 96:
+                            df = pd.DataFrame(data=array, index=list(string.ascii_uppercase)[0:8],
+                                              columns=[str(x) for x in range(1, 13, 1)])
+                        elif (nbrow * nbcol) == 384:
+                            df = pd.DataFrame(data=array, index=list(string.ascii_uppercase)[0:16],
+                                              columns=[str(x) for x in range(1, 25, 1)])
+                        elif (nbrow * nbcol) == 1536:
+                            df = pd.DataFrame(data=array,
+                                              index=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+                                                     'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                                                     'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF'],
+                                              columns=[str(x) for x in range(1, 49, 1)])
+                        df.to_excel(workbook, Chan)
 
                     workbook.save()
                     logging.info('Finish {}'.format(OutputName))
@@ -633,11 +569,10 @@ class MainAppFrame(tkinter.Frame):
             thresRef = int(thresRef)
 
         if self.threshold_type.get() == 'Percent':
-            thresTypePercent = True
-            thresTypeFixedVal = False
+            thresTypePercent, thresTypeFixedVal = True, False
+            thresRef = 100 - thresRef
         else:
-            thresTypePercent = False
-            thresTypeFixedVal = True
+            thresTypePercent, thresTypeFixedVal = False, True
 
         if noposcell is False:
             self.CurrentResToSave, thres = TCA.PlateChannelsAnalysis(self.PlateToAnalyse,
