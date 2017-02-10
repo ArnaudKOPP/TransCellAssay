@@ -38,6 +38,25 @@ KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLW
 #################
 
 
+def chk_empty(input):
+    assert isinstance(input, string)
+    if len(input) == 0:
+        return None
+    else:
+        return input
+
+
+class LogFile(object):
+    def __init__(self, path, name="LOG"):
+        self.file = open(os.path.join(path, '{}.txt'.format(name)), 'w')
+
+    def add(self, to_write):
+        self.file.write("{0} \n".format(to_write))
+
+    def close(self):
+        self.file.close()
+
+
 class MainAppFrame(tkinter.Frame):
     def __init__(self, *args, **kwargs):
         tkinter.Frame.__init__(self, *args, **kwargs)
@@ -129,19 +148,23 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Label(window, text="Number of replica for each source plate").grid(row=4, column=2)
 
         tkinter.Label(window, text="Neg Ctrl").grid(row=5, column=0)
-        tkinter.Label(window, text="Name of neg reference in platenmap").grid(row=5, column=2)
+        tkinter.Label(window, text="Name of neg reference in platemap").grid(row=5, column=2)
 
-        tkinter.Label(window, text="Channels").grid(row=6, column=0)
-        tkinter.Label(window, text="Which channels to analyse (multiple is possible)").grid(row=6, column=2)
+        tkinter.Label(window, text="Pos Ctrl").grid(row=6, column=0)
+        tkinter.Label(window, text="Name of pos reference in platemap").grid(row=6, column=2)
 
-        tkinter.Label(window, text="Threshold Value").grid(row=7, column=0)
-        tkinter.Label(window, text="Threshold Value for positive cells").grid(row=7, column=2)
+        tkinter.Label(window, text="Channels").grid(row=7, column=0)
+        tkinter.Label(window, text="Which channels to analyse (multiple is possible)").grid(row=7, column=2)
+
+        tkinter.Label(window, text="Threshold Value").grid(row=8, column=0)
+        tkinter.Label(window, text="Threshold Value for positive cells").grid(row=8, column=2)
 
         self.BatchInPlateName = StringVar()
         self.BatchPlateMapName = StringVar()
         self.BatchNPlate = StringVar()
         self.BatchNRep = StringVar()
         self.BatchNegCtrl = StringVar()
+        self.BatchPosCtrl = StringVar()
         self.BatchChnVal = StringVar()
         self.BatchThrsVal = StringVar()
         tkinter.Entry(window, textvariable=self.BatchInPlateName).grid(row=1, column=1)
@@ -149,58 +172,60 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Entry(window, textvariable=self.BatchNPlate).grid(row=3, column=1)
         tkinter.Entry(window, textvariable=self.BatchNRep).grid(row=4, column=1)
         tkinter.Entry(window, textvariable=self.BatchNegCtrl).grid(row=5, column=1)
-        tkinter.Entry(window, textvariable=self.BatchChnVal).grid(row=6, column=1)
-        tkinter.Entry(window, textvariable=self.BatchThrsVal).grid(row=7, column=1)
+        tkinter.Entry(window, textvariable=self.BatchPosCtrl).grid(row=6, column=1)
+        tkinter.Entry(window, textvariable=self.BatchChnVal).grid(row=7, column=1)
+        tkinter.Entry(window, textvariable=self.BatchThrsVal).grid(row=8, column=1)
 
-        tkinter.Label(window, text="Threshold type").grid(row=8, column=0)
+        tkinter.Label(window, text="Threshold type").grid(row=9, column=0)
         self.BatchThrsType = StringVar()
-        Combobox(window, textvariable=self.BatchThrsType, values=('Percent', 'value'), state='readonly').grid(row=8,
+        Combobox(window, textvariable=self.BatchThrsType, values=('Percent', 'value'), state='readonly').grid(row=9,
                                                                                                               column=1)
         self.BatchThrsType.set('Percent')
 
         self.BatchUseCellCount = IntVar()
-        Checkbutton(window, text="Use Cells count for analysis", variable=self.BatchUseCellCount).grid(row=9, column=0)
+        Checkbutton(window, text="Use Cells count for analysis", variable=self.BatchUseCellCount).grid(row=10, column=0)
         self.BatchUseCellCount.set(0)
 
-        tkinter.Button(window, text="Set Directory", command=self.load_dir).grid(row=10, column=1)
+        tkinter.Button(window, text="Set Directory", command=self.load_dir).grid(row=11, column=1)
 
         self.Batchlog2Norm = IntVar()
-        Checkbutton(window, text="Apply log2 transformation", variable=self.Batchlog2Norm).grid(row=11, column=0)
+        Checkbutton(window, text="Apply log2 transformation", variable=self.Batchlog2Norm).grid(row=12, column=0)
         self.Batchlog2Norm.set(0)
 
-        tkinter.Label(window, text="Data normalization").grid(row=12, column=0)
+        tkinter.Label(window, text="Data normalization").grid(row=13, column=0)
         self.BatchdataNorm = StringVar()
         Combobox(window, textvariable=self.BatchdataNorm, values=("", "Zscore", "RobustZscore", "PercentOfSample",
                                                                   "RobustPercentOfSample", "PercentOfControl",
-                                                                  "RobustPercentOfControl"),
-                 state='readonly').grid(row=12, column=1)
+                                                                  "RobustPercentOfControl",
+                                                                  "NormalizedPercentInhibition"),
+                 state='readonly').grid(row=13, column=1)
         self.BatchdataNorm.set("")
 
-        tkinter.Label(window, text="Side Effect normalization").grid(row=13, column=0)
+        tkinter.Label(window, text="Side Effect normalization").grid(row=14, column=0)
         self.BatchSideEffectNorm = StringVar()
         Combobox(window, textvariable=self.BatchSideEffectNorm,
                  values=("", "Bscore", "BZscore", "PMP", "MEA", "Lowess", "Polynomial"),
-                 state='readonly').grid(row=13, column=1)
+                 state='readonly').grid(row=14, column=1)
         self.BatchSideEffectNorm.set("")
 
-        tkinter.Label(window, text="Mean and SD choice").grid(row=14, column=0)
+        tkinter.Label(window, text="Mean and SD choice").grid(row=15, column=0)
         self.BatchMeanSD = StringVar()
-        tkinter.Entry(window, textvariable=self.BatchMeanSD).grid(row=14, column=1)
+        tkinter.Entry(window, textvariable=self.BatchMeanSD).grid(row=15, column=1)
 
         tkinter.Label(window, text="Pos ctrl").grid(row=15, column=0)
-        tkinter.Label(window, text="If you want to get the QC output").grid(row=15, column=2)
+        tkinter.Label(window, text="If you want to get the QC output").grid(row=16, column=2)
         self.BatchPosqc = StringVar()
-        tkinter.Entry(window, textvariable=self.BatchPosqc).grid(row=15, column=1)
+        tkinter.Entry(window, textvariable=self.BatchPosqc).grid(row=16, column=1)
 
         self.Batchqcnormdata = IntVar()
-        Checkbutton(window, text="Use normalized data for QC", variable=self.Batchqcnormdata).grid(row=15, column=4)
+        Checkbutton(window, text="Use normalized data for QC", variable=self.Batchqcnormdata).grid(row=16, column=4)
         self.Batchqcnormdata.set(0)
 
         self.BatchScoring = IntVar()
-        Checkbutton(window, text="Scoring", variable=self.BatchScoring).grid(row=16, column=1)
+        Checkbutton(window, text="Scoring", variable=self.BatchScoring).grid(row=17, column=1)
         self.BatchScoring.set(0)
 
-        tkinter.Button(window, text="GO Batch Analysis", command=self._DoBatchAnalyse).grid(row=17, column=1)
+        tkinter.Button(window, text="GO Batch Analysis", command=self._DoBatchAnalyse).grid(row=18, column=1)
 
     def AnalyseFrame(self):
         window = Toplevel(self)
@@ -249,21 +274,24 @@ class MainAppFrame(tkinter.Frame):
         window.config(menu=menubar)
 
         tkinter.Label(window, text="Neg Ctrl").grid(row=1, column=0)
+        tkinter.Label(window, text="Pos Ctrl").grid(row=2, column=0)
         tkinter.Label(window, text="Format in A1 H12 for ex.").grid(row=1, column=3)
-        tkinter.Label(window, text="Channel").grid(row=2, column=0)
-        tkinter.Label(window, text="Can be multiple but the first is prior").grid(row=2, column=3)
-        tkinter.Label(window, text="Threshold type").grid(row=3, column=0)
-        tkinter.Label(window, text="Threshold Value").grid(row=4, column=0)
+        tkinter.Label(window, text="Channel").grid(row=3, column=0)
+        tkinter.Label(window, text="Can be multiple but the first is prior").grid(row=3, column=3)
+        tkinter.Label(window, text="Threshold type").grid(row=4, column=0)
+        tkinter.Label(window, text="Threshold Value").grid(row=5, column=0)
 
         self.NegCtrl = StringVar()
+        self.PosCtrl = StringVar()
         self.ChnVal = StringVar()
         self.ThrsVal = StringVar()
         tkinter.Entry(window, textvariable=self.NegCtrl).grid(row=1, column=1)
-        tkinter.Entry(window, textvariable=self.ChnVal).grid(row=2, column=1)
+        tkinter.Entry(window, textvariable=self.PosCtrl).grid(row=2, column=1)
+        tkinter.Entry(window, textvariable=self.ChnVal).grid(row=3, column=1)
         tkinter.Entry(window, textvariable=self.ThrsVal).grid(row=4, column=1)
 
         self.threshold_type = StringVar()
-        Combobox(window, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid(row=3,
+        Combobox(window, textvariable=self.threshold_type, values=('Percent', 'value'), state='readonly').grid(row=4,
                                                                                                                column=1)
         self.threshold_type.set('Percent')
 
@@ -541,10 +569,8 @@ class MainAppFrame(tkinter.Frame):
             return
         window = Toplevel(self)
 
-        NegRef = self.NegCtrl.get()
+        NegRef = chk_empty(self.NegCtrl.get())
         logging.debug("Negative reference : {}".format(NegRef))
-        if NegRef == '':
-            NegRef = None
 
         if NegRef is not None:
             NegRef = NegRef.split()
@@ -672,7 +698,8 @@ class MainAppFrame(tkinter.Frame):
         self.dataNorm = StringVar()
         Combobox(window, textvariable=self.dataNorm, values=("Zscore", "RobustZscore", "PercentOfSample",
                                                              "RobustPercentOfSample", "PercentOfControl",
-                                                             "RobustPercentOfControl"), state='readonly').grid(
+                                                             "RobustPercentOfControl", "NormalizedPercentInhibition"),
+                 state='readonly').grid(
             row=1, column=1)
         self.dataNorm.set('Zscore')
 
@@ -681,19 +708,22 @@ class MainAppFrame(tkinter.Frame):
         self.log2Norm.set(0)
 
         tkinter.Label(window, text="Neg Ctrl").grid(row=3, column=0)
-        tkinter.Label(window, text="Channel").grid(row=4, column=0)
+        tkinter.Label(window, text="Pos Ctrl").grid(row=4, column=0)
+        tkinter.Label(window, text="Channel").grid(row=5, column=0)
 
         self.NormNeg = StringVar()
         self.NormPos = StringVar()
         self.NormChan = StringVar()
         tkinter.Entry(window, textvariable=self.NormNeg).grid(row=3, column=1)
-        tkinter.Entry(window, textvariable=self.NormChan).grid(row=4, column=1)
+        tkinter.Entry(window, textvariable=self.NormPos).grid(row=4, column=1)
+        tkinter.Entry(window, textvariable=self.NormChan).grid(row=5, column=1)
 
         tkinter.Button(window, text='Apply data norm',
                        command=lambda: self.PlateToAnalyse.normalization_channels(channels=[self.NormChan.get()],
                                                                                   method=self.dataNorm.get(),
                                                                                   log_t=self.log2Norm.get(),
-                                                                                  neg=self.NormNeg.get()),
+                                                                                  neg=chk_empty(self.NormNeg.get()),
+                                                                                  pos=chk_empty(self.NormPos.get())),
                        fg="red").grid(row=1, column=2)
 
     def __SizeEffectNorm(self):
@@ -763,9 +793,15 @@ class MainAppFrame(tkinter.Frame):
         qc.to_csv(self.SaveFilePath)
 
     def _DoBatchAnalyse(self):
+
+        # create a directory where data is located with timestamp as dir
+        __outputDirPath = os.path.join(self.DirPath, time.asctime())
+        if not os.path.isdir(__outputDirPath):
+            os.makedirs(__outputDirPath)
+
         DF_BeforeNorm = []
         DF_AfterNorm = []
-        thresfile = open(os.path.join(self.DirPath, "ThresholdValue_{}.csv".format(time.asctime())), 'a')
+        thresfile = open(os.path.join(__outputDirPath, "ThresholdValue.csv"), 'a')
         QCdata = []
         ScoringDataWithoutNorm = []
         ScoringDataWithNorm = []
@@ -812,7 +848,8 @@ class MainAppFrame(tkinter.Frame):
             if self.BatchdataNorm.get() != "":
                 plaque.normalization_channels(channels=self.BatchChnVal.get().split(),
                                               method=self.BatchdataNorm.get(),
-                                              neg=self.BatchNegCtrl.get(),
+                                              neg=chk_empty(self.BatchNegCtrl.get()),
+                                              pos=chk_empty(self.NormPos.get()),
                                               log_t=bool(self.Batchlog2Norm.get()))
 
             # side effect normalization
@@ -858,40 +895,40 @@ class MainAppFrame(tkinter.Frame):
 
         beforenorm = pd.concat(DF_BeforeNorm)
         beforenorm.to_csv(
-            os.path.join(self.DirPath, "Resultat_@{0}.csv".format(int(self.BatchThrsVal.get()))),
+            os.path.join(__outputDirPath, "Resultat_@{0}.csv".format(int(self.BatchThrsVal.get()))),
             index=False, header=True)
 
         if self.BatchPosqc.get() != "":
-            pd.concat(QCdata).to_csv(os.path.join(self.DirPath, "QC.csv"), index=False, header=True)
+            pd.concat(QCdata).to_csv(os.path.join(__outputDirPath, "QC.csv"), index=False, header=True)
 
         if self.BatchMeanSD.get() != "":
             x = beforenorm[beforenorm.PlateMap.isin(self.BatchMeanSD.get().split())]
             x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
-                os.path.join(self.DirPath, "Resultat_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
+                os.path.join(__outputDirPath, "Resultat_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
                 index=False, header=True)
             x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
-                os.path.join(self.DirPath, "Resultat_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
+                os.path.join(__outputDirPath, "Resultat_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
                 index=False, header=True)
 
         if self.BatchdataNorm.get() or self.BatchSideEffectNorm.get() != "":
             afternorm = pd.concat(DF_AfterNorm)
             afternorm.to_csv(
-                os.path.join(self.DirPath, "Resultat_Normalized_@{0}.csv".format(int(self.BatchThrsVal.get()))),
+                os.path.join(__outputDirPath, "Resultat_Normalized_@{0}.csv".format(int(self.BatchThrsVal.get()))),
                 index=False, header=True)
 
             if self.BatchMeanSD.get() != "":
                 x = afternorm[afternorm.PlateMap.isin(self.BatchMeanSD.get().split())]
                 x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
-                    os.path.join(self.DirPath,
+                    os.path.join(__outputDirPath,
                                  "Resultat_Normalized_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
                     index=False, header=True)
                 x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
-                    os.path.join(self.DirPath, "Resultat_Normalized_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
+                    os.path.join(__outputDirPath, "Resultat_Normalized_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
                     index=False, header=True)
-        pd.concat(ScoringDataWithoutNorm).to_csv(os.path.join(self.DirPath, "ScoringWithoutNorm.csv"),
+        pd.concat(ScoringDataWithoutNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithoutNorm.csv"),
                                                  index=False, header=True)
         if self.BatchdataNorm.get() or self.BatchSideEffectNorm.get() != "":
-            pd.concat(ScoringDataWithNorm).to_csv(os.path.join(self.DirPath, "ScoringWithNorm.csv"),
+            pd.concat(ScoringDataWithNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithNorm.csv"),
                                                   index=False, header=True)
         thresfile.close()
 

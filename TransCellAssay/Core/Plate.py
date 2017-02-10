@@ -355,12 +355,9 @@ class Plate(GenericPlate):
         """
         log.info("{0} -> Rawdata normalization with {1} method".format(self.name, method))
         if isinstance(channels, list):
-            try:
-                for key, value in self.replica.items():
-                    value.normalization_channels(channels=channels, method=method, log_t=log_t, neg=neg, pos=pos,
-                                                 skipping_wells=skipping_wells, threshold=threshold)
-            except Exception as e:
-                log.error(e)
+            for channel in channels:
+                self.__normalization(channel=channel, method=method, log_t=log_t, neg=neg, pos=pos,
+                                         skipping_wells=skipping_wells, threshold=threshold)
         else:
             self.__normalization(channels, method, log_t, neg, pos, skipping_wells, threshold=threshold)
         self.isNormalized = True
