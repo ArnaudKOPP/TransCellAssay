@@ -35,6 +35,8 @@ InputPlate = 'Plate.csv'
 Skip_FormatPlaque = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column', 'WellId']
 ## format plaque
 KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLWHBC2"}
+
+
 #################
 
 
@@ -97,15 +99,16 @@ class MainAppFrame(tkinter.Frame):
         self.ReplaceNan.set(0)
 
         self.Cellprofilerinput = IntVar()
-        Checkbutton(window, text="CellProfiler input data", variable=self.Cellprofilerinput).pack(padx=5, pady=5, fill=BOTH)
+        Checkbutton(window, text="CellProfiler input data", variable=self.Cellprofilerinput).pack(padx=5, pady=5,
+                                                                                                  fill=BOTH)
         self.Cellprofilerinput.set(0)
 
         Label(window, text="Which csv file use").pack()
 
         self.CSV_Target = StringVar()
         Combobox(window, textvariable=self.CSV_Target, values=(InputWell, InputCell), state='readonly').pack(padx=10,
-                                                                                                               pady=10,
-                                                                                                               fill=BOTH)
+                                                                                                             pady=10,
+                                                                                                             fill=BOTH)
         self.CSV_Target.set('Cell.csv')
 
         Label(window, text="Which name to use").pack()
@@ -167,7 +170,7 @@ class MainAppFrame(tkinter.Frame):
         self.BatchNRep = StringVar()
         self.BatchNegCtrl = StringVar()
         self.BatchPosCtrl = StringVar()
-        self.BatchChnVal = StringVar()
+        self.BatchChan = StringVar()
         self.BatchThrsVal = StringVar()
         tkinter.Entry(window, textvariable=self.BatchInPlateName).grid(row=1, column=1)
         tkinter.Entry(window, textvariable=self.BatchPlateMapName).grid(row=2, column=1)
@@ -175,7 +178,7 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Entry(window, textvariable=self.BatchNRep).grid(row=4, column=1)
         tkinter.Entry(window, textvariable=self.BatchNegCtrl).grid(row=5, column=1)
         tkinter.Entry(window, textvariable=self.BatchPosCtrl).grid(row=6, column=1)
-        tkinter.Entry(window, textvariable=self.BatchChnVal).grid(row=7, column=1)
+        tkinter.Entry(window, textvariable=self.BatchChan).grid(row=7, column=1)
         tkinter.Entry(window, textvariable=self.BatchThrsVal).grid(row=8, column=1)
 
         tkinter.Label(window, text="Threshold type").grid(row=9, column=0)
@@ -193,13 +196,13 @@ class MainAppFrame(tkinter.Frame):
         self.Batchlog2Norm.set(0)
 
         tkinter.Label(window, text="Data normalization").grid(row=12, column=0)
-        self.BatchdataNorm = StringVar()
-        Combobox(window, textvariable=self.BatchdataNorm, values=("", "Zscore", "RobustZscore", "PercentOfSample",
+        self.BatchDataNorm = StringVar()
+        Combobox(window, textvariable=self.BatchDataNorm, values=("", "Zscore", "RobustZscore", "PercentOfSample",
                                                                   "RobustPercentOfSample", "PercentOfControl",
                                                                   "RobustPercentOfControl",
                                                                   "NormalizedPercentInhibition"),
                  state='readonly').grid(row=12, column=1)
-        self.BatchdataNorm.set("")
+        self.BatchDataNorm.set("")
 
         tkinter.Label(window, text="Side Effect normalization").grid(row=13, column=0)
         self.BatchSideEffectNorm = StringVar()
@@ -212,14 +215,10 @@ class MainAppFrame(tkinter.Frame):
         self.BatchMeanSD = StringVar()
         tkinter.Entry(window, textvariable=self.BatchMeanSD).grid(row=14, column=1)
 
-        tkinter.Label(window, text="Pos ctrl for QC").grid(row=15, column=0)
-        tkinter.Label(window, text="Add if QC is wanted").grid(row=15, column=2)
-        self.BatchPosqc = StringVar()
-        tkinter.Entry(window, textvariable=self.BatchPosqc).grid(row=15, column=1)
-
-        self.Batchqcnormdata = IntVar()
-        Checkbutton(window, text="Use normalized data for QC", variable=self.Batchqcnormdata).grid(row=15, column=3)
-        self.Batchqcnormdata.set(0)
+        tkinter.Label(window, text="Do QC").grid(row=15, column=0)
+        self.BatchQC = IntVar()
+        Checkbutton(window, text="QC", variable=self.BatchQC).grid(row=15, column=1)
+        self.BatchQC.set(0)
 
         self.BatchScoring = IntVar()
         Checkbutton(window, text="Scoring", variable=self.BatchScoring).grid(row=16, column=1)
@@ -382,7 +381,7 @@ class MainAppFrame(tkinter.Frame):
                         if data.dataframe[chan].dtypes == 'object':
                             data.dataframe[chan] = data.dataframe[chan].str.replace(",", ".")
 
-                        array = data.df_to_array(chan, size=nbrow*nbcol)
+                        array = data.df_to_array(chan, size=nbrow * nbcol)
 
                         # # if chan is to long, cut it
                         if len(str(chan)) >= 30:
@@ -434,7 +433,7 @@ class MainAppFrame(tkinter.Frame):
 
                 for plate in uniquePlate:
                     df = file.dataframe[file.dataframe[Col_PlateName] == plate].reset_index()
-                    df.to_csv(os.path.join(self.DirPath, plate+'.csv'))
+                    df.to_csv(os.path.join(self.DirPath, plate + '.csv'))
 
 
         else:
@@ -845,140 +844,202 @@ class MainAppFrame(tkinter.Frame):
         if not os.path.isdir(__outputDirPath):
             os.makedirs(__outputDirPath)
 
-        THValFile = LogFile(path=__outputDirPath, name="Threshold")
-        thresfile = open(os.path.join(__outputDirPath, "ThresholdValue.csv"), 'w')
+        THRVALUEFILE = LogFile(path=__outputDirPath, name="THRESHOLD_VALUE")
+        LOGFILE = LogFile(path=__outputDirPath, name="PROCESS_LOGFILE")
 
         DF_BeforeNorm = []
         DF_AfterNorm = []
-        QCdata = []
-        ScoringDataWithoutNorm = []
-        ScoringDataWithNorm = []
+        QC_BeforeNorm = []
+        QC_AfterNorm = []
+        Scoring_BeforeNorm = []
+        Scoring_AfterNorm = []
 
         for i in range(1, int(self.BatchNPlate.get()) + 1, 1):
             plaque = TCA.Plate(name="Plate nb{}".format(i),
                                platemap=os.path.join(self.DirPath, self.BatchPlateMapName.get().format(i)))
+            LOGFILE.add("Create plate : {}".format(plaque.name))
 
+            # create and add replica to main plate
             for j in range(1, int(self.BatchNRep.get()) + 1, 1):
                 file = os.path.join(self.DirPath, self.BatchInPlateName.get().format(i, j))
                 if os.path.isfile(file):
                     plaque + TCA.Core.Replica(name='Rep' + str(j), fpath=file)
+                    LOGFILE.add("Add data : {}".format(file))
                 else:
                     logging.warning("File doesn't exist : {}".format(file))
 
+            # #### BEGIN HERE THE PROCESS
             if bool(self.BatchUseCellCount.get()):
                 plaque.use_count_as_data()
+                LOGFILE.add("* Use CellsCount as data")
 
-            # channel analysis without norm
+            # #### CHANNEL ANALYSIS WITHOUT NORM
             if self.BatchThrsType.get() == 'Percent':
-                df, thres = TCA.PlateChannelsAnalysis(plaque,
-                                                      channels=self.BatchChnVal.get().split(),
-                                                      neg=self.BatchNegCtrl.get(),
-                                                      threshold=100 - int(self.BatchThrsVal.get()),
-                                                      percent=True)
+                threshold_value = 100 - int(self.BatchThrsVal.get())
+                percent_type = True
+                threshold_fixed = False
             else:
-                df, thres = TCA.PlateChannelsAnalysis(plaque,
-                                                      channels=self.BatchChnVal.get().split(),
-                                                      neg=self.BatchNegCtrl.get(),
-                                                      threshold=int(self.BatchThrsVal.get()),
-                                                      percent=False,
-                                                      fixed_threshold=True)
+                threshold_value = int(self.BatchThrsVal.get())
+                percent_type = False
+                threshold_fixed = True
 
-            THValFile.add("{0} @ {1}%: {2}".format(plaque.name, int(self.BatchThrsVal.get()), thres))
+            LOGFILE.add("Threshold Type : {0} with {1} value".format(self.BatchThrsType.get(),
+                                                                     (100 - int(self.BatchThrsVal.get()))))
+
+            df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                  channels=self.BatchChan.get().split(),
+                                                  neg=self.BatchNegCtrl.get(),
+                                                  threshold=threshold_value,
+                                                  percent=percent_type,
+                                                  fixed_threshold=threshold_fixed)
+
+            THRVALUEFILE.add("{0} @ {1}%: {2}".format(plaque.name, int(self.BatchThrsVal.get()), thres))
+            LOGFILE.add("* Do analysis on channels : {}".format(self.BatchChan.get()))
             DF_BeforeNorm.append(df)
 
             # scoring results on non-normalized data
-            ScoringDataWithoutNorm.append(TCA.ScoringPlate(plaque,
-                                                           neg=self.BatchNegCtrl.get().split()[0],
-                                                           channel=self.BatchChnVal.get().split()[0],
+            if bool(self.BatchScoring.get()):
+                Scoring_BeforeNorm.append(TCA.ScoringPlate(plaque,
+                                                           neg=self.BatchNegCtrl.get(),
+                                                           channel=self.BatchChan.get().split()[0],
                                                            data_c=False))
+                LOGFILE.add("* Do scoring on non-normalized data")
 
+            if bool(self.BatchQC.get()):
+                qc = TCA.plate_quality_control(plate=plaque,
+                                               channel=self.BatchChan.get().split()[0],
+                                               cneg=self.BatchNegCtrl.get(),
+                                               cpos=self.BatchPosCtrl.get(),
+                                               sec_data=False)
+                QC_BeforeNorm.append(qc)
+                LOGFILE.add("* Do QC on non-normalized data")
+
+            if bool(self.BatchHeatMap.get()):
+                for chan in self.BatchChan.get().split():
+                    plaque.agg_data_from_replica_channel(channel=chan, forced_update=True)
+                    TCA.HeatMapPlate(plaque, fpath=os.path.join(__outputDirPath,
+                                                                "HEATMAP_WithoutNorm_{}.pdf".format(plaque.name)),
+                                     size=10.)
+
+            # ##### NORMALIZED PIPELINE BEGIN HERE
             # Raw data normalization
-            if self.BatchdataNorm.get() != "":
-                plaque.normalization_channels(channels=self.BatchChnVal.get().split(),
-                                              method=self.BatchdataNorm.get(),
+            if self.BatchDataNorm.get() != "":
+                plaque.normalization_channels(channels=self.BatchChan.get().split(),
+                                              method=self.BatchDataNorm.get(),
                                               neg=chk_empty(self.BatchNegCtrl.get()),
                                               pos=chk_empty(self.NormPos.get()),
                                               log_t=bool(self.Batchlog2Norm.get()))
+                LOGFILE.add(
+                    "DO single cell data normalization : \n  -> Channels : {0}\n  -> Method : {1}\n  -> Neg : {2}\n  -> Pos : {3}\n  -> Log : {4}".format(
+                        self.BatchChan.get(), self.BatchDataNorm.get(), self.BatchNegCtrl.get(), self.NormPos.get(),
+                        self.Batchlog2Norm.get()))
 
             # side effect normalization
             if self.BatchSideEffectNorm.get() != "":
                 plaque.apply_systematic_error_correction(algorithm=self.BatchSideEffectNorm.get(),
                                                          apply_down=True,
                                                          max_iterations=10)
-            # channel analysis wih norm
-            if self.BatchdataNorm.get() or self.BatchSideEffectNorm.get() != "":
+                LOGFILE.add("DO side effect normalization : {0}".format(self.BatchSideEffectNorm.get()))
+
+            # #### CHANNEL ANALYSIS WITH NORM
+            if self.BatchDataNorm.get() or self.BatchSideEffectNorm.get() != "":
                 if self.BatchThrsType.get() == 'Percent':
-                    df, thres = TCA.PlateChannelsAnalysis(plaque,
-                                                          channels=self.BatchChnVal.get().split(),
-                                                          neg=self.BatchNegCtrl.get(),
-                                                          threshold=100 - int(self.BatchThrsVal.get()),
-                                                          percent=True)
+                    threshold_value = 100 - int(self.BatchThrsVal.get())
+                    percent_type = True
+                    threshold_fixed = False
                 else:
-                    df, thres = TCA.PlateChannelsAnalysis(plaque,
-                                                          channels=self.BatchChnVal.get().split(),
-                                                          neg=self.BatchNegCtrl.get(),
-                                                          threshold=int(self.BatchThrsVal.get()),
-                                                          percent=False,
-                                                          fixed_threshold=True)
+                    threshold_value = int(self.BatchThrsVal.get())
+                    percent_type = False
+                    threshold_fixed = True
+
+                LOGFILE.add("After norm -> Threshold Type : {0} with {1} value".format(self.BatchThrsType.get(),
+                                                                                       (100 - int(
+                                                                                           self.BatchThrsVal.get()))))
+
+                df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                      channels=self.BatchChan.get().split(),
+                                                      neg=self.BatchNegCtrl.get(),
+                                                      threshold=threshold_value,
+                                                      percent=percent_type,
+                                                      fixed_threshold=threshold_fixed)
+                THRVALUEFILE.add("{0} Normalized @ {1}%: {2}".format(plaque.name, int(self.BatchThrsVal.get()), thres))
+                DF_AfterNorm.append(df)
+                LOGFILE.add("* After norm -> Do analysis on channels : {}".format(self.BatchChan.get()))
 
                 # scoring results on normalized data
-                if self.BatchSideEffectNorm.get() == "":
-                    plaque.agg_data_from_replica_channel(channel=self.BatchChnVal.get().split()[0], forced_update=True)
-                else:
-                    ScoringDataWithNorm.append(TCA.ScoringPlate(plaque,
-                                                                neg=self.BatchNegCtrl.get().split()[0],
-                                                                channel=self.BatchChnVal.get().split()[0],
-                                                                data_c=True))
+                if bool(self.BatchScoring.get()):
+                    if self.BatchSideEffectNorm.get() == "":
+                        plaque.agg_data_from_replica_channel(channel=self.BatchChan.get().split()[0],
+                                                             forced_update=True)
+                    else:
+                        Scoring_AfterNorm.append(TCA.ScoringPlate(plaque,
+                                                                  neg=self.BatchNegCtrl.get().split(),
+                                                                  channel=self.BatchChan.get().split()[0],
+                                                                  data_c=True))
+                    LOGFILE.add("* Do scoring on normalized data")
 
-            thresfile.write("{0} Normalized @ {1}%: {2}\n".format(plaque.name, int(self.BatchThrsVal.get()), thres))
-            DF_AfterNorm.append(df)
+                if bool(self.BatchQC.get()):
+                    qc = TCA.plate_quality_control(plate=plaque,
+                                                   channel=self.BatchChan.get().split()[0],
+                                                   cneg=self.BatchNegCtrl.get(),
+                                                   cpos=self.BatchPosCtrl.get(),
+                                                   sec_data=True)
+                    QC_AfterNorm.append(qc)
+                    LOGFILE.add("* Do QC on normalized data")
 
-            if self.BatchPosqc.get() != "":
-                qc = TCA.plate_quality_control(plate=plaque,
-                                               channel=self.BatchChnVal.get().split()[0],
-                                               cneg=self.BatchNegCtrl.get(),
-                                               cpos=self.BatchPosqc.get(),
-                                               sec_data=bool(self.Batchqcnormdata.get()))
-                QCdata.append(qc)
+                if bool(self.BatchHeatMap.get()):
+                    for chan in self.BatchChan.get().split():
+                        plaque.agg_data_from_replica_channel(channel=chan, forced_update=True,
+                                                             use_sec_data=bool(self.BatchSideEffectNorm.get()))
+                        TCA.HeatMapPlate(plaque, fpath=os.path.join(__outputDirPath,
+                                                                    "HEATMAP_WithNorm_{}.pdf".format(plaque.name)),
+                                         size=10.)
+
+        # #### WRITING RESULT PART
 
         beforenorm = pd.concat(DF_BeforeNorm)
         beforenorm.to_csv(
-            os.path.join(__outputDirPath, "Resultat_@{0}.csv".format(int(self.BatchThrsVal.get()))),
+            os.path.join(__outputDirPath, "Result_@{0}.csv".format(int(self.BatchThrsVal.get()))),
             index=False, header=True)
 
-        if self.BatchPosqc.get() != "":
-            pd.concat(QCdata).to_csv(os.path.join(__outputDirPath, "QC.csv"), index=False, header=True)
+        if bool(self.BatchQC.get()):
+            pd.concat(QC_BeforeNorm).to_csv(os.path.join(__outputDirPath, "QC.csv"), index=False, header=True)
+            pd.concat(QC_AfterNorm).to_csv(os.path.join(__outputDirPath, "QC_Normalized.csv"), index=False, header=True)
 
         if self.BatchMeanSD.get() != "":
             x = beforenorm[beforenorm.PlateMap.isin(self.BatchMeanSD.get().split())]
             x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
-                os.path.join(__outputDirPath, "Resultat_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
-                index=False, header=True)
+                os.path.join(__outputDirPath, "Result_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
+                index=True, header=True)
             x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
-                os.path.join(__outputDirPath, "Resultat_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
-                index=False, header=True)
+                os.path.join(__outputDirPath, "Result_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
+                index=True, header=True)
 
-        if self.BatchdataNorm.get() or self.BatchSideEffectNorm.get() != "":
+        if self.BatchDataNorm.get() or self.BatchSideEffectNorm.get() != "":
             afternorm = pd.concat(DF_AfterNorm)
             afternorm.to_csv(
-                os.path.join(__outputDirPath, "Resultat_Normalized_@{0}.csv".format(int(self.BatchThrsVal.get()))),
+                os.path.join(__outputDirPath, "Result_Normalized_@{0}.csv".format(int(self.BatchThrsVal.get()))),
                 index=False, header=True)
 
             if self.BatchMeanSD.get() != "":
                 x = afternorm[afternorm.PlateMap.isin(self.BatchMeanSD.get().split())]
                 x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
                     os.path.join(__outputDirPath,
-                                 "Resultat_Normalized_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
-                    index=False, header=True)
+                                 "Result_Normalized_@{0}_Mean.csv".format(int(self.BatchThrsVal.get()))),
+                    index=True, header=True)
                 x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
-                    os.path.join(__outputDirPath, "Resultat_Normalized_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
-                    index=False, header=True)
-        pd.concat(ScoringDataWithoutNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithoutNorm.csv"),
+                    os.path.join(__outputDirPath,
+                                 "Result_Normalized_@{0}_Std.csv".format(int(self.BatchThrsVal.get()))),
+                    index=True, header=True)
+
+        if bool(self.BatchScoring.get()):
+            pd.concat(Scoring_BeforeNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithoutNorm.csv"),
                                                  index=False, header=True)
-        if self.BatchdataNorm.get() or self.BatchSideEffectNorm.get() != "":
-            pd.concat(ScoringDataWithNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithNorm.csv"),
-                                                  index=False, header=True)
-        thresfile.close()
+            if self.BatchDataNorm.get() or self.BatchSideEffectNorm.get() != "":
+                pd.concat(Scoring_AfterNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithNorm.csv"),
+                                                    index=False, header=True)
+        THRVALUEFILE.close()
+        LOGFILE.close()
 
     # FUNCTION FOR GRAPHIC OUTPUT
 
@@ -1105,6 +1166,7 @@ class MainAppFrame(tkinter.Frame):
 
     def showPlate(self):
         print(self.PlateToAnalyse)
+
 
 if __name__ == "__main__":
     root = tkinter.Tk()
