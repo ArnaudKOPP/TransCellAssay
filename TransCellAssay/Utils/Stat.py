@@ -9,7 +9,7 @@ import scipy.stats
 import pandas as pd
 
 __author__ = "Arnaud KOPP"
-__copyright__ = "© 2014-2016 KOPP Arnaud All Rights Reserved"
+__copyright__ = "© 2014-2017 KOPP Arnaud All Rights Reserved"
 __credits__ = ["KOPP Arnaud"]
 __license__ = "GPLv3"
 __maintainer__ = "Arnaud KOPP"
