@@ -57,8 +57,8 @@ def median_polish(array, max_iterations=10, eps=0.01, verbose=False):
         r -= delta
         t += delta
 
-        log.debug("rows medians {0} & rows effects {1}".format(rdelta, r))
-        log.debug("col med {0} \ncol eff {1}".format(cdelta, c))
+        # log.debug("rows medians {0} & rows effects {1}".format(rdelta, r))
+        # log.debug("col med {0} \ncol eff {1}".format(cdelta, c))
 
         newsum = np.sum(z.reshape(1, -1))
 
@@ -66,7 +66,7 @@ def median_polish(array, max_iterations=10, eps=0.01, verbose=False):
             converged = True
 
         if converged:
-            log.debug("Median polish converged at iteration : {}".format(i))
+            # log.debug("Median polish converged at iteration : {}".format(i))
             break
         oldsum = newsum
 

@@ -177,7 +177,7 @@ class GenericPlate(object):
                                                               skip_row=skip_col)
 
             if save:
-                self.array_c = corrected_data_array
+                self.array_c = np.nan_to_num(corrected_data_array)
                 self.isSpatialNormalized = True
                 self.SECNormMethod = algorithm
             else:
