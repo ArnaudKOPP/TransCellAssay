@@ -187,6 +187,7 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Entry(window, textvariable=self.BatchPosCtrl).grid(row=6, column=1)
         tkinter.Entry(window, textvariable=self.BatchChan).grid(row=7, column=1)
         tkinter.Entry(window, textvariable=self.BatchThrsVal).grid(row=8, column=1)
+        tkinter.Label(window, text=" X for single value on all chan or {'chan' : 10} for specified").grid(row=8, column=2)
 
         tkinter.Label(window, text="Threshold type").grid(row=9, column=0)
         self.BatchThrsType = StringVar()
@@ -213,18 +214,22 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Label(window, text="Ref for Mean/SD").grid(row=12, column=0)
         self.BatchMeanSD = StringVar()
         tkinter.Entry(window, textvariable=self.BatchMeanSD).grid(row=12, column=1)
+        tkinter.Label(window, text="Ref for having mean and SD (separate by space)").grid(row=12, column=2)
 
         self.BatchQC = IntVar()
         Checkbutton(window, text="QC", variable=self.BatchQC).grid(row=13, column=0)
         self.BatchQC.set(0)
+        tkinter.Label(window, text="DO or not QC with Neg and Pos reference").grid(row=13, column=2)
 
         self.BatchScoring = IntVar()
         Checkbutton(window, text="Scoring", variable=self.BatchScoring).grid(row=14, column=0)
         self.BatchScoring.set(0)
+        tkinter.Label(window, text="Do or not scoring").grid(row=14, column=2)
 
         self.BatchHeatMap = IntVar()
         Checkbutton(window, text="Plate heatmap", variable=self.BatchHeatMap).grid(row=15, column=0)
         self.BatchHeatMap.set(0)
+        tkinter.Label(window, text="Plot or not heatmap").grid(row=15, column=2)
 
         tkinter.Button(window, text="GO Batch Analysis", command=self._DoBatchAnalyse).grid(row=16, column=1)
 
@@ -263,7 +268,6 @@ class MainAppFrame(tkinter.Frame):
 
         qcmenu = tkinter.Menu(menubar, tearoff=0)
         qcmenu.add_command(label="Neg/Pos", command=self.__qc)
-        qcmenu.add_command(label="Wells", command=lambda: print("Do nothing"))
         menubar.add_cascade(label="QC", menu=qcmenu)
 
         analysemenu = tkinter.Menu(menubar, tearoff=0)
@@ -600,6 +604,8 @@ class MainAppFrame(tkinter.Frame):
 
         if NegRef is not None:
             NegRef = NegRef.split()
+            # add this for having a virgin platemap
+            self.PlateToAnalyse.platemap = TCA.PlateMap(size=self.PlateToAnalyse.platemap.size)
             for i in NegRef:
                 self.PlateToAnalyse.platemap[i] = "Neg"
             NegRef = "Neg"
@@ -663,6 +669,8 @@ class MainAppFrame(tkinter.Frame):
         NegRef = self.NegCtrl.get()
         if NegRef is not None:
             NegRef = NegRef.split()
+            # add this for having a virgin platemap
+            self.PlateToAnalyse.platemap = TCA.PlateMap(size=self.PlateToAnalyse.platemap.size)
             for i in NegRef:
                 self.PlateToAnalyse.platemap[i] = "Neg"
             NegRef = "Neg"
@@ -711,6 +719,11 @@ class MainAppFrame(tkinter.Frame):
         tkinter.Entry(window, textvariable=self.BinChan).grid(row=0, column=0)
         tkinter.Entry(window, textvariable=self.Bin).grid(row=1, column=0)
 
+        self.BinPercent = IntVar()
+        Checkbutton(window, text="Percent", variable=self.BinPercent).grid(row=2, column=0)
+        self.BinPercent.set(0)
+        tkinter.Label(window, text="Percent value or not").grid(row=2, column=1)
+
         def dobinning():
             if self.Bin.get() != "":
                 Bin = self.Bin.get().split()
@@ -718,16 +731,18 @@ class MainAppFrame(tkinter.Frame):
                 Bin = None
             for chan in self.BinChan.get().split():
                 if Bin is None:
-                    self.CurrentResToSave = TCA.Binning(self.PlateToAnalyse, chan=chan, nbins=20, percent=False)
+                    self.CurrentResToSave = TCA.Binning(self.PlateToAnalyse, chan=chan, nbins=20,
+                                                        percent=bool(self.BinPercent.get()))
                 else:
-                    self.CurrentResToSave = TCA.Binning(self.PlateToAnalyse, chan=chan, bins=Bin, percent=False)
+                    self.CurrentResToSave = TCA.Binning(self.PlateToAnalyse, chan=chan, bins=Bin,
+                                                        percent=bool(self.BinPercent.get()))
             self.selectFileToSave()
             workbook = pd.ExcelWriter(self.SaveFilePath)
             for id, df in self.CurrentResToSave.items():
                 pd.DataFrame(df).to_excel(workbook, id)
             workbook.close()
 
-        tkinter.Button(window, text="Do Binning", fg="red", command=dobinning).grid(row=2, column=0)
+        tkinter.Button(window, text="Do Binning", fg="red", command=dobinning).grid(row=3, column=0)
 
     def __dataNorm(self):
         """
@@ -749,25 +764,21 @@ class MainAppFrame(tkinter.Frame):
             row=1, column=1)
         self.dataNorm.set('Zscore')
 
-        self.log2Norm = IntVar()
-        Checkbutton(window, text="Apply log2 transformation", variable=self.log2Norm).grid(row=2, column=0)
-        self.log2Norm.set(0)
-
-        tkinter.Label(window, text="Neg Ctrl").grid(row=3, column=0)
-        tkinter.Label(window, text="Pos Ctrl").grid(row=4, column=0)
-        tkinter.Label(window, text="Channel").grid(row=5, column=0)
+        tkinter.Label(window, text="Neg Ctrl").grid(row=2, column=0)
+        tkinter.Label(window, text="Pos Ctrl").grid(row=3, column=0)
+        tkinter.Label(window, text="Channel").grid(row=4, column=0)
 
         self.NormNeg = StringVar()
         self.NormPos = StringVar()
         self.NormChan = StringVar()
-        tkinter.Entry(window, textvariable=self.NormNeg).grid(row=3, column=1)
-        tkinter.Entry(window, textvariable=self.NormPos).grid(row=4, column=1)
-        tkinter.Entry(window, textvariable=self.NormChan).grid(row=5, column=1)
+        tkinter.Entry(window, textvariable=self.NormNeg).grid(row=2, column=1)
+        tkinter.Entry(window, textvariable=self.NormPos).grid(row=3, column=1)
+        tkinter.Entry(window, textvariable=self.NormChan).grid(row=4, column=1)
 
         tkinter.Button(window, text='Apply data norm',
                        command=lambda: self.PlateToAnalyse.normalization_channels(channels=[self.NormChan.get()],
                                                                                   method=self.dataNorm.get(),
-                                                                                  log_t=self.log2Norm.get(),
+                                                                                  log_t=False,
                                                                                   neg=chk_empty(self.NormNeg.get()),
                                                                                   pos=chk_empty(self.NormPos.get())),
                        fg="red").grid(row=1, column=2)
@@ -846,7 +857,7 @@ class MainAppFrame(tkinter.Frame):
         __BatchNeg = self.BatchNegCtrl.get()
         __BatchPos = self.BatchPosCtrl.get()
         __BatchChan = self.BatchChan.get()
-        __BatchThresVal = int(self.BatchThrsVal.get())
+        __BatchThresVal = eval(self.BatchThrsVal.get())
         __BatchThresType = self.BatchThrsType.get()
         __BatchDataNorm = self.BatchDataNorm.get()
         __BatchSideEffect = self.BatchSideEffectNorm.get()
@@ -866,17 +877,23 @@ class MainAppFrame(tkinter.Frame):
 
         # ## lst for saving data
         DF_result = []
+        DF_resultWithNorm = []
         QC_BeforeNorm = []
         QC_AfterNorm = []
         Scoring_BeforeNorm = []
         Scoring_AfterNorm = []
 
         for i in range(1, __BatchNPlate + 1, 1):
-            plaque = TCA.Plate(name="Plate nb{}".format(i),
-                               platemap=os.path.join(__BatchDirPath, __BatchInputPlamap.format(i)))
-            LOGFILE.add("Create plate : {}".format(plaque.name))
+            # ## create first a plate object with a platemap object
+            pm_filepath = os.path.join(__BatchDirPath, __BatchInputPlamap.format(i))
+            if os.path.isfile(pm_filepath):
+                plaque = TCA.Plate(name="Plate nb{}".format(i), platemap=pm_filepath)
+                LOGFILE.add("Create plate : {}".format(plaque.name))
+            else:
+                logging.warning("File doesn't exist : {}".format(file))
+                continue
 
-            # create and add replica to main plate
+            # create and add replica to main plate object
             for j in range(1, __BatchNRep + 1, 1):
                 file = os.path.join(__BatchDirPath, __BatchInputPlateName.format(i, j))
                 if os.path.isfile(file):
@@ -885,12 +902,20 @@ class MainAppFrame(tkinter.Frame):
                 else:
                     logging.warning("File doesn't exist : {}".format(file))
 
+            # ## if plate object has no replica (because no file found) then continue to next plaque id
+            if len(plaque) == 0:
+                logging.error("Empty plate")
+                continue
+
             # #### CHANNEL ANALYSIS WITHOUT NORM
             if __BatchThresType == 'Percent':
-                threshold_value = 100 - __BatchThresVal
+                if isinstance(__BatchThresVal, int):
+                    threshold_value = 100 - __BatchThresVal
+                elif isinstance(__BatchThresVal, dict):
+                    threshold_value = dict((k, 100 - v) for k, v in __BatchThresVal.items())
                 percent_type = True
                 threshold_fixed = False
-                LOGFILE.add("Threshold Type : {0} with {1} value".format(__BatchThresType, 100 - __BatchThresVal))
+                LOGFILE.add("Threshold Type : {0} with {1} value".format(__BatchThresType, __BatchThresVal))
             else:
                 threshold_value = __BatchThresVal
                 percent_type = False
@@ -905,7 +930,7 @@ class MainAppFrame(tkinter.Frame):
                                                   fixed_threshold=threshold_fixed)
 
             if percent_type:
-                THRVALUEFILE.add("{0} @ {1}%: {2}".format(plaque.name, (100 - __BatchThresVal), thres))
+                THRVALUEFILE.add("{0} @ {1}%: {2}".format(plaque.name, __BatchThresVal, thres))
             else:
                 THRVALUEFILE.add("{0} @ {1}%: {2}".format(plaque.name, __BatchThresVal, thres))
             LOGFILE.add("* Do analysis on channels : {}".format(__BatchChan))
@@ -919,6 +944,7 @@ class MainAppFrame(tkinter.Frame):
                                                            data_c=False))
                 LOGFILE.add("* Do scoring on non-normalized data")
 
+            # # make QC if wanted
             if __BatchQC:
                 qc = TCA.plate_quality_control(plate=plaque,
                                                channel=__BatchChan.split()[0],
@@ -928,6 +954,7 @@ class MainAppFrame(tkinter.Frame):
                 QC_BeforeNorm.append(qc)
                 LOGFILE.add("* Do QC on non-normalized data")
 
+            # # save heatmap if wanted
             if __BatchHeatmap:
                 for chan in __BatchChan.split():
                     plaque.agg_data_from_replica_channel(channel=chan, forced_update=True)
@@ -944,7 +971,7 @@ class MainAppFrame(tkinter.Frame):
                                               pos=chk_empty(__BatchPos),
                                               log_t=False)
                 LOGFILE.add(
-                    "DO single cell data normalization : \n  -> Channels : {0}\n  -> Method : {1}\n  -> Neg : {2}\n  -> Pos : {3}\n".format(
+                    "DO single cell data normalization : \n  -> Channels : {0}\n  -> Method : {1}\n  -> Neg : {2}\n  -> Pos : {3}".format(
                         __BatchChan, __BatchDataNorm, __BatchNeg, __BatchPos))
 
             # side effect normalization
@@ -973,6 +1000,37 @@ class MainAppFrame(tkinter.Frame):
                                                                   data_c=True))
                     LOGFILE.add("* Do scoring on normalized data")
 
+                # #### CHANNEL ANALYSIS WITH NORM
+                if __BatchThresType == 'Percent':
+                    if isinstance(__BatchThresVal, int):
+                        threshold_value = 100 - __BatchThresVal
+                    elif isinstance(__BatchThresVal, dict):
+                        threshold_value = dict((k, 100 - v) for k, v in __BatchThresVal.items())
+                    percent_type = True
+                    threshold_fixed = False
+                    LOGFILE.add("Threshold Type : {0} with {1} value".format(__BatchThresType, __BatchThresVal))
+                else:
+                    threshold_value = __BatchThresVal
+                    percent_type = False
+                    threshold_fixed = True
+                    LOGFILE.add("Threshold Type : {0} with {1} value".format(__BatchThresType, __BatchThresVal))
+
+                df, thres = TCA.PlateChannelsAnalysis(plaque,
+                                                      channels=__BatchChan.split(),
+                                                      neg=__BatchNeg,
+                                                      threshold=threshold_value,
+                                                      percent=percent_type,
+                                                      fixed_threshold=threshold_fixed)
+
+                if percent_type:
+                    THRVALUEFILE.add(
+                        "Normalized {0} @ {1}%: {2}".format(plaque.name, __BatchThresVal, thres))
+                else:
+                    THRVALUEFILE.add("Normalized {0} @ {1}%: {2}".format(plaque.name, __BatchThresVal, thres))
+                LOGFILE.add("* Do analysis on normalized channels : {}".format(__BatchChan))
+                DF_resultWithNorm.append(df)
+
+                # ## QC after norm data
                 if __BatchQC:
                     if __BatchSideEffect != "":
                         tmp = True
@@ -986,6 +1044,7 @@ class MainAppFrame(tkinter.Frame):
                     QC_AfterNorm.append(qc)
                     LOGFILE.add("* Do QC on normalized data")
 
+                # ## plot heatmap after data norm
                 if __BatchHeatmap:
                     for chan in __BatchChan.split():
                         plaque.agg_data_from_replica_channel(channel=chan, forced_update=True,
@@ -996,33 +1055,39 @@ class MainAppFrame(tkinter.Frame):
 
         # #### WRITING RESULT PART
 
-        # # save basic data before norm like value for each wells
-        beforenorm = pd.concat(DF_result)
-        beforenorm.to_csv(
-            os.path.join(__outputDirPath, "Result.csv"), index=False, header=True)
-
-        # # save QC data
-        if __BatchQC:
-            pd.concat(QC_BeforeNorm).to_csv(os.path.join(__outputDirPath, "QC.csv"), index=False, header=True)
+        # # don't save anything if anything was compute
+        if len(DF_result) != 0:
+            # # save basic data before norm like value for each wells
+            beforenorm = pd.concat(DF_result)
+            beforenorm.to_csv(
+                os.path.join(__outputDirPath, "Result.csv"), index=False, header=True)
 
             if __BatchDataNorm or __BatchSideEffect != "":
-                pd.concat(QC_AfterNorm).to_csv(os.path.join(__outputDirPath, "QC_Normalized.csv"), index=False,
-                                               header=True)
-        # # save mean and sd for given reference
-        if __BatchMeanSD_Ref != "":
-            x = beforenorm[beforenorm.PlateMap.isin(__BatchMeanSD_Ref.split())]
-            x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
-                os.path.join(__outputDirPath, "Result_RefMean.csv"), index=True, header=True)
-            x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
-                os.path.join(__outputDirPath, "Result_RefStd.csv"), index=True, header=True)
+                afternorm = pd.concat(DF_resultWithNorm)
+                afternorm.to_csv(os.path.join(__outputDirPath, "ResultatWithNorm.csv"), index=False, header=True)
 
-        # # save scoring & if norm where applied
-        if __BatchScoring:
-            pd.concat(Scoring_BeforeNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithoutNorm.csv"),
-                                                 index=False, header=True)
-            if __BatchDataNorm or __BatchSideEffect != "":
-                pd.concat(Scoring_AfterNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithNorm.csv"),
-                                                    index=False, header=True)
+            # # save QC data
+            if __BatchQC:
+                pd.concat(QC_BeforeNorm).to_csv(os.path.join(__outputDirPath, "QC.csv"), index=False, header=True)
+
+                if __BatchDataNorm or __BatchSideEffect != "":
+                    pd.concat(QC_AfterNorm).to_csv(os.path.join(__outputDirPath, "QC_Normalized.csv"), index=False,
+                                                   header=True)
+            # # save mean and sd for given reference
+            if __BatchMeanSD_Ref != "":
+                x = beforenorm[beforenorm.PlateMap.isin(__BatchMeanSD_Ref.split())]
+                x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
+                    os.path.join(__outputDirPath, "Result_RefMean.csv"), index=True, header=True)
+                x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
+                    os.path.join(__outputDirPath, "Result_RefStd.csv"), index=True, header=True)
+
+            # # save scoring & if norm where applied
+            if __BatchScoring:
+                pd.concat(Scoring_BeforeNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithoutNorm.csv"),
+                                                     index=False, header=True)
+                if __BatchDataNorm or __BatchSideEffect != "":
+                    pd.concat(Scoring_AfterNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithNorm.csv"),
+                                                        index=False, header=True)
         # close file
         THRVALUEFILE.close()
         LOGFILE.close()

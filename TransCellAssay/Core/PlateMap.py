@@ -73,6 +73,7 @@ class PlateMap(object):
         self._re = None
         self._cb = None
         self._ce = None
+        self.size = size
 
     def set_platemap(self, file_path=None, **kwargs):
         """
