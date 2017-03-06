@@ -64,8 +64,7 @@ class InputFile(object):
         :param to_remove: list of col to remove
         """
         # columns that we can remove because useless
-        useless = ['X', 'Y', 'Z', 'Width', 'Height', 'PixelSizeX', 'PixelSizeY', 'PixelSizeZ', 'Row',
-                   'Column', 'Status'] + to_remove
+        useless = ['X', 'Y', 'Z', 'Width', 'Height', 'PixelSizeX', 'PixelSizeY', 'PixelSizeZ', 'Status'] + to_remove
         for col in useless:
             if col in self.dataframe.columns.unique():
                 try:

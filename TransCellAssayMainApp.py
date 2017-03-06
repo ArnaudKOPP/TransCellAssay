@@ -281,11 +281,13 @@ class MainAppFrame(tkinter.Frame):
 
         tkinter.Label(window, text="Neg Ctrl").grid(row=1, column=0)
         tkinter.Label(window, text="Pos Ctrl").grid(row=2, column=0)
-        tkinter.Label(window, text="Format in A1 H12 for ex.").grid(row=1, column=3)
+        tkinter.Label(window, text="Format in A1 H12 for ex.").grid(row=1, column=2)
         tkinter.Label(window, text="Channel").grid(row=3, column=0)
-        tkinter.Label(window, text="Can be multiple but the first is prior").grid(row=3, column=3)
+        tkinter.Label(window, text="Can be multiple but the first is prior").grid(row=3, column=2)
         tkinter.Label(window, text="Threshold type").grid(row=4, column=0)
         tkinter.Label(window, text="Threshold Value").grid(row=5, column=0)
+        tkinter.Label(window, text=" X for single value on all chan or {'chan' : 10} for specified").grid(row=5,
+                                                                                                          column=2)
 
         self.NegCtrl = StringVar()
         self.PosCtrl = StringVar()
@@ -605,7 +607,7 @@ class MainAppFrame(tkinter.Frame):
         if NegRef is not None:
             NegRef = NegRef.split()
             # add this for having a virgin platemap
-            self.PlateToAnalyse.platemap = TCA.PlateMap(size=self.PlateToAnalyse.platemap.size)
+            self.PlateToAnalyse.platemap = TCA.PlateMap(size=self.PlateToAnalyse.platemap.shape(alt_frmt=True))
             for i in NegRef:
                 self.PlateToAnalyse.platemap[i] = "Neg"
             NegRef = "Neg"
@@ -624,11 +626,15 @@ class MainAppFrame(tkinter.Frame):
             thresRef = None
             noposcell = True
         else:
-            thresRef = int(thresRef)
+            thresRef = eval(thresRef)
 
         if self.threshold_type.get() == 'Percent':
             thresTypePercent, thresTypeFixedVal = True, False
-            thresRef = 100 - thresRef
+            if isinstance(thresRef, int):
+                thresRef = 100 - thresRef
+            elif isinstance(thresRef, dict):
+                thresRef = dict((k, 100 - v) for k, v in thresRef.items())
+
         else:
             thresTypePercent, thresTypeFixedVal = False, True
 
