@@ -25,22 +25,23 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(m
 DEBUG = True
 
 #################
-## input file col name
+##  input file col name
 Col_PlateIDBarcode = 'PlateId/Barcode'
 Col_PlateName = 'Plate Name'
 Col_PlateNumber = 'PlateNumber'
 Col_Well = 'Well'
-Col_CP_PlateName = 'Metadata_Plate'
-Col_CP_Well = 'Metadata_Well'
 Col_nrows = 'NumberOfRows'
 Col_ncol = 'NumberOfColumns'
-## Input file name
+# special for cellprofiler
+Col_CP_PlateName = 'Metadata_Plate'
+Col_CP_Well = 'Metadata_Well'
+# #  Input file name of hcstudio export
 InputCell = 'Cell.csv'
 InputWell = 'Well.csv'
 InputPlate = 'Plate.csv'
-## col to skip
-Skip_FormatPlaque = ['PlateNumber', 'Status', 'Zposition', 'Row', 'Column', 'WellId']
-## format plaque
+# # col to skip
+Skip_FormatPlaque = ['PlateNumber', 'Status', 'Zposition', 'WellId']
+# # format plaque
 KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLWHBC2"}
 
 
@@ -389,12 +390,15 @@ class MainAppFrame(tkinter.Frame):
 
                         # # if chan is to long, cut it
                         if len(str(chan)) >= 30:
-                            if str(chan) in KnowProblematicChanName:
-                                Chan = KnowProblematicChanName[str(chan)]
-                                logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
-                            else:
-                                Chan = ''.join(x for x in str(chan) if not x.islower())
-                                logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
+                            try:
+                                if str(chan) in KnowProblematicChanName:
+                                    Chan = KnowProblematicChanName[str(chan)]
+                                    logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
+                                else:
+                                    Chan = ''.join(x for x in str(chan) if not x.islower())
+                                    logging.warning('Channel {0} is writed as {1}'.format(chan, Chan))
+                            except Exception as e:
+                                logging.error('Channel {0} cannot be processed, name to long : {1}'.format(chan, e))
                         else:
                             Chan = str(chan)
                         if (nbrow * nbcol) == 96:
@@ -422,7 +426,9 @@ class MainAppFrame(tkinter.Frame):
             tkinter.messagebox.showerror(message="Empty directory, choose one")
             self.load_dir()
 
-        if self.Cellprofilerinput.get():
+        # ## if cellprofiler output file
+        if bool(self.Cellprofilerinput.get()):
+            # search all csv file into dir
             lstfile = [each for each in os.listdir(self.DirPath) if each.endswith(InputCell)]
 
             for inFile in lstfile:
@@ -435,6 +441,7 @@ class MainAppFrame(tkinter.Frame):
 
                 uniquePlate = file.dataframe[Col_PlateName].unique()
 
+                # save each plate in separate file
                 for plate in uniquePlate:
                     df = file.dataframe[file.dataframe[Col_PlateName] == plate].reset_index()
                     df.to_csv(os.path.join(self.DirPath, plate + '.csv'))
@@ -807,7 +814,7 @@ class MainAppFrame(tkinter.Frame):
         self.SideNorm = StringVar()
         Combobox(window, textvariable=self.SideNorm, values=('Bscore', 'BZscore', 'PMP', 'MEA', 'Lowess', 'Polynomial'),
                  state='readonly').grid(row=1, column=1)
-        self.SideNorm.set('Lowess')
+        self.SideNorm.set('Bscore')
 
         tkinter.Button(window, text='Apply data norm',
                        command=lambda: self.PlateToAnalyse.systematic_error_correction(algorithm=self.SideNorm.get()),
@@ -987,25 +994,7 @@ class MainAppFrame(tkinter.Frame):
                                                          max_iterations=10)
                 LOGFILE.add("DO side effect normalization : {0}".format(__BatchSideEffect))
 
-            # #### CHANNEL ANALYSIS WITH NORM
-            if __BatchDataNorm or __BatchSideEffect != "":
-
-                # scoring results on normalized data
-                if __BatchScoring:
-                    if __BatchSideEffect == "":
-                        plaque.agg_data_from_replica_channel(channel=__BatchChan.split()[0],
-                                                             forced_update=True)
-                        Scoring_AfterNorm.append(TCA.ScoringPlate(plaque,
-                                                                  neg=__BatchNeg,
-                                                                  channel=__BatchChan.split()[0],
-                                                                  data_c=False))
-                    else:
-                        Scoring_AfterNorm.append(TCA.ScoringPlate(plaque,
-                                                                  neg=__BatchNeg,
-                                                                  channel=__BatchChan.split()[0],
-                                                                  data_c=True))
-                    LOGFILE.add("* Do scoring on normalized data")
-
+            if __BatchDataNorm:
                 # #### CHANNEL ANALYSIS WITH NORM
                 if __BatchThresType == 'Percent':
                     if isinstance(__BatchThresVal, int):
@@ -1036,17 +1025,36 @@ class MainAppFrame(tkinter.Frame):
                 LOGFILE.add("* Do analysis on normalized channels : {}".format(__BatchChan))
                 DF_resultWithNorm.append(df)
 
+            # #### CHANNEL ANALYSIS WITH NORM
+            if __BatchDataNorm or __BatchSideEffect != "":
+
+                # scoring results on normalized data
+                if __BatchScoring:
+                    if __BatchSideEffect == "":
+                        plaque.agg_data_from_replica_channel(channel=__BatchChan.split()[0],
+                                                             forced_update=True)
+                        Scoring_AfterNorm.append(TCA.ScoringPlate(plaque,
+                                                                  neg=__BatchNeg,
+                                                                  channel=__BatchChan.split()[0],
+                                                                  data_c=False))
+                    else:
+                        Scoring_AfterNorm.append(TCA.ScoringPlate(plaque,
+                                                                  neg=__BatchNeg,
+                                                                  channel=__BatchChan.split()[0],
+                                                                  data_c=True))
+                    LOGFILE.add("* Do scoring on normalized data")
+
                 # ## QC after norm data
                 if __BatchQC:
                     if __BatchSideEffect != "":
-                        tmp = True
+                        use_sec_data = True
                     else:
-                        tmp = False
+                        use_sec_data = False
                     qc = TCA.plate_quality_control(plate=plaque,
                                                    channel=__BatchChan.split()[0],
                                                    cneg=__BatchNeg,
                                                    cpos=__BatchPos,
-                                                   sec_data=tmp)
+                                                   sec_data=use_sec_data)
                     QC_AfterNorm.append(qc)
                     LOGFILE.add("* Do QC on normalized data")
 
@@ -1063,40 +1071,60 @@ class MainAppFrame(tkinter.Frame):
 
         # # don't save anything if anything was compute
         if len(DF_result) != 0:
+
+            workbook = pd.ExcelWriter(os.path.join(__outputDirPath, "RESULT.xlsx"))
+
             # # save basic data before norm like value for each wells
             beforenorm = pd.concat(DF_result)
-            beforenorm.to_csv(
-                os.path.join(__outputDirPath, "Result.csv"), index=False, header=True)
+            beforenorm.to_excel(workbook, "Analyse without norm",
+                                index=False, header=True)
 
-            if __BatchDataNorm or __BatchSideEffect != "":
+            if __BatchDataNorm:
                 afternorm = pd.concat(DF_resultWithNorm)
-                afternorm.to_csv(os.path.join(__outputDirPath, "ResultatWithNorm.csv"), index=False, header=True)
+                afternorm.to_excel(excel_writer=workbook, sheet_name="Analyse with norm",
+                                   index=False, header=True)
 
             # # save QC data
             if __BatchQC:
-                pd.concat(QC_BeforeNorm).to_csv(os.path.join(__outputDirPath, "QC.csv"), index=False, header=True)
+                pd.concat(QC_BeforeNorm).to_excel(excel_writer=workbook, sheet_name="QC without norm",
+                                                  index=False, header=True)
 
                 if __BatchDataNorm or __BatchSideEffect != "":
-                    pd.concat(QC_AfterNorm).to_csv(os.path.join(__outputDirPath, "QC_Normalized.csv"), index=False,
-                                                   header=True)
+                    pd.concat(QC_AfterNorm).to_excel(excel_writer=workbook, sheet_name="QC with norm",
+                                                     index=False, header=True)
             # # save mean and sd for given reference
             if __BatchMeanSD_Ref != "":
                 x = beforenorm[beforenorm.PlateMap.isin(__BatchMeanSD_Ref.split())]
-                x.groupby(by=['PlateName', 'PlateMap']).mean().to_csv(
-                    os.path.join(__outputDirPath, "Result_RefMean.csv"), index=True, header=True)
-                x.groupby(by=['PlateName', 'PlateMap']).std().to_csv(
-                    os.path.join(__outputDirPath, "Result_RefStd.csv"), index=True, header=True)
+                x.groupby(by=['PlateName', 'PlateMap']).mean().to_excel(excel_writer=workbook,
+                                                                        sheet_name="Reference Mean",
+                                                                        index=True, header=True)
+                x.groupby(by=['PlateName', 'PlateMap']).std().to_excel(excel_writer=workbook,
+                                                                       sheet_name="Reference std",
+                                                                       index=True, header=True)
+
+                if __BatchDataNorm:
+                    afternorm = pd.concat(DF_resultWithNorm)
+                    x = afternorm[afternorm.PlateMap.isin(__BatchMeanSD_Ref.split())]
+                    x.groupby(by=['PlateName', 'PlateMap']).mean().to_excel(excel_writer=workbook,
+                                                                            sheet_name="Reference Mean Norm",
+                                                                            index=True, header=True)
+                    x.groupby(by=['PlateName', 'PlateMap']).std().to_excel(excel_writer=workbook,
+                                                                           sheet_name="Reference std Norm",
+                                                                           index=True, header=True)
 
             # # save scoring & if norm where applied
             if __BatchScoring:
-                pd.concat(Scoring_BeforeNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithoutNorm.csv"),
-                                                     index=False, header=True)
+                pd.concat(Scoring_BeforeNorm).to_excel(excel_writer=workbook, sheet_name="Scoring Without Norm",
+                                                       index=False, header=True)
                 if __BatchDataNorm or __BatchSideEffect != "":
-                    pd.concat(Scoring_AfterNorm).to_csv(os.path.join(__outputDirPath, "ScoringWithNorm.csv"),
-                                                        index=False, header=True)
+                    pd.concat(Scoring_AfterNorm).to_excel(excel_writer=workbook, sheet_name="Scoring With Norm.",
+                                                          index=False, header=True)
+
+            workbook.close()
         # close file
         THRVALUEFILE.close()
         LOGFILE.close()
+        logging.info("BATCH FINISH \./")
 
     # FUNCTION FOR GRAPHIC OUTPUT
 
