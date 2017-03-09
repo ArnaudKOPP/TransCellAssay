@@ -85,6 +85,7 @@ class MainAppFrame(tkinter.Frame):
         self.FilePathToOpen = None
 
         self.PlateToAnalyse = None
+        self.PlateToAnalyseAddedPM = False
 
     # FUNCTION FOR MAIN TASKS
 
@@ -557,6 +558,7 @@ class MainAppFrame(tkinter.Frame):
 
         def addplatemap():
             self.PlateToAnalyse.add_platemap(TCA.PlateMap(fpath=self.FilePathToOpen))
+            self.PlateToAnalyseAddedPM = True
             window.destroy()
 
         tkinter.Button(window, text='Add file/replica to plate', command=addplatemap).grid(row=2, column=0)
@@ -612,12 +614,15 @@ class MainAppFrame(tkinter.Frame):
         logging.debug("Negative reference : {}".format(NegRef))
 
         if NegRef is not None:
-            NegRef = NegRef.split()
-            # add this for having a virgin platemap
-            self.PlateToAnalyse.platemap = TCA.PlateMap(size=self.PlateToAnalyse.platemap.shape(alt_frmt=True))
-            for i in NegRef:
-                self.PlateToAnalyse.platemap[i] = "Neg"
-            NegRef = "Neg"
+            if not self.PlateToAnalyseAddedPM:
+                NegRef = NegRef.split()
+                # add this for having a virgin platemap
+                self.PlateToAnalyse.platemap = TCA.PlateMap(size=self.PlateToAnalyse.platemap.shape(alt_frmt=True))
+                for i in NegRef:
+                    self.PlateToAnalyse.platemap[i] = "Neg"
+                NegRef = "Neg"
+            else:
+                NegRef = NegRef
 
         ChanRef = self.ChnVal.get()
         logging.debug("Channel analysed : {}".format(ChanRef))
