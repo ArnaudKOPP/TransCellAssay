@@ -686,14 +686,19 @@ class MainAppFrame(tkinter.Frame):
             tkinter.messagebox.showerror(message="No existing Plate, create one")
             return
 
-        NegRef = self.NegCtrl.get()
+        NegRef = chk_empty(self.NegCtrl.get())
+        logging.debug("Negative reference : {}".format(NegRef))
+
         if NegRef is not None:
-            NegRef = NegRef.split()
-            # add this for having a virgin platemap
-            self.PlateToAnalyse.platemap = TCA.PlateMap(size=self.PlateToAnalyse.platemap.size)
-            for i in NegRef:
-                self.PlateToAnalyse.platemap[i] = "Neg"
-            NegRef = "Neg"
+            if not self.PlateToAnalyseAddedPM:
+                NegRef = NegRef.split()
+                # add this for having a virgin platemap
+                self.PlateToAnalyse.platemap = TCA.PlateMap(size=self.PlateToAnalyse.platemap.shape(alt_frmt=True))
+                for i in NegRef:
+                    self.PlateToAnalyse.platemap[i] = "Neg"
+                NegRef = "Neg"
+            else:
+                NegRef = NegRef
 
         ChanRef = self.ChnVal.get()
         logging.debug("Channel analysed : {}".format(ChanRef))
