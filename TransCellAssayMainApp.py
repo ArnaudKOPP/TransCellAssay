@@ -38,6 +38,7 @@ Col_CP_Well = 'Metadata_Well'
 # #  Input file name of hcstudio export
 InputCell = 'Cell.csv'
 InputWell = 'Well.csv'
+InputField = 'Field.csv'
 InputPlate = 'Plate.csv'
 # # col to skip
 Skip_FormatPlaque = ['PlateNumber', 'Status', 'Zposition', 'WellId']
@@ -115,9 +116,10 @@ class MainAppFrame(tkinter.Frame):
         Label(window, text="Which csv file use").pack()
 
         self.CSV_Target = StringVar()
-        Combobox(window, textvariable=self.CSV_Target, values=(InputWell, InputCell), state='readonly').pack(padx=10,
-                                                                                                             pady=10,
-                                                                                                             fill=BOTH)
+        Combobox(window, textvariable=self.CSV_Target, values=(InputWell, InputCell, InputField),
+                 state='readonly').pack(padx=10,
+                                        pady=10,
+                                        fill=BOTH)
         self.CSV_Target.set('Cell.csv')
 
         Label(window, text="Which name to use").pack()
@@ -463,7 +465,7 @@ class MainAppFrame(tkinter.Frame):
                             OutputName = plateId[Col_PlateName][i]
                         else:
                             OutputName = "{0}-{1}".format(plateId[Col_PlateIDBarcode][i], plateId[Col_PlateName][i])
-                        platenumber = plateId[Col_PlateNumber][0]
+                        platenumber = plateId[Col_PlateNumber][i]
 
                         #  # create well in good format
                         file = TCA.CSV()
