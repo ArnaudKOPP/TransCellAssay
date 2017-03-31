@@ -751,7 +751,7 @@ class MainAppFrame(tkinter.Frame):
 
         def dobinning():
             if self.Bin.get() != "":
-                Bin = self.Bin.get().split()
+                Bin = list(map(int, self.Bin.get().split()))
             else:
                 Bin = None
             for chan in self.BinChan.get().split():
