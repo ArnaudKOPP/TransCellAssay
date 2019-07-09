@@ -159,8 +159,12 @@ class InputFile(object):
                     size = len(self.dataframe)
                 elif size == 6:
                     array = np.zeros((2, 3))
+                elif size == 12:
+                    array = np.zeros((3, 4))
                 elif size == 24:
                     array = np.zeros((4, 6))
+                elif size == 48:
+                    array = np.zeros((6, 8))
                 elif size == 96:
                     array = np.zeros((8, 12))
                 elif size == 384:

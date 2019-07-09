@@ -41,9 +41,9 @@ InputWell = 'Well.csv'
 InputField = 'Field.csv'
 InputPlate = 'Plate.csv'
 # # col to skip
-Skip_FormatPlaque = ['PlateNumber', 'Status', 'Zposition', 'WellId']
+Skip_FormatPlaque = ['PlateNumber', 'Status', 'Zposition', 'WellId','Row','Column']
 # # format plaque
-KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLWHBC2"}
+KnowProblematicChanName = {"MEAN_NeuriteMaxLengthWithoutBranchesCh2": "MEAN_NMLWOBC2"}
 
 
 #################
@@ -404,7 +404,19 @@ class MainAppFrame(tkinter.Frame):
                                 logging.error('Channel {0} cannot be processed, name to long : {1}'.format(chan, e))
                         else:
                             Chan = str(chan)
-                        if (nbrow * nbcol) == 96:
+                        if (nbrow * nbcol) == 6:
+                            df = pd.DataFrame(data=array, index=list(string.ascii_uppercase)[0:2],
+                                              columns=[str(x) for x in range(1, 4, 1)])
+                        elif (nbrow * nbcol) == 12:
+                            df = pd.DataFrame(data=array, index=list(string.ascii_uppercase)[0:3],
+                                              columns=[str(x) for x in range(1, 5, 1)])
+                        elif (nbrow * nbcol) == 24:
+                            df = pd.DataFrame(data=array, index=list(string.ascii_uppercase)[0:4],
+                                              columns=[str(x) for x in range(1, 7, 1)])
+                        elif (nbrow * nbcol) == 48:
+                            df = pd.DataFrame(data=array, index=list(string.ascii_uppercase)[0:6],
+                                              columns=[str(x) for x in range(1, 9, 1)])
+                        elif (nbrow * nbcol) == 96:
                             df = pd.DataFrame(data=array, index=list(string.ascii_uppercase)[0:8],
                                               columns=[str(x) for x in range(1, 13, 1)])
                         elif (nbrow * nbcol) == 384:
@@ -915,7 +927,7 @@ class MainAppFrame(tkinter.Frame):
                 plaque = TCA.Plate(name="Plate nb{}".format(i), platemap=pm_filepath)
                 LOGFILE.add("Create plate : {}".format(plaque.name))
             else:
-                logging.warning("File doesn't exist : {}".format(file))
+                logging.warning("File doesn't exist : {}".format(pm_filepath))
                 continue
 
             # create and add replica to main plate object
